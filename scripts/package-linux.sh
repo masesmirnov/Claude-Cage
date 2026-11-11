@@ -38,7 +38,7 @@ Architecture: amd64
 Maintainer: Cage contributors <noreply@github.com>
 Depends: $dependencies, libwebkit2gtk-4.1-0 (>= 2.40), libglib2.0-bin, ca-certificates, systemd
 Suggests: qemu-system-x86, qemu-utils, ovmf, openssh-client, iproute2, git (>= 2.38)
-Recommends: dbus-user-session, fonts-noto-cjk, libnotify-bin, zenity | kdialog
+Recommends: dbus-user-session, libnotify-bin, zenity | kdialog
 Homepage: https://github.com/Lee-xeo/Claude-Cage
 Description: Isolated coding workspace with a persistent Linux VM
  Cage combines projects, terminals, a browser and an editor in a native
