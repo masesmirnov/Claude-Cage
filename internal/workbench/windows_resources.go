@@ -23,13 +23,13 @@ func windowsResourceMaximum() (int, int) {
 
 func windowsAllocationLimits(allocation cage.ResourceAllocation, maxMemory, maxCPUs int) (int, int, error) {
 	if maxMemory < 4 || maxCPUs < 2 {
-		return 0, 0, errors.New("主机可分配的资源不足，Windows 11 客机至少需要 4 GiB 内存与 2 个逻辑核心")
+		return 0, 0, errors.New("The host does not have enough resources to allocate. A Windows 11 guest needs at least 4 GiB of memory and 2 logical cores.")
 	}
 	if allocation.Automatic {
 		return maxMemory, maxCPUs, nil
 	}
 	if allocation.MemoryGiB < 4 || allocation.MemoryGiB > maxMemory || allocation.CPUs < 2 || allocation.CPUs > maxCPUs {
-		return 0, 0, fmt.Errorf("Windows 客机内存须为 4–%d GiB，CPU 须为 2–%d 个逻辑核心", maxMemory, maxCPUs)
+		return 0, 0, fmt.Errorf("Windows guest memory must be 4-%d GiB and CPU must be 2-%d logical cores.", maxMemory, maxCPUs)
 	}
 	return allocation.MemoryGiB, allocation.CPUs, nil
 }
@@ -53,21 +53,21 @@ func (s *Server) windowsResourceSample(ctx context.Context, state guestos.Window
 	var buffer bytes.Buffer
 	cmd.Stdout = &boundedWindowsStatusWriter{buffer: &buffer, remaining: 16384}
 	if err = cmd.Run(); err != nil {
-		return nil, errors.New("Windows 客机资源观测尚未连接")
+		return nil, errors.New("The Windows guest resource observation is not connected yet.")
 	}
 	var observation map[string]any
 	decoder := json.NewDecoder(&buffer)
 	if decoder.Decode(&observation) != nil || decoder.Decode(new(any)) != io.EOF || observation["version"] != float64(1) || observation["cpus"] != float64(state.CPUs) {
-		return nil, errors.New("Windows 客机资源观测与配置不一致")
+		return nil, errors.New("The Windows guest resource observation does not match the configuration.")
 	}
 	guest, ok := observation["guest"].(map[string]any)
 	if !ok {
-		return nil, errors.New("Windows 客机内存观测无效")
+		return nil, errors.New("The Windows guest memory observation is invalid.")
 	}
 	total, tok := guest["total_bytes"].(float64)
 	available, aok := guest["available_bytes"].(float64)
 	if !tok || !aok || total < 2<<30 || available < 0 || available > total {
-		return nil, errors.New("Windows 客机内存观测无效")
+		return nil, errors.New("The Windows guest memory observation is invalid.")
 	}
 	maximum := state.MemoryStartup
 	if state.DynamicMemory {
@@ -129,7 +129,7 @@ func (s *Server) applyWindowsResources(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !s.op.TryLock() {
-			http.Error(w, "另一个操作仍在进行，请稍候", http.StatusConflict)
+			http.Error(w, "Another operation is still running. Wait a moment.", http.StatusConflict)
 			return
 		}
 		err = writePrivate(cage.ResourceAllocationPath(s.configPath), input.Allocation)

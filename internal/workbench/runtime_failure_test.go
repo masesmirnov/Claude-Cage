@@ -9,7 +9,7 @@ import (
 
 func TestRunCagePreservesOriginalVMError(t *testing.T) {
 	if os.Getenv("CAGE_TEST_START_FAILURE_HELPER") == "1" {
-		fmt.Fprintln(os.Stderr, "Error: QEMU 启动失败：WHPX: Failed to enable nested virtualization, hr=80370302 token=private-test-token")
+		fmt.Fprintln(os.Stderr, "Error: QEMU failed to start: WHPX: Failed to enable nested virtualization, hr=80370302 token=private-test-token")
 		fmt.Fprintln(os.Stderr, "Error: Failed to start base VM. Full log: local diagnostic logs")
 		os.Exit(7)
 	}
@@ -38,12 +38,12 @@ func TestRunCageExplainsCommonFailure(t *testing.T) {
 		os.Exit(7)
 	}
 	for _, tc := range []struct{ output, want string }{
-		{"curl: (28) Operation timed out", "超时"},
-		{"E: No space left on device", "空间不足"},
-		{"curl: (60) certificate verify failed", "证书验证"},
-		{"CAGE_WINDOWS_MAINTENANCE_HOST_MANAGER synthetic stage token=private-error-secret", "系统管理助手安装未完成"},
-		{"CAGE_WINDOWS_MAINTENANCE_GUEST_CONNECTION synthetic stage token=private-error-secret", "客机连接未完成"},
-		{"unrecognized failure token=private-error-secret", "退出码 7"},
+		{"curl: (28) Operation timed out", "timed out"},
+		{"E: No space left on device", "not enough disk space"},
+		{"curl: (60) certificate verify failed", "certificate failed verification"},
+		{"CAGE_WINDOWS_MAINTENANCE_HOST_MANAGER synthetic stage token=private-error-secret", "system management helper installation was not completed"},
+		{"CAGE_WINDOWS_MAINTENANCE_GUEST_CONNECTION synthetic stage token=private-error-secret", "guest connection was not completed"},
+		{"unrecognized failure token=private-error-secret", "exit code 7"},
 	} {
 		t.Run(tc.want, func(t *testing.T) {
 			t.Setenv("CAGE_TEST_READABLE_FAILURE", tc.output)
@@ -60,7 +60,7 @@ func TestRunCageExplainsCommonFailure(t *testing.T) {
 				t.Fatal(err)
 			}
 			job := awaitJobIdle(t, &s.jobs)
-			if !strings.Contains(job.Error, tc.want) || strings.Contains(job.Error, "private-error-secret") || !strings.Contains(job.Message, "准备环境") {
+			if !strings.Contains(job.Error, tc.want) || strings.Contains(job.Error, "private-error-secret") || !strings.Contains(job.Message, "Preparing the environment") {
 				t.Fatalf("missing readable operation failure: %+v", job)
 			}
 		})

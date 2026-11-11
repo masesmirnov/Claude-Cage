@@ -35,22 +35,22 @@ var imageIDPattern = regexp.MustCompile(`^(?:sha256:|[a-zA-Z0-9][a-zA-Z0-9./:_-]
 
 func (c Config) Validate() error {
 	if c.Engine != "docker" && c.Engine != "podman" {
-		return errors.New("容器引擎必须是 rootless Docker 或 Podman")
+		return errors.New("The container engine must be rootless Docker or Podman.")
 	}
 	if !filepath.IsAbs(c.Executable) || strings.ContainsAny(c.Executable, "\x00\r\n") {
-		return errors.New("容器引擎必须使用绝对路径")
+		return errors.New("The container engine must use an absolute path.")
 	}
 	if c.Engine == "docker" && (!strings.HasPrefix(c.Socket, "unix:///") || strings.ContainsAny(c.Socket, "\x00\r\n?#")) {
-		return errors.New("Docker 必须使用独立的本机 rootless Unix socket")
+		return errors.New("Docker must use a separate local rootless Unix socket.")
 	}
 	if c.Engine == "podman" && c.Socket != "" {
-		return errors.New("Podman 运行环境不使用远程服务 socket")
+		return errors.New("The Podman runtime environment does not use a remote service socket.")
 	}
 	if !imageIDPattern.MatchString(c.Image) {
-		return errors.New("容器镜像必须固定为 SHA-256 image ID 或 registry digest")
+		return errors.New("The container image must be pinned to a SHA-256 image ID or registry digest.")
 	}
 	if c.CPUs < 1 || c.CPUs > 256 || c.MemoryBytes < 512<<20 {
-		return errors.New("容器 CPU 或内存限制无效")
+		return errors.New("Invalid container CPU or memory limit.")
 	}
 	return nil
 }
@@ -78,11 +78,11 @@ func Load(profile string) (*Runtime, error) {
 	decoder := json.NewDecoder(io.LimitReader(file, 64<<10))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&config); err != nil {
-		return nil, errors.New("容器配置格式无效")
+		return nil, errors.New("Invalid container configuration format.")
 	}
 	var extra any
 	if decoder.Decode(&extra) != io.EOF {
-		return nil, errors.New("容器配置必须只有一个 JSON 对象")
+		return nil, errors.New("The container configuration must be a single JSON object.")
 	}
 	if err := config.Validate(); err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func Configure(profile string, config Config) (*Runtime, error) {
 			return nil, err
 		}
 		if existing.config != config {
-			return nil, errors.New("已有容器配置不能直接替换；请保留现有环境并执行迁移")
+			return nil, errors.New("An existing container configuration cannot be replaced directly. Keep the existing environment and migrate it.")
 		}
 		return existing, nil
 	}

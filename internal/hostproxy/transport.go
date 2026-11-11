@@ -103,13 +103,13 @@ func proxyURL(value string) (*url.URL, error) {
 	}
 	u, err := url.Parse(value)
 	if err != nil || u.Hostname() == "" {
-		return nil, errors.New("主机代理地址无效，请检查系统代理设置")
+		return nil, errors.New("Invalid host proxy address. Check the system proxy settings.")
 	}
 	switch u.Scheme {
 	case "http", "https", "socks5", "socks5h":
 		return u, nil
 	default:
-		return nil, errors.New("主机代理协议不受支持，请使用 HTTP 或 SOCKS5 系统代理")
+		return nil, errors.New("The host proxy protocol is not supported. Use an HTTP or SOCKS5 system proxy.")
 	}
 }
 
@@ -126,7 +126,7 @@ func staticProxy(req *http.Request, httpProxy, httpsProxy, bypass string) (*url.
 	cfg := httpproxy.Config{HTTPProxy: httpProxy, HTTPSProxy: httpsProxy, NoProxy: strings.ReplaceAll(bypass, ";", ",")}
 	u, err := cfg.ProxyFunc()(req.URL)
 	if err != nil {
-		return nil, errors.New("主机代理设置无效，请检查系统代理设置")
+		return nil, errors.New("Invalid host proxy settings. Check the system proxy settings.")
 	}
 	if u != nil {
 		return proxyURL(u.String())

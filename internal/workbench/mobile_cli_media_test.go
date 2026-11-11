@@ -28,7 +28,7 @@ func TestMobileCLIMediaReadsOnlyCurrentProjectMedia(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	record.Turns = []mobileTurn{{ID: uuid.NewString(), Prompt: "查看预览", Text: "![帧](frame%20one.png) `outside.png` `fake.png` `../other.png`"}}
+	record.Turns = []mobileTurn{{ID: uuid.NewString(), Prompt: "View preview", Text: "![Frame](frame%20one.png) `outside.png` `fake.png` `../other.png`"}}
 	if err := writePrivate(mobileRecordPath(s.profile, id), record); err != nil {
 		t.Fatal(err)
 	}

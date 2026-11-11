@@ -29,7 +29,7 @@ func Host(ctx context.Context) (Identity, error) {
 	}
 	major, err := strconv.Atoi(build)
 	if err != nil || major < 22000 {
-		return Identity{}, fmt.Errorf("本机系统创建需要 Windows 11")
+		return Identity{}, fmt.Errorf("Creating a local system needs Windows 11")
 	}
 	revision, _, err := key.GetIntegerValue("UBR")
 	if err != nil {
@@ -46,7 +46,7 @@ func Host(ctx context.Context) (Identity, error) {
 	defer languageKey.Close()
 	languages, err := languageKey.ReadSubKeyNames(-1)
 	if err != nil || len(languages) == 0 {
-		return Identity{}, fmt.Errorf("无法读取 Windows 安装语言")
+		return Identity{}, fmt.Errorf("Could not read the Windows installation language")
 	}
 	// InstallLanguage is the base UI language. On multilingual installations,
 	// prefer the installed-language key matching the system locale.

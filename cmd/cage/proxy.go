@@ -70,7 +70,7 @@ func closeManagedGates(profile string) error {
 	for _, file := range files {
 		if client, e := cage.OpenGateClient(filepath.Dir(file)); e == nil {
 			if _, e = client.Status(context.Background()); e == nil {
-				if _, e = client.Close(context.Background(), "代理核心停止或重启，等待重新检测"); e != nil {
+				if _, e = client.Close(context.Background(), "Proxy core stopped or restarted, waiting to check again"); e != nil {
 					return e
 				}
 			}

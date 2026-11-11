@@ -66,10 +66,10 @@ def owner(action, display=':78', user=None):
 
 
 try:
-    send({'text': 'host 中文🙂\nsecond line'}, 1)
+    send({'text': 'host Привет🙂\nsecond line'}, 1)
     print('host text acknowledged', flush=True)
     for display in (':77', ':78'):
-        assert json.loads(remote(imports + 'print(json.dumps(clipboard.wait_for_text()))', display)) == 'host 中文🙂\nsecond line'
+        assert json.loads(remote(imports + 'print(json.dumps(clipboard.wait_for_text()))', display)) == 'host Привет🙂\nsecond line'
     print('both displays read text', flush=True)
 
     # A real GTK button writes the system clipboard only after an X11 click.
@@ -77,14 +77,14 @@ try:
 window.set_default_size(240,100)
 window.move(40,40)
 button = Gtk.Button(label='Copy message')
-button.connect('clicked', lambda _button: clipboard.set_text('guest 消息🙂\\nexact text', -1))
+button.connect('clicked', lambda _button: clipboard.set_text('guest Сообщение🙂\\nexact text', -1))
 window.add(button)
 window.show_all()
 """)
     subprocess.check_call(ssh + ['env DISPLAY=:78 xdotool mousemove 160 90 click 1'])
-    expect(lambda event: event.get('text') == 'guest 消息🙂\nexact text')
+    expect(lambda event: event.get('text') == 'guest Сообщение🙂\nexact text')
     print('native button copy received', flush=True)
-    assert json.loads(remote(imports + 'print(json.dumps(clipboard.wait_for_text()))', ':77')) == 'guest 消息🙂\nexact text'
+    assert json.loads(remote(imports + 'print(json.dumps(clipboard.wait_for_text()))', ':77')) == 'guest Сообщение🙂\nexact text'
 
     owner("image = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 12, 9)\nimage.fill(0x2468acff)\nclipboard.set_image(image)", ':77')
     image = expect(lambda event: 'png' in event)
@@ -94,8 +94,8 @@ window.show_all()
     send({'png': image['png']}, 2)
     assert json.loads(remote(imports + "image=clipboard.wait_for_image(); print(json.dumps([image.get_width(),image.get_height()]))", ':77')) == [12, 9]
 
-    paths = [directory + '/中文.bin', directory + '/folder']
-    remote("from pathlib import Path\np=Path('/tmp/cage-clipboard-ui-qa'); (p/'中文.bin').write_bytes(bytes([0,255,128])); (p/'folder').mkdir(exist_ok=True); (p/'folder'/'blank').write_bytes(b'')")
+    paths = [directory + '/Привет.bin', directory + '/folder']
+    remote("from pathlib import Path\np=Path('/tmp/cage-clipboard-ui-qa'); (p/'Привет.bin').write_bytes(bytes([0,255,128])); (p/'folder').mkdir(exist_ok=True); (p/'folder'/'blank').write_bytes(b'')")
     send({'files': paths}, 3)
     print('files acknowledged', flush=True)
     for display in (':77', ':78'):

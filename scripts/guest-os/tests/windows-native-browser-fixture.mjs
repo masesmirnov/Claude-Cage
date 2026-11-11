@@ -7,7 +7,7 @@ import path from "node:path";
 const output = process.argv[2];
 if (!output || !path.isAbsolute(output)) throw new Error("An absolute evidence directory is required.");
 const reports = [];
-const copiedText = "Cage native copy 中文🙂 " + path.basename(output);
+const copiedText = "Cage native copy Привет🙂 " + path.basename(output);
 const html = `<!doctype html><meta charset="utf-8"><title>Cage native browser acceptance</title>
 <style>body{margin:0;background:#eef3f8;color:#17233b;font:18px Arial}header{height:42px;padding:12px;background:#1e4363;color:white}main{padding:20px}textarea,#images{display:block;box-sizing:border-box;width:420px;max-width:90vw;height:90px;margin:12px 0;padding:8px;border:2px solid #345;border-radius:4px;background:white}button{height:42px;margin:0 8px 12px 0}#images{height:100px}#images img{max-height:64px}#drop{height:64px;border:2px dashed #678;width:400px;max-width:90vw}input{margin:10px 0}p{margin:8px}</style>
 <header>Cage Windows native browser acceptance</header><button id="another" style="position:fixed;right:20px;top:18px">Open fixture tab</button><main>
@@ -38,7 +38,7 @@ const server = http.createServer(async (request, response) => {
     catch { response.writeHead(400); response.end(); return; }
     response.end("ok"); return;
   }
-  if (request.url === "/download") { response.setHeader("Content-Disposition", 'attachment; filename="cage-native-fixture.txt"'); response.end("Cage native download 中文🙂"); return; }
+  if (request.url === "/download") { response.setHeader("Content-Disposition", 'attachment; filename="cage-native-fixture.txt"'); response.end("Cage native download Привет🙂"); return; }
   response.setHeader("Content-Type", "text/html; charset=utf-8");
   const rows = request.url === "/perf" ? Array.from({length:60},(_,i)=>`<section style="height:180px;background:hsl(${i*23%360} 45% 85%);padding:20px">Native scroll fixture row ${i}</section>`).join("") : "";
   response.end(rows ? html.replace("</main>", "</main>"+rows) : html);

@@ -32,7 +32,7 @@ func InspectHyperV(ctx context.Context, id uuid.UUID) (HyperVInspection, error) 
 		return report, nil
 	}
 	if actual.VMID != id.String() || actual.Lookup != "found" || actual.VM == nil {
-		return report, errors.New("Windows 系统管理助手返回的虚拟机身份无效")
+		return report, errors.New("The virtual machine identity returned by the Windows system management helper is invalid.")
 	}
 	actual.Inspection = report.Inspection
 	return actual, nil
@@ -54,15 +54,15 @@ func inspectHyperVNative(ctx context.Context, id uuid.UUID) (HyperVInspection, e
 		return report, ctx.Err()
 	}
 	if err != nil {
-		report.LookupDetail = "无法读取该虚拟机的 Hyper-V 配置，请核对当前用户权限与虚拟机状态。"
+		report.LookupDetail = "Could not read the Hyper-V configuration of this virtual machine. Check the current user permissions and the virtual machine state."
 		return report, nil
 	}
 	if err := json.Unmarshal(output, &report.VM); err != nil {
-		return report, errors.New("Hyper-V 返回了无法识别的虚拟机配置")
+		return report, errors.New("Hyper-V returned a virtual machine configuration that could not be recognized.")
 	}
 	if report.VM == nil {
 		report.Lookup = "not-found"
-		report.LookupDetail = "当前用户未查询到此标识的本机 Hyper-V 虚拟机。"
+		report.LookupDetail = "The current user found no local Hyper-V virtual machine with this ID."
 	} else {
 		report.Lookup = "found"
 	}

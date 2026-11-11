@@ -9,6 +9,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/sylvinus/agent-vm/internal/diagnostics"
@@ -99,15 +100,15 @@ func (c *browserClient) request(ctx context.Context, token, method, path string,
 	response, err := c.open(ctx, token, method, path, "application/json", reader, int64(len(body)), timeout)
 	if err != nil {
 		diagnostics.Log("warn", "browser", fmt.Sprintf("operation=%s transport=%v", path, err))
-		return nil, usererror.Wrap(browserOperation(path), err, "请确认环境仍在运行，并重新连接浏览器；持续失败时在设置中导出诊断包。")
+		return nil, usererror.Wrap(browserOperation(path), err, "Make sure the environment is still running and reconnect the browser. If it keeps failing, export a diagnostics bundle in Settings.")
 	}
 	defer response.Body.Close()
 	data, err := io.ReadAll(io.LimitReader(response.Body, browserResponseLimit+1))
 	if err != nil {
-		return nil, usererror.Wrap(browserOperation(path), err, "浏览器结果没有完整返回，请重新连接后核对本次操作是否已生效。")
+		return nil, usererror.Wrap(browserOperation(path), err, "The browser result was not fully returned. Reconnect, then check whether this operation took effect.")
 	}
 	if len(data) > browserResponseLimit {
-		return nil, errors.New(browserOperation(path) + "失败：浏览器返回的数据超过 1 MiB，已停止读取。请关闭不再使用的标签页或扩展后再试；持续出现时导出诊断包。")
+		return nil, errors.New(browserOperation(path) + " failed: the browser returned more than 1 MiB of data and reading was stopped. Close tabs or extensions you no longer use and try again. If it keeps happening, export a diagnostics bundle.")
 	}
 	if response.StatusCode != http.StatusOK {
 		diagnostics.Log("warn", "browser", fmt.Sprintf("operation=%s http=%d", path, response.StatusCode))
@@ -116,27 +117,27 @@ func (c *browserClient) request(ctx context.Context, token, method, path string,
 		}
 		_ = json.Unmarshal(data, &result)
 		known := map[string]string{
-			"Tab no longer exists": "标签页已关闭。请重新打开网页后再操作。",
-			"Browser is starting":  "浏览器仍在启动。请等待启动完成后再操作。",
-			"Input target changed": "接收内容的页面已切换。请回到原页面并重新点击输入框。",
-			"Image target changed": "接收图片的页面已切换。请回到原页面并重新点击输入框。",
-			"Copy target changed":  "要复制内容的页面已切换。请回到原页面重新复制。",
-			"Image too large":      "图片超过允许大小。请缩小图片后重新粘贴。",
-			"Invalid PNG":          "图片不是有效的 PNG 文件。请重新复制或导出图片。",
-			"Only HTTP(S) URLs without credentials are accepted":         "网址中包含账号或密码。请使用不带登录凭据的 http 或 https 网址。",
-			"Only HTTP(S) URLs and supported browser pages are accepted": "不支持这个网址类型。请使用 http 或 https 网址。",
-			"Unknown browser action":                                     "浏览器组件不支持这次操作。请更新环境组件后再试。",
-			"Split controller unavailable":                               "分屏组件没有就绪。请更新环境组件后重新打开分屏。",
-			"Editor authentication is unavailable":                       "编辑器的本地登录会话不可用。请从 Cage 重新打开编辑器。",
-			"文件接收网页已切换，请返回原网页重试":                                         "文件接收网页已切换，请返回原网页重试。",
-			"浏览器组件未能恢复，请重启环境":                                            "浏览器组件未能恢复，请保存工作后重启环境。",
-			"不同浏览会话不能分屏":                                                 "所选页面属于不同浏览会话，无法放在同一个分屏中。请在同一会话中打开两个网页。",
-			"无痕标签暂不支持双网页分屏":                                              "无痕标签暂不支持双网页分屏。请使用普通标签页。",
-			"设置页请在单个浏览器窗格内使用":                                            "设置页请在单个浏览器窗格内使用。请先退出分屏。",
-			"扩展 ZIP 不能超过 32 MB":                                          "扩展 ZIP 不能超过 32 MB。请缩小扩展包后重新导入。",
+			"Tab no longer exists": "the tab was closed. Reopen the page and try again.",
+			"Browser is starting":  "the browser is still starting. Wait for it to finish, then try again.",
+			"Input target changed": "the page receiving the text has changed. Go back to the original page and click the input box again.",
+			"Image target changed": "the page receiving the image has changed. Go back to the original page and click the input box again.",
+			"Copy target changed":  "the page to copy from has changed. Go back to the original page and copy again.",
+			"Image too large":      "the image exceeds the allowed size. Reduce the image and paste it again.",
+			"Invalid PNG":          "the image is not a valid PNG file. Copy or export the image again.",
+			"Only HTTP(S) URLs without credentials are accepted":                           "the URL contains a username or password. Use an http or https URL without sign-in credentials.",
+			"Only HTTP(S) URLs and supported browser pages are accepted":                   "this URL type is not supported. Use an http or https URL.",
+			"Unknown browser action":                                                       "the browser component does not support this operation. Update the environment components and try again.",
+			"Split controller unavailable":                                                 "the split view component is not ready. Update the environment components and reopen split view.",
+			"Editor authentication is unavailable":                                         "the local sign-in session for the editor is unavailable. Reopen the editor from Cage.",
+			"The file upload page has changed. Go back to the original page and try again": "the file upload page has changed. Go back to the original page and try again.",
+			"The browser component could not recover. Restart the environment":             "the browser component could not recover. Save your work and restart the environment.",
+			"Tabs from different browsing sessions cannot be split":                        "the selected pages belong to different browsing sessions and cannot share a split view. Open both pages in the same session.",
+			"Incognito tabs do not support two-page split view yet":                        "incognito tabs do not support two-page split view yet. Use regular tabs.",
+			"Settings pages must be used in a single browser pane":                         "settings pages must be used in a single browser pane. Exit split view first.",
+			"Extension ZIP cannot exceed 32 MB":                                            "the extension ZIP cannot exceed 32 MB. Reduce the extension size and import it again.",
 		}
-		if reason := known[result.Error]; reason != "" {
-			return nil, errors.New(browserOperation(path) + "失败：" + reason)
+		if reason := known[strings.TrimRight(result.Error, ".")]; reason != "" {
+			return nil, errors.New(browserOperation(path) + " failed: " + reason)
 		}
 		return nil, serviceHTTPFailure(browserOperation(path), response.StatusCode)
 	}
@@ -150,7 +151,7 @@ func (c *browserClient) events(ctx context.Context, token string) (io.ReadCloser
 	}
 	if response.StatusCode != http.StatusOK {
 		response.Body.Close()
-		return nil, serviceHTTPFailure("接收浏览器状态", response.StatusCode)
+		return nil, serviceHTTPFailure("Receiving browser state", response.StatusCode)
 	}
 	return response.Body, nil
 }

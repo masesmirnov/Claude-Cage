@@ -159,13 +159,13 @@ static void command_finished(GObject *source, GAsyncResult *result, gpointer dat
     if (g_subprocess_communicate_utf8_finish(G_SUBPROCESS(source), result, &output, NULL, &error)) {
         if (!output || strlen(output) > command->output_limit || !json_parser_load_from_data(parser, output, -1, NULL) ||
             !JSON_NODE_HOLDS_OBJECT(json_parser_get_root(parser))) {
-            g_set_error_literal(&error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA, "Cage 后台未返回有效状态，请查看私有配置中的 logs/。");
+            g_set_error_literal(&error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA, "The Cage backend returned no valid status. See logs/ in the private configuration.");
         } else {
             object = json_node_get_object(json_parser_get_root(parser));
             if (!g_subprocess_get_successful(command->process)) {
                 const char *message = text_member(object, "message");
                 g_set_error_literal(&error, G_IO_ERROR, G_IO_ERROR_FAILED,
-                    *message ? message : "Cage 后台操作失败，请查看 logs/。");
+                    *message ? message : "The Cage backend operation failed. See logs/.");
             }
         }
     }
@@ -267,7 +267,7 @@ static char *choose_file(GtkFileChooserAction kind, const char *title, const cha
     if (app.picker_open) return NULL;
     app.picker_open = TRUE;
     GtkWidget *dialog = gtk_file_chooser_dialog_new(title, GTK_WINDOW(app.window), kind,
-        "取消", GTK_RESPONSE_CANCEL, kind == GTK_FILE_CHOOSER_ACTION_SAVE ? "保存" : "选择", GTK_RESPONSE_ACCEPT, NULL);
+        "Cancel", GTK_RESPONSE_CANCEL, kind == GTK_FILE_CHOOSER_ACTION_SAVE ? "Save" : "Choose", GTK_RESPONSE_ACCEPT, NULL);
     gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), TRUE);
     if (kind == GTK_FILE_CHOOSER_ACTION_SAVE) {
         char *base = g_path_get_basename(filename && *filename ? filename : "Cage.cage-theme.json");
@@ -278,7 +278,7 @@ static char *choose_file(GtkFileChooserAction kind, const char *title, const cha
     if (kind != GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER) {
         GtkFileFilter *filter = gtk_file_filter_new();
         gboolean diagnostic = filename && g_str_has_suffix(filename, ".zip");
-        gtk_file_filter_set_name(filter, diagnostic ? "诊断包 (*.zip)" : "Cage 主题 (*.json)");
+        gtk_file_filter_set_name(filter, diagnostic ? "Diagnostics bundle (*.zip)" : "Cage theme (*.json)");
         gtk_file_filter_add_pattern(filter, diagnostic ? "*.zip" : "*.json");
         gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
     }
@@ -328,14 +328,14 @@ static void browser_file_finished(JsonObject *object, const GError *error, gpoin
 static void clipboard_received(GtkClipboard *clipboard, const gchar *text, gpointer data) {
     (void)clipboard;
     PendingReply *pending = data;
-    if (text && strlen(text) > MAX_MESSAGE) reply_error(pending->reply, "剪贴板内容超过 2 MB。");
+    if (text && strlen(text) > MAX_MESSAGE) reply_error(pending->reply, "The clipboard content exceeds 2 MB.");
     else reply_string(pending->reply, pending->context, text ? text : "");
     pending_free(pending);
 }
 static void clipboard_content_text(GtkClipboard *clipboard, const gchar *text, gpointer data) {
     (void)clipboard;
     PendingReply *pending = data;
-    if (text && strlen(text) > MAX_MESSAGE) reply_error(pending->reply, "剪贴板内容超过 2 MB。");
+    if (text && strlen(text) > MAX_MESSAGE) reply_error(pending->reply, "The clipboard content exceeds 2 MB.");
     else {
         char *quoted = quote(text ? text : "");
         char *json = pending->sync ? g_strdup_printf("{\"text\":%s,\"revision\":%lu}", quoted, (unsigned long)pending->revision) : g_strdup_printf("{\"text\":%s}", quoted);
@@ -354,7 +354,7 @@ static void clipboard_content_image(GtkClipboard *clipboard, GdkPixbuf *image, g
     gsize length = 0;
     if ((gint64)gdk_pixbuf_get_width(image) * gdk_pixbuf_get_height(image) > 40000000 ||
         !gdk_pixbuf_save_to_buffer(image, &buffer, &length, "png", NULL, NULL) || length > 20 * 1024 * 1024) {
-        reply_error(pending->reply, "图片不能超过 20 MB 或 4000 万像素。");
+        reply_error(pending->reply, "Images cannot exceed 20 MB or 40 million pixels.");
     } else {
         char *encoded = g_base64_encode((const guchar *)buffer, length);
         char *json = pending->sync ? g_strdup_printf("{\"png\":\"%s\",\"revision\":%lu}", encoded, (unsigned long)pending->revision) : g_strdup_printf("{\"png\":\"%s\"}", encoded);
@@ -371,18 +371,18 @@ static void file_selection_free(gpointer data) {
 }
 static char *remember_files(GPtrArray *paths, GError **error) {
     if (!paths->len || paths->len > 100) {
-        g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "请选择 1 至 100 个文件。");
+        g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Select 1 to 100 files.");
         return NULL;
     }
     for (guint i = 0; i < paths->len; i++) {
         const char *path = g_ptr_array_index(paths, i);
         GStatBuf info;
         if (!g_path_is_absolute(path) || g_lstat(path, &info) != 0 || !S_ISREG(info.st_mode)) {
-            g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "请选择本机普通文件，暂不支持文件夹或链接。");
+            g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Select regular local files. Folders and links are not supported.");
             return NULL;
         }
         if (info.st_size > 2LL * 1024 * 1024 * 1024) {
-            g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "每个文件不能超过 2 GB。");
+            g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Each file cannot exceed 2 GB.");
             return NULL;
         }
     }
@@ -414,7 +414,7 @@ static void reply_selected_uris(char **uris, PendingReply *pending) {
         char *path = g_filename_from_uri(uris[i], &hostname, NULL);
         if (!path || (hostname && *hostname && strcmp(hostname, "localhost"))) {
             g_free(path); g_free(hostname);
-            g_set_error_literal(&error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "请选择本机文件。");
+            g_set_error_literal(&error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Select local files.");
             break;
         }
         g_free(hostname); g_ptr_array_add(paths, path);
@@ -438,13 +438,13 @@ static void clipboard_gnome_files(GtkClipboard *clipboard, GtkSelectionData *sel
     gint length = gtk_selection_data_get_length(selection);
     if (length <= 0) { gtk_clipboard_request_image(clipboard, clipboard_content_image, data); return; }
     if (length > MAX_MESSAGE) {
-        PendingReply *pending = data; reply_error(pending->reply, "剪贴板文件列表过大。"); pending_free(pending); return;
+        PendingReply *pending = data; reply_error(pending->reply, "The clipboard file list is too large."); pending_free(pending); return;
     }
     char *text = g_strndup((const char *)gtk_selection_data_get_data(selection), length);
     char *start = strchr(text, '\n');
     char **uris = start ? g_uri_list_extract_uris(start + 1) : NULL;
     if (uris && uris[0]) reply_selected_uris(uris, data);
-    else { PendingReply *pending = data; reply_error(pending->reply, "剪贴板文件列表无效，请重新复制文件。"); pending_free(pending); }
+    else { PendingReply *pending = data; reply_error(pending->reply, "The clipboard file list is invalid. Copy the files again."); pending_free(pending); }
     g_strfreev(uris); g_free(text);
 }
 static void clipboard_file_uris(GtkClipboard *clipboard, gchar **uris, gpointer data) {
@@ -575,11 +575,11 @@ static void clipboard_files_received(JsonObject *object, const GError *error, gp
     const char *cache = text_member(object, "cache_id");
     if (pending->generation != clipboard_generation || pending->revision != clipboard_current_revision()) { clipboard_cache_release(cache, pending); return; }
     JsonArray *paths = json_object_get_array_member(object, "paths");
-    if (!paths || !json_array_get_length(paths)) { clipboard_cache_release(cache, NULL); reply_error(pending->reply,"剪贴板文件读取失败。"); pending_free(pending); return; }
+    if (!paths || !json_array_get_length(paths)) { clipboard_cache_release(cache, NULL); reply_error(pending->reply,"Clipboard file read failed."); pending_free(pending); return; }
     GString *text = g_string_new("copy\n"), *uris = g_string_new("");
     for (guint i = 0; i < json_array_get_length(paths); i++) {
         char *uri = g_filename_to_uri(json_array_get_string_element(paths, i), NULL, NULL);
-        if (!uri) { clipboard_cache_release(cache, NULL); g_string_free(text,TRUE); g_string_free(uris,TRUE); reply_error(pending->reply,"剪贴板文件位置无效。"); pending_free(pending); return; }
+        if (!uri) { clipboard_cache_release(cache, NULL); g_string_free(text,TRUE); g_string_free(uris,TRUE); reply_error(pending->reply,"Invalid clipboard file location."); pending_free(pending); return; }
         g_string_append_printf(text,"%s\n",uri); g_string_append_printf(uris,"%s\r\n",uri); g_free(uri);
     }
     /* GTK copies these values into an owned provider, including native file
@@ -587,7 +587,7 @@ static void clipboard_files_received(JsonObject *object, const GError *error, gp
     GtkTargetEntry targets[] = {{"text/uri-list",0,0},{"x-special/gnome-copied-files",0,1}};
     char **payload = g_new0(char *,3); payload[0] = g_string_free(uris,FALSE); payload[1] = g_string_free(text,FALSE);
     if (!gtk_clipboard_set_with_data(gtk_clipboard_get(GDK_SELECTION_CLIPBOARD), targets,2, clipboard_sync_provide,clipboard_sync_clear,payload)) {
-        clipboard_cache_release(cache, NULL); g_strfreev(payload); reply_error(pending->reply,"剪贴板文件写入失败。"); pending_free(pending);
+        clipboard_cache_release(cache, NULL); g_strfreev(payload); reply_error(pending->reply,"Clipboard file write failed."); pending_free(pending);
     } else {
         clipboard_revision++;
         ClipboardCopy *copy = g_hash_table_lookup(clipboard_copies, cache); if (copy) copy->pending = FALSE;
@@ -599,7 +599,7 @@ static void session_refreshed(JsonObject *object, const GError *error, gpointer 
     PendingReply *pending = data;
     const char *url = text_member(object, "url");
     if (error || !valid_workbench(url, 0, TRUE))
-        reply_error(pending->reply, error ? error->message : "工作台会话恢复失败，请重新连接。");
+        reply_error(pending->reply, error ? error->message : "Workbench session restore failed. Reconnect.");
     else {
         char *quoted = quote(url);
         char *json = g_strdup_printf("{\"url\":%s}", quoted);
@@ -710,18 +710,18 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
     JsonParser *parser = json_parser_new();
     if (!json || strlen(json) > 30 * 1024 * 1024 || !json_parser_load_from_data(parser, json, -1, NULL) ||
         !JSON_NODE_HOLDS_OBJECT(json_parser_get_root(parser))) {
-        reply_error(reply, "原生请求格式无效。");
+        reply_error(reply, "Invalid native request format.");
         goto done;
     }
     JsonObject *envelope = json_node_get_object(json_parser_get_root(parser));
     if (!app.token || g_strcmp0(text_member(envelope, "token"), app.token) != 0 ||
         !valid_workbench(webkit_web_view_get_uri(app.web), app.port, FALSE)) {
-        reply_error(reply, "请求来源无效。");
+        reply_error(reply, "Invalid request origin.");
         goto done;
     }
     JsonNode *request_node = json_object_get_member(envelope, "request");
     if (!request_node || !JSON_NODE_HOLDS_OBJECT(request_node)) {
-        reply_error(reply, "原生请求格式无效。");
+        reply_error(reply, "Invalid native request format.");
         goto done;
     }
     JsonObject *request = json_node_get_object(request_node);
@@ -730,9 +730,9 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
     if (!strcmp(name, "remoteInput")) {
         reply_json(reply, context, input_handle(request) ? "true" : "false");
     } else if (!strcmp(name, "exportDiagnostics")) {
-        if (app.picker_open) reply_error(reply, "请先完成当前文件窗口。");
+        if (app.picker_open) reply_error(reply, "Finish the current file window first.");
         else {
-            char *path = choose_file(GTK_FILE_CHOOSER_ACTION_SAVE, "导出诊断包", "cage-diagnostics.zip");
+            char *path = choose_file(GTK_FILE_CHOOSER_ACTION_SAVE, "Export diagnostics bundle", "cage-diagnostics.zip");
             if (!path) reply_json(reply, context, "{\"canceled\":true}");
             else {
                 const char *connection = text_member(request, "connection_id");
@@ -742,7 +742,7 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
             }
         }
     } else if (!strcmp(name, "workbenchReady")) {
-        if (app.needs_update) reply_error(reply, "后台版本尚未同步，更新未完成。");
+        if (app.needs_update) reply_error(reply, "The backend version is not yet in sync; the update is not finished.");
         else {
             app.ready = TRUE;
             reply_json(reply, context, "true");
@@ -753,16 +753,16 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
         }
     } else if (!strcmp(name, "accountDevice")) {
         if (!strcmp(text_member(request, "operation"), "status")) reply_json(reply, context, "{\"supported\":false}");
-        else reply_error(reply, "Linux 版本使用 Cage 账户密码解锁。");
+        else reply_error(reply, "The Linux version unlocks with your Cage account password.");
     } else if (!strcmp(name, "appUpdate")) {
         const char *operation = text_member(request, "operation");
         if (strcmp(operation, "status") && strcmp(operation, "check") && strcmp(operation, "install") && strcmp(operation, "cancel"))
-            reply_error(reply, "更新操作无效。");
+            reply_error(reply, "Invalid update operation.");
         else {
             char *version = quote(CAGE_VERSION);
             const char *update_message = CAGE_CLIENT_ONLY
-                ? "轻量客户端使用独立安装包更新。退出客户端后更换程序；连接配置会保留，云端任务继续运行。"
-                : "Linux 版本使用系统安装包更新。请保存工作、停止环境并退出 Cage，再安装新版 .deb；用户数据会保留。";
+                ? "The lightweight client updates through its own installer. Quit the client and replace the program; connection settings are kept and cloud tasks keep running."
+                : "The Linux version updates through the system package. Save your work, stop the environment, and quit Cage, then install the new .deb; user data is kept.";
             char *message = quote(update_message);
             char *state = g_strdup_printf("{\"phase\":\"manual\",\"currentVersion\":%s,\"message\":%s}", version, message);
             reply_json(reply, context, state);
@@ -770,7 +770,7 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
         }
     } else if (!strcmp(name, "desktopFileAction")) {
         const char *id = text_member(request, "id"), *connection = text_member(request, "connection_id");
-        if (!g_uuid_string_is_valid(id)) reply_error(reply, "文件打开标识无效。");
+        if (!g_uuid_string_is_valid(id)) reply_error(reply, "Invalid file open ID.");
         else {
             const char *args[] = {app.backend,"desktop-file","--json","--connection",*connection ? connection : "local",id,NULL};
             backend_arguments(args,1800,browser_file_finished,pending_reply(reply,context));
@@ -779,15 +779,15 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
         const char *id = text_member(request, "id");
         const char *operation = !strcmp(name, "saveBrowserDownload") ? "save" : text_member(request, "operation");
         if (!g_uuid_string_is_valid(id) || (strcmp(operation,"save") && strcmp(operation,"open") && strcmp(operation,"reveal"))) {
-            reply_error(reply, "下载操作无效。");
+            reply_error(reply, "Invalid download operation.");
         } else if (app.picker_open) {
-            reply_error(reply, "请先完成当前文件窗口。");
+            reply_error(reply, "Finish the current file window first.");
         } else {
             char *path = NULL;
             if (!strcmp(operation,"save")) {
                 app.picker_open = TRUE;
-                GtkWidget *dialog = gtk_file_chooser_dialog_new("将下载另存为到本机", GTK_WINDOW(app.window), GTK_FILE_CHOOSER_ACTION_SAVE,
-                    "取消", GTK_RESPONSE_CANCEL, "保存", GTK_RESPONSE_ACCEPT, NULL);
+                GtkWidget *dialog = gtk_file_chooser_dialog_new("Save download to this computer", GTK_WINDOW(app.window), GTK_FILE_CHOOSER_ACTION_SAVE,
+                    "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL);
                 char *base = g_path_get_basename(text_member(request,"name"));
                 gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), *base ? base : "download");
                 gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
@@ -805,9 +805,9 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
     } else if (!strcmp(name, "shareLocalProject")) {
         const char *connection = text_member(request, "connection_id"), *mode = text_member(request, "mode");
         if (app.picker_open || !*connection || (strcmp(mode,"read") && strcmp(mode,"write"))) {
-            reply_error(reply, "请在云端工作台重新选择项目。");
+            reply_error(reply, "Select the project again in the cloud workbench.");
         } else {
-            const char *prompt = !strcmp(mode,"write") ? "云端 Cage 可以读取、修改和删除所选项目中的文件。" : "云端 Cage 可以读取所选项目中的文件。";
+            const char *prompt = !strcmp(mode,"write") ? "Cloud Cage can read, modify, and delete files in the selected project." : "Cloud Cage can read files in the selected project.";
             char *path = choose_file(GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, prompt, NULL);
             if (path) {
                 const char *args[] = {app.backend,"share-project","--json","--connection",connection,mode,path,NULL};
@@ -816,10 +816,10 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
             g_free(path);
         }
     } else if (!strcmp(name, "chooseFolder")) {
-        if (app.picker_open) reply_error(reply, "请先完成当前文件选择。");
+        if (app.picker_open) reply_error(reply, "Finish the current file selection first.");
         else {
             const char *prompt = !strcmp(text_member(request, "purpose"), "environmentStorage")
-                ? "请选择用于保存镜像和虚拟磁盘的空文件夹。" : "仅此文件夹会与 Cage 共享。请选择具体项目。";
+                ? "Choose an empty folder to store images and virtual disks." : "Only this folder will be shared with Cage. Choose a specific project.";
             char *path = choose_file(GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, prompt, NULL);
             reply_string(reply, context, path ? path : "");
             g_free(path);
@@ -832,7 +832,7 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
         clipboard_generation++; reply_json(reply,context,"true");
     } else if (!strcmp(name, "clipboardSyncRelease")) {
         const char *id = text_member(request, "files");
-        if (!g_uuid_string_is_valid(id)) reply_error(reply, "剪贴板文件标识无效。");
+        if (!g_uuid_string_is_valid(id)) reply_error(reply, "Invalid clipboard file ID.");
         else {
             const char *args[] = {app.backend, "clipboard-files", "--json", "--connection", text_member(request, "connection_id"), "release", id, NULL};
             backend_arguments(args, 10, browser_file_finished, pending_reply(reply, context));
@@ -845,28 +845,28 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
         if (pending->revision != clipboard_current_revision()) clipboard_sync_reply(pending,TRUE);
         else if (*text_member(request,"files")) {
             const char *id = text_member(request,"files");
-            if (!g_uuid_string_is_valid(id)) { reply_error(reply,"剪贴板文件标识无效。"); pending_free(pending); }
+            if (!g_uuid_string_is_valid(id)) { reply_error(reply,"Invalid clipboard file ID."); pending_free(pending); }
             else { const char *args[] = {app.backend,"clipboard-files","--json","--connection",text_member(request,"connection_id"),"receive",id,NULL}; backend_arguments(args,1800,clipboard_files_received,pending); }
         } else if (*text_member(request,"png")) {
             gsize length = 0; guchar *bytes = g_base64_decode(text_member(request,"png"),&length);
             GdkPixbufLoader *loader = gdk_pixbuf_loader_new_with_type("png",NULL);
             gboolean valid = loader && length <= 20 * 1024 * 1024 && gdk_pixbuf_loader_write(loader,bytes,length,NULL) && gdk_pixbuf_loader_close(loader,NULL);
             GdkPixbuf *image = valid ? gdk_pixbuf_loader_get_pixbuf(loader) : NULL;
-            if (!image || (gint64)gdk_pixbuf_get_width(image) * gdk_pixbuf_get_height(image) > 40000000) { reply_error(reply,"剪贴板图片格式或大小无效。"); pending_free(pending); }
+            if (!image || (gint64)gdk_pixbuf_get_width(image) * gdk_pixbuf_get_height(image) > 40000000) { reply_error(reply,"Invalid clipboard image format or size."); pending_free(pending); }
             else { gtk_clipboard_set_image(gtk_clipboard_get(GDK_SELECTION_CLIPBOARD),image); clipboard_revision++; clipboard_sync_reply(pending,FALSE); }
             if (loader) g_object_unref(loader);
             g_free(bytes);
         } else if (json_object_has_member(request,"text") && strlen(text_member(request,"text")) <= MAX_MESSAGE) {
             gtk_clipboard_set_text(gtk_clipboard_get(GDK_SELECTION_CLIPBOARD),text_member(request,"text"),-1); clipboard_revision++; clipboard_sync_reply(pending,FALSE);
-        } else { reply_error(reply,"剪贴板内容格式或大小无效。"); pending_free(pending); }
+        } else { reply_error(reply,"Invalid clipboard content format or size."); pending_free(pending); }
     } else if (!strcmp(name, "clipboardReadContent")) {
         gtk_clipboard_request_uris(gtk_clipboard_get(GDK_SELECTION_CLIPBOARD), clipboard_file_uris, pending_reply(reply, context));
     } else if (!strcmp(name, "chooseUploadFiles")) {
-        if (app.picker_open) reply_error(reply, "请先完成当前文件窗口。");
+        if (app.picker_open) reply_error(reply, "Finish the current file window first.");
         else {
             app.picker_open = TRUE;
-            GtkWidget *dialog = gtk_file_chooser_dialog_new("选择本机文件", GTK_WINDOW(app.window), GTK_FILE_CHOOSER_ACTION_OPEN,
-                "取消", GTK_RESPONSE_CANCEL, "选择", GTK_RESPONSE_ACCEPT, NULL);
+            GtkWidget *dialog = gtk_file_chooser_dialog_new("Choose local files", GTK_WINDOW(app.window), GTK_FILE_CHOOSER_ACTION_OPEN,
+                "Cancel", GTK_RESPONSE_CANCEL, "Choose", GTK_RESPONSE_ACCEPT, NULL);
             JsonNode *multiple = json_object_get_member(request, "multiple");
             gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), multiple && JSON_NODE_HOLDS_VALUE(multiple) && json_node_get_value_type(multiple) == G_TYPE_BOOLEAN && json_node_get_boolean(multiple));
             gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), TRUE);
@@ -884,10 +884,10 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
     } else if (!strcmp(name, "uploadHostFiles")) {
         const char *target = text_member(request, "target"), *id = text_member(request, "id"), *token = text_member(request, "selection");
         FileSelection *selected = file_selections ? g_hash_table_lookup(file_selections, token) : NULL;
-        if (!(strcmp(target, "terminal") == 0 ? g_regex_match_simple("^[a-f0-9]{16}$", id, 0, 0) : g_uuid_string_is_valid(id)) || (strcmp(target, "browser") && strcmp(target, "desktop") && strcmp(target, "terminal"))) reply_error(reply, "文件上传目标无效。");
+        if (!(strcmp(target, "terminal") == 0 ? g_regex_match_simple("^[a-f0-9]{16}$", id, 0, 0) : g_uuid_string_is_valid(id)) || (strcmp(target, "browser") && strcmp(target, "desktop") && strcmp(target, "terminal"))) reply_error(reply, "Invalid file upload target.");
         else if (!selected || selected->expires <= g_get_monotonic_time()) {
             if (file_selections) g_hash_table_remove(file_selections, token);
-            reply_error(reply, "文件选择已过期，请重新复制或选择文件。");
+            reply_error(reply, "The file selection has expired. Copy or select the files again.");
         } else {
             GPtrArray *paths = g_ptr_array_ref(selected->paths);
             g_hash_table_remove(file_selections, token);
@@ -911,7 +911,7 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
         gboolean valid = (!strcmp(mode, "light") || !strcmp(mode, "dark") || !strcmp(mode, "system")) &&
             strlen(background) == 7 && background[0] == '#' && strspn(background + 1, "0123456789abcdefABCDEF") == 6 &&
             gdk_rgba_parse(&color, background);
-        if (!valid) reply_error(reply, "外观参数无效。");
+        if (!valid) reply_error(reply, "Invalid appearance settings.");
         else {
             g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme",
                 !strcmp(mode, "system") ? app.initial_dark : !strcmp(mode, "dark"), NULL);
@@ -919,9 +919,9 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
             reply_json(reply, context, "true");
         }
     } else if (!strcmp(name, "importTheme")) {
-        if (app.picker_open) reply_error(reply, "请先完成当前文件选择。");
+        if (app.picker_open) reply_error(reply, "Finish the current file selection first.");
         else {
-            char *path = choose_file(GTK_FILE_CHOOSER_ACTION_OPEN, "导入主题", NULL);
+            char *path = choose_file(GTK_FILE_CHOOSER_ACTION_OPEN, "Import theme", NULL);
             if (!path) reply_string(reply, context, "");
             else {
                 /* Only read a regular local file, with a hard allocation bound. */
@@ -936,7 +936,7 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
                 if (ok && length <= MAX_THEME && g_utf8_validate(contents, length, NULL) && !memchr(contents, 0, length)) {
                     contents[length] = 0;
                     reply_string(reply, context, contents);
-                } else reply_error(reply, "请选择不超过 256 KB 的 UTF-8 JSON 主题文件。");
+                } else reply_error(reply, "Select a UTF-8 JSON theme file of 256 KB or smaller.");
                 g_clear_object(&stream); g_clear_object(&info); g_object_unref(file); g_free(contents);
             }
             g_free(path);
@@ -950,13 +950,13 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
         JsonNode *version = theme ? json_object_get_member(theme, "version") : NULL;
         valid = theme && !strcmp(text_member(theme, "format"), "cage-theme") && version &&
             JSON_NODE_HOLDS_VALUE(version) && json_node_get_value_type(version) == G_TYPE_INT64 && json_node_get_int(version) == 1;
-        if (!valid) reply_error(reply, "主题文件格式无效。");
-        else if (app.picker_open) reply_error(reply, "请先完成当前文件选择。");
+        if (!valid) reply_error(reply, "Invalid theme file format.");
+        else if (app.picker_open) reply_error(reply, "Finish the current file selection first.");
         else {
-            char *path = choose_file(GTK_FILE_CHOOSER_ACTION_SAVE, "导出主题", text_member(request, "filename"));
+            char *path = choose_file(GTK_FILE_CHOOSER_ACTION_SAVE, "Export theme", text_member(request, "filename"));
             if (!path) reply_json(reply, context, "false");
             else if (g_file_set_contents(path, contents, -1, NULL)) reply_json(reply, context, "true");
-            else reply_error(reply, "主题未能导出，请检查保存位置的权限。");
+            else reply_error(reply, "The theme could not be exported. Check the permissions of the save location.");
             g_free(path);
         }
         g_object_unref(theme_parser);
@@ -966,7 +966,7 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
         reply_json(reply, context, "true"); bootstrap(NULL);
     } else if (!strcmp(name, "quitNow")) {
         reply_json(reply, context, "true"); g_idle_add(quit_idle, NULL);
-    } else reply_error(reply, "未知原生操作。");
+    } else reply_error(reply, "Unknown native operation.");
 done:
     g_free(json); g_object_unref(parser);
     return TRUE;
@@ -1004,14 +1004,9 @@ static void bootstrapped(JsonObject *object, const GError *error, gpointer data)
     gtk_widget_set_sensitive(app.retry, TRUE);
     if (error) {
         diagnostic_event(error->message);
-        gboolean chinese = FALSE;
-        for (const char *p = error->message; *p; p = g_utf8_next_char(p)) {
-            gunichar value = g_utf8_get_char(p);
-            if (value >= 0x4E00 && value <= 0x9FFF) { chinese = TRUE; break; }
-        }
-        if (chinese) show_error(error->message);
+        if (g_unichar_isupper(g_utf8_get_char(error->message))) show_error(error->message);
         else {
-            char *message = g_strdup_printf("启动工作台失败：本机后台未返回可识别的原因（错误码 %d）。请点击“重试连接”；仍失败时请保留此提示并反馈给维护者。", error->code);
+            char *message = g_strdup_printf("Starting the workbench failed: the local backend returned no recognizable reason (error code %d). Click \"Retry connection\". If it still fails, keep this message and report it to the maintainers.", error->code);
             show_error(message); g_free(message);
         }
         return;
@@ -1025,20 +1020,20 @@ static void bootstrapped(JsonObject *object, const GError *error, gpointer data)
     }
     const char *url = text_member(object, "url");
     if ((strcmp(status, "ready") && strcmp(status, "existing")) || !valid_workbench(url, 0, TRUE)) {
-        show_error("后台返回了无效的工作台入口。"); return;
+        show_error("The backend returned an invalid workbench entry."); return;
     }
     GUri *uri = g_uri_parse(url, G_URI_FLAGS_NONE, NULL);
     app.port = g_uri_get_port(uri);
     g_uri_unref(uri);
     app.ready = FALSE;
     install_bridge();
-    gtk_window_set_title(GTK_WINDOW(app.window), app.needs_update ? "Cage（更新待完成）" : "Cage");
+    gtk_window_set_title(GTK_WINDOW(app.window), app.needs_update ? "Cage (update pending)" : "Cage");
     webkit_web_view_load_uri(app.web, url);
 }
 static void bootstrap(const char *option) {
     if (app.bootstrapping) return;
     app.bootstrapping = TRUE;
-    gtk_label_set_text(GTK_LABEL(app.status), "正在连接 Cage 工作台…");
+    gtk_label_set_text(GTK_LABEL(app.status), "Connecting to the Cage workbench…");
     gtk_stack_set_visible_child_name(GTK_STACK(app.stack), "status");
     gtk_widget_hide(app.retry); gtk_widget_hide(app.existing); gtk_widget_hide(app.complete);
     backend("desktop", option, bootstrapped, NULL);
@@ -1048,7 +1043,7 @@ static void existing_clicked(GtkButton *button, gpointer data) { (void)button; (
 static void complete_clicked(GtkButton *button, gpointer data) {
     (void)button; (void)data;
     GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(app.window), GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
-        "请先保存文件。继续后将停止 Cage 环境并完成后台更新，终端任务会结束，项目和登录状态会保留。");
+        "Save your files first. Continuing stops the Cage environment and finishes the backend update; terminal tasks end, and project files and sign-in state are kept.");
     gboolean accepted = gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK;
     gtk_widget_destroy(dialog);
     if (accepted) bootstrap("--complete-update");
@@ -1092,14 +1087,14 @@ static gboolean load_failed(WebKitWebView *web, WebKitLoadEvent event, const cha
     (void)web; (void)event; (void)uri; (void)data;
     app.navigation_failed = TRUE;
     if (error) diagnostic_event(error->message);
-    char *message = g_strdup_printf("打开工作台失败：内置网页组件未能加载本机后台（错误码 %d）。请点击“重试连接”；仍失败时请保留此错误提示并反馈给维护者。后台任务不会因此自动结束。", error ? error->code : 0);
+    char *message = g_strdup_printf("Opening the workbench failed: the built-in web component could not load the local backend (error code %d). Click \"Retry connection\". If it still fails, keep this message and report it to the maintainers. Background tasks are not stopped automatically.", error ? error->code : 0);
     show_error(message);
     g_free(message);
     return TRUE;
 }
 static void process_terminated(WebKitWebView *web, WebKitWebProcessTerminationReason reason, gpointer data) {
     (void)web; (void)reason; (void)data;
-    show_error("工作台显示进程已退出。后台任务保留，可重试连接。");
+    show_error("The workbench display process has exited. Background tasks are kept; you can retry the connection.");
 }
 static void menu_action(GSimpleAction *simple, GVariant *parameter, gpointer data) {
     (void)parameter; (void)data;
@@ -1110,11 +1105,11 @@ static void menu_action(GSimpleAction *simple, GVariant *parameter, gpointer dat
         else g_application_quit(G_APPLICATION(app.application));
     } else if (!strcmp(name, "updates")) {
         GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(app.window), GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
-            "Linux 版本通过安装包更新。请保存文件、停止环境并退出 Cage，再安装已核对摘要的官方新版本。");
+            "The Linux version updates through its package. Save your files, stop the environment, and quit Cage, then install the official new version after checking its digest.");
         gtk_dialog_run(GTK_DIALOG(dialog)); gtk_widget_destroy(dialog);
     } else if (!strcmp(name, "about")) {
         gtk_show_about_dialog(GTK_WINDOW(app.window), "program-name", "Cage", "version", CAGE_VERSION,
-            "comments", "本机隔离编码工作区", "license-type", GTK_LICENSE_MIT_X11, NULL);
+            "comments", "Isolated local coding workspace", "license-type", GTK_LICENSE_MIT_X11, NULL);
     } else action(name);
 }
 static void add_menu_action(GMenu *menu, const char *name, const char *label, const char *accelerator) {
@@ -1145,18 +1140,18 @@ static void create_window(void) {
     gtk_container_add(GTK_CONTAINER(app.window), layout);
     GMenu *menu = g_menu_new(), *file = g_menu_new(), *settings = g_menu_new(), *help = g_menu_new();
     /* Workbench shortcuts stay in JavaScript so terminal/browser focus rules apply. */
-    add_menu_action(file, "openProject", "打开项目…", NULL);
-    add_menu_action(file, "newTab", "新建网页", NULL);
-    add_menu_action(file, "newTerminal", "新建终端", NULL);
-    add_menu_action(file, "closeTab", "关闭当前标签", NULL);
-    add_menu_action(file, "closeWindow", "关闭窗口（保留环境）", NULL);
-    add_menu_action(file, "quit", "退出 Cage…", "<Primary>q");
-    add_menu_action(settings, "settings", "打开设置", NULL);
-    add_menu_action(settings, "updates", "应用更新…", NULL);
-    add_menu_action(help, "about", "关于 Cage", NULL);
-    g_menu_append_submenu(menu, "文件", G_MENU_MODEL(file));
-    g_menu_append_submenu(menu, "设置", G_MENU_MODEL(settings));
-    g_menu_append_submenu(menu, "帮助", G_MENU_MODEL(help));
+    add_menu_action(file, "openProject", "Open project…", NULL);
+    add_menu_action(file, "newTab", "New web page", NULL);
+    add_menu_action(file, "newTerminal", "New terminal", NULL);
+    add_menu_action(file, "closeTab", "Close current tab", NULL);
+    add_menu_action(file, "closeWindow", "Close window (keep environment)", NULL);
+    add_menu_action(file, "quit", "Quit Cage…", "<Primary>q");
+    add_menu_action(settings, "settings", "Open settings", NULL);
+    add_menu_action(settings, "updates", "App updates…", NULL);
+    add_menu_action(help, "about", "About Cage", NULL);
+    g_menu_append_submenu(menu, "File", G_MENU_MODEL(file));
+    g_menu_append_submenu(menu, "Settings", G_MENU_MODEL(settings));
+    g_menu_append_submenu(menu, "Help", G_MENU_MODEL(help));
     gtk_box_pack_start(GTK_BOX(layout), gtk_menu_bar_new_from_model(G_MENU_MODEL(menu)), FALSE, FALSE, 0);
     g_object_unref(menu); g_object_unref(file); g_object_unref(settings); g_object_unref(help);
     app.stack = gtk_stack_new();
@@ -1164,13 +1159,13 @@ static void create_window(void) {
     GtkWidget *status_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 16);
     gtk_widget_set_margin_start(status_box, 48); gtk_widget_set_margin_end(status_box, 48);
     gtk_widget_set_margin_top(status_box, 48); gtk_widget_set_valign(status_box, GTK_ALIGN_START);
-    app.status = gtk_label_new("正在启动 Cage 工作台…");
+    app.status = gtk_label_new("Starting the Cage workbench…");
     gtk_label_set_line_wrap(GTK_LABEL(app.status), TRUE);
     gtk_label_set_xalign(GTK_LABEL(app.status), 0);
     gtk_box_pack_start(GTK_BOX(status_box), app.status, FALSE, FALSE, 0);
-    app.retry = gtk_button_new_with_label("重试连接");
-    app.existing = gtk_button_new_with_label("打开现有环境保存文件");
-    app.complete = gtk_button_new_with_label("保存后停止环境并完成更新");
+    app.retry = gtk_button_new_with_label("Retry connection");
+    app.existing = gtk_button_new_with_label("Open saved environment files");
+    app.complete = gtk_button_new_with_label("Save, stop environment, and update");
     GtkWidget *buttons[] = {app.retry, app.existing, app.complete};
     for (guint i = 0; i < G_N_ELEMENTS(buttons); i++) {
         gtk_widget_set_halign(buttons[i], GTK_ALIGN_START);
@@ -1272,13 +1267,13 @@ int main(int argc, char **argv) {
         g_printerr("Usage: cage-desktop [--version | --self-test | --smoke-test /absolute/report.json]\nSmoke tests require an isolated CLAUDE_CAGE_CONFIG with an unlocked test account.\n");
         return 2;
     }
-    if (geteuid() == 0) { g_printerr("Cage 桌面需要以普通用户运行，请勿使用 sudo 启动。\n"); return 1; }
+    if (geteuid() == 0) { g_printerr("Cage Desktop must run as a regular user. Do not start it with sudo.\n"); return 1; }
     char *executable = g_file_read_link("/proc/self/exe", NULL);
-    if (!executable) { g_printerr("无法定位 Cage 安装目录。\n"); return 1; }
+    if (!executable) { g_printerr("Could not locate the Cage installation directory.\n"); return 1; }
     char *directory = g_path_get_dirname(executable);
     app.backend = g_build_filename(directory, "cage", NULL);
     g_free(directory); g_free(executable);
-    if (!g_file_test(app.backend, G_FILE_TEST_IS_EXECUTABLE)) { g_printerr("安装目录缺少 Cage 后台，请重新安装。\n"); return 1; }
+    if (!g_file_test(app.backend, G_FILE_TEST_IS_EXECUTABLE)) { g_printerr("The installation directory is missing the Cage backend. Reinstall Cage.\n"); return 1; }
     const char *configured = g_getenv("CLAUDE_CAGE_CONFIG");
     app.profile = configured && *configured ? g_canonicalize_filename(configured, NULL)
         : CAGE_CLIENT_ONLY ? g_build_filename(g_get_home_dir(), ".claude-cage", "client", "config.json", NULL)
@@ -1286,7 +1281,7 @@ int main(int argc, char **argv) {
     g_setenv("CLAUDE_CAGE_CONFIG", app.profile, TRUE);
     g_log_set_default_handler(diagnostic_glib, NULL);
     if (!prepare_web_storage()) {
-        g_printerr("无法创建 Cage 私有界面数据目录，请检查配置目录的所有者、权限或符号链接。\n");
+        g_printerr("Could not create the private Cage UI data directory. Check the owner, permissions, or symlinks of the configuration directory.\n");
         return 1;
     }
     char *hash = g_compute_checksum_for_string(G_CHECKSUM_SHA256, app.profile, -1);

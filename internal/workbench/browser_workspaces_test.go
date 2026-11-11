@@ -22,21 +22,21 @@ func windowsBrowserWorkspaceServer(t *testing.T) *Server {
 	t.Cleanup(func() { paths.Windows = previous })
 	s := testServer(t)
 	s.ready = true
-	s.preferences.Workspace = `C:\Users\甲 用户\项目 一`
+	s.preferences.Workspace = "C:\\Users\\ก ขฃ\\คฅ ฆ"
 	s.credentials.Token = "private-test-token"
 	return s
 }
 
 func TestBrowserEditorWorkspaceRESTUsesAuthorizedWindowsProjects(t *testing.T) {
 	s := windowsBrowserWorkspaceServer(t)
-	second := `D:\跨盘 项目\two`
+	second := "D:\\งจ คฅ\\two"
 	if err := writePrivate(filepath.Join(s.profile, "projects.json"), sharedProjects{Paths: []string{second}}); err != nil {
 		t.Fatal(err)
 	}
 	snapshot := `{"active":"first","back":true,"forward":false,"downloads":[{"id":"download","url":"https://example.test/a"}],"tabs":[` +
-		`{"id":"first","kind":"editor","workspace":"/c/Users/甲 用户/项目 一","url":"http://127.0.0.1:18080/?folder=%2Fc%2FUsers%2F甲%20用户%2F项目%20一"},` +
-		`{"id":"second","kind":"editor","workspace":"/d/跨盘 项目/two","url":"http://127.0.0.1:18080/?folder=%2Fd%2F跨盘%20项目%2Ftwo"},` +
-		`{"id":"web","kind":"web","favicon":"data:image/png;base64,aWNvbg==","workspace":"/c/Users/甲 用户/项目 一","url":"https://example.test/"},` +
+		`{"id":"first","kind":"editor","workspace":"/c/Users/ก ขฃ/คฅ ฆ","url":"http://127.0.0.1:18080/?folder=%2Fc%2FUsers%2Fก%20ขฃ%2Fคฅ%20ฆ"},` +
+		`{"id":"second","kind":"editor","workspace":"/d/งจ คฅ/two","url":"http://127.0.0.1:18080/?folder=%2Fd%2Fงจ%20คฅ%2Ftwo"},` +
+		`{"id":"web","kind":"web","favicon":"data:image/png;base64,aWNvbg==","workspace":"/c/Users/ก ขฃ/คฅ ฆ","url":"https://example.test/"},` +
 		`{"id":"unshared","kind":"editor","workspace":"/e/private","url":"http://127.0.0.1:18080/?folder=%2Fe%2Fprivate"}]}`
 	s.browserControl = browserClientForTest(t, s, browserTransport(func(r *http.Request) (*http.Response, error) {
 		if r.Method != "GET" || r.URL.Path != "/tabs" || r.Header.Get("Authorization") != "Bearer private-test-token" {
@@ -79,7 +79,7 @@ func TestBrowserEditorWorkspaceRESTUsesAuthorizedWindowsProjects(t *testing.T) {
 	if !reflect.DeepEqual(event, got) {
 		t.Fatal("SSE and REST expose different editor workspaces")
 	}
-	copyFrame := "event: clipboard\ndata: {\"id\":\"web\",\"text\":\"复制🙂\\n第二行\",\"context\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}\n\n"
+	copyFrame := "event: clipboard\ndata: {\"id\":\"web\",\"text\":\"ฉช🙂\\nซฌญ\",\"context\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}\n\n"
 	stream = httptest.NewRecorder()
 	if err := s.writeBrowserEvents(context.Background(), stream, strings.NewReader(copyFrame+"data: "+snapshot+"\n\n")); err != nil {
 		t.Fatal(err)
@@ -111,8 +111,8 @@ func (r *browserGrantReader) Read(p []byte) (int, error) {
 
 func TestBrowserEditorWorkspaceSSESeesProjectsAddedAfterConnection(t *testing.T) {
 	s := windowsBrowserWorkspaceServer(t)
-	second := `D:\跨盘 项目\two`
-	payload := `{"tabs":[{"kind":"editor","workspace":"/d/跨盘 项目/two","url":"http://127.0.0.1:18080/?folder=%2Fd%2F跨盘%20项目%2Ftwo"}]}`
+	second := "D:\\งจ คฅ\\two"
+	payload := `{"tabs":[{"kind":"editor","workspace":"/d/งจ คฅ/two","url":"http://127.0.0.1:18080/?folder=%2Fd%2Fงจ%20คฅ%2Ftwo"}]}`
 	frame := "data: " + payload + "\n\n"
 	reader := &browserGrantReader{reader: strings.NewReader(frame), next: func() io.Reader {
 		if err := writePrivate(filepath.Join(s.profile, "projects.json"), sharedProjects{Paths: []string{second}}); err != nil {
@@ -136,7 +136,7 @@ func TestBrowserEditorWorkspaceSSESeesProjectsAddedAfterConnection(t *testing.T)
 		}
 		workspaces = append(workspaces, state.Tabs[0].Workspace)
 	}
-	if !reflect.DeepEqual(workspaces, []string{"/d/跨盘 项目/two", second}) {
+	if !reflect.DeepEqual(workspaces, []string{"/d/งจ คฅ/two", second}) {
 		t.Fatalf("SSE cached or guessed project grants: %#v", workspaces)
 	}
 }

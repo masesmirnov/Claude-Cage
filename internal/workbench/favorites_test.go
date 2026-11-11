@@ -26,23 +26,23 @@ func TestFavoritesPersistenceAndFolders(t *testing.T) {
 		}
 		return f
 	}
-	f := post(`{"action":"save_folder","title":"开发"}`)
+	f := post(`{"action":"save_folder","title":"Dev"}`)
 	folder := f.Folders[0].ID
-	f = post(fmt.Sprintf(`{"action":"save","title":"文档","url":"https://example.com/docs","folder_id":%q}`, folder))
+	f = post(fmt.Sprintf(`{"action":"save","title":"Docs","url":"https://example.com/docs","folder_id":%q}`, folder))
 	id := f.Items[0].ID
-	f = post(`{"action":"save","title":"文档新版","url":"https://example.com/docs"}`)
-	if len(f.Items) != 1 || f.Items[0].ID != id || f.Items[0].Title != "文档新版" {
+	f = post(`{"action":"save","title":"Docs v2","url":"https://example.com/docs"}`)
+	if len(f.Items) != 1 || f.Items[0].ID != id || f.Items[0].Title != "Docs v2" {
 		t.Fatal("repeated save duplicated a favorite")
 	}
-	f = post(fmt.Sprintf(`{"action":"save","id":%q,"title":"已移动","url":"https://example.com/new","folder_id":%q}`, id, folder))
+	f = post(fmt.Sprintf(`{"action":"save","id":%q,"title":"Moved","url":"https://example.com/new","folder_id":%q}`, id, folder))
 	if f.Items[0].FolderID != folder {
 		t.Fatal("move failed")
 	}
-	post(fmt.Sprintf(`{"action":"save_folder","id":%q,"title":"工作"}`, folder))
+	post(fmt.Sprintf(`{"action":"save_folder","id":%q,"title":"Work"}`, folder))
 	// A new server instance reads the saved file without an active VM.
 	reopened := &Server{profile: s.profile}
 	f, err := reopened.readFavorites()
-	if err != nil || f.Folders[0].Title != "工作" || f.Items[0].URL != "https://example.com/new" {
+	if err != nil || f.Folders[0].Title != "Work" || f.Items[0].URL != "https://example.com/new" {
 		t.Fatalf("persistence: %+v %v", f, err)
 	}
 	if host.CheckPrivateFile(filepath.Join(s.profile, "favorites.json")) != nil {

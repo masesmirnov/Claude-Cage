@@ -27,7 +27,7 @@ func LoadEnvironmentRecord(profile string) (EnvironmentRecord, error) {
 	}
 	if json.Unmarshal(data, &saved) != nil || !filepath.IsAbs(saved.Directory) ||
 		saved.IdentityDirectory != "" && !filepath.IsAbs(saved.IdentityDirectory) {
-		return saved, errors.New("环境工作目录记录无效，请保留原配置并导出诊断记录")
+		return saved, errors.New("The environment working directory record is invalid. Keep the original configuration and export a diagnostics bundle.")
 	}
 	return saved, nil
 }

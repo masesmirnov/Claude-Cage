@@ -33,7 +33,7 @@ export function DesktopToolbar({ desktop, platform, zoom, setZoom, onConfirm, on
         {sidebarCollapsed && (
           <button
             className="icon-button"
-            aria-label="展开侧栏"
+            aria-label="Expand sidebar"
             onClick={onExpand}
           >
             <PanelLeftOpen size={17} />
@@ -48,13 +48,13 @@ export function DesktopToolbar({ desktop, platform, zoom, setZoom, onConfirm, on
         {children}
         {desktop?.running && (
           <label className="desktop-display-size">
-            显示大小
-            <InlineSelect aria-label="Desktop 显示大小" value={zoom} onValueChange={(next) => {
+            Display size
+            <InlineSelect aria-label="Desktop display size" value={zoom} onValueChange={(next) => {
               const value = Number(next);
               setZoom(value);
               try { localStorage.setItem("cage-desktop-zoom", String(value)); } catch { /* Session-only preference. */ }
             }}>
-              {desktopZooms.map((value) => <option key={value} value={value}>{Math.round(value * 100)}%{value === 1 ? "（默认）" : ""}</option>)}
+              {desktopZooms.map((value) => <option key={value} value={value}>{Math.round(value * 100)}%{value === 1 ? " (default)" : ""}</option>)}
             </InlineSelect>
           </label>
         )}
@@ -65,21 +65,21 @@ export function DesktopToolbar({ desktop, platform, zoom, setZoom, onConfirm, on
             onClick={async () => {
               if (
                 await onConfirm({
-                  title: "关闭 Claude Desktop？",
-                  body: "请先保存应用内的工作。浏览器和 Cage 终端会继续运行。",
-                  confirm: "关闭应用",
+                  title: "Close Claude Desktop?",
+                  body: "Save your work in the app first. The browser and Cage terminals keep running.",
+                  confirm: "Close app",
                 })
               )
                 onStop();
             }}
           >
             <Power size={15} />
-            关闭应用
+            Close app
           </button>
         )}
         <button
           className="icon-button"
-          aria-label="刷新 Claude Desktop 状态"
+          aria-label="Refresh Claude Desktop status"
           disabled={busy}
           onClick={refresh}
         >
@@ -199,18 +199,18 @@ export function ClaudeDesktop({
       {(error || statusError || desktop?.failed) && (
         <div className="connection-banner" role="alert">
           <SafetyMessage message={error || statusError || (desktop?.failure_reason === "oom-kill"
-            ? "环境内存不足，Claude Desktop 已被系统关闭。请在设置中检查计算资源后重新打开。"
-            : "Claude Desktop 未能启动，可重试打开或修复安装。")} />
-          <button onClick={onDetails}>操作详情</button>
+            ? "The environment ran out of memory and the system closed Claude Desktop. Check compute resources in Settings, then reopen it."
+            : "Claude Desktop failed to start. Retry opening it or repair the installation.")} />
+          <button onClick={onDetails}>Operation details</button>
         </div>
       )}
-      {desktop?.running && desktop.managed === false && !desktop.native_user_session && <div className="connection-banner" role="status">当前应用尚未接入 Cage 账户解锁。请先保存并关闭应用，再重新打开。</div>}
+      {desktop?.running && desktop.managed === false && !desktop.native_user_session && <div className="connection-banner" role="status">The current app is not yet connected to Cage account unlock. Save and close the app, then reopen it.</div>}
       {busy && ownJob && (
         <div className="desktop-progress" role="status">
           <RefreshCw size={16} className="spin" />
           {status.job.message}
           <button className="text-button" onClick={onDetails}>
-            查看进度
+            View progress
           </button>
         </div>
       )}
@@ -232,15 +232,15 @@ export function ClaudeDesktop({
             <h2>
               {desktop?.installed
                 ? "Claude Desktop"
-                : "在 Cage 中使用 Claude Desktop"}
+                : "Use Claude Desktop in Cage"}
             </h2>
             <p>
-              Chat 和 Code 共用一个官方应用。在 Cage
-              内安装、登录并使用，项目文件来自已打开的文件夹。
+              Chat and Code share one official app. Install, sign in and use it
+              inside Cage; project files come from the folder you have open.
             </p>
             {!desktop?.installed && (
               <p>
-                首次使用时从 Anthropic 官方源下载，不增加 Cage 默认安装包体积。
+                Downloaded from Anthropic's official source on first use, so it does not add to Cage's default install size.
               </p>
             )}
             <div className="desktop-actions">
@@ -255,7 +255,7 @@ export function ClaudeDesktop({
                   ) : (
                     <Download size={16} />
                   )}
-                  {desktop.installed ? "打开 Claude Desktop" : "下载并安装"}
+                  {desktop.installed ? "Open Claude Desktop" : "Download and install"}
                 </button>
               )}
               {desktop?.installed && (
@@ -264,7 +264,7 @@ export function ClaudeDesktop({
                   disabled={busy}
                   onClick={() => run("install")}
                 >
-                  更新 / 修复安装
+                  Update / repair installation
                 </button>
               )}
               {!desktop && (
@@ -273,13 +273,13 @@ export function ClaudeDesktop({
                   disabled={busy}
                   onClick={refresh}
                 >
-                  重新读取状态
+                  Refresh status
                 </button>
               )}
             </div>
             <p className="desktop-note">
-              关闭应用后释放图形会话资源，登录状态保留在 Cage
-              环境中。需要额外虚拟机的 Cowork 功能暂未适配。
+              Closing the app frees the graphical session resources, and the sign-in state stays in the Cage
+              environment. Cowork, which needs an extra virtual machine, is not supported yet.
             </p>
           </div>
         )}

@@ -109,11 +109,11 @@ public final class MainActivity extends Activity {
     }
     private void pairScan(String code) {
         if (busy) return;
-        if (device == null) { status.setText("设备密钥尚未就绪，请稍后重试。"); return; }
+        if (device == null) { status.setText("The device key is not ready yet. Try again later."); return; }
         String relay = preferredRelay();
         int attempt = ++generation;
         setConnecting(true);
-        status.setText("正在与电脑配对…");
+        status.setText("Pairing with the computer…");
         worker.execute(() -> {
             try {
                 Invitation.Saved saved = new Invitation.Saved(new JSONObject(Cagemobile.pair(code, relay, device)));
@@ -130,7 +130,7 @@ public final class MainActivity extends Activity {
                 runOnUiThread(() -> {
                     if (generation != attempt) return;
                     setConnecting(false);
-                    status.setText("配对未完成。请确认两端使用同一中继，再用电脑上新生成的二维码或配对码重试。");
+                    status.setText("Pairing was not completed. Make sure both sides use the same relay, then try again with a newly generated QR code or pairing code from the computer.");
                 });
             }
         });
@@ -162,7 +162,7 @@ public final class MainActivity extends Activity {
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
-                    if (!isDestroyed()) status.setText("无法使用 Android Keystore 设备密钥。");
+                    if (!isDestroyed()) status.setText("Could not use the Android Keystore device key.");
                 });
             }
         });
@@ -241,7 +241,7 @@ public final class MainActivity extends Activity {
         view.setPadding(dp(16), 0, dp(16), 0);
         view.setBackground(pressable(palette.action, 14, false));
         view.setFocusable(true);
-        view.setContentDescription("连接电脑");
+        view.setContentDescription("Connect computer");
         view.setOnClickListener(action);
         view.setAccessibilityDelegate(new View.AccessibilityDelegate() {
             @Override public void onInitializeAccessibilityNodeInfo(View host, android.view.accessibility.AccessibilityNodeInfo info) {
@@ -252,7 +252,7 @@ public final class MainActivity extends Activity {
         ImageView computer = image("cage_computer");
         computer.setColorFilter(palette.onAction);
         view.addView(computer, dp(22), dp(22));
-        TextView title = text("连接电脑", 16, palette.onAction);
+        TextView title = text("Connect computer", 16, palette.onAction);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         title.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         LinearLayout.LayoutParams caption = new LinearLayout.LayoutParams(-2, -2);
@@ -304,7 +304,7 @@ public final class MainActivity extends Activity {
         home = body;
         FrameLayout.LayoutParams gear = new FrameLayout.LayoutParams(dp(48), dp(48), Gravity.TOP | Gravity.RIGHT);
         gear.setMargins(dp(18), dp(12), dp(18), 0);
-        body.addView(icon("gear", "设置", v -> showSettings(false)), gear);
+        body.addView(icon("gear", "Settings", v -> showSettings(false)), gear);
 
         form = column();
         form.setGravity(Gravity.CENTER);
@@ -370,36 +370,36 @@ public final class MainActivity extends Activity {
         scroll.addView(form);
         FrameLayout heading = new FrameLayout(this);
         form.addView(heading, -1, dp(48));
-        TextView title = text(code ? "配对码" : "连接电脑", 24, palette.ink);
+        TextView title = text(code ? "Pairing code" : "Connect computer", 24, palette.ink);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         heading.addView(title, new FrameLayout.LayoutParams(-2, -2, Gravity.LEFT | Gravity.CENTER_VERTICAL));
         if (!code) {
             form.addView(image("pair_devices"), -1, dp(112));
-            label("在电脑的「设置 → 远程连接」中生成配对二维码或配对码。", 14);
-            button(form, "扫码连接", true, v -> startActivityForResult(new Intent(this, ScanActivity.class), SCAN));
-            button(form, "使用配对码", false, v -> showPair(true));
+            label("On your computer, generate a pairing QR code or pairing code in \"Settings → Remote connection\".", 14);
+            button(form, "Scan QR code", true, v -> startActivityForResult(new Intent(this, ScanActivity.class), SCAN));
+            button(form, "Use pairing code", false, v -> showPair(true));
         } else {
-            label("粘贴电脑上复制的一次性配对码。", 15);
-            EditText manualCode = field("一次性配对码", "");
-            button(form, "连接电脑", true, v -> {
+            label("Paste the one-time pairing code copied on your computer.", 15);
+            EditText manualCode = field("One-time pairing code", "");
+            button(form, "Connect computer", true, v -> {
                 String value = manualCode.getText().toString().trim();
-                if (value.isEmpty()) { status.setText("请粘贴配对码。"); return; }
+                if (value.isEmpty()) { status.setText("Paste a pairing code."); return; }
                 manualCode.setText("");
                 android.view.inputmethod.InputMethodManager ime = (android.view.inputmethod.InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
                 ime.hideSoftInputFromWindow(manualCode.getWindowToken(), 0);
                 pairScan(value);
             });
-            button(form, "返回配对方式", false, v -> showPair(false));
+            button(form, "Back to pairing options", false, v -> showPair(false));
         }
         if (!code && !connections.isEmpty()) {
-            label("已连接的设备", 15);
-            label("长按设备可取消连接", 14);
+            label("Connected devices", 15);
+            label("Long-press a device to disconnect", 14);
             for (ConnectedDevice connected : connections.values()) {
-                Button entry = button(form, connected.name + "  ·  进入", false, v -> enterDevice(connected));
+                Button entry = button(form, connected.name + "  -  Open", false, v -> enterDevice(connected));
                 entry.setOnLongClickListener(v -> {confirmDisconnect(connected); return true;});
             }
         }
-        if (credentials.saved() && !code) button(form, "重新连接已配对电脑", false, v -> connect());
+        if (credentials.saved() && !code) button(form, "Reconnect to paired computer", false, v -> connect());
         statusView();
         form.setFocusableInTouchMode(true);
         form.requestFocus();
@@ -428,7 +428,7 @@ public final class MainActivity extends Activity {
         form.setPadding(dp(22), dp(14), dp(22), dp(28));
         form.setFocusableInTouchMode(true);
         scroll.addView(form);
-        form.addView(icon("back", "返回", v -> back.run()), dp(48), dp(48));
+        form.addView(icon("back", "Back", v -> back.run()), dp(48), dp(48));
         TextView title = text(name, 32, palette.ink);
         title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         title.setPadding(0, dp(26), 0, dp(18));
@@ -442,13 +442,13 @@ public final class MainActivity extends Activity {
         return b;
     }
     private static final String[] THEMES = {"system", "light", "dark"};
-    private static final String[] THEME_NAMES = {"跟随系统", "浅色", "深色"};
+    private static final String[] THEME_NAMES = {"Follow system", "Light", "Dark"};
     private void showSettings(boolean focusTheme) {
-        settingsPage(Page.SETTINGS, "设置", this::showSetup);
-        label("外观", 14);
+        settingsPage(Page.SETTINGS, "Settings", this::showSetup);
+        label("Appearance", 14);
         int index = java.util.Arrays.asList(THEMES).indexOf(themeMode());
         LinearLayout options = column();
-        String current = "主题   ·   " + THEME_NAMES[Math.max(0, index)];
+        String current = "Theme   -" + THEME_NAMES[Math.max(0, index)];
         Button chooser = row(current + "   ▾", v -> {
             boolean opening = options.getVisibility() != View.VISIBLE;
             options.setVisibility(opening ? View.VISIBLE : View.GONE);
@@ -465,49 +465,49 @@ public final class MainActivity extends Activity {
             });
             choice.setSelected(i == index);
         }
-        label("远程连接", 14);
-        row("已归档会话", v -> openArchivedSessions());
-        row("中继设置", v -> showAdvanced(Page.RELAY));
-        row("主机与指纹", v -> showAdvanced(Page.HOST));
+        label("Remote connection", 14);
+        row("Archived sessions", v -> openArchivedSessions());
+        row("Relay settings", v -> showAdvanced(Page.RELAY));
+        row("Host and fingerprint", v -> showAdvanced(Page.HOST));
         statusView();
         if (focusTheme) chooser.requestFocus();
     }
 
     private void showAdvanced(Page next) {
         boolean host = next == Page.HOST;
-        settingsPage(next, host ? "主机与指纹" : "中继设置", () -> showSettings(false));
+        settingsPage(next, host ? "Host and fingerprint" : "Relay settings", () -> showSettings(false));
         verified = new CheckBox(this);
         customRelay = new Switch(this);
-        customRelay.setText("使用自建中继");
+        customRelay.setText("Use a self-hosted relay");
         form.addView(customRelay, -1, dp(48));
-        relayField = field("自建 VPS 的 HTTPS 地址", "");
+        relayField = field("HTTPS address of your own VPS", "");
         customRelay.setOnCheckedChangeListener((view, enabled) -> {
             relayField.setVisibility(enabled ? View.VISIBLE : View.GONE);
             verified.setChecked(false);
         });
         displayRelay(imported != null && host ? imported.relay : preferredRelay());
         if (!host) {
-            label("关闭自建中继后，使用 Cage 官方中继。", 14);
-            button(form, "保存中继设置", true, v -> {
-                try { rememberRelay(selectedRelay()); status.setText("中继设置已保存。"); }
-                catch (Exception e) { status.setText("请填写有效的 HTTPS 地址。"); }
+            label("With the self-hosted relay off, the official Cage relay is used.", 14);
+            button(form, "Save relay settings", true, v -> {
+                try { rememberRelay(selectedRelay()); status.setText("Relay settings saved."); }
+                catch (Exception e) { status.setText("Enter a valid HTTPS address."); }
             });
             statusView();
             return;
         }
-        label("这台手机的指纹", 15);
-        localPin = label(fingerprint.isEmpty() ? "正在读取设备密钥…" : fingerprint, 14);
+        label("This phone's fingerprint", 15);
+        localPin = label(fingerprint.isEmpty() ? "Reading the device key…" : fingerprint, 14);
         localPin.setTypeface(Typeface.MONOSPACE);
         localPin.setTextIsSelectable(true);
-        button(form, "复制手机指纹", false, v -> {
+        button(form, "Copy phone fingerprint", false, v -> {
             if (fingerprint.isEmpty()) return;
             ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            clipboard.setPrimaryClip(ClipData.newPlainText("Cage 手机指纹", fingerprint));
-            status.setText("手机指纹已复制，请在电脑上核对并信任。");
+            clipboard.setPrimaryClip(ClipData.newPlainText("Cage phone fingerprint", fingerprint));
+            status.setText("Phone fingerprint copied. Check and trust it on the computer.");
         });
-        label("电脑指纹", 15);
+        label("Computer fingerprint", 15);
         pinField = field("sha256:…", imported != null ? imported.pin : trust.getString("pin", ""));
-        verified.setText("我已与电脑上独立显示的指纹核对");
+        verified.setText("I checked this against the fingerprint shown separately on the computer");
         form.addView(verified);
         TextWatcher changed = new TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -516,29 +516,29 @@ public final class MainActivity extends Activity {
         };
         pinField.addTextChangedListener(changed);
         relayField.addTextChangedListener(changed);
-        button(form, "保存已核对的主机", true, v -> saveVerified());
-        forgetHost = button(form, "忘记主机", false, v -> new AlertDialog.Builder(this)
-            .setMessage("移除这台电脑的地址、指纹和重连凭据？")
-            .setNegativeButton("取消", null).setPositiveButton("忘记主机", (dialog, which) -> forget()).show());
+        button(form, "Save checked host", true, v -> saveVerified());
+        forgetHost = button(form, "Forget host", false, v -> new AlertDialog.Builder(this)
+            .setMessage("Remove this computer's address, fingerprint, and reconnect credentials?")
+            .setNegativeButton("Cancel", null).setPositiveButton("Forget host", (dialog, which) -> forget()).show());
         forgetHost.setVisibility(trust.contains("pin") ? View.VISIBLE : View.GONE);
-        inviteStatus = label(imported != null ? "请与电脑独立显示的指纹核对，再保存主机。" :
-            invitation != null ? "已导入本次临时邀请。" :
-            credentials.saved() ? "这台电脑已保存，可以直接重新连接。" : "导入电脑生成的连接文件或临时邀请。", 14);
-        button(form, "导入连接文件", false, v -> {
+        inviteStatus = label(imported != null ? "Compare with the fingerprint shown separately on the computer, then save the host." :
+            invitation != null ? "Temporary invitation imported." :
+            credentials.saved() ? "This computer is saved. You can reconnect directly." : "Import a connection file or temporary invitation generated by the computer.", 14);
+        button(form, "Import connection file", false, v -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");
             startActivityForResult(intent, PICK_INVITATION);
         });
-        connect = button(form, credentials.saved() ? "重新连接" : "连接工作台", false, v -> connect());
+        connect = button(form, credentials.saved() ? "Reconnect" : "Connect to workbench", false, v -> connect());
         statusView();
     }
 
     private void saveVerified() {
-        if (!verified.isChecked()) { status.setText("请先在电脑上核对指纹。"); return; }
+        if (!verified.isChecked()) { status.setText("Check the fingerprint on the computer first."); return; }
         final String relay, pin;
         try { relay = selectedRelay(); pin = Invitation.pin(pinField.getText().toString()); }
-        catch (Exception e) { status.setText("中继地址或电脑指纹格式无效。"); return; }
+        catch (Exception e) { status.setText("The relay address or computer fingerprint format is invalid."); return; }
         Invitation.Saved record = imported;
-        if (record != null && (!record.relay.equals(relay) || !record.pin.equals(pin))) { status.setText("填写内容与导入的连接文件不一致，请重新核对。"); return; }
+        if (record != null && (!record.relay.equals(relay) || !record.pin.equals(pin))) { status.setText("The entries do not match the imported connection file. Check them again."); return; }
         int attempt = ++generation;
         setConnecting(true);
         worker.execute(() -> {
@@ -546,11 +546,11 @@ public final class MainActivity extends Activity {
                 credentials.save(relay, pin, record == null ? null : record.lookup);rememberRelay(relay);
                 runOnUiThread(() -> { if (generation == attempt) {
                     imported = null; verified.setChecked(false); setConnecting(false); forgetHost.setVisibility(View.VISIBLE);
-                    connect.setText(credentials.saved() && invitation == null ? "重新连接" : "连接工作台");
-                    if (credentials.saved() && invitation == null) inviteStatus.setText("这台电脑已保存，可以直接重新连接。");
-                    status.setText(credentials.saved() ? "已保存这台电脑，可以重新连接。" : "已保存主机指纹。");
+                    connect.setText(credentials.saved() && invitation == null ? "Reconnect" : "Connect to workbench");
+                    if (credentials.saved() && invitation == null) inviteStatus.setText("This computer is saved. You can reconnect directly.");
+                    status.setText(credentials.saved() ? "This computer is saved. You can reconnect." : "Host fingerprint saved.");
                 } });
-            } catch (Exception e) { runOnUiThread(() -> { if (generation == attempt) { setConnecting(false); status.setText("无法安全保存主机，请解锁手机后重试。"); } }); }
+            } catch (Exception e) { runOnUiThread(() -> { if (generation == attempt) { setConnecting(false); status.setText("Could not save the host securely. Unlock your phone and try again."); } }); }
         });
     }
     private void forget() {
@@ -558,8 +558,8 @@ public final class MainActivity extends Activity {
         worker.execute(() -> {
             try {
                 credentials.forget();
-                runOnUiThread(() -> { if (generation == attempt) { invitation=null; imported=null; setConnecting(false); showAdvanced(Page.HOST); status.setText("已忘记主机。"); } });
-            } catch (Exception e) { runOnUiThread(() -> { if (generation == attempt) { setConnecting(false); status.setText("移除未完成，请重试。"); } }); }
+                runOnUiThread(() -> { if (generation == attempt) { invitation=null; imported=null; setConnecting(false); showAdvanced(Page.HOST); status.setText("Host forgotten."); } });
+            } catch (Exception e) { runOnUiThread(() -> { if (generation == attempt) { setConnecting(false); status.setText("Removal was not completed. Try again."); } }); }
         });
     }
 
@@ -572,7 +572,7 @@ public final class MainActivity extends Activity {
         }
         if (code != PICK_INVITATION || result != RESULT_OK || data == null || data.getData() == null) return;
         Uri file = data.getData();
-        if (!"content".equals(file.getScheme())) { status.setText("请选择设备文件应用中的邀请。"); return; }
+        if (!"content".equals(file.getScheme())) { status.setText("Pick the invitation from a device files app."); return; }
         int attempt = ++generation;
         invitation = null; imported = null; verified.setChecked(false); setConnecting(true);
         worker.execute(() -> {
@@ -584,12 +584,12 @@ public final class MainActivity extends Activity {
                     setConnecting(false); invitation = item; imported = saved; status.setText("");
                     if (saved != null) {
                         displayRelay(saved.relay); pinField.setText(saved.pin); verified.setChecked(false);
-                        inviteStatus.setText("请与电脑独立显示的指纹核对，再保存主机。");
-                    } else { inviteStatus.setText("已导入本次临时邀请。"); }
-                    connect.setText("连接工作台");
+                        inviteStatus.setText("Compare with the fingerprint shown separately on the computer, then save the host.");
+                    } else { inviteStatus.setText("Temporary invitation imported."); }
+                    connect.setText("Connect to workbench");
                 } });
             } catch (Exception e) {
-                runOnUiThread(() -> { if (attempt == generation) { setConnecting(false); inviteStatus.setText("文件无效或临时邀请已过期，请重新导入。"); } });
+                runOnUiThread(() -> { if (attempt == generation) { setConnecting(false); inviteStatus.setText("The file is invalid or the temporary invitation has expired. Import it again."); } });
             }
         });
     }
@@ -604,8 +604,8 @@ public final class MainActivity extends Activity {
         try {
             relay = page == Page.HOST ? selectedRelay() : trust.getString("relay", preferredRelay());
             pin = Invitation.pin(page == Page.HOST ? pinField.getText().toString() : trust.getString("pin", ""));
-        } catch (Exception e) { status.setText("请在「设置 → 主机与指纹」保存电脑指纹。"); return; }
-        if ((page == Page.HOST && imported != null) || !credentials.matches(relay,pin)) { status.setText("请先核对并保存这台主机。"); return; }
+        } catch (Exception e) { status.setText("Save the computer fingerprint in \"Settings → Host and fingerprint\"."); return; }
+        if ((page == Page.HOST && imported != null) || !credentials.matches(relay,pin)) { status.setText("Check and save this host first."); return; }
         ConnectedDevice existing = connections.get(relay + "\n" + pin);
         if (existing != null) {
             enterDevice(existing);
@@ -615,13 +615,13 @@ public final class MainActivity extends Activity {
             }
             return;
         }
-        if (device == null) { status.setText("设备密钥尚未就绪。"); return; }
+        if (device == null) { status.setText("The device key is not ready yet."); return; }
         Invitation item = page == Page.HOST ? invitation : null;
-        if (item == null && !credentials.saved()) { status.setText("请导入连接文件或有效的临时邀请。"); return; }
-        if (item != null && !item.expiry.isAfter(Instant.now())) { invitation=null; status.setText("临时邀请已过期，请重新连接或导入新邀请。"); return; }
+        if (item == null && !credentials.saved()) { status.setText("Import a connection file or a valid temporary invitation."); return; }
+        if (item != null && !item.expiry.isAfter(Instant.now())) { invitation=null; status.setText("The temporary invitation has expired. Reconnect or import a new invitation."); return; }
         invitation = null;
-        if (item != null) inviteStatus.setText("本次邀请已用于连接。");
-        int attempt = ++generation; setConnecting(true); status.setText("正在验证电脑并连接…");
+        if (item != null) inviteStatus.setText("This invitation has been used to connect.");
+        int attempt = ++generation; setConnecting(true); status.setText("Verifying the computer and connecting…");
         worker.execute(() -> {
             Client opened = null;
             try {
@@ -638,7 +638,7 @@ public final class MainActivity extends Activity {
                     if (attempt != generation || isDestroyed()) { close(connected); return; }
                     setConnecting(false);
                     ConnectedDevice next = new ConnectedDevice(relay + "\n" + pin, connected, url,
-                        "电脑 " + (connections.size() + 1));
+                        "Computer " + (connections.size() + 1));
                     connections.put(next.hostKey, next);
                     createBrowser(next);
                     enterDevice(next);
@@ -647,8 +647,8 @@ public final class MainActivity extends Activity {
             } catch (Exception e) {
                 close(opened);
                 runOnUiThread(() -> { if (attempt == generation) {
-                    setConnecting(false); if (page == Page.HOST) connect.setText(credentials.saved() ? "重新连接" : "连接工作台");
-                    status.setText(item == null ? "连接未完成。请确认电脑上的连接服务正在运行，再点重新连接。若已更换凭据，请导入新的连接文件。" : "连接未完成。请核对双方指纹与网络，再导入新邀请。");
+                    setConnecting(false); if (page == Page.HOST) connect.setText(credentials.saved() ? "Reconnect" : "Connect to workbench");
+                    status.setText(item == null ? "The connection was not completed. Make sure the connection service is running on the computer, then tap Reconnect. If the credentials changed, import a new connection file." : "The connection was not completed. Check both fingerprints and the network, then import a new invitation.");
                 } });
             }
         });
@@ -790,12 +790,12 @@ public final class MainActivity extends Activity {
         Dialog dialog = new Dialog(this);
         LinearLayout panel = column(); panel.setPadding(dp(22),dp(18),dp(22),dp(22));
         panel.setBackground(surface(palette.panel,26,false));
-        TextView title = text("取消与“" + selected.name + "”的连接？",20,palette.ink);
+        TextView title = text("Disconnect from \"" + selected.name + "\"?",20,palette.ink);
         title.setTypeface(Typeface.DEFAULT,Typeface.BOLD); panel.addView(title);
-        TextView explanation = text("设备将从当前连接列表移除，已保存的配对信息仍然保留。",14,palette.muted);
+        TextView explanation = text("The device will be removed from the current connection list. Saved pairing information is kept.",14,palette.muted);
         explanation.setPadding(0,dp(12),0,dp(12)); panel.addView(explanation);
-        button(panel,"取消连接",true,v -> {dialog.dismiss(); disconnectDevice(selected);});
-        button(panel,"继续连接",false,v -> dialog.dismiss());
+        button(panel,"Disconnect",true,v -> {dialog.dismiss(); disconnectDevice(selected);});
+        button(panel,"Stay connected",false,v -> dialog.dismiss());
         dialog.setContentView(panel);
         android.view.Window window = dialog.getWindow();
         if (window != null) {

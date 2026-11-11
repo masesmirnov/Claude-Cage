@@ -99,7 +99,7 @@ func (r *Runtime) output(ctx context.Context, args ...string) ([]byte, error) {
 	command.Stdout = &limitedWriter{writer: &output, left: 1 << 20}
 	command.Stderr = &limitedWriter{writer: &diagnostic, left: 4096}
 	if err := command.Run(); err != nil {
-		return nil, fmt.Errorf("容器引擎操作失败: %w: %s", err, strings.TrimSpace(diagnostic.String()))
+		return nil, fmt.Errorf("Container engine operation failed: %w: %s", err, strings.TrimSpace(diagnostic.String()))
 	}
 	return output.Bytes(), nil
 }
@@ -130,7 +130,7 @@ func (r *Runtime) inspectContainer(ctx context.Context) (*engineContainer, error
 		return nil, nil
 	}
 	if strings.ContainsAny(id, " \r\n\t") {
-		return nil, errors.New("容器标识不唯一")
+		return nil, errors.New("The container ID is not unique.")
 	}
 	data, err = r.output(ctx, "container", "inspect", id)
 	if err != nil {
@@ -138,7 +138,7 @@ func (r *Runtime) inspectContainer(ctx context.Context) (*engineContainer, error
 	}
 	var found []engineContainer
 	if json.Unmarshal(data, &found) != nil || len(found) != 1 || found[0].Config.Labels[profileLabel] != r.identity {
-		return nil, errors.New("容器身份与当前 Cage 配置不匹配")
+		return nil, errors.New("The container identity does not match the current Cage configuration.")
 	}
 	return &found[0], nil
 }
@@ -198,7 +198,7 @@ func (r *Runtime) StoragePath(ctx context.Context) (string, error) {
 	}
 	path := strings.TrimSpace(string(data))
 	if !filepath.IsAbs(path) || strings.ContainsAny(path, "\x00\r\n") {
-		return "", errors.New("容器持久存储位置无效")
+		return "", errors.New("Invalid container persistent storage location.")
 	}
 	return path, nil
 }
@@ -209,7 +209,7 @@ func (r *Runtime) rootlessEngine(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	if !limited {
-		return false, errors.New("容器引擎必须使用 systemd 和 cgroup v2，以执行 CPU、内存与进程数限额")
+		return false, errors.New("The container engine must use systemd and cgroup v2 to enforce CPU, memory and process limits.")
 	}
 	return rootless, nil
 }
@@ -225,7 +225,7 @@ func (r *Runtime) engineSecurity(ctx context.Context) (rootless, limited bool, e
 		var options []string
 		lines := strings.Split(strings.TrimSpace(string(data)), "\n")
 		if len(lines) != 3 || json.Unmarshal([]byte(lines[0]), &options) != nil {
-			return false, false, errors.New("无法确认 Docker 安全配置")
+			return false, false, errors.New("Could not confirm the Docker security configuration.")
 		}
 		limited = lines[1] == "systemd" && lines[2] == "2"
 		for _, option := range options {
@@ -241,7 +241,7 @@ func (r *Runtime) engineSecurity(ctx context.Context) (rootless, limited bool, e
 	}
 	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
 	if len(lines) != 3 {
-		return false, false, errors.New("无法确认 Podman 安全配置")
+		return false, false, errors.New("Could not confirm the Podman security configuration.")
 	}
 	return lines[0] == "true", lines[1] == "systemd" && (lines[2] == "v2" || lines[2] == "2"), nil
 }
@@ -249,30 +249,30 @@ func (r *Runtime) engineSecurity(ctx context.Context) (rootless, limited bool, e
 func checkContainerConfiguration(container *engineContainer) error {
 	config := container.HostConfig
 	if config.Privileged || config.NetworkMode != "none" || (config.PidMode != "" && config.PidMode != "private") || config.IpcMode != "private" || config.CgroupnsMode != "private" {
-		return errors.New("容器必须使用独立命名空间和禁用默认网络，不能启用特权模式")
+		return errors.New("The container must use its own namespaces and have the default network disabled; privileged mode cannot be enabled.")
 	}
 	if len(config.Binds) > 0 {
-		return errors.New("容器不能直接挂载宿主目录")
+		return errors.New("The container cannot mount host directories directly.")
 	}
 	for _, entry := range config.ExtraHosts {
 		if entry != "cage:127.0.1.1" {
-			return errors.New("容器只允许 Cage 主机名的固定回环地址")
+			return errors.New("The container only allows the fixed loopback address for the Cage host name.")
 		}
 	}
 	for _, mount := range container.Mounts {
 		if mount.Type == "bind" || mount.Type == "volume" {
-			return errors.New("容器存在未经 Cage 文件共享授权的挂载")
+			return errors.New("The container has mounts not authorized by Cage file sharing.")
 		}
 	}
 	for _, device := range config.Devices {
 		if (device.PathOnHost != "/dev/fuse" && device.PathOnHost != "/dev/net/tun") || device.PathOnHost != device.PathInContainer {
-			return errors.New("容器存在额外宿主设备")
+			return errors.New("The container has extra host devices.")
 		}
 	}
 	for _, capability := range config.CapAdd {
 		capability = strings.TrimPrefix(capability, "CAP_")
 		if capability != "NET_ADMIN" && capability != "SYS_ADMIN" {
-			return errors.New("容器存在额外系统权限")
+			return errors.New("The container has extra system privileges.")
 		}
 	}
 	return nil
@@ -284,7 +284,7 @@ func (r *Runtime) Inspect(ctx context.Context) (Inspection, error) {
 		return Inspection{}, err
 	}
 	if !rootless {
-		return Inspection{}, errors.New("Cage 容器必须由独立 rootless 引擎运行")
+		return Inspection{}, errors.New("The Cage container must run on a separate rootless engine.")
 	}
 	container, err := r.inspectContainer(ctx)
 	if err != nil {
@@ -297,14 +297,14 @@ func (r *Runtime) Inspect(ctx context.Context) (Inspection, error) {
 		return Inspection{}, err
 	}
 	if container.HostConfig.CgroupParent != r.resourceSlice() {
-		return Inspection{}, errors.New("已有容器缺少当前配置的宿主资源边界；保留原数据，拒绝无约束启动")
+		return Inspection{}, errors.New("The existing container is missing the host resource boundary of the current configuration. The original data was kept and an unconstrained start was refused.")
 	}
 	state := State{Exists: true, Running: container.State.Running, ContainerID: container.ID, PID: container.State.Pid, MemoryBytes: container.HostConfig.Memory, CPUs: int(container.HostConfig.NanoCpus / 1e9)}
 	state.StoragePath, err = r.StoragePath(ctx)
 	if err != nil {
 		return Inspection{}, err
 	}
-	result := Inspection{State: state, Rootless: true, Evidence: "rootless 引擎；无默认网络或宿主目录挂载；等待运行中的网络与文件共享检查"}
+	result := Inspection{State: state, Rootless: true, Evidence: "rootless engine; no default network or host directory mounts; waiting for the network and file sharing checks while running"}
 	if state.Running {
 		mounts, err := r.inspectMounts(container)
 		if err != nil {
@@ -326,7 +326,7 @@ func (r *Runtime) Inspect(ctx context.Context) (Inspection, error) {
 			result.State.VNCAddress = record.VNCAddress
 			result.NetworkConfined = true
 			result.FilesystemConfined = mounts.Ready()
-			result.Evidence = "实际 rootless 容器无默认网络或宿主目录挂载；当前外置网络门槛身份已验证，唯一 TAP 通道由宿主接收；默认项目经受限 SFTP 共享并完成双端读写验证"
+			result.Evidence = "The actual rootless container has no default network or host directory mounts; the current external network gate identity is verified, the host receives the only TAP channel; the default project is shared over restricted SFTP and read/write was verified on both ends"
 		}
 	}
 	return result, nil

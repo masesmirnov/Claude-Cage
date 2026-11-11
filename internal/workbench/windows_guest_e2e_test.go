@@ -114,9 +114,9 @@ func TestWindowsGuestProjectAndResourceE2E(t *testing.T) {
 	if err = os.WriteFile(filepath.Join(project, "hello.txt"), []byte("host changed value"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	unicode := base64.StdEncoding.EncodeToString([]byte("原子保存🙂"))
+	unicode := base64.StdEncoding.EncodeToString([]byte("ऋऎउए🙂"))
 	verify(`if([IO.File]::ReadAllText('hello.txt') -ne 'host changed value'){throw 'host live change failed'}; [IO.File]::WriteAllText('atomic.tmp',[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('` + unicode + `')),[Text.UTF8Encoding]::new($false)); Move-Item -Force atomic.tmp saved.txt; $denied=$false;try{[IO.File]::WriteAllText('.GiT/config','altered')}catch{$denied=$true};if(!$denied){throw 'protected metadata write accepted'}`)
-	if data, err := os.ReadFile(filepath.Join(project, "saved.txt")); err != nil || string(data) != "原子保存🙂" {
+	if data, err := os.ReadFile(filepath.Join(project, "saved.txt")); err != nil || string(data) != "ऋऎउए🙂" {
 		t.Fatalf("real atomic save failed: %q %v", data, err)
 	}
 	if data, err := os.ReadFile(filepath.Join(project, ".git", "config")); err != nil || string(data) != "protected" {

@@ -68,7 +68,7 @@ func TestNativeInstallProgressKeepsSystemAndSeparatesVerification(t *testing.T) 
 		if p.Operation != "verify" || p.BytesPerSecond != 0 || *p.Received != 0 {
 			t.Errorf("download leaked into verification: %+v", p)
 		}
-		_, _ = e.Write([]byte("CAGE_GUEST_STAGE macos restore\n下载 editor.tgz\n"))
+		_, _ = e.Write([]byte("CAGE_GUEST_STAGE macos restore\nDownloading editor.tgz\n"))
 		p = m.snapshot().SetupProgress
 		if p.System != "macos" || p.Phase != "image" || p.Received != nil || p.BytesPerSecond != 0 {
 			t.Errorf("stage retained stale bytes or lost retry system: %+v", p)
@@ -114,7 +114,7 @@ func TestMacHostDownloadsReplacePreviousComponentProgress(t *testing.T) {
 		if p == nil || p.System != "macos" || p.Total != 100 || *p.Received != 25 {
 			t.Fatalf("missing host component progress: %s %+v", name, p)
 		}
-		if p := parseSetupProgress("下载 " + name); p == nil || p.Received != nil {
+		if p := parseSetupProgress("Downloading " + name); p == nil || p.Received != nil {
 			t.Fatalf("missing component start: %s %+v", name, p)
 		}
 	}
@@ -127,7 +127,7 @@ func TestMacHostDownloadsReplacePreviousComponentProgress(t *testing.T) {
 
 func TestMacOSSetupProgressReportsHostRetry(t *testing.T) {
 	p := parseSetupProgress("CAGE_HOST_RETRY editor.tgz 2")
-	if p == nil || p.Label != "正在下载 macOS 网页编辑器（准备第 2/3 次尝试）" {
+	if p == nil || p.Label != "Downloading macOS web editor (preparing attempt 2/3)" {
 		t.Fatal(p)
 	}
 	for _, line := range []string{"CAGE_HOST_RETRY unknown 2", "CAGE_HOST_RETRY editor.tgz 0"} {

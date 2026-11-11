@@ -68,7 +68,7 @@ func TestWindowsBrowserRelayHelper(t *testing.T) {
 			}
 			if request.Input.After < 2 {
 				result = map[string]any{"sequence": 2, "state": map[string]any{"active": "tab", "tabs": []any{}}, "events": []any{
-					map[string]any{"sequence": 2, "type": "clipboard", "value": map[string]any{"id": "tab", "text": "复制🙂", "context": "0123456789abcdef0123456789abcdef", "document": "current-document"}},
+					map[string]any{"sequence": 2, "type": "clipboard", "value": map[string]any{"id": "tab", "text": "ฉช🙂", "context": "0123456789abcdef0123456789abcdef", "document": "current-document"}},
 				}}
 			}
 		case "/phone-browser/frame":
@@ -88,7 +88,7 @@ func TestWindowsBrowserRelayHelper(t *testing.T) {
 						break
 					}
 					metadata["name"], metadata["mime"] = "clipboard.txt", "text/plain"
-					downloaded = []byte(strings.Repeat("中", (2<<20)/3) + "ab")
+					downloaded = []byte(strings.Repeat("ฐ", (2<<20)/3) + "ab")
 					if strings.HasPrefix(request.Input.ID, "11111111") {
 						metadata["name"], metadata["mime"] = "clipboard.png", "image/png"
 						downloaded, _ = base64.StdEncoding.DecodeString(testPNG(t))
@@ -291,7 +291,7 @@ func TestNativeBrowserEventsPreserveCopyContextAndSequence(t *testing.T) {
 	if bytes.Count(data, []byte(wanted)) != 1 {
 		t.Fatalf("copy event was lost or replayed: %s", data)
 	}
-	for _, value := range []string{"复制🙂", "0123456789abcdef0123456789abcdef", "current-document"} {
+	for _, value := range []string{"ฉช🙂", "0123456789abcdef0123456789abcdef", "current-document"} {
 		if !bytes.Contains(data, []byte(value)) {
 			t.Fatalf("copy event lost %q", value)
 		}

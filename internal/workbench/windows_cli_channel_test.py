@@ -62,7 +62,7 @@ class NativeChannelTests(unittest.TestCase):
                 send({'id':1,'method':'initialize','params':{'protocolVersion':'2024-11-05'}})
                 self.assertIn('claude/channel/permission',lines.get(timeout=5)['result']['capabilities']['experimental'])
                 send({'method':'notifications/initialized'})
-                request=str(uuid.uuid4());text='中文🙂\n保留 </channel> 原文'
+                request=str(uuid.uuid4());text='ฐฑ🙂\nउऊ </channel> ऋฑ'
                 with concurrent.futures.ThreadPoolExecutor(2) as workers:
                     replies=list(workers.map(lambda _:rpc(action='send',request_id=request,text=text),range(2)))
                 self.assertEqual(replies,[{'ok':True},{'ok':True}])

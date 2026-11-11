@@ -60,13 +60,13 @@ const (
 // automatically: the CLI can persist the user's message before emitting its result.
 func (r Runner) Run(ctx context.Context, turn Turn, onText func(string)) (Result, error) {
 	if r.Command == nil {
-		return Result{}, errors.New("尚未配置 Cage 客机 Claude Code 命令")
+		return Result{}, errors.New("The Cage guest Claude Code command is not configured yet.")
 	}
 	if turn.Workspace == "" || !sessionIDPattern.MatchString(turn.SessionID) {
-		return Result{}, errors.New("Claude Code 项目或会话标识无效")
+		return Result{}, errors.New("Invalid Claude Code project or session ID.")
 	}
 	if len(turn.Prompt) > maxPromptBytes || !utf8.ValidString(turn.Prompt) || strings.TrimSpace(turn.Prompt) == "" {
-		return Result{}, errors.New("消息为空、编码无效或超过 64 KiB")
+		return Result{}, errors.New("The message is empty, has invalid encoding or exceeds 64 KiB.")
 	}
 	if err := ctx.Err(); err != nil {
 		return Result{}, err
@@ -96,13 +96,13 @@ func (r Runner) Run(ctx context.Context, turn Turn, onText func(string)) (Result
 		return Result{}, err
 	}
 	if cmd == nil {
-		return Result{}, errors.New("无法准备 Claude Code 客机命令")
+		return Result{}, errors.New("Could not prepare the Claude Code guest command.")
 	}
 	var input io.WriteCloser
 	if r.SupervisedStdin || r.Approve != nil {
 		input, err = cmd.StdinPipe()
 		if err != nil {
-			return Result{}, errors.New("无法准备 Claude Code 客机输入")
+			return Result{}, errors.New("Could not prepare the Claude Code guest input.")
 		}
 		defer input.Close()
 	} else {
@@ -120,7 +120,7 @@ func (r Runner) Run(ctx context.Context, turn Turn, onText func(string)) (Result
 		if err := ctx.Err(); err != nil {
 			return Result{}, err
 		}
-		return Result{}, errors.New("无法启动 Claude Code 客机连接")
+		return Result{}, errors.New("Could not start the Claude Code guest connection.")
 	}
 	if input != nil {
 		stop := context.AfterFunc(runCtx, func() { _ = input.Close() })
@@ -178,7 +178,7 @@ func (r Runner) Run(ctx context.Context, turn Turn, onText func(string)) (Result
 		return result, err
 	}
 	if processErr != nil {
-		return result, errors.New("Claude Code 进程退出异常，请检查客机连接、CLI 版本和登录状态")
+		return result, errors.New("The Claude Code process exited abnormally. Check the guest connection, CLI version and sign-in status.")
 	}
 	return result, nil
 }
@@ -223,16 +223,16 @@ func readResult(reader io.Reader, sessionID string, onText func(string), approva
 		var e cliEvent
 		if err := json.Unmarshal(line, &e); err != nil || e.Type == "" {
 			if approvals != nil && !approvals.ready {
-				return result, errors.New("客机 Claude Code 未返回逐次审批初始化消息，请检查 CLI 版本")
+				return result, errors.New("Claude Code in the guest did not return the per-action approval initialization message. Check the CLI version.")
 			}
-			return result, errors.New("Claude Code 返回了无效的消息格式")
+			return result, errors.New("Claude Code returned an invalid message format.")
 		}
 		if e.Type == "control_request" || e.Type == "control_cancel_request" || e.Type == "control_response" {
 			if approvals == nil {
-				return result, errors.New("Claude Code 需要未配置的交互式审批")
+				return result, errors.New("Claude Code requires an interactive approval that is not configured.")
 			}
 			if e.SessionID != "" && !strings.EqualFold(e.SessionID, sessionID) {
-				return result, errors.New("Claude Code 审批会话不匹配")
+				return result, errors.New("The Claude Code approval session does not match.")
 			}
 			if err := approvals.control(e.Type, line); err != nil {
 				return result, err
@@ -243,21 +243,21 @@ func readResult(reader io.Reader, sessionID string, onText func(string), approva
 			continue
 		}
 		if e.Type == "system" && e.Subtype == "cage_identity_changed" {
-			return result, errors.New("会话使用的账号、凭据或上游已变化，请恢复原配置或新建会话")
+			return result, errors.New("The account, credentials or upstream used by the session has changed. Restore the original configuration or start a new session.")
 		}
 		if e.Type == "system" && e.Subtype == "cage_identity_single_turn" {
 			result.SingleTurn = true
 			continue
 		}
 		if e.Type == "system" && e.Subtype == "cage_identity_unverified" {
-			return result, errors.New("无法验证本会话原先使用的上游，请检查主机配置或新建会话")
+			return result, errors.New("Could not verify the upstream this session used before. Check the host configuration or start a new session.")
 		}
 		if e.Type == "system" && e.Subtype == "cage_identity_unverified_start" {
-			return result, errors.New("无法验证当前 Claude 账号或上游配置，请在电脑 Cage 检查账号和环境配置")
+			return result, errors.New("Could not verify the current Claude account or upstream configuration. Check the account and environment configuration in Cage on your computer.")
 		}
 		if e.Type == "system" && e.Subtype == "init" {
 			if !strings.EqualFold(e.SessionID, sessionID) || finished {
-				return result, errors.New("Claude Code 初始化了其他会话")
+				return result, errors.New("Claude Code initialized a different session.")
 			}
 			result.Started = true
 			continue
@@ -273,18 +273,18 @@ func readResult(reader io.Reader, sessionID string, onText func(string), approva
 			continue
 		}
 		if !strings.EqualFold(e.SessionID, sessionID) || finished {
-			return result, errors.New("Claude Code 会话标识或结果顺序不匹配")
+			return result, errors.New("The Claude Code session ID or result order does not match.")
 		}
 		if e.Type == "stream_event" {
 			var stream streamEvent
 			if err := json.Unmarshal(line, &stream); err != nil {
-				return result, errors.New("Claude Code 文本事件无效")
+				return result, errors.New("Invalid Claude Code text event.")
 			}
 			if stream.Event.Type == "content_block_delta" && stream.Event.Delta.Type == "text_delta" {
 				text := stream.Event.Delta.Text
 				emitted += len(text)
 				if emitted > maxTextBytes {
-					return result, errors.New("Claude Code 回复超过 1 MiB")
+					return result, errors.New("The Claude Code reply exceeds 1 MiB.")
 				}
 				if onText != nil && text != "" {
 					onText(text)
@@ -300,12 +300,12 @@ func readResult(reader io.Reader, sessionID string, onText func(string), approva
 		}
 		var final resultEvent
 		if err := json.Unmarshal(line, &final); err != nil {
-			return result, errors.New("Claude Code 返回了无效的最终结果")
+			return result, errors.New("Claude Code returned an invalid final result.")
 		}
 		for _, denial := range final.PermissionDenials {
 			name := denial.ToolName
 			if !toolNamePattern.MatchString(name) {
-				name = "未知工具"
+				name = "Unknown tool"
 			}
 			if !slices.Contains(result.DeniedTools, name) {
 				result.DeniedTools = append(result.DeniedTools, name)
@@ -315,24 +315,24 @@ func readResult(reader io.Reader, sessionID string, onText func(string), approva
 			}
 		}
 		if final.IsError || e.Subtype != "success" {
-			return result, errors.New("Claude Code 未完成本轮，请检查客机登录、网络和工具权限")
+			return result, errors.New("Claude Code did not finish this turn. Check the guest sign-in, network and tool permissions.")
 		}
 		if !result.Started {
-			return result, errors.New("Claude Code 返回结果前未确认会话")
+			return result, errors.New("Claude Code did not confirm the session before returning the result.")
 		}
 		if len(final.Result) > maxTextBytes {
-			return result, errors.New("Claude Code 回复超过 1 MiB")
+			return result, errors.New("The Claude Code reply exceeds 1 MiB.")
 		}
 		result.Text = final.Result
 	}
 	if scan.Err() != nil {
-		return result, errors.New("Claude Code 消息流中断或单条事件过大")
+		return result, errors.New("The Claude Code message stream was interrupted or a single event is too large.")
 	}
 	if !finished {
 		if approvals != nil && !approvals.ready {
-			return result, errors.New("客机 Claude Code 未确认逐次审批协议，请检查 CLI 版本")
+			return result, errors.New("Claude Code in the guest did not confirm the per-action approval protocol. Check the CLI version.")
 		}
-		return result, errors.New("Claude Code 未返回本轮结果，请检查客机连接、CLI 版本和登录状态")
+		return result, errors.New("Claude Code did not return the result of this turn. Check the guest connection, CLI version and sign-in status.")
 	}
 	return result, nil
 }

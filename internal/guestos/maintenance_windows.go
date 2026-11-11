@@ -22,7 +22,7 @@ func WindowsMaintenanceCommand(ctx context.Context, profile, kit, manifest strin
 		return nil, err
 	}
 	if binding == nil {
-		return nil, errors.New("此配置尚未绑定 Windows 客机")
+		return nil, errors.New("This configuration is not bound to a Windows guest yet.")
 	}
 	system, err := windows.GetSystemDirectory()
 	if err != nil {

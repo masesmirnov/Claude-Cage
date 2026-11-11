@@ -22,7 +22,7 @@ func TestMacOSClipboardUsesBoundGUIAgent(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(s.instanceDir(), "ssh.config"), []byte("Host lima-mac\n Port 54432\n User root\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	selected := []string{"/tmp/中文 ' $(touch unexpected).txt"}
+	selected := []string{"/tmp/ฐฑ ' $(touch unexpected).txt"}
 	for _, operation := range []string{"stream", "import", "export", "request"} {
 		cmd, source, err := s.clipboardCommand(context.Background(), operation, clipboardFileSelection{Paths: selected, User: "guest"})
 		if err != nil || cmd.Err != nil || source != "guest" {

@@ -109,7 +109,7 @@ private func openFilePanel(_ pid: pid_t) -> AXUIElement? {
         if role == kAXSheetRole || subrole == kAXDialogSubrole,
            let button = filePanelButton(element), filePanelButton(element, cancel: true) != nil,
            let title = fileAttribute(button, kAXTitleAttribute) as? String,
-           ["Open", "Choose", "Select", "打开", "開啟", "选择", "選擇"].contains(title), containsFileBrowser(element) {
+           ["Open", "Choose", "Select"].contains(title), containsFileBrowser(element) {
             return element
         }
         pending.append(contentsOf: fileChildren(element))
@@ -128,7 +128,7 @@ private func saveFilePanel(_ pid: pid_t) -> (AXUIElement, AXUIElement)? {
         if (role == kAXSheetRole || subrole == kAXDialogSubrole),
            let button = filePanelButton(panel),
            let title = fileAttribute(button, kAXTitleAttribute) as? String,
-           ["Save", "保存", "儲存", "Enregistrer", "Sichern", "Guardar", "Сохранить", "저장"].contains(title),
+           ["Save", "Enregistrer", "Sichern", "Guardar", "Сохранить", "저장"].contains(title),
            filePanelButton(panel, cancel: true) != nil {
             var children = fileChildren(panel), count = 0
             while count < children.count && count < 1024 {

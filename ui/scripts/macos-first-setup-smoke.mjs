@@ -33,8 +33,8 @@ for (const failure of ["http", "native"]) {
           if (!finishFailed) {
             finishFailed=true;
             return failure === "http"
-              ? r.fulfill({status:409,body:"临时设置账户未关闭，请重试完成设置"})
-              : r.fulfill({json:{error:"未能保存首次设置，请重试"}});
+              ? r.fulfill({status:409,body:"The temporary setup account was not closed. Retry finishing setup."})
+              : r.fulfill({json:{error:"Could not save the first-run setup. Try again."}});
           }
           state.account.initial_mac_setup = false; return r.fulfill({json:{closed:true}});
         }
@@ -47,41 +47,41 @@ for (const failure of ["http", "native"]) {
     assert.ok(calls.includes(action),`missing ${action}`);
   }
   try {
-    await page.getByRole("dialog",{name:"首次设置虚拟 Mac"}).waitFor();
+    await page.getByRole("dialog",{name:"First-run setup of the virtual Mac"}).waitFor();
     await waitCall("screen");
-    await page.getByRole("dialog",{name:"首次设置虚拟 Mac"}).getByText(/打开 Cage Guest Window 的窗口录制开关/).waitFor();
-    const image = page.getByRole("dialog",{name:"首次设置虚拟 Mac"}).getByRole("img");
+    await page.getByRole("dialog",{name:"First-run setup of the virtual Mac"}).getByText(/Turn on the screen recording switch for Cage Guest Window/).waitFor();
+    const image = page.getByRole("dialog",{name:"First-run setup of the virtual Mac"}).getByRole("img");
     await image.waitFor();
     if (process.env.CAGE_INITIALIZATION_EVIDENCE) await page.screenshot({ path: `${process.env.CAGE_INITIALIZATION_EVIDENCE}/setup-window-${failure}.png`, fullPage: true });
     const box = await image.boundingBox();
     await page.mouse.move(box.x+box.width/2,box.y+box.height/2);
     await page.mouse.wheel(0,400);
     await waitCall("scroll");
-    const tools=page.getByRole("toolbar",{name:"画面工具"});
-    await tools.getByRole("button",{name:"填写授权密码"}).click();
+    const tools=page.getByRole("toolbar",{name:"View tools"});
+    await tools.getByRole("button",{name:"Fill in authorization password"}).click();
     await waitCall("fill-password");
     permissions.screen=true;
     await waitCall("input");
-    await page.getByRole("dialog",{name:"首次设置虚拟 Mac"}).getByText(/打开 Cage Guest Window 的辅助功能开关/).waitFor();
+    await page.getByRole("dialog",{name:"First-run setup of the virtual Mac"}).getByText(/Turn on the accessibility switch for Cage Guest Window/).waitFor();
     permissions.input=true;
     await waitCall("projects");
-    await page.getByRole("dialog",{name:"首次设置虚拟 Mac"}).getByText(/打开 macFUSE 和 macFUSE \(local\) 两个开关，用于/).waitFor();
+    await page.getByRole("dialog",{name:"First-run setup of the virtual Mac"}).getByText(/Turn on both the macFUSE and macFUSE \(local\) switches/).waitFor();
     assert.ok(!calls.includes("finish"),"finished before filesystem permission");
     permissions.projects=true;
-    await page.getByRole("button",{name:"返回设置指引"}).click();
-    const retry=page.getByRole("button",{name:"重试完成设置"});
+    await page.getByRole("button",{name:"Back to setup guide"}).click();
+    const retry=page.getByRole("button",{name:"Retry finishing setup"});
     await retry.waitFor();
-    await page.getByText("管理员密码与找不到设置页时的帮助",{exact:true}).click();
-    await page.getByRole("button",{name:"重新打开文件系统扩展",exact:true}).click();
+    await page.getByText("Help with the administrator password and finding the settings page",{exact:true}).click();
+    await page.getByRole("button",{name:"Reopen File system extension settings",exact:true}).click();
     await page.getByRole("alert").waitFor({state:"hidden"});
     assert.ok(await retry.isVisible(), "checking permissions hid the completion retry");
     await retry.click();
-    await page.getByRole("heading",{name:"完成虚拟 Mac 的系统授权"}).waitFor({state:"hidden"});
-    await page.getByRole("complementary", { name: "项目与终端" }).waitFor();
+    await page.getByRole("heading",{name:"Finish the virtual Mac's system authorizations"}).waitFor({state:"hidden"});
+    await page.getByRole("complementary", { name: "Projects and terminals" }).waitFor();
     await page.evaluate(() => window.cageNativeAction("settings"));
-    await page.getByRole("region", { name: "设置", exact: true }).waitFor();
+    await page.getByRole("region", { name: "Settings", exact: true }).waitFor();
     await page.evaluate(() => window.cageNativeAction("quit"));
-    await page.getByRole("dialog", { name: "退出 Cage", exact: true }).getByRole("button", { name: "取消", exact: true }).click();
+    await page.getByRole("dialog", { name: "Quit Cage", exact: true }).getByRole("button", { name: "Cancel", exact: true }).click();
     assert.equal(calls.filter(c=>c==="finish").length,2);
     assert.equal(calls.filter(c=>c==="verify-projects").length,0);
     assert.deepEqual(errors, []);

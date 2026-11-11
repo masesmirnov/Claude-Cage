@@ -36,25 +36,25 @@ func parseMainlandPrefixes(data string) ([]netip.Prefix, error) {
 func CheckExitCountry(ip string, location *Location) (State, string) {
 	address, err := netip.ParseAddr(ip)
 	if err != nil || !address.Is4() || !address.IsGlobalUnicast() || address.IsPrivate() {
-		return Unknown, "尚未取得有效的检测出口"
+		return Unknown, "No valid check exit has been obtained yet"
 	}
 	if mainlandListError != nil {
-		return Unknown, "大陆出口网段库不可用，外网保持关闭"
+		return Unknown, "The mainland China exit network range library is unavailable. Internet access stays off"
 	}
 	for _, prefix := range mainlandPrefixes {
 		if prefix.Contains(address) {
-			return Failed, "检测出口命中中国大陆 IP 网段，Cage 禁止使用大陆出口，外网保持关闭"
+			return Failed, "The check exit matches a mainland China IP range. Cage does not allow mainland China exits. Internet access stays off"
 		}
 	}
 	if location == nil || location.IP != address.String() {
-		return Unknown, "无法确认出口国家或地区，外网保持关闭"
+		return Unknown, "Could not confirm the exit country or region. Internet access stays off"
 	}
 	country := strings.ToUpper(strings.TrimSpace(location.CountryCode))
 	if len(country) != 2 || country[0] < 'A' || country[0] > 'Z' || country[1] < 'A' || country[1] > 'Z' || country == "ZZ" || country == "XX" {
-		return Unknown, "无法确认出口国家或地区，外网保持关闭"
+		return Unknown, "Could not confirm the exit country or region. Internet access stays off"
 	}
 	if country == "CN" {
-		return Failed, "检测出口位于中国大陆，Cage 禁止使用大陆出口，外网保持关闭"
+		return Failed, "The check exit is in mainland China. Cage does not allow mainland China exits. Internet access stays off"
 	}
-	return Passed, "检测出口未命中大陆网段，国家或地区信息符合非大陆出口要求"
+	return Passed, "The check exit does not match a mainland China range, and the country or region meets the non-mainland exit requirement"
 }

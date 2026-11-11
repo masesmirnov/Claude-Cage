@@ -51,7 +51,7 @@ type trustedLoginReply struct {
 
 func (d *desktopGateway) trustedLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "需要 POST 请求", 405)
+		http.Error(w, "A POST request is required.", 405)
 		return
 	}
 	var in trustedLoginRequest
@@ -63,24 +63,24 @@ func (d *desktopGateway) trustedLogin(w http.ResponseWriter, r *http.Request) {
 	session, remote, err := d.acquire(in.ConnectionID)
 	local, ok := d.local.(*desktopLocal)
 	if err != nil || remote || !ok {
-		http.Error(w, "请返回当前本机工作台", 409)
+		http.Error(w, "Return to the current local workbench.", 409)
 		return
 	}
 	c, err := openController(local.profile)
 	if err != nil {
-		http.Error(w, "本机后台无法连接", 503)
+		http.Error(w, "The local backend cannot be reached.", 503)
 		return
 	}
 	defer c.close()
 	if c.origin != session.Origin {
-		http.Error(w, "本机后台已切换", 409)
+		http.Error(w, "The local backend has switched.", 409)
 		return
 	}
 	in.Token, in.InstanceID = c.record.Token, session.Manifest.InstanceID
 	var reply trustedLoginReply
 	status, err := c.callContext(r.Context(), "POST", "/api/desktop-local/trusted-login", in, &reply)
 	if err != nil || status != http.StatusOK {
-		http.Error(w, "本机后台未接受登录请求，请确认已更新 Cage", 409)
+		http.Error(w, "The local backend did not accept the sign-in request. Make sure Cage is up to date.", 409)
 		return
 	}
 	if reply.Error != "" {
@@ -101,12 +101,12 @@ func (s *Server) localTrustedLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	_, finish, err := s.beginActivity(r.Context())
 	if err != nil {
-		http.Error(w, "后台正在更新", 503)
+		http.Error(w, "The backend is updating.", 503)
 		return
 	}
 	defer finish()
 	if in.Action == "create" {
-		jsonReply(w, trustedLoginReply{Error: "请先注册 Cage 用户名和密码，再开始安装"})
+		jsonReply(w, trustedLoginReply{Error: "Register a Cage username and password first, then start the installation."})
 		return
 	}
 	base, err := os.UserConfigDir()
@@ -114,7 +114,7 @@ func (s *Server) localTrustedLogin(w http.ResponseWriter, r *http.Request) {
 		base = os.Getenv("LOCALAPPDATA")
 	}
 	if !filepath.IsAbs(base) {
-		err = errors.New("无法确定本机系统用户配置目录")
+		err = errors.New("The local system user configuration directory could not be determined.")
 	}
 	if err == nil {
 		err = s.account.trustedLogin(in.Action, in.Password, filepath.Join(base, "Cage", "trusted-local"))
@@ -132,9 +132,9 @@ func (a *localAccount) trustedLogin(action, password, devices string) error {
 	switch action {
 	case "create":
 		if a.record != nil {
-			return errors.New("已有账户，请使用原登录方式")
+			return errors.New("An account already exists. Use the original sign-in method.")
 		}
-		record := &accountRecord{Version: 1, Username: "本机用户", TrustedDevice: randomToken()}
+		record := &accountRecord{Version: 1, Username: "Local user", TrustedDevice: randomToken()}
 		secret := randomToken()
 		key := make([]byte, 32)
 		if _, err := rand.Read(key); err != nil {
@@ -148,21 +148,21 @@ func (a *localAccount) trustedLogin(action, password, devices string) error {
 		// Store the wrapping credential first. A crash cannot publish a record
 		// whose credential has not been persisted.
 		if err := writePrivate(path, secret); err != nil {
-			return errors.New("无法保存当前系统用户的信任凭据")
+			return errors.New("The trust credential for the current system user could not be saved.")
 		}
 		if err := writePrivate(a.path, record); err != nil {
 			_ = os.Remove(path)
-			return errors.New("无法保存本机工作区")
+			return errors.New("The local workspace could not be saved.")
 		}
 		a.record = record
 		a.setKey(append([]byte(nil), key...))
 		a.trustedSession = true
 	case "enable":
 		if a.record == nil || a.record.TrustedDevice != "" || len(a.key) != 32 {
-			return errors.New("请先用本机账户登录")
+			return errors.New("Sign in with the local account first.")
 		}
 		if time.Now().Before(a.nextAttempt) {
-			return errors.New("请稍后再试")
+			return errors.New("Try again later.")
 		}
 		key, err := openAccountKey(a.record, password)
 		if err != nil {
@@ -195,11 +195,11 @@ func (a *localAccount) trustedLogin(action, password, devices string) error {
 		delete(record.Devices, "automatic")
 		path := filepath.Join(devices, device.ID+".json")
 		if err = writePrivate(path, secret); err != nil {
-			return errors.New("无法保存本机信任凭据")
+			return errors.New("The local trust credential could not be saved.")
 		}
 		if err = writePrivate(a.path, &record); err != nil {
 			_ = os.Remove(path)
-			return errors.New("本机信任未能保存")
+			return errors.New("Local trust could not be saved.")
 		}
 		previous := a.record.TrustedUnlock
 		a.record = &record
@@ -208,7 +208,7 @@ func (a *localAccount) trustedLogin(action, password, devices string) error {
 		}
 	case "disable":
 		if a.record == nil || len(a.key) != 32 {
-			return errors.New("请先解锁 Cage")
+			return errors.New("Unlock Cage first.")
 		}
 		if a.record.TrustedUnlock == nil && a.record.Devices["automatic"].ID == "" {
 			return nil
@@ -218,12 +218,12 @@ func (a *localAccount) trustedLogin(action, password, devices string) error {
 		record.Devices = maps.Clone(record.Devices)
 		delete(record.Devices, "automatic")
 		if err := writePrivate(a.path, &record); err != nil {
-			return errors.New("本机信任未能关闭")
+			return errors.New("Local trust could not be turned off.")
 		}
 		a.record = &record
 	case "resume":
 		if a.record == nil || (a.record.TrustedDevice == "" && a.record.TrustedUnlock == nil) || a.record.RequireAuthentication {
-			return errors.New("请使用原有账户验证方式")
+			return errors.New("Use the original account verification method.")
 		}
 		if len(a.key) == 32 {
 			return nil
@@ -234,18 +234,18 @@ func (a *localAccount) trustedLogin(action, password, devices string) error {
 		}
 		path := filepath.Join(devices, id+".json")
 		if err := host.CheckPrivateFile(path); err != nil {
-			return errors.New("找不到当前系统用户的私有信任凭据，请恢复备份")
+			return errors.New("The private trust credential for the current system user was not found. Restore a backup.")
 		}
 		data, err := os.ReadFile(path)
 		var secret string
 		if err != nil || len(data) > 128 || json.Unmarshal(data, &secret) != nil || len(secret) != 64 {
-			return errors.New("本机信任凭据无法读取，请恢复备份")
+			return errors.New("The local trust credential could not be read. Restore a backup.")
 		}
 		var key []byte
 		if device := a.record.TrustedUnlock; device != nil {
 			raw, decodeErr := hex.DecodeString(secret)
 			if decodeErr != nil {
-				return errors.New("本机信任凭据无效")
+				return errors.New("The local trust credential is invalid.")
 			}
 			defer clear(raw)
 			aead, cipherErr := deviceAEAD(raw)
@@ -257,13 +257,13 @@ func (a *localAccount) trustedLogin(action, password, devices string) error {
 			key, err = openAccountKey(a.record, secret)
 		}
 		if err != nil {
-			return errors.New("信任凭据与工作区不匹配，请恢复备份")
+			return errors.New("The trust credential does not match the workspace. Restore a backup.")
 		}
 		a.setKey(key)
 		a.trustedSession = true
 	case "protect":
 		if a.record == nil || a.record.TrustedDevice == "" || len(a.key) != 32 {
-			return errors.New("请先在受信任的本机进入工作区")
+			return errors.New("Enter the workspace from a trusted local session first.")
 		}
 		if err := validAccountPassword(password); err != nil {
 			return err
@@ -274,11 +274,11 @@ func (a *localAccount) trustedLogin(action, password, devices string) error {
 			return err
 		}
 		if err := writePrivate(a.path, &record); err != nil {
-			return errors.New("密码未能保存，仍可使用本机登录")
+			return errors.New("The password could not be saved. Local sign-in still works.")
 		}
 		a.record = &record
 	default:
-		return errors.New("未知的信任登录操作")
+		return errors.New("Unknown trusted sign-in operation.")
 	}
 	return nil
 }

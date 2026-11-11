@@ -28,7 +28,7 @@ func savedDownloadPath(profile, id string) string {
 func readSavedDownload(profile, id string) (SavedDownload, error) {
 	var saved SavedDownload
 	if !browserFileID.MatchString(id) {
-		return saved, errors.New("下载标识无效")
+		return saved, errors.New("The download ID is invalid.")
 	}
 	path := savedDownloadPath(profile, id)
 	if err := host.CheckPrivateFile(path); err != nil {
@@ -43,13 +43,13 @@ func readSavedDownload(profile, id string) (SavedDownload, error) {
 		return saved, err
 	}
 	if saved.ID != id || !filepath.IsAbs(saved.Path) || !browserDownloadName(saved.Name) {
-		return saved, errors.New("下载位置记录无效")
+		return saved, errors.New("The download location record is invalid.")
 	}
 	return saved, nil
 }
 func rememberDownload(profile string, saved SavedDownload, firstOnly bool) error {
 	if !browserFileID.MatchString(saved.ID) {
-		return errors.New("下载标识无效")
+		return errors.New("The download ID is invalid.")
 	}
 	directory := filepath.Join(profile, "browser-downloads")
 	if err := host.EnsurePrivateDir(directory); err != nil {
@@ -65,7 +65,7 @@ func rememberDownload(profile string, saved SavedDownload, firstOnly bool) error
 			break
 		}
 		if attempts >= 40 {
-			return errors.New("下载位置正在更新，请重试")
+			return errors.New("The download location is being updated. Try again.")
 		}
 		time.Sleep(25 * time.Millisecond)
 	}
@@ -85,7 +85,7 @@ func (s *Server) savedBrowserDownloads(w http.ResponseWriter, r *http.Request) {
 func serveSavedDownloads(w http.ResponseWriter, profile string) {
 	entries, err := os.ReadDir(filepath.Join(profile, "browser-downloads"))
 	if err != nil && !os.IsNotExist(err) {
-		http.Error(w, "无法读取已保存的位置", 500)
+		http.Error(w, "The saved location could not be read.", 500)
 		return
 	}
 	records := []SavedDownload{}
@@ -114,7 +114,7 @@ func BrowserFile(configPath, action, id, destination string) (SavedDownload, err
 func BrowserFileForConnection(configPath, connectionID, action, id, destination string) (SavedDownload, error) {
 	var result SavedDownload
 	if !browserFileID.MatchString(id) || (action != "save" && action != "open" && action != "reveal") {
-		return result, errors.New("下载操作无效")
+		return result, errors.New("The download operation is invalid.")
 	}
 	client, err := connectController(filepath.Dir(configPath))
 	if err != nil {
@@ -125,7 +125,7 @@ func BrowserFileForConnection(configPath, connectionID, action, id, destination 
 	entry, _ := url.Parse(client.launch.URL)
 	status, err := client.call("POST", "/api/session", map[string]string{"token": entry.Fragment}, nil)
 	if err != nil || status != 200 {
-		return result, errors.New("无法连接下载会话")
+		return result, errors.New("The download session could not be reached.")
 	}
 	connection, err := client.bindConnection(connectionID)
 	if err != nil {
@@ -143,13 +143,13 @@ func BrowserFileForConnection(configPath, connectionID, action, id, destination 
 	if connection.Mode == "remote" && action != "save" {
 		saved, readErr := readSavedDownload(saveProfile, id)
 		if readErr != nil || saved.InstanceID != connection.InstanceID {
-			return result, errors.New("请先将文件另存为到本机，再打开或显示所在位置")
+			return result, errors.New("Save the file to this computer first, then open it or show its location.")
 		}
 		result = saved
 	} else {
 		status, err = client.call("GET", "/api/browser/files/downloads/"+id, nil, &item)
 		if err != nil || status != 200 {
-			return result, errors.New("下载文件不可用，请确认 Cage 已解锁且下载已完成")
+			return result, errors.New("The downloaded file is unavailable. Make sure Cage is unlocked and the download has finished.")
 		}
 		result = SavedDownload{ID: id, Name: item.Name, Path: item.Path}
 		if connection.Mode == "remote" {
@@ -159,11 +159,11 @@ func BrowserFileForConnection(configPath, connectionID, action, id, destination 
 	}
 	if action == "save" {
 		if !filepath.IsAbs(destination) || filepath.Base(destination) == "." {
-			return result, errors.New("保存位置无效")
+			return result, errors.New("The save location is invalid.")
 		}
 		parent, resolveErr := filepath.EvalSymlinks(filepath.Dir(destination))
 		if resolveErr != nil {
-			return result, errors.New("所选保存文件夹已不可用")
+			return result, errors.New("The selected save folder is no longer available.")
 		}
 		destination = filepath.Join(parent, filepath.Base(destination))
 		request, _ := http.NewRequest("GET", client.origin+"/api/browser/files/downloads/"+id+"/content", nil)
@@ -171,11 +171,11 @@ func BrowserFileForConnection(configPath, connectionID, action, id, destination 
 		client.client.Timeout = 30 * time.Minute
 		response, err := client.client.Do(request)
 		if err != nil {
-			return result, errors.New("无法读取下载文件，请重试")
+			return result, errors.New("The downloaded file could not be read. Try again.")
 		}
 		defer response.Body.Close()
 		if response.StatusCode != 200 {
-			return result, errors.New("下载源文件已不可用，请从原网页重新下载")
+			return result, errors.New("The downloaded source file is no longer available. Download it again from the original page.")
 		}
 		if err = saveDownloadedStream(destination, response.Body, response.ContentLength); err != nil {
 			return result, err
@@ -188,7 +188,7 @@ func BrowserFileForConnection(configPath, connectionID, action, id, destination 
 	} else {
 		file, err := openDownloadedFile(result.Path)
 		if err != nil {
-			return result, errors.New("文件已移动、删除或无法访问")
+			return result, errors.New("The file was moved, deleted, or cannot be accessed.")
 		}
 		file.Close()
 		if err = openHostFile(result.Path, action); err != nil {
@@ -200,11 +200,11 @@ func BrowserFileForConnection(configPath, connectionID, action, id, destination 
 
 func saveDownloadedStream(destination string, source io.Reader, size int64) error {
 	if existing, err := os.Lstat(destination); err == nil && !existing.Mode().IsRegular() {
-		return errors.New("请选择普通文件保存位置")
+		return errors.New("Choose a regular file as the save location.")
 	}
 	temporary, err := os.CreateTemp(filepath.Dir(destination), ".cage-download-*.part")
 	if err != nil {
-		return errors.New("无法写入所选文件夹")
+		return errors.New("The selected folder could not be written to.")
 	}
 	defer os.Remove(temporary.Name())
 	count, err := io.Copy(temporary, source)
@@ -219,10 +219,10 @@ func saveDownloadedStream(destination string, source io.Reader, size int64) erro
 		err = closeErr
 	}
 	if err != nil {
-		return errors.New("保存未完成，原文件未覆盖；请检查空间或连接后重试")
+		return errors.New("Saving was not completed and the original file was not overwritten. Check the space or connection and try again.")
 	}
 	if err = os.Rename(temporary.Name(), destination); err != nil {
-		return errors.New("无法保存到所选位置，原文件未覆盖")
+		return errors.New("Could not save to the selected location. The original file was not overwritten.")
 	}
 	return nil
 }

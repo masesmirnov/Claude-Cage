@@ -6,7 +6,7 @@ function New-CageISOAnswer([pscredential]$Administrator) {
         $Administrator.UserName.Trim() -cne $Administrator.UserName -or $Administrator.UserName.EndsWith('.') -or
         $Administrator.UserName -in @('Administrator', 'Guest', 'DefaultAccount', 'WDAGUtilityAccount', 'cagesetup') -or
         $Administrator.Password.Length -eq 0) {
-        throw '请输入新的客机本地管理员名称和非空密码。用户名最多 20 个字符，请使用普通本地名称。'
+        throw 'Enter a new guest local administrator name and a non-empty password. The user name can be at most 20 characters; use a plain local name.'
     }
     $answer = [xml]@'
 <unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
@@ -32,7 +32,7 @@ function Remove-CageISOAnswer($VM, $Session, [string]$InstanceDirectory) {
         if ([guid](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters').VirtualMachineId -ne $expected) { throw 'wrong guest' }
         $setup = Get-ItemProperty 'HKLM:\SYSTEM\Setup'
         if ($setup.SystemSetupInProgress -ne 0 -or $setup.OOBEInProgress -ne 0 -or !(Test-Path 'C:\Program Files\PowerShell\7\pwsh.exe')) {
-            throw '请在虚拟机连接窗口完成 Windows 首次设置并登录桌面，然后回 Cage 继续安装。'
+            throw 'Finish the first Windows setup and sign in to the desktop in the virtual machine connection window, then return to Cage to continue the installation.'
         }
         foreach ($path in @('C:\Windows\Panther\Unattend.xml', 'C:\Windows\Panther\Unattend\Unattend.xml')) {
             if (!(Test-Path -LiteralPath $path -PathType Leaf)) { continue }
@@ -105,7 +105,7 @@ function Install-CageWindowsImage([string]$Image, [string]$Disk, [string]$Editio
         $windows = $target | New-Partition -UseMaximumSize -AssignDriveLetter
         $windows | Format-Volume -FileSystem NTFS -NewFileSystemLabel CAGE_WINDOWS -Confirm:$false | Out-Null
         $destination = $windows.DriveLetter + ':\'
-        Write-Output '正在将匹配本机版本的干净 Windows 写入独立虚拟磁盘…'
+        Write-Output 'Writing a clean Windows that matches the host version to a separate virtual disk…'
         Expand-WindowsImage -ImagePath $Image -Index $candidates[0].ImageIndex -ApplyPath $destination -Compact -CheckIntegrity | Out-Null
         $panther = Join-Path $destination 'Windows\Panther'
         $null = [IO.Directory]::CreateDirectory($panther)
@@ -154,7 +154,7 @@ function Get-CageSetupCredential([string]$Profile, [guid]$InstallationID) {
 
 function Wait-CageWindowsSetup([guid]$VMId, [pscredential]$Credential) {
     $deadline = [DateTime]::UtcNow.AddMinutes(20)
-    Write-Output '正在等待 Windows 完成首次设置…'
+    Write-Output 'Waiting for Windows to finish its first-time setup…'
     do {
         $session = $null
         try {

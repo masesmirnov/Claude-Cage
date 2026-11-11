@@ -189,7 +189,7 @@ func StartGuestServices(ctx context.Context, configPath string, cfg cage.Config,
 	if err == nil {
 		prefs.BalancedDisplay = false
 		if err = json.Unmarshal(data, &prefs); err != nil {
-			return fmt.Errorf("读取工作台画质设置失败: %w", err)
+			return fmt.Errorf("Reading the workbench image quality setting failed: %w", err)
 		}
 	} else if !os.IsNotExist(err) {
 		return err
@@ -246,7 +246,7 @@ func RunMaintenanceScript(ctx context.Context, configPath, script string, stdout
 			return ctx.Err()
 		}
 		diagnostics.Log("error", "maintenance", fmt.Sprintf("software installation error=%v", err))
-		return executionFailure("安装或更新环境软件", err, output.String())
+		return executionFailure("Installing or updating environment software", err, output.String())
 	}
 	return nil
 }

@@ -59,7 +59,7 @@ export function useAppUpdates() {
       try {
         const next = await native("appUpdate", { operation: "status" });
         if (!live) return;
-        if (next?.phase === "failed") setStartupFailure(next.message || "上次应用更新未完成");
+        if (next?.phase === "failed") setStartupFailure(next.message || "The last app update was not completed");
         if (next?.phase) { current.current = next; setState(next); }
         if (!next || ["idle", "current", "failed", "waiting"].includes(next.phase)) void run("check");
       } catch (error) {
@@ -108,14 +108,14 @@ export function AppUpdateButton({ updates }) {
   const percent = state.totalBytes > 0
     ? Math.max(0, Math.min(100, Math.floor((state.receivedBytes || 0) / state.totalBytes * 100)))
     : null;
-  const label = downloading ? `正在下载更新${percent === null ? "" : ` ${percent}%`}`
-    : state.phase === "verifying" || state.phase === "downloaded" ? "正在验证更新"
-    : state.phase === "installing" ? "正在安装更新，完成后自动重启"
-    : state.phase === "checking" ? "正在准备更新"
-    : coolingDown ? "等待重试更新" : failed ? "重试更新" : "下载更新";
-  const hint = coolingDown ? `${state.message || "更新源请求受限"}，可于 ${new Date(state.retryAt).toLocaleString()} 后重试`
-    : failed ? `${state.message || "更新未完成"}，点击重试`
-    : busy ? label : `更新至 ${state.latestVersion}。请先保存工作，点击后将自动停止环境、安装并重启。`;
+  const label = downloading ? `Downloading update${percent === null ? "" : ` ${percent}%`}`
+    : state.phase === "verifying" || state.phase === "downloaded" ? "Verifying update"
+    : state.phase === "installing" ? "Installing update; the app restarts automatically when done"
+    : state.phase === "checking" ? "Preparing update"
+    : coolingDown ? "Waiting to retry update" : failed ? "Retry update" : "Download update";
+  const hint = coolingDown ? `${state.message || "The update source is rate-limited"}. You can retry after ${new Date(state.retryAt).toLocaleString()}`
+    : failed ? `${state.message || "The update was not completed"}. Click to retry`
+    : busy ? label : `Update to ${state.latestVersion}. Save your work first; clicking stops the environment, installs and restarts automatically.`;
   const circumference = 2 * Math.PI * 15;
   return (
     <>
@@ -129,7 +129,7 @@ export function AppUpdateButton({ updates }) {
         {busy ? (
           <>
             <svg className={`app-update-ring${downloading && percent !== null ? "" : " indeterminate"}`}
-              viewBox="0 0 36 36" role="progressbar" aria-label={downloading ? "更新下载进度" : label}
+              viewBox="0 0 36 36" role="progressbar" aria-label={downloading ? "Update download progress" : label}
               aria-valuemin={0} aria-valuemax={100} aria-valuenow={downloading && percent !== null ? percent : undefined}>
               <circle className="app-update-ring-track" cx="18" cy="18" r="15" />
               <circle className="app-update-ring-value" cx="18" cy="18" r="15"
@@ -139,7 +139,7 @@ export function AppUpdateButton({ updates }) {
           </>
         ) : failed ? <RefreshCw size={20} /> : <ArrowDownToLine size={20} />}
       </button>}
-      {(failure || startupFailure) && <div className="app-update-error" role="alert">{failure || startupFailure}{visible ? coolingDown ? "。请等待更新源恢复后重试。" : "。可点击更新按钮重试。" : ""}</div>}
+      {(failure || startupFailure) && <div className="app-update-error" role="alert">{failure || startupFailure}{visible ? coolingDown ? ". Wait for the update source to recover, then retry." : ". Click the update button to retry." : ""}</div>}
     </>
   );
 }

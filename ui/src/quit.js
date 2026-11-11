@@ -17,7 +17,7 @@ export async function stopAndExit({
   delay = () => new Promise((resolve) => setTimeout(resolve, 350)),
 }) {
   const job = await stop();
-  if (!job.id) throw new Error("停止请求未返回任务编号，请重试。");
+  if (!job.id) throw new Error("The stop request did not return a task ID. Try again.");
   while (!isCancelled()) {
     const status = await readStatus();
     if (isCancelled()) return false;

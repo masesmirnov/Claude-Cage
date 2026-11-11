@@ -37,7 +37,7 @@ func TestProjectAuthorizationProtectsCredentialsAcrossGuests(t *testing.T) {
 			for _, directory := range []string{credentials, siblingState} {
 				body, _ := json.Marshal(map[string]any{"workspace": directory, "add": true})
 				response := windowsBrowserRequestForTest(s, http.MethodPost, "/api/projects/open", body)
-				if response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "共享") {
+				if response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "share") {
 					t.Fatalf("credential project admission: status=%d body=%s", response.Code, response.Body.String())
 				}
 				paths, err := s.projectPaths()
@@ -74,7 +74,7 @@ func TestProjectRestoreRevalidatesExistingCredentialGrant(t *testing.T) {
 	if len(s.projectShares) != 0 || len(s.projectErrors) != 1 || s.projectErrors[0].Path != credentials {
 		t.Fatalf("old credential grant was not rejected on restore: %+v", s.projectErrors)
 	}
-	if !strings.Contains(s.projectErrors[0].Message, "凭据") {
+	if !strings.Contains(s.projectErrors[0].Message, "credentials") {
 		t.Fatalf("restore did not report the authorization failure: %+v", s.projectErrors)
 	}
 }

@@ -4,8 +4,8 @@ import { InlineSelect } from "./inline-select";
 import "./guest-system-picker.css";
 
 const names = { "debian-12": "Debian 12", "debian-13": "Debian 13", "ubuntu-22.04": "Ubuntu 22.04", "ubuntu-24.04": "Ubuntu 24.04", macos: "macOS", "windows-11": "Windows 11" };
-const editions = { Professional: "专业版", ProfessionalN: "专业版 N", Enterprise: "企业版", EnterpriseN: "企业版 N", Education: "教育版", EducationN: "教育版 N", Core: "家庭版", CoreSingleLanguage: "家庭单语言版" };
-const languages = { "zh-CN": "简体中文", "zh-TW": "繁体中文", "en-US": "英语（美国）" };
+const editions = { Professional: "Pro", ProfessionalN: "Pro N", Enterprise: "Enterprise", EnterpriseN: "Enterprise N", Education: "Education", EducationN: "Education N", Core: "Home", CoreSingleLanguage: "Home Single Language" };
+const languages = { "zh-CN": "Chinese (Simplified)", "zh-TW": "Chinese (Traditional)", "en-US": "English (US)" };
 
 export function HostCloneSummary({ pending, onChange }) {
   const [result, setResult] = useState(null);
@@ -21,27 +21,27 @@ export function HostCloneSummary({ pending, onChange }) {
     return () => { active = false; };
   }, [attempt, onChange]);
   if (error) return <div className="guest-install-fields" role="alert"><small>{error}</small>
-    <button type="button" onClick={() => { setError(""); retry((value) => value + 1); }}>重新检测并匹配</button></div>;
-  if (!result) return <small className="guest-install-fields" role="status">正在检测本机系统版本并匹配官方镜像…</small>;
+    <button type="button" onClick={() => { setError(""); retry((value) => value + 1); }}>Detect and match again</button></div>;
+  if (!result) return <small className="guest-install-fields" role="status">Detecting this computer's system version and matching an official image…</small>;
   const plan = result.plan;
   const host = plan.host;
   const download = result.download_bytes > 0 ? `${(result.download_bytes / 1e9).toFixed(2)} GB` : "";
-  const source = host.system === "macos" ? "Apple" : host.system === "windows-11" ? "微软" : "发行版官方源";
+  const source = host.system === "macos" ? "Apple" : host.system === "windows-11" ? "Microsoft" : "the distribution's official source";
   const cached = Boolean(plan.path || result.download_bytes === 0 && plan.bytes > 0);
   return <div className="guest-install-fields host-clone-summary" aria-live="polite">
-    <strong>将安装：{names[host.system]} {host.system === "windows-11" ? `${host.version} · ${editions[host.edition] || host.edition} · ${languages[host.language] || host.language}` : host.system === "macos" ? host.version : ""}</strong>
-    <small>{pending ? "沿用首次选择的系统镜像，继续安装独立客机。" : "根据本机系统版本匹配官方镜像，安装到独立客机中。"}</small>
-    {host.build && <small>{pending ? "首次检测的本机构建号" : "本机构建号"} {host.build} · 镜像构建号 {plan.build}</small>}
-    {host.system === "windows-11" && host.build !== plan.build && <small>Windows 的发行版本、版本类型和语言与本机一致，补丁版本有所不同。</small>}
-    <small>本机的应用、个人文件和登录状态不会复制；客机中的工具、账户和文件会持续保存。</small>
-    <small>{cached ? "已找到匹配的本地镜像，校验后直接使用，无需重新下载系统镜像。" : `从 ${source} 下载官方系统镜像，${download ? `预计还需下载 ${download}` : "下载大小将在连接后显示"}。`}</small>
-    <small>{result.installation_started ? "继续使用原虚拟磁盘，保留已有安装进度。" : `至少需要 ${result.minimum_free_gib} GiB 可用空间，虚拟磁盘按实际使用增长。`}浏览器、编辑器等工作台组件按需下载。</small>
-    {!result.enough_space && <small role="alert">当前可用 {result.free_gib} GiB，请在存储设置中选择空间充足的位置，再重新检查。</small>}
+    <strong>Will install: {names[host.system]} {host.system === "windows-11" ? `${host.version} · ${editions[host.edition] || host.edition} · ${languages[host.language] || host.language}` : host.system === "macos" ? host.version : ""}</strong>
+    <small>{pending ? "Keeping the system image chosen first and continuing to install the separate guest." : "Matches an official image to this computer's system version and installs it in a separate guest."}</small>
+    {host.build && <small>{pending ? "Local build detected first" : "Local build"} {host.build} · Image build {plan.build}</small>}
+    {host.system === "windows-11" && host.build !== plan.build && <small>The Windows release, edition and language match this computer; the patch level differs.</small>}
+    <small>Apps, personal files and sign-in state on this computer are not copied; tools, accounts and files in the guest are kept.</small>
+    <small>{cached ? "A matching local image was found. It is verified and used directly, with no need to download the system image again." : `Downloads the official system image from ${source}; ${download ? `about ${download} still to download` : "the download size shows once connected"}.`}</small>
+    <small>{result.installation_started ? "Keeps using the original virtual disk and the installation progress so far." : `Needs at least ${result.minimum_free_gib} GiB of free space; the virtual disk grows with actual use.`} Workbench components such as the browser and editor download on demand.</small>
+    {!result.enough_space && <small role="alert">Only {result.free_gib} GiB is free. Choose a location with enough space in storage settings, then check again.</small>}
     {!pending && <button type="button" onClick={() => {
       setResult(null);
       onChange((current) => current?.clone ? { ...current, clone_key: "", clone_ready: false } : current);
       retry((value) => value + 1);
-    }}>重新检测并匹配</button>}
+    }}>Detect and match again</button>}
   </div>;
 }
 
@@ -75,7 +75,7 @@ export function GuestSystemPicker({ system, onChange, preserveOnUnmount = false,
     return () => { active = false; if (!preserveOnUnmount) onChange(undefined); };
   }, [onChange, attempt, preserveOnUnmount]);
   if (!view || !system) return error ? <div className="guest-system-picker"><span role="alert">{error}</span>
-    <button type="button" onClick={() => retry((n) => n + 1)}>重新检查安装选项</button></div> : null;
+    <button type="button" onClick={() => retry((n) => n + 1)}>Check install options again</button></div> : null;
   const os = system.guest_system;
   const change = (changes) => onChange((current) => current?.guest_system === os ? { ...current, ...changes } : current);
   async function choose() {
@@ -90,48 +90,48 @@ export function GuestSystemPicker({ system, onChange, preserveOnUnmount = false,
   }
   return (
     <div className="guest-system-picker">
-      <span>客户机系统</span>
-      <InlineSelect aria-label="客户机系统" value={system.clone ? "host" : os} disabled={system.pending}
+      <span>Guest system</span>
+      <InlineSelect aria-label="Guest system" value={system.clone ? "host" : os} disabled={system.pending}
         onValueChange={(value) => onChange({ guest_system: value === "host" ? view.system : value, clone: value === "host", clone_key: "", clone_ready: false, media: "", sha256: "", editor_terms: false })}>
-        {Boolean(view.system) && <option value="host" disabled={!view.available}>自动匹配本机系统版本{view.available ? "" : "（暂不可用）"}</option>}
+        {Boolean(view.system) && <option value="host" disabled={!view.available}>Match this computer's system version automatically{view.available ? "" : " (unavailable)"}</option>}
         <option value="debian-13">Debian 13</option>
-        <option value="ubuntu-22.04" disabled={!view.linux_systems?.includes("ubuntu-22.04")}>Ubuntu 22.04{view.linux_systems?.includes("ubuntu-22.04") ? "" : "（此构建暂不可用）"}</option>
-        <option value="macos" disabled={view.system !== "macos" || !view.available}>macOS{view.system === "macos" ? view.available ? "" : "（暂不可用）" : "（需要 Apple Silicon Mac）"}</option>
-        <option value="windows-11" disabled={view.system !== "windows-11" || !view.available}>Windows 11{view.system === "windows-11" ? view.available ? "" : "（暂不可用）" : "（需要 Windows 11 与 Hyper-V）"}</option>
+        <option value="ubuntu-22.04" disabled={!view.linux_systems?.includes("ubuntu-22.04")}>Ubuntu 22.04{view.linux_systems?.includes("ubuntu-22.04") ? "" : " (unavailable in this build)"}</option>
+        <option value="macos" disabled={view.system !== "macos" || !view.available}>macOS{view.system === "macos" ? view.available ? "" : " (unavailable)" : " (requires an Apple Silicon Mac)"}</option>
+        <option value="windows-11" disabled={view.system !== "windows-11" || !view.available}>Windows 11{view.system === "windows-11" ? view.available ? "" : " (unavailable)" : " (requires Windows 11 and Hyper-V)"}</option>
       </InlineSelect>
-      {system.clone && !system.activate && (deferMatch ? <small className="guest-install-fields">Cage 会检测本机系统版本，在下一步显示匹配的官方镜像、下载量与空间要求。</small> : <HostCloneSummary pending={system.pending} onChange={onChange} />)}
-      {!system.activate && <small className="guest-install-fields">系统镜像通过主机网络下载，遵循主机系统代理或 TUN 设置，不使用 Cage 的客机代理。使用 Clash 等软件时，请先开启系统代理或 TUN；代理规则决定镜像网站的实际出口。</small>}
+      {system.clone && !system.activate && (deferMatch ? <small className="guest-install-fields">Cage will detect this computer's system version and show the matching official image, download size and space requirements in the next step.</small> : <HostCloneSummary pending={system.pending} onChange={onChange} />)}
+      {!system.activate && <small className="guest-install-fields">The system image downloads over the host network and follows the host's system proxy or TUN settings, not the Cage guest proxy. If you use software such as Clash, turn on the system proxy or TUN first; its proxy rules decide the actual exit for the image site.</small>}
       {!system.clone && os !== "debian-13" && !system.activate && <div className="guest-install-fields">
         {os === "ubuntu-22.04" ? <>
-          <small>从 Ubuntu 官方源下载 Ubuntu 22.04 LTS 镜像，并校验 SHA-256。Cage 按主机架构选择 ARM64 或 x86_64。</small>
-          <small>自动安装开发工具、浏览器和编辑器。客机账户、文件和登录状态保存在独立的持久虚拟磁盘中。</small>
-          <small>至少需要 17 GiB 可用空间。失败后可继续原安装，不会改用其他系统或覆盖已有环境。</small>
+          <small>Downloads the Ubuntu 22.04 LTS image from Ubuntu's official source and verifies its SHA-256. Cage picks ARM64 or x86_64 to match the host architecture.</small>
+          <small>Development tools, the browser and the editor are installed automatically. The guest account, files and sign-in state are kept on a separate persistent virtual disk.</small>
+          <small>Needs at least 17 GiB of free space. After a failure you can resume the original installation; it never switches to another system or overwrites an existing environment.</small>
         </> : os === "macos" ? <>
-          <small>{system.media || "将从 Apple 下载 macOS 26.5.2（19.77 GB），并创建 64 GiB 稀疏虚拟磁盘。"}</small>
+          <small>{system.media || "Downloads macOS 26.5.2 (19.77 GB) from Apple and creates a 64 GiB sparse virtual disk."}</small>
           {!system.pending && <div>
-            <button type="button" onClick={choose}>选择本机 IPSW</button>
-            {system.media && <button type="button" onClick={() => change({ media: "" })}>改为下载</button>}
+            <button type="button" onClick={choose}>Choose a local IPSW</button>
+            {system.media && <button type="button" onClick={() => change({ media: "" })}>Download instead</button>}
           </div>}
-          <small>客机账户和独立密码由 Cage 自动准备并加密保管，启动时自动登录。</small>
+          <small>Cage prepares the guest account and a separate password automatically, stores them encrypted, and signs in automatically at startup.</small>
         </> : <>
-          <small>Windows 11 x64 需要 Hyper-V 和至少 64 GiB 可用磁盘空间。安装前在授权窗口设置客机本地管理员，Cage 会生成离线账户应答。进入客机桌面后回 Cage 继续，使用该账户确认组件安装。Cage 随后创建专用普通账户并重启客机。</small>
+          <small>Windows 11 x64 needs Hyper-V and at least 64 GiB of free disk space. Before installing, set the guest's local administrator in the authorization window, and Cage generates an offline account answer file. Once you reach the guest desktop, return to Cage and continue, using that account to confirm the component installation. Cage then creates a dedicated standard account and restarts the guest.</small>
           {!system.pending && <div>
-            <button type="button" onClick={() => reference("windows-media")}>从微软下载 ISO</button>
-            <button type="button" onClick={choose}>选择本机 ISO</button>
+            <button type="button" onClick={() => reference("windows-media")}>Download the ISO from Microsoft</button>
+            <button type="button" onClick={choose}>Choose a local ISO</button>
           </div>}
           {system.media && <small>{system.media}</small>}
-          <label>ISO 的 SHA-256<input value={system.sha256} readOnly={system.pending} spellCheck={false}
-            onChange={(e) => change({ sha256: e.target.value.trim() })} placeholder="微软公布的 64 位十六进制摘要" /></label>
-          <button type="button" onClick={() => reference("editor-license")}>阅读 Microsoft VS Code Server 许可条款</button>
+          <label>ISO SHA-256<input value={system.sha256} readOnly={system.pending} spellCheck={false}
+            onChange={(e) => change({ sha256: e.target.value.trim() })} placeholder="The 64-digit hex digest published by Microsoft" /></label>
+          <button type="button" onClick={() => reference("editor-license")}>Read the Microsoft VS Code Server license terms</button>
           <label><input type="checkbox" checked={system.editor_terms} disabled={system.pending}
-            onChange={(e) => change({ editor_terms: e.target.checked })} />我接受上述编辑器许可条款</label>
+            onChange={(e) => change({ editor_terms: e.target.checked })} />I accept the editor license terms above</label>
         </>}
       </div>}
       {system.clone && os === "windows-11" && <div className="guest-install-fields">
-        <small>安装时需要你确认 Windows 管理员授权，Cage 随后自动安装系统并创建独立客机账户。</small>
-        <button type="button" onClick={() => reference("editor-license")}>阅读 Microsoft VS Code Server 许可条款</button>
+        <small>You will need to confirm Windows administrator authorization during installation. Cage then installs the system automatically and creates a separate guest account.</small>
+        <button type="button" onClick={() => reference("editor-license")}>Read the Microsoft VS Code Server license terms</button>
         <label><input type="checkbox" checked={system.editor_terms} disabled={system.pending}
-          onChange={(e) => change({ editor_terms: e.target.checked })} />我接受上述编辑器许可条款</label>
+          onChange={(e) => change({ editor_terms: e.target.checked })} />I accept the editor license terms above</label>
       </div>}
       {view.reason && !view.available && <small className="guest-install-fields">{view.reason}</small>}
       {view.reselect && <button type="button" className="guest-install-fields" onClick={async () => {
@@ -140,8 +140,8 @@ export function GuestSystemPicker({ system, onChange, preserveOnUnmount = false,
           setView(await api("/environment/guest-systems"));
           onChange({ guest_system: "debian-13", media: "", sha256: "", editor_terms: false });
         } catch (e) { setError(e.message); }
-      }}>重新选择系统或镜像</button>}
-      {system.activate && <small className="guest-install-fields">客机已安装，可以打开工作台。</small>}
+      }}>Choose a different system or image</button>}
+      {system.activate && <small className="guest-install-fields">The guest is installed and the workbench can be opened.</small>}
       {error && <p role="alert" className="guest-install-fields">{error}</p>}
     </div>
   );

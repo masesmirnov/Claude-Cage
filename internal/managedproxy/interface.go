@@ -23,13 +23,13 @@ func PhysicalInterface(ctx context.Context) (string, error) {
 		return linuxPhysicalInterface(ctx)
 	}
 	if runtime.GOOS != "darwin" {
-		return "", errors.New("物理网卡识别当前支持 macOS")
+		return "", errors.New("Physical network adapter detection currently supports macOS.")
 	}
 	ctx, cancel := context.WithTimeout(ctx, 4*time.Second)
 	defer cancel()
 	hardware, err := exec.CommandContext(ctx, "/usr/sbin/networksetup", "-listallhardwareports").Output()
 	if err != nil {
-		return "", errors.New("无法读取物理网卡，请检查主机网络后重试")
+		return "", errors.New("Could not read the physical network adapters. Check the host network and try again.")
 	}
 	route, _ := exec.CommandContext(ctx, "/sbin/route", "-n", "get", "default").Output()
 	nwi, _ := exec.CommandContext(ctx, "/usr/sbin/scutil", "--nwi").Output()
@@ -96,18 +96,18 @@ func selectPhysicalInterface(route, hardware, nwi string, usable map[string]bool
 	if len(reachable) > 0 {
 		return reachable[0], nil
 	}
-	return "", errors.New("未找到可用的物理 IPv4 网卡；Cage 外网保持关闭，请连接网络后重试")
+	return "", errors.New("No usable physical IPv4 network adapter was found. Cage internet access stays off; connect to a network and try again.")
 }
 
 // BindInterface changes only the core's host transport. MATCH routing and
 // proxy credentials remain intact; this does not create a guest direct route.
 func BindInterface(data []byte, name string) ([]byte, error) {
 	if name == "" {
-		return nil, errors.New("缺少物理网卡，不能启动代理")
+		return nil, errors.New("There is no physical network adapter, so the proxy cannot start.")
 	}
 	var config map[string]any
 	if err := yaml.Unmarshal(data, &config); err != nil || config == nil {
-		return nil, errors.New("代理运行配置无效")
+		return nil, errors.New("Invalid proxy run configuration.")
 	}
 	config["interface-name"] = name
 	// Older imports may carry a node-level binding, which overrides the global.

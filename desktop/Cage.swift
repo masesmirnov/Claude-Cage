@@ -95,24 +95,24 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         nativeInput.configure(web: webView)
         content.addSubview(nativeInput)
         NSLayoutConstraint.activate([webView.leadingAnchor.constraint(equalTo: content.leadingAnchor), webView.trailingAnchor.constraint(equalTo: content.trailingAnchor), webView.topAnchor.constraint(equalTo: content.topAnchor), webView.bottomAnchor.constraint(equalTo: content.bottomAnchor)])
-        loading = NSTextField(labelWithString: "正在启动 Cage 工作台…")
+        loading = NSTextField(labelWithString: "Starting the Cage workbench…")
         loading.font = NSFont.systemFont(ofSize: 16, weight: .medium)
         loading.textColor = NSColor(srgbRed: 54.0/255, green: 54.0/255, blue: 54.0/255, alpha: 1)
         loading.alignment = .center
         loading.maximumNumberOfLines = 4
         loading.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(loading)
-        retry = NSButton(title: "重试连接", target: self, action: #selector(retryConnection))
+        retry = NSButton(title: "Retry connection", target: self, action: #selector(retryConnection))
         retry.bezelStyle = .rounded
         retry.translatesAutoresizingMaskIntoConstraints = false
         retry.isHidden = true
         content.addSubview(retry)
-        completeUpdateButton = NSButton(title: "保存后停止环境并完成更新", target: self, action: #selector(completePendingUpdate))
+        completeUpdateButton = NSButton(title: "Save, stop environment, and update", target: self, action: #selector(completePendingUpdate))
         completeUpdateButton.bezelStyle = .rounded
         completeUpdateButton.translatesAutoresizingMaskIntoConstraints = false
         completeUpdateButton.isHidden = true
         content.addSubview(completeUpdateButton)
-        existingEnvironmentButton = NSButton(title: "打开现有环境保存文件", target: self, action: #selector(openExistingEnvironment))
+        existingEnvironmentButton = NSButton(title: "Open saved environment files", target: self, action: #selector(openExistingEnvironment))
         existingEnvironmentButton.bezelStyle = .rounded
         existingEnvironmentButton.translatesAutoresizingMaskIntoConstraints = false
         existingEnvironmentButton.isHidden = true
@@ -135,45 +135,45 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         main.addItem(appItem)
         let appMenu = NSMenu(title: "Cage")
         appItem.submenu = appMenu
-        appMenu.addItem(withTitle: "关于 Cage", action: #selector(about), keyEquivalent: "")
-        appMenu.addItem(withTitle: "检查应用更新…", action: #selector(checkApplicationUpdate), keyEquivalent: "")
-        completeUpdateMenu = appMenu.addItem(withTitle: "完成待安装更新…", action: #selector(completePendingUpdate), keyEquivalent: "")
+        appMenu.addItem(withTitle: "About Cage", action: #selector(about), keyEquivalent: "")
+        appMenu.addItem(withTitle: "Check for app updates…", action: #selector(checkApplicationUpdate), keyEquivalent: "")
+        completeUpdateMenu = appMenu.addItem(withTitle: "Finish pending update…", action: #selector(completePendingUpdate), keyEquivalent: "")
         completeUpdateMenu.isHidden = true
         appMenu.addItem(.separator())
         if CageProfile.macGuestTrial {
-            appMenu.addItem(withTitle: "复制试用客机登录密码", action: #selector(copyGuestLoginPassword), keyEquivalent: "")
+            appMenu.addItem(withTitle: "Copy trial guest sign-in password", action: #selector(copyGuestLoginPassword), keyEquivalent: "")
         }
-        appMenu.addItem(withTitle: "设置…", action: #selector(settings), keyEquivalent: ",")
+        appMenu.addItem(withTitle: "Settings…", action: #selector(settings), keyEquivalent: ",")
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "隐藏 Cage", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
-        appMenu.addItem(withTitle: "显示全部", action: #selector(NSApplication.unhideAllApplications(_:)), keyEquivalent: "")
+        appMenu.addItem(withTitle: "Hide Cage", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        appMenu.addItem(withTitle: "Show all", action: #selector(NSApplication.unhideAllApplications(_:)), keyEquivalent: "")
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "退出 Cage…", action: #selector(requestQuit), keyEquivalent: "q")
-        let file = NSMenu(title: "文件")
-        file.addItem(withTitle: "打开项目…", action: #selector(openProject), keyEquivalent: "o")
+        appMenu.addItem(withTitle: "Quit Cage…", action: #selector(requestQuit), keyEquivalent: "q")
+        let file = NSMenu(title: "File")
+        file.addItem(withTitle: "Open project…", action: #selector(openProject), keyEquivalent: "o")
         file.addItem(.separator())
-        file.addItem(withTitle: "新建网页", action: #selector(newTab), keyEquivalent: "t")
-        let terminal = file.addItem(withTitle: "新建终端", action: #selector(newTerminal), keyEquivalent: "\r")
+        file.addItem(withTitle: "New web page", action: #selector(newTab), keyEquivalent: "t")
+        let terminal = file.addItem(withTitle: "New terminal", action: #selector(newTerminal), keyEquivalent: "\r")
         terminal.keyEquivalentModifierMask = [.command, .shift]
-        file.addItem(withTitle: "关闭当前标签", action: #selector(closeTab), keyEquivalent: "w")
+        file.addItem(withTitle: "Close current tab", action: #selector(closeTab), keyEquivalent: "w")
         file.addItem(.separator())
-        file.addItem(withTitle: "关闭窗口（保留环境）", action: #selector(closeWindow), keyEquivalent: "")
-        let fileItem = NSMenuItem(title: "文件", action: nil, keyEquivalent: "")
+        file.addItem(withTitle: "Close window (keep environment)", action: #selector(closeWindow), keyEquivalent: "")
+        let fileItem = NSMenuItem(title: "File", action: nil, keyEquivalent: "")
         fileItem.submenu = file; main.addItem(fileItem)
-        let edit = NSMenu(title: "编辑")
-        edit.addItem(withTitle: "撤销", action: #selector(editUndo), keyEquivalent: "z")
-        let redo = edit.addItem(withTitle: "重做", action: #selector(editRedo), keyEquivalent: "z"); redo.keyEquivalentModifierMask = [.command, .shift]
+        let edit = NSMenu(title: "Edit")
+        edit.addItem(withTitle: "Undo", action: #selector(editUndo), keyEquivalent: "z")
+        let redo = edit.addItem(withTitle: "Redo", action: #selector(editRedo), keyEquivalent: "z"); redo.keyEquivalentModifierMask = [.command, .shift]
         edit.addItem(.separator())
-        edit.addItem(withTitle: "剪切", action: #selector(editCut), keyEquivalent: "x")
-        edit.addItem(withTitle: "复制", action: #selector(editCopy), keyEquivalent: "c")
-        edit.addItem(withTitle: "粘贴", action: #selector(editPaste), keyEquivalent: "v")
-        edit.addItem(withTitle: "全选", action: #selector(editSelectAll), keyEquivalent: "a")
-        let editItem = NSMenuItem(title: "编辑", action: nil, keyEquivalent: ""); editItem.submenu = edit; main.addItem(editItem)
-        let view = NSMenu(title: "窗口")
-        view.addItem(withTitle: "最小化", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
-        view.addItem(withTitle: "缩放", action: #selector(NSWindow.performZoom(_:)), keyEquivalent: "")
-        view.addItem(withTitle: "进入全屏", action: #selector(NSWindow.toggleFullScreen(_:)), keyEquivalent: "")
-        let viewItem = NSMenuItem(title: "窗口", action: nil, keyEquivalent: ""); viewItem.submenu = view; main.addItem(viewItem)
+        edit.addItem(withTitle: "Cut", action: #selector(editCut), keyEquivalent: "x")
+        edit.addItem(withTitle: "Copy", action: #selector(editCopy), keyEquivalent: "c")
+        edit.addItem(withTitle: "Paste", action: #selector(editPaste), keyEquivalent: "v")
+        edit.addItem(withTitle: "Select all", action: #selector(editSelectAll), keyEquivalent: "a")
+        let editItem = NSMenuItem(title: "Edit", action: nil, keyEquivalent: ""); editItem.submenu = edit; main.addItem(editItem)
+        let view = NSMenu(title: "Window")
+        view.addItem(withTitle: "Minimize", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        view.addItem(withTitle: "Zoom", action: #selector(NSWindow.performZoom(_:)), keyEquivalent: "")
+        view.addItem(withTitle: "Enter full screen", action: #selector(NSWindow.toggleFullScreen(_:)), keyEquivalent: "")
+        let viewItem = NSMenuItem(title: "Window", action: nil, keyEquivalent: ""); viewItem.submenu = view; main.addItem(viewItem)
         NSApp.mainMenu = main
     }
     @objc private func editUndo(){edit("undo",fallback:"undo:")}
@@ -192,9 +192,9 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         }
     }
     @objc private func about() {
-        let version = Bundle.main.object(forInfoDictionaryKey: "CageVersion") as? String ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "开发版本"
-        let status = controllerNeedsUpdate ? "\n当前连接旧后台；更新尚未完成。" : ""
-        NSApp.orderFrontStandardAboutPanel(options: [.applicationName:"Cage", .applicationVersion:version, .credits:NSAttributedString(string:"本机隔离编码工作区\n基于 agent-vm、Lima、Chromium、noVNC 与 xterm.js" + status)])
+        let version = Bundle.main.object(forInfoDictionaryKey: "CageVersion") as? String ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Development build"
+        let status = controllerNeedsUpdate ? "\nConnected to an outdated backend; the update is not finished." : ""
+        NSApp.orderFrontStandardAboutPanel(options: [.applicationName:"Cage", .applicationVersion:version, .credits:NSAttributedString(string:"Isolated local coding workspace\nBuilt on agent-vm, Lima, Chromium, noVNC and xterm.js" + status)])
     }
     @objc private func copyGuestLoginPassword() {
         do { try MacGuestLoginCredential.copyForLogin() }
@@ -212,10 +212,10 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
     @objc private func openExistingEnvironment() { bootstrap(options: ["--existing"]) }
     @objc private func completePendingUpdate() {
         let alert = NSAlert()
-        alert.messageText = "保存文件后完成更新"
-        alert.informativeText = "这会停止现有环境和终端任务，再切换到新版后台。项目文件和登录状态会保留。请先保存编辑器中的修改。"
-        alert.addButton(withTitle: "已保存，停止并更新")
-        alert.addButton(withTitle: "继续当前工作")
+        alert.messageText = "Finish the update after saving files"
+        alert.informativeText = "This stops the current environment and terminal tasks, then switches to the new backend. Project files and sign-in state are kept. Save any changes in the editor first."
+        alert.addButton(withTitle: "Saved, stop and update")
+        alert.addButton(withTitle: "Keep working")
         alert.beginSheetModal(for: window) { response in
             if response == .alertFirstButtonReturn { self.bootstrap(options: ["--complete-update"]) }
         }
@@ -225,7 +225,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         if CageProfile.macGuestTrial {
             let binding = CageProfile.configURL().deletingLastPathComponent().appendingPathComponent("macos-guest.json")
             guard FileManager.default.fileExists(atPath: binding.path) else {
-                completion(.failure(CageUpdateError("这份试用版尚未绑定 macOS 客机，准备完成后请点重试。"))); return
+                completion(.failure(CageUpdateError("This trial is not yet bound to a macOS guest. Click Retry when setup is finished."))); return
             }
         }
         guard let executable = Bundle.main.url(forResource: "cage", withExtension: nil) else {
@@ -242,7 +242,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 let data = output.fileHandleForReading.readDataToEndOfFile()
                 process.waitUntilExit()
                 let result = try JSONSerialization.jsonObject(with: data) as? [String:Any]
-                let message = result?["message"] as? String ?? "工作台未能启动，请重试连接。"
+                let message = result?["message"] as? String ?? "The workbench could not start. Retry the connection."
                 guard process.terminationStatus == 0, let status = result?["status"] as? String else { throw NSError(domain:"Cage", code:1, userInfo:[NSLocalizedDescriptionKey:message]) }
                 if status == "upgrade_pending" {
                     DispatchQueue.main.async { completion(.success(DesktopEntry(status:status, url:nil, message:message))) }
@@ -254,7 +254,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         }
     }
     private func bootstrap(options: [String] = []) {
-        loading.stringValue = options.contains("--complete-update") ? "正在停止环境并切换到新版后台…" : "正在启动 Cage 工作台…"
+        loading.stringValue = options.contains("--complete-update") ? "Stopping the environment and switching to the new backend…" : "Starting the Cage workbench…"
         loading.isHidden = false; retry.isHidden = true; webView.isHidden = true
         completeUpdateButton.isHidden = true; existingEnvironmentButton.isHidden = true
         requestEntry(options: options) { result in
@@ -263,24 +263,24 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 self.controllerNeedsUpdate = entry.status != "ready"
                 self.completeUpdateMenu.isHidden = !self.controllerNeedsUpdate
                 let appTitle = CageProfile.macGuestTrial ? "Cage macOS" : "Cage"
-                self.window.title = self.controllerNeedsUpdate ? "\(appTitle)（更新待完成）" : appTitle
+                self.window.title = self.controllerNeedsUpdate ? "\(appTitle) (update pending)" : appTitle
                 if let url = entry.url { self.expectedPort = url.port!; self.webView.load(URLRequest(url: url)) }
                 else { self.showError(entry.message); self.completeUpdateButton.isHidden = false; self.existingEnvironmentButton.isHidden = false }
             case .failure(let error):
                 CageDiagnostics.record("Workbench startup failed: \(error)")
                 let message = error.localizedDescription
-                if message.unicodeScalars.contains(where: { (0x4E00...0x9FFF).contains($0.value) }) { self.showError(message) }
-                else { self.showError("启动工作台失败：本机后台未返回可识别的原因（错误码 \((error as NSError).code)）。请点击“重试连接”；仍失败时请保留此提示并反馈给维护者。") }
+                if let first = message.unicodeScalars.first, CharacterSet.uppercaseLetters.contains(first) { self.showError(message) }
+                else { self.showError("Starting the workbench failed: the local backend returned no recognizable reason (error code \((error as NSError).code)). Click \"Retry connection\". If it still fails, keep this message and report it to the maintainers.") }
             }
         }
     }
     private func browserFile(_ operation: String, id: String, connection: String = "local", path: String? = nil, reply: @escaping (Any?, String?) -> Void) {
-        guard UUID(uuidString: id) != nil else { reply(nil,"下载标识无效"); return }
+        guard UUID(uuidString: id) != nil else { reply(nil,"Invalid download ID"); return }
         fileCommand(["browser-file", "--json", "--connection", connection, operation, id] + (path.map { [$0] } ?? []), reply: reply)
     }
     private func clipboardCacheCommand(_ action: String, id: String = "", reply: @escaping (Any?, String?) -> Void) {
         guard let data = try? JSONSerialization.data(withJSONObject: ["action": action, "cache_id": id]),
-              let request = String(data: data, encoding: .utf8) else { reply(nil,"剪贴板缓存请求无效"); return }
+              let request = String(data: data, encoding: .utf8) else { reply(nil,"Invalid clipboard cache request"); return }
         fileCommand(["clipboard-files", "--json", "cache", request], replyLimit: 30 << 20, seconds: 10, reply: reply)
     }
     private func watchClipboardCaches() {
@@ -323,7 +323,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         }
     }
     private func fileCommand(_ arguments: [String], replyLimit: Int = 65536, seconds: TimeInterval = 1800, reply: @escaping (Any?, String?) -> Void) {
-        guard let executable = Bundle.main.url(forResource: "cage", withExtension: nil) else { reply(nil,"无法找到文件传递组件"); return }
+        guard let executable = Bundle.main.url(forResource: "cage", withExtension: nil) else { reply(nil,"Could not find the file transfer component"); return }
         DispatchQueue.global(qos: .userInitiated).async {
             let process = Process(); process.executableURL = executable
             process.arguments = arguments
@@ -334,18 +334,18 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 DispatchQueue.global().asyncAfter(deadline: .now() + seconds, execute: timeout)
                 defer { timeout.cancel() }
                 let data = output.fileHandleForReading.readDataToEndOfFile(); process.waitUntilExit()
-                guard data.count <= replyLimit, let result = try JSONSerialization.jsonObject(with: data) as? [String:Any] else { throw CageUpdateError("文件操作未返回有效结果") }
-                DispatchQueue.main.async { reply(process.terminationStatus == 0 ? result : nil, process.terminationStatus == 0 ? nil : result["message"] as? String ?? "文件操作失败") }
+                guard data.count <= replyLimit, let result = try JSONSerialization.jsonObject(with: data) as? [String:Any] else { throw CageUpdateError("The file operation returned no valid result") }
+                DispatchQueue.main.async { reply(process.terminationStatus == 0 ? result : nil, process.terminationStatus == 0 ? nil : result["message"] as? String ?? "File operation failed") }
             } catch { CageDiagnostics.record(error.localizedDescription); DispatchQueue.main.async { reply(nil,error.localizedDescription) } }
         }
     }
     private func rememberFiles(_ urls: [URL]) throws -> [String: Any] {
-        guard !urls.isEmpty, urls.count <= 100 else { throw CageUpdateError("请选择 1 至 100 个文件") }
+        guard !urls.isEmpty, urls.count <= 100 else { throw CageUpdateError("Select 1 to 100 files") }
         for url in urls {
-            guard url.isFileURL, url.host == nil || url.host == "" || url.host == "localhost" else { throw CageUpdateError("请选择本机文件") }
+            guard url.isFileURL, url.host == nil || url.host == "" || url.host == "localhost" else { throw CageUpdateError("Select local files") }
             let values = try url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
-            guard values.isRegularFile == true, values.isSymbolicLink != true else { throw CageUpdateError("请选择普通文件，暂不支持文件夹或链接") }
-            guard let size = values.fileSize, size <= 2 * 1024 * 1024 * 1024 else { throw CageUpdateError("每个文件不能超过 2 GB") }
+            guard values.isRegularFile == true, values.isSymbolicLink != true else { throw CageUpdateError("Select regular files. Folders and links are not supported.") }
+            guard let size = values.fileSize, size <= 2 * 1024 * 1024 * 1024 else { throw CageUpdateError("Each file cannot exceed 2 GB") }
         }
         let now = Date()
         fileSelections = fileSelections.filter { $0.value.expires > now }
@@ -372,12 +372,12 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         let failure = error as NSError
         let reason: String
         switch failure.code {
-        case NSURLErrorTimedOut: reason = "等待本机后台响应超时"
-        case NSURLErrorCannotConnectToHost: reason = "本机后台没有接受连接，可能尚未启动或已经退出"
-        case NSURLErrorNetworkConnectionLost: reason = "本机工作台连接在加载完成前中断"
-        default: reason = "内置网页组件未能加载本机工作台（错误码 \(failure.code)）"
+        case NSURLErrorTimedOut: reason = "timed out waiting for the local backend to respond"
+        case NSURLErrorCannotConnectToHost: reason = "the local backend did not accept the connection; it may not have started or may have exited"
+        case NSURLErrorNetworkConnectionLost: reason = "the local workbench connection dropped before loading finished"
+        default: reason = "the built-in web component could not load the local workbench (error code \(failure.code))"
         }
-        showError("打开工作台失败：\(reason)。请点击“重试连接”；仍失败时请保留此错误提示并反馈给维护者。后台任务不会因此自动结束。")
+        showError("Opening the workbench failed: \(reason). Click \"Retry connection\". If it still fails, keep this message and report it to the maintainers. Background tasks are not stopped automatically.")
     }
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         CageDiagnostics.record("WebKit content process terminated"); bootstrap()
@@ -388,19 +388,19 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
     }
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage, replyHandler: @escaping (Any?, String?) -> Void) {
         let origin = message.frameInfo.securityOrigin
-        guard message.frameInfo.isMainFrame, origin.protocol == "http", origin.host == "localhost", origin.port == expectedPort, let body = message.body as? [String:Any], let action = body["action"] as? String else { replyHandler(nil,"请求来源无效"); return }
+        guard message.frameInfo.isMainFrame, origin.protocol == "http", origin.host == "localhost", origin.port == expectedPort, let body = message.body as? [String:Any], let action = body["action"] as? String else { replyHandler(nil,"Invalid request origin"); return }
         switch action {
         case "remoteInput":
             replyHandler(nativeInput.handle(body), nil)
         case "accountDevice":
             guard !controllerNeedsUpdate, !accountDeviceBusy,
-                  let operation = body["operation"] as? String, ["status", "enable", "disable", "unlock"].contains(operation) else { replyHandler(nil,"账户操作正在进行或后台需要更新，请稍后重试"); return }
+                  let operation = body["operation"] as? String, ["status", "enable", "disable", "unlock"].contains(operation) else { replyHandler(nil,"An account operation is in progress or the backend needs an update. Try again later."); return }
             accountDeviceBusy = true
             let kind = body["kind"] as? String
             let connection = body["connection_id"] as? String ?? "local"
             requestEntry { result in
                 guard case .success(let entry) = result, let url = entry.url else {
-                    self.accountDeviceBusy = false; replyHandler(nil,"无法连接本地账户，请重新打开 Cage"); return
+                    self.accountDeviceBusy = false; replyHandler(nil,"Could not connect to the local account. Reopen Cage."); return
                 }
                 Task.detached {
                     do {
@@ -413,8 +413,8 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 }
             }
         case "exportDiagnostics":
-            guard !nativeFilePanelOpen else { replyHandler(nil,"请先完成当前文件窗口"); return }
-            let panel = NSSavePanel(); panel.title = "导出诊断包"; panel.nameFieldStringValue = "cage-diagnostics.zip"
+            guard !nativeFilePanelOpen else { replyHandler(nil,"Finish the current file window first"); return }
+            let panel = NSSavePanel(); panel.title = "Export diagnostics bundle"; panel.nameFieldStringValue = "cage-diagnostics.zip"
             panel.allowedContentTypes = [.zip]; nativeFilePanelOpen = true
             panel.beginSheetModal(for: window) { response in
                 self.nativeFilePanelOpen = false
@@ -422,14 +422,14 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 self.fileCommand(["diagnostics", "--json", "--connection", body["connection_id"] as? String ?? "local", url.path], reply: replyHandler)
             }
         case "workbenchReady":
-            guard !controllerNeedsUpdate else { replyHandler(nil,"后台版本尚未同步，更新未完成"); return }
+            guard !controllerNeedsUpdate else { replyHandler(nil,"The backend version is not yet in sync; the update is not finished"); return }
             appUpdater?.markLaunchReady()
             replyHandler(true,nil)
         case "appUpdate":
-            guard let operation = body["operation"] as? String, ["status", "check", "install", "cancel"].contains(operation) else { replyHandler(nil,"更新操作无效"); return }
+            guard let operation = body["operation"] as? String, ["status", "check", "install", "cancel"].contains(operation) else { replyHandler(nil,"Invalid update operation"); return }
             replyHandler(appUpdater.handle(operation),nil)
         case "appearance":
-            guard let mode = body["mode"] as? String, ["system", "light", "dark"].contains(mode), let background = body["background"] as? String, background.range(of: "^#[0-9a-fA-F]{6}$", options: .regularExpression) != nil else { replyHandler(nil,"外观参数无效"); return }
+            guard let mode = body["mode"] as? String, ["system", "light", "dark"].contains(mode), let background = body["background"] as? String, background.range(of: "^#[0-9a-fA-F]{6}$", options: .regularExpression) != nil else { replyHandler(nil,"Invalid appearance settings"); return }
             let value: [String:Any] = ["mode":mode,"background":background,"translucent":body["translucent"] as? Bool ?? false]
             UserDefaults.standard.set(value, forKey: "cage.windowAppearance")
             applyAppearance(value)
@@ -438,7 +438,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         case "clipboardRevision": watchClipboardCaches(); replyHandler(NSPasteboard.general.changeCount,nil)
         case "clipboardSyncCancel": clipboardGeneration += 1; replyHandler(true,nil)
         case "clipboardSyncRelease":
-            guard let id = body["files"] as? String, UUID(uuidString: id) != nil else { replyHandler(nil,"剪贴板文件标识无效"); return }
+            guard let id = body["files"] as? String, UUID(uuidString: id) != nil else { replyHandler(nil,"Invalid clipboard file ID"); return }
             fileCommand(["clipboard-files", "--json", "--connection", body["connection_id"] as? String ?? "local", "release", id], reply: replyHandler)
         case "clipboardSyncRead":
             watchClipboardCaches()
@@ -449,7 +449,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 clipboardReaders[reader] = urls.map(\.path)
                 fileCommand(["clipboard-files", "--json", "--connection", body["connection_id"] as? String ?? "local", "send"] + urls.map(\.path)) { result, error in
                     defer { self.clipboardReaders.removeValue(forKey: reader); self.collectClipboardCaches() }
-                    guard error == nil, var payload = result as? [String:Any] else { replyHandler(nil,error ?? "剪贴板文件传递失败"); return }
+                    guard error == nil, var payload = result as? [String:Any] else { replyHandler(nil,error ?? "Clipboard file transfer failed"); return }
                     if generation != self.clipboardGeneration || board.changeCount != revision, let id = payload["files"] as? String {
                         self.fileCommand(["clipboard-files", "--json", "--connection", body["connection_id"] as? String ?? "local", "release", id]) { _, _ in }
                     }
@@ -458,7 +458,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 }
             } else if let image = NSImage(pasteboard:board), let tiff = image.tiffRepresentation, let bitmap = NSBitmapImageRep(data:tiff) {
                 guard bitmap.pixelsWide > 0, bitmap.pixelsHigh > 0, bitmap.pixelsWide <= 40_000_000 / bitmap.pixelsHigh,
-                      let png = bitmap.representation(using:.png,properties:[:]), png.count <= 20 * 1024 * 1024 else { replyHandler(nil,"图片不能超过 20 MB 或 4000 万像素"); return }
+                      let png = bitmap.representation(using:.png,properties:[:]), png.count <= 20 * 1024 * 1024 else { replyHandler(nil,"Images cannot exceed 20 MB or 40 million pixels"); return }
                 replyHandler(["revision":revision,"png":png.base64EncodedString()],nil)
             } else { replyHandler(["revision":revision,"text":board.string(forType:.string) ?? ""],nil) }
         case "clipboardSyncWrite":
@@ -483,14 +483,14 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                     board.clearContents(); written = board.writeObjects([image])
                 } else if let text = body["text"] as? String, text.utf8.count <= 2 * 1024 * 1024 {
                     board.clearContents(); written = board.setString(text,forType:.string)
-                } else { replyHandler(nil,"剪贴板内容格式或大小无效"); return }
-                guard written else { replyHandler(nil,"剪贴板写入失败"); return }
+                } else { replyHandler(nil,"Invalid clipboard content format or size"); return }
+                guard written else { replyHandler(nil,"Clipboard write failed"); return }
                 if !cache.isEmpty { self.clipboardCacheCommand("publish", id: cache) { _, _ in } }
                 replyHandler(["revision":board.changeCount],nil)
             }
             if let id = body["files"] as? String, UUID(uuidString:id) != nil {
                 fileCommand(["clipboard-files","--json","--connection",body["connection_id"] as? String ?? "local","receive",id]) { result, error in
-                    guard error == nil, let paths = (result as? [String:Any])?["paths"] as? [String] else { self.restoreClipboardCaches(); replyHandler(nil,error ?? "剪贴板文件读取失败"); return }
+                    guard error == nil, let paths = (result as? [String:Any])?["paths"] as? [String] else { self.restoreClipboardCaches(); replyHandler(nil,error ?? "Clipboard file read failed"); return }
                     let cache = (result as? [String:Any])?["cache_id"] as? String ?? ""
                     if !cache.isEmpty { self.clipboardCopies[cache] = paths; self.clipboardPending.insert(cache) }
                     write(paths.map { URL(fileURLWithPath:$0) }, cache)
@@ -506,26 +506,26 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 guard bitmap.pixelsWide > 0, bitmap.pixelsHigh > 0,
                       bitmap.pixelsWide <= 40_000_000 / bitmap.pixelsHigh,
                       let png = bitmap.representation(using: .png, properties: [:]), png.count <= 20 * 1024 * 1024 else {
-                    replyHandler(nil,"图片不能超过 20 MB 或 4000 万像素"); return
+                    replyHandler(nil,"Images cannot exceed 20 MB or 40 million pixels"); return
                 }
                 replyHandler(["png":png.base64EncodedString()],nil)
             } else { replyHandler(["text":board.string(forType:.string) ?? ""],nil) }
         case "chooseGuestMedia":
-            guard !nativeFilePanelOpen else { replyHandler(nil,"请先完成当前文件窗口"); return }
+            guard !nativeFilePanelOpen else { replyHandler(nil,"Finish the current file window first"); return }
             let panel = NSOpenPanel()
             panel.canChooseDirectories = false; panel.canChooseFiles = true; panel.allowsMultipleSelection = false
             panel.allowedContentTypes = [UTType(filenameExtension: "ipsw") ?? .data]
-            panel.title = "选择 Apple 恢复镜像"; nativeFilePanelOpen = true
+            panel.title = "Choose Apple restore image"; nativeFilePanelOpen = true
             panel.beginSheetModal(for: window) { response in
                 self.nativeFilePanelOpen = false
                 replyHandler(response == .OK ? (panel.url?.path ?? "") : "", nil)
             }
         case "chooseUploadFiles":
-            guard !nativeFilePanelOpen else { replyHandler(nil,"请先完成当前文件窗口"); return }
+            guard !nativeFilePanelOpen else { replyHandler(nil,"Finish the current file window first"); return }
             let panel = NSOpenPanel()
             panel.canChooseDirectories = false; panel.canChooseFiles = true
             panel.allowsMultipleSelection = body["multiple"] as? Bool ?? false
-            panel.title = "选择本机文件"; panel.prompt = "选择"
+            panel.title = "Choose local files"; panel.prompt = "Choose"
             nativeFilePanelOpen = true
             panel.beginSheetModal(for: window) { response in
                 self.nativeFilePanelOpen = false
@@ -538,17 +538,17 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                   let target = body["target"] as? String, ["browser", "desktop", "terminal"].contains(target),
                   let id = body["id"] as? String, (target == "terminal" ? id.range(of: "^[a-f0-9]{16}$", options: .regularExpression) != nil : UUID(uuidString: id) != nil),
                   let files = fileSelections.removeValue(forKey: selection), files.expires > Date() else {
-                replyHandler(nil,"文件选择已过期，请重新复制或选择文件"); return
+                replyHandler(nil,"The file selection has expired. Copy or select the files again."); return
             }
             fileCommand(["upload-files", "--json", "--connection", body["connection_id"] as? String ?? "local", target, id] + files.paths, reply: replyHandler)
         case "clipboardWrite":
-            guard let text = body["text"] as? String else { replyHandler(nil,"缺少文本"); return }
+            guard let text = body["text"] as? String else { replyHandler(nil,"Missing text"); return }
             NSPasteboard.general.clearContents(); NSPasteboard.general.setString(text, forType:.string); replyHandler(true,nil)
         case "saveBrowserDownload":
-            guard !nativeFilePanelOpen, let id = body["id"] as? String, UUID(uuidString:id) != nil else { replyHandler(nil,"请先完成当前文件窗口"); return }
+            guard !nativeFilePanelOpen, let id = body["id"] as? String, UUID(uuidString:id) != nil else { replyHandler(nil,"Finish the current file window first"); return }
             let panel = NSSavePanel(); panel.canCreateDirectories = true
             panel.nameFieldStringValue = ((body["name"] as? String ?? "download") as NSString).lastPathComponent
-            panel.prompt = "保存"; panel.title = "将下载另存为到本机"
+            panel.prompt = "Save"; panel.title = "Save download to this computer"
             nativeFilePanelOpen = true
             panel.beginSheetModal(for: window) { response in
                 self.nativeFilePanelOpen = false
@@ -556,15 +556,15 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 self.browserFile("save",id:id,connection:body["connection_id"] as? String ?? "local",path:url.path,reply:replyHandler)
             }
         case "desktopFileAction":
-            guard let id = body["id"] as? String, UUID(uuidString:id) != nil else { replyHandler(nil,"文件打开标识无效"); return }
+            guard let id = body["id"] as? String, UUID(uuidString:id) != nil else { replyHandler(nil,"Invalid file open ID"); return }
             fileCommand(["desktop-file", "--json", "--connection", body["connection_id"] as? String ?? "local", id], reply: replyHandler)
         case "browserDownloadAction":
-            guard let id = body["id"] as? String, let operation = body["operation"] as? String, ["open","reveal"].contains(operation) else { replyHandler(nil,"下载操作无效"); return }
+            guard let id = body["id"] as? String, let operation = body["operation"] as? String, ["open","reveal"].contains(operation) else { replyHandler(nil,"Invalid download operation"); return }
             browserFile(operation,id:id,connection:body["connection_id"] as? String ?? "local",reply:replyHandler)
         case "importTheme":
             let panel = NSOpenPanel()
             panel.allowedContentTypes = [.json]; panel.allowsMultipleSelection = false
-            panel.canChooseDirectories = false; panel.canChooseFiles = true; panel.prompt = "导入主题"
+            panel.canChooseDirectories = false; panel.canChooseFiles = true; panel.prompt = "Import theme"
             nativeFilePanelOpen = true
             panel.beginSheetModal(for: window) { response in
                 self.nativeFilePanelOpen = false
@@ -572,32 +572,32 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 do {
                     let handle = try FileHandle(forReadingFrom: url); defer { try? handle.close() }
                     let data = try handle.read(upToCount: 256 * 1024 + 1) ?? Data()
-                    guard data.count <= 256 * 1024, let text = String(data: data, encoding: .utf8) else { replyHandler(nil, "请选择不超过 256 KB 的 UTF-8 JSON 主题文件"); return }
+                    guard data.count <= 256 * 1024, let text = String(data: data, encoding: .utf8) else { replyHandler(nil, "Select a UTF-8 JSON theme file of 256 KB or smaller"); return }
                     replyHandler(text, nil)
-                } catch { replyHandler(nil, "无法读取主题文件，请检查文件权限") }
+                } catch { replyHandler(nil, "Could not read the theme file. Check the file permissions.") }
             }
         case "exportTheme":
             guard let text = body["text"] as? String, let data = text.data(using: .utf8), data.count <= 256 * 1024,
-                  let document = try? JSONSerialization.jsonObject(with: data) as? [String: Any], document["format"] as? String == "cage-theme", document["version"] as? Int == 1 else { replyHandler(nil, "主题文件格式无效"); return }
+                  let document = try? JSONSerialization.jsonObject(with: data) as? [String: Any], document["format"] as? String == "cage-theme", document["version"] as? Int == 1 else { replyHandler(nil, "Invalid theme file format"); return }
             let panel = NSSavePanel(); panel.allowedContentTypes = [.json]; panel.canCreateDirectories = true
             let filename = (body["filename"] as? String ?? "Cage.cage-theme.json") as NSString
-            panel.nameFieldStringValue = filename.lastPathComponent; panel.prompt = "导出主题"
+            panel.nameFieldStringValue = filename.lastPathComponent; panel.prompt = "Export theme"
             nativeFilePanelOpen = true
             panel.beginSheetModal(for: window) { response in
                 self.nativeFilePanelOpen = false
                 guard response == .OK, let url = panel.url else { replyHandler(false, nil); return }
                 do { try data.write(to: url, options: .atomic); replyHandler(true, nil) }
-                catch { replyHandler(nil, "主题未能导出，请检查保存位置的权限") }
+                catch { replyHandler(nil, "The theme could not be exported. Check the permissions of the save location.") }
             }
         case "shareLocalProject":
             guard !nativeFilePanelOpen, let connection = body["connection_id"] as? String,
                   !connection.isEmpty, let mode = body["mode"] as? String, ["read","write"].contains(mode)
-            else { replyHandler(nil,"请在云端工作台重新选择项目"); return }
+            else { replyHandler(nil,"Select the project again in the cloud workbench"); return }
             let panel = NSOpenPanel()
             panel.canChooseDirectories = true; panel.canChooseFiles = false
             panel.canCreateDirectories = false; panel.allowsMultipleSelection = false
-            panel.prompt = mode == "write" ? "允许云端读写" : "允许云端读取"
-            panel.message = mode == "write" ? "云端 Cage 可以读取、修改和删除所选项目中的文件。" : "云端 Cage 可以读取所选项目中的文件。"
+            panel.prompt = mode == "write" ? "Allow cloud read and write" : "Allow cloud read"
+            panel.message = mode == "write" ? "Cloud Cage can read, modify, and delete files in the selected project." : "Cloud Cage can read files in the selected project."
             nativeFilePanelOpen = true
             panel.beginSheetModal(for: window) { response in
                 self.nativeFilePanelOpen = false
@@ -607,8 +607,8 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         case "chooseFolder":
             let panel = NSOpenPanel(); panel.canChooseDirectories = true; panel.canChooseFiles = false; panel.canCreateDirectories = true; panel.allowsMultipleSelection = false
             let storage = (body["purpose"] as? String) == "environmentStorage"
-            panel.prompt = storage ? "选择文件夹" : "共享此项目"
-            panel.message = storage ? "请选择用于保存镜像和虚拟磁盘的空文件夹。" : "仅此文件夹会与 Cage 共享。请选择具体项目。"
+            panel.prompt = storage ? "Choose folder" : "Share this project"
+            panel.message = storage ? "Choose an empty folder to store images and virtual disks." : "Only this folder will be shared with Cage. Choose a specific project."
             nativeFilePanelOpen = true
             panel.beginSheetModal(for:window) { response in self.nativeFilePanelOpen = false; replyHandler(response == .OK ? panel.url?.path : "",nil) }
         case "refreshSession":
@@ -617,12 +617,12 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 case .success(let entry):
                     if let url = entry.url { replyHandler(["url":url.absoluteString],nil) }
                     else { replyHandler(nil,entry.message) }
-                case .failure: replyHandler(nil,"工作台会话恢复失败，请重新连接后重试。")
+                case .failure: replyHandler(nil,"Workbench session restore failed. Reconnect and try again.")
                 }
             }
         case "reconnect": replyHandler(true,nil); bootstrap()
         case "quitNow": replyHandler(true,nil); allowQuit = true; NSApp.terminate(nil)
-        default: replyHandler(nil,"未知操作")
+        default: replyHandler(nil,"Unknown operation")
         }
     }
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) { let alert = NSAlert(); alert.messageText = message; alert.beginSheetModal(for:window){_ in completionHandler()} }
@@ -631,13 +631,13 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
         guard frame.isMainFrame, origin.protocol == "http", origin.host == "localhost", origin.port == expectedPort, !nativeFilePanelOpen else { completionHandler(nil); return }
         let panel = NSOpenPanel(); panel.canChooseFiles = true; panel.canChooseDirectories = false
         panel.allowsMultipleSelection = parameters.allowsMultipleSelection
-        panel.title = "选择本机文件"; nativeFilePanelOpen = true
+        panel.title = "Choose local files"; nativeFilePanelOpen = true
         panel.beginSheetModal(for: window) { response in
             self.nativeFilePanelOpen = false
             completionHandler(response == .OK ? panel.urls : nil)
         }
     }
-    func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) { let alert = NSAlert(); alert.messageText = message; alert.addButton(withTitle:"确定"); alert.addButton(withTitle:"取消"); alert.beginSheetModal(for:window){completionHandler($0 == .alertFirstButtonReturn)} }
+    func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) { let alert = NSAlert(); alert.messageText = message; alert.addButton(withTitle:"OK"); alert.addButton(withTitle:"Cancel"); alert.beginSheetModal(for:window){completionHandler($0 == .alertFirstButtonReturn)} }
     private func publishWindowVisibility(forceHidden: Bool = false) {
         guard window != nil, webView != nil else { return }
         let visible = !forceHidden && window.isVisible && !window.isMiniaturized && window.occlusionState.contains(.visible)

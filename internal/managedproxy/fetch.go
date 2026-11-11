@@ -22,7 +22,7 @@ import (
 func BootstrapClient() *http.Client {
 	return &http.Client{Transport: subscriptionHostTransport{hostproxy.NewTransport(), BootstrapDNSURLs()}, Timeout: 30 * time.Second, CheckRedirect: func(r *http.Request, via []*http.Request) error {
 		if len(via) >= 3 || r.URL.Scheme != "https" || r.URL.User != nil {
-			return errors.New("订阅重定向被拒绝")
+			return errors.New("The subscription redirect was rejected.")
 		}
 		return nil
 	}}
@@ -55,7 +55,7 @@ func (t subscriptionHostTransport) RoundTrip(req *http.Request) (*http.Response,
 		}
 	}
 	if !publicIP(ip) {
-		return nil, errors.New("订阅服务器必须使用公网地址")
+		return nil, errors.New("The subscription server must use a public address.")
 	}
 
 	// CONNECT (or SOCKS) must address the validated IP, while HTTP Host and
@@ -115,7 +115,7 @@ func resolveInfrastructureWith(ctx context.Context, host string, client *http.Cl
 	q.SetQuestion(dns.Fqdn(host), dns.TypeA)
 	wire, err := q.Pack()
 	if err != nil {
-		return netip.Addr{}, errors.New("代理基础设施域名无效")
+		return netip.Addr{}, errors.New("Invalid proxy infrastructure domain name.")
 	}
 	type result struct {
 		ip  netip.Addr
@@ -140,7 +140,7 @@ func resolveInfrastructureWith(ctx context.Context, host string, client *http.Cl
 			}
 		}
 	}
-	return netip.Addr{}, errors.New("代理基础设施 DNS 均不可用或未返回公网 IPv4；请检查主机网络后重试，未使用系统 DNS 回退")
+	return netip.Addr{}, errors.New("None of the proxy infrastructure DNS servers is available or returned a public IPv4 address. Check the host network and try again; no system DNS fallback was used.")
 }
 
 func queryInfrastructureDNS(ctx context.Context, client *http.Client, server string, q *dns.Msg, wire []byte) (netip.Addr, error) {
@@ -152,7 +152,7 @@ func queryInfrastructureDNS(ctx context.Context, client *http.Client, server str
 	req.Header.Set("Accept", "application/dns-message")
 	resp, err := client.Do(req)
 	if err != nil {
-		return netip.Addr{}, errors.New("代理基础设施域名解析失败")
+		return netip.Addr{}, errors.New("Resolving the proxy infrastructure domain name failed.")
 	}
 	defer resp.Body.Close()
 	wire, err = io.ReadAll(io.LimitReader(resp.Body, 65536))
@@ -160,7 +160,7 @@ func queryInfrastructureDNS(ctx context.Context, client *http.Client, server str
 	if err != nil || resp.StatusCode != 200 || answer.Unpack(wire) != nil || answer.Id != q.Id ||
 		!answer.Response || answer.Truncated || answer.Rcode != dns.RcodeSuccess || len(answer.Question) != 1 ||
 		!strings.EqualFold(answer.Question[0].Name, q.Question[0].Name) || answer.Question[0].Qtype != dns.TypeA || answer.Question[0].Qclass != dns.ClassINET {
-		return netip.Addr{}, errors.New("代理基础设施 DNS 响应无效")
+		return netip.Addr{}, errors.New("Invalid proxy infrastructure DNS response.")
 	}
 	for _, rr := range answer.Answer {
 		if a, ok := rr.(*dns.A); ok {
@@ -169,29 +169,29 @@ func queryInfrastructureDNS(ctx context.Context, client *http.Client, server str
 			}
 		}
 	}
-	return netip.Addr{}, errors.New("代理基础设施域名没有可用公网 IPv4")
+	return netip.Addr{}, errors.New("The proxy infrastructure domain name has no usable public IPv4 address.")
 }
 func Fetch(ctx context.Context, client *http.Client, rawURL string) ([]byte, string, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.Fragment != "" {
-		return nil, "", errors.New("订阅需要完整的 HTTPS 网址，不支持地址内用户名和密码")
+		return nil, "", errors.New("The subscription needs a full HTTPS URL; a user name and password in the address are not supported.")
 	}
 	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 	if err != nil {
-		return nil, "", errors.New("订阅网址无效")
+		return nil, "", errors.New("Invalid subscription URL.")
 	}
 	req.Header.Set("User-Agent", "clash.meta/Cage")
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, "", errors.New("订阅下载失败，请检查下载路径和服务地址")
+		return nil, "", errors.New("The subscription download failed. Check the download path and the service address.")
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return nil, "", errors.New("订阅服务器返回 HTTP " + strconv.Itoa(res.StatusCode))
+		return nil, "", errors.New("The subscription server returned HTTP " + strconv.Itoa(res.StatusCode))
 	}
 	b, err := io.ReadAll(io.LimitReader(res.Body, MaxImport+1))
 	if err != nil || len(b) > MaxImport {
-		return nil, "", errors.New("订阅下载中断或超过 8 MiB")
+		return nil, "", errors.New("The subscription download was interrupted or exceeds 8 MiB.")
 	}
 	usage := "" // Keep only known numeric metadata; never echo arbitrary headers.
 	if raw := res.Header.Get("Subscription-Userinfo"); len(raw) < 300 {

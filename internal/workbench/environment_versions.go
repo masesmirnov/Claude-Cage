@@ -14,7 +14,7 @@ import (
 	"github.com/sylvinus/agent-vm/internal/managedproxy"
 )
 
-var errGuestUpdateRequired = errors.New("环境组件需要更新，请先保存浏览器和编辑器中的修改。工作台终端与磁盘保留，编辑器内终端可能结束。")
+var errGuestUpdateRequired = errors.New("The environment components need an update. Save your changes in the browser and editor first. Workbench terminals and disks are kept, but terminals inside the editor may end.")
 
 const guestConnectionSnapshot = `sudo cat /etc/claude-cage/browser-control.json; printf '\n'; cat "$HOME/.config/claude-cage/browser-password"; printf '\n'; if sudo test -f /etc/claude-cage/components.json; then sudo cat /etc/claude-cage/components.json; else printf 'null'; fi`
 
@@ -22,7 +22,7 @@ func parseGuestConnection(data []byte) (guestCredentials, *cage.GuestManifest, e
 	lines := strings.SplitN(strings.TrimSpace(string(data)), "\n", 3)
 	var credentials guestCredentials
 	if len(lines) != 3 || json.Unmarshal([]byte(lines[0]), &credentials) != nil || credentials.Token == "" || strings.TrimSpace(lines[1]) == "" {
-		return credentials, nil, errors.New("浏览器控制服务尚未安装")
+		return credentials, nil, errors.New("The browser control service is not installed yet.")
 	}
 	credentials.VNCPassword = strings.TrimSpace(lines[1])
 	var manifest *cage.GuestManifest
@@ -80,7 +80,7 @@ CAGE_VERSIONS`)
 		}
 		if err != nil || json.Unmarshal(data, &snapshot) != nil {
 			components.Status = "unknown"
-			detail = "环境版本暂时无法读取，请恢复连接后重试。"
+			detail = "The environment version cannot be read right now. Restore the connection and try again."
 		} else {
 			components.Current = snapshot.Manifest
 			components.UpdateRequired = snapshot.Manifest == nil || !snapshot.Manifest.Current()
@@ -142,9 +142,9 @@ func (s *Server) synchronizeEnvironment() error {
 		return s.maintainNativeComponents(false)
 	}
 	if !s.vmRunning() {
-		return errors.New("请先启动 Cage 环境。")
+		return errors.New("Start the Cage environment first.")
 	}
-	if err := s.closeProxyGate("正在更新环境组件，外网暂时关闭"); err != nil {
+	if err := s.closeProxyGate("Updating environment components. Internet access is temporarily off"); err != nil {
 		return err
 	}
 	// Publish the new guest-only binary before runCage restarts its controller;
@@ -155,9 +155,9 @@ func (s *Server) synchronizeEnvironment() error {
 	s.mu.Lock()
 	s.ready = false
 	s.guestUpdateRequired = true
-	s.guestUpdateError = "环境组件更新尚未完成，请等待结果；失败时可以重试。"
+	s.guestUpdateError = "The environment component update is not finished. Wait for the result; if it fails, you can retry."
 	s.mu.Unlock()
-	s.setMessage("正在重启浏览器与编辑器组件，工作台终端保持运行…")
+	s.setMessage("Restarting the browser and editor components. Workbench terminals keep running…")
 	if err := s.runCage("up"); err != nil {
 		return err
 	}
@@ -181,14 +181,14 @@ func (s *Server) upgradeEnvironmentTools() error {
 		return s.maintainNativeComponents(true)
 	}
 	if !s.vmRunning() {
-		return errors.New("请先启动 Cage 环境。")
+		return errors.New("Start the Cage environment first.")
 	}
 	s.mu.Lock()
 	allowed := s.toolsNetworkAllowedLocked()
 	manifest := s.guestManifest
 	s.mu.Unlock()
 	if !allowed {
-		return errors.New("工作台正在退出，请稍后重试工具更新。")
+		return errors.New("The workbench is exiting. Try the tool update again later.")
 	}
 	if manifest == nil || !manifest.Current() {
 		return errGuestUpdateRequired
@@ -217,7 +217,7 @@ func (s *Server) upgradeEnvironmentTools() error {
 		s.mu.Unlock()
 		<-monitorDone
 	}
-	s.setMessage("正在更新 Chromium、编辑器和开发工具，工作台终端与磁盘保持运行…")
+	s.setMessage("Updating Chromium, the editor, and developer tools. Workbench terminals and disks keep running…")
 	err := s.runCage("update-tools")
 	finishMonitor()
 	if err != nil {

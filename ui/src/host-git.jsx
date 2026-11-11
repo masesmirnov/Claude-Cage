@@ -5,7 +5,7 @@ import { isRemoteClient } from "./client-context.mjs";
 import { Modal } from "./views";
 
 export function HostGitPreparation({ onClose, onReady }) {
-  const machine = isRemoteClient() ? "云端主机" : "本机";
+  const machine = isRemoteClient() ? "the cloud host" : "this computer";
   const [state, setState] = useState(null);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
@@ -38,15 +38,15 @@ export function HostGitPreparation({ onClose, onReady }) {
   if (!state && !error) return null;
   return (
     <Modal
-      title={`启动前，保护${machine} Git`}
+      title={`Protect Git on ${machine} before starting`}
       onClose={busy ? undefined : onClose}
       footer={
         <>
           <button disabled={busy} onClick={onClose}>
-            暂不启动
+            Not now
           </button>
           <button disabled={busy} onClick={() => check()}>
-            重新检查
+            Check again
           </button>
           {state?.can_enable && (
             <button
@@ -59,7 +59,7 @@ export function HostGitPreparation({ onClose, onReady }) {
               ) : (
                 <ShieldCheck size={16} />
               )}
-              启用保护并继续
+              Enable protection and continue
             </button>
           )}
         </>
@@ -67,31 +67,31 @@ export function HostGitPreparation({ onClose, onReady }) {
     >
       <div className="modal-body host-git-preparation">
         {busy && !state ? (
-          <p role="status">正在检查{machine} Git，尚未修改任何设置…</p>
+          <p role="status">Checking Git on {machine}; no settings have been changed yet…</p>
         ) : (
           <>
             <p>{state?.message}</p>
             {state?.can_enable && (
               <>
                 <p>
-                  Claude 可以修改共享文件。启用这项保护后，{machine} Git
-                  会忽略未经你明确指定的裸仓库，避免共享目录里的配置在{machine}
-                  上执行命令。
+                  Claude can modify shared files. With this protection on, Git on {machine}
+                  ignores bare repositories you have not explicitly specified, so configuration in a shared folder cannot run commands on
+                  {machine}.
                 </p>
                 <p>
-                  点击“启用保护并继续”将修改{machine}当前用户的一项全局 Git 设置：
+                  Clicking "Enable protection and continue" changes one global Git setting for the current user on {machine}:
                 </p>
                 <pre>git config --global safe.bareRepository explicit</pre>
                 <p>
-                  普通的 <code>.git</code>{" "}
-                  项目、提交记录和远程地址保持不变。使用裸仓库时，需要通过{" "}
-                  <code>--git-dir</code> 明确指定。设置会影响{machine}其他使用 Git
-                  的工具。
+                  Regular <code>.git</code>{" "}
+                  projects, commits and remote addresses stay unchanged. For bare repositories, specify them explicitly with{" "}
+                  <code>--git-dir</code>. The setting also affects other tools that use Git on
+                  {machine}.
                 </p>
               </>
             )}
             {!state?.can_enable && !error && (
-              <p>完成安装或修复后点击“重新检查”，无需重新配置代理。</p>
+              <p>After finishing the installation or repair, click "Check again". You do not need to reconfigure the proxy.</p>
             )}
           </>
         )}

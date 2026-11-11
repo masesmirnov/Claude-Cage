@@ -34,7 +34,7 @@ func TestTokenFileValidation(t *testing.T) {
 		{"embedded-newline", secret + "\nignored", false},
 		{"space", " " + secret, false},
 		{"control", secret + "\x00", false},
-		{"non-ascii", secret + "密钥", false},
+		{"non-ascii", secret + "ключ", false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			name := filepath.Join(t.TempDir(), "token")

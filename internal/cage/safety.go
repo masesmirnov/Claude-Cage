@@ -54,42 +54,42 @@ var requiredSafetyChecks = [...]string{
 func (r SafetyReport) Authorizes(runID, configuration string, now time.Time) error {
 	if r.Policy != SafetyPolicyVersion || r.ID == "" || r.CheckID == "" || runID == "" || configuration == "" ||
 		r.RunID != runID || r.Configuration != configuration {
-		return errors.New("检测报告不属于当前环境配置，请重新检测")
+		return errors.New("The check report does not belong to the current environment configuration. Check again.")
 	}
 	if r.CreatedAt.IsZero() || r.CreatedAt.After(now.Add(time.Minute)) || !now.Before(r.CreatedAt.Add(SafetyReportLifetime)) {
-		return errors.New("检测报告已过期，请重新检测")
+		return errors.New("The check report has expired. Check again.")
 	}
 	seen := make(map[string]SafetyCheck, len(r.Checks))
 	for _, check := range r.Checks {
 		if _, duplicate := seen[check.ID]; duplicate {
-			return errors.New("检测报告包含重复项目")
+			return errors.New("The check report contains duplicate items.")
 		}
 		if check.State != CheckPassed && check.State != CheckFailed && check.State != CheckUnknown {
-			return errors.New("检测状态无效")
+			return errors.New("Invalid check state.")
 		}
 		seen[check.ID] = check
 		if check.Critical && check.State != CheckPassed {
-			state := "未通过"
+			state := "did not pass"
 			if check.State == CheckUnknown {
-				state = "未能确认"
+				state = "could not be confirmed"
 			}
 			title := safetyCheckTitle(check)
-			evidence := strings.TrimRight(diagnostics.Redact(check.Evidence), "。；;")
+			evidence := strings.TrimRight(diagnostics.Redact(check.Evidence), ".;")
 			if evidence == "" {
-				evidence = "没有取得检测结果"
+				evidence = "No check result was obtained"
 			}
-			next := strings.TrimRight(diagnostics.Redact(check.Remedy), "。；;")
+			next := strings.TrimRight(diagnostics.Redact(check.Remedy), ".;")
 			if next == "" {
-				next = "打开“检查清单”查看此项结果，重新检测；仍失败时在设置中导出诊断包"
+				next = "Open \"Checklist\" to see the result of this item and check again; if it still fails, export a diagnostics bundle in Settings"
 			}
-			return fmt.Errorf("联网检查未通过：%s%s。%s。%s。外网保持关闭。", title, state, evidence, next)
+			return fmt.Errorf("Network check failed: %s %s. %s. %s. Internet access stays off.", title, state, evidence, next)
 		}
 	}
 	for _, id := range requiredSafetyChecks {
 		check, found := seen[id]
 		if !found || !check.Critical || check.State != CheckPassed || check.Evidence == "" ||
 			check.CheckedAt.Before(r.CreatedAt) || check.CheckedAt.After(now.Add(time.Minute)) {
-			return fmt.Errorf("联网检查缺少有效证据：%s的记录缺失、过期或不完整。请重新检测；仍失败时在设置中导出诊断包。外网保持关闭。", safetyCheckTitle(SafetyCheck{ID: id}))
+			return fmt.Errorf("The network check lacks valid evidence: the record for %s is missing, expired or incomplete. Check again; if it still fails, export a diagnostics bundle in Settings. Internet access stays off.", safetyCheckTitle(SafetyCheck{ID: id}))
 		}
 	}
 	return nil
@@ -100,10 +100,10 @@ func safetyCheckTitle(check SafetyCheck) string {
 		return check.Title
 	}
 	titles := map[string]string{
-		"egress_policy": "环境外出站约束", "proxy_transport": "代理连接", "dns_transport": "DNS 解析", "guest_settings": "系统时区与语言", "browser_settings": "浏览器时区与语言", "filesystem_boundary": "项目目录共享", "management_boundary": "宿主管理接口隔离", "fail_closed": "代理故障断网", "udp_policy": "UDP 出站约束", "ipv6_policy": "IPv6 出站约束", "exit_consistency": "出口 IP 与地区",
+		"egress_policy": "Outbound limits outside the environment", "proxy_transport": "Proxy connection", "dns_transport": "DNS resolution", "guest_settings": "System time zone and locale", "browser_settings": "Browser time zone and locale", "filesystem_boundary": "Project folder sharing", "management_boundary": "Host management interface isolation", "fail_closed": "Network cut on proxy failure", "udp_policy": "UDP outbound limits", "ipv6_policy": "IPv6 outbound limits", "exit_consistency": "Exit IP and region",
 	}
 	if title := titles[check.ID]; title != "" {
 		return title
 	}
-	return "必需检测项目"
+	return "Required check"
 }

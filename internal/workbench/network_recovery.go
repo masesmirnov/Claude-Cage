@@ -36,21 +36,21 @@ func (s *Server) networkRecoveryMessageLocked(now time.Time) string {
 	}
 	if job.Running {
 		if job.Kind == "network-recovery" {
-			return "正在执行自动完整重检，通过后恢复联网"
+			return "Running an automatic full recheck. Internet access resumes once it passes"
 		}
-		return "自动重检正在等待当前操作完成"
+		return "The automatic recheck is waiting for the current operation to finish"
 	}
 	if !s.ready {
-		return "自动重检正在等待环境就绪"
+		return "The automatic recheck is waiting for the environment to be ready"
 	}
 	if now.Before(r.Next) {
 		seconds := (r.Next.Sub(now) + time.Second - 1) / time.Second
-		return fmt.Sprintf("自动重检将在 %d 秒后尝试", seconds)
+		return fmt.Sprintf("The automatic recheck will try in %d seconds", seconds)
 	}
 	if r.pressureLogged {
-		return "自动重检正在等待内存压力缓解"
+		return "The automatic recheck is waiting for memory pressure to ease"
 	}
-	return "自动重检正在等待后台调度"
+	return "The automatic recheck is waiting for background scheduling"
 }
 
 func (s *Server) scheduleNetworkRecovery(state cage.GateStatus) {
@@ -149,7 +149,7 @@ func (s *Server) runNetworkRecovery(expected networkRecovery, recheck func() err
 	if err := s.operationContext().Err(); err != nil {
 		return err
 	}
-	s.setMessage("正在重新检查环境与出口，通过后自动恢复联网…")
+	s.setMessage("Rechecking the environment and exit. Internet access resumes automatically once it passes…")
 	err = recheck()
 	return s.finishNetworkRecovery(expected, err)
 }
@@ -187,7 +187,7 @@ func (s *Server) finishNetworkRecovery(expected networkRecovery, err error) erro
 	s.recovery.pressureLogged = false
 	// Show the latest full-check failure rather than the initial monitoring
 	// error, which may describe a different missing sample by this point.
-	s.safety.monitorError = diagnostics.Redact(usererror.Display("自动完整重检", err, "等待下一次重检；仍失败时导出诊断包。").Error())
+	s.safety.monitorError = diagnostics.Redact(usererror.Display("Automatic full recheck", err, "Wait for the next recheck. If it keeps failing, export a diagnostics bundle.").Error())
 	diagnostics.Log("warn", "network", fmt.Sprintf("automatic recheck attempt %d failed; next attempt in %s", s.recovery.Attempts, delay))
 	return err
 }

@@ -51,10 +51,10 @@ export class DownloadManager {
         if (record.state === "downloading") {
           record.state = "failed";
           record.sourceReady = false;
-          record.error = "下载被中断，请从原网页重新下载。";
+          record.error = "The download was interrupted. Download it again from the original page.";
         } else if (record.state === "saving") {
           record.state = "failed";
-          record.error = "保存过程被中断。源文件仍在时可以重试；否则请检查 Downloads 中的文件。";
+          record.error = "Saving was interrupted. You can retry while the source file still exists; otherwise check the file in Downloads.";
         }
         if (!terminalStates.has(record.state)) continue;
         record.retryable = record.state === "failed" && record.sourceReady && this.sourceExists(record.id);
@@ -95,7 +95,7 @@ export class DownloadManager {
     record.updatedAt = new Date().toISOString();
     const saved = !persist || this.persist();
     if (!saved) {
-      record.error = "无法保存下载记录，请检查客机可用空间。";
+      record.error = "Could not save the download record. Check the free space in the guest.";
     }
     this.changed();
     return saved;
@@ -107,7 +107,7 @@ export class DownloadManager {
     const record = { id, name, state: "downloading", receivedBytes: 0, totalBytes: 0, retryable: false, sourceReady: false };
     if (active >= activeLimit) {
       record.state = "canceled";
-      record.error = "同时下载的文件过多，请等待部分下载完成后重试。";
+      record.error = "Too many files are downloading at once. Wait for some downloads to finish and try again.";
       void Promise.resolve(this.cancel(id)).catch(() => {});
     }
     this.records.set(id, record);
@@ -124,7 +124,7 @@ export class DownloadManager {
       this.enqueue(record);
     } else if (state === "canceled") {
       record.state = "canceled";
-      record.error = "下载已取消，请从原网页重新下载。";
+      record.error = "The download was canceled. Download it again from the original page.";
       this.publish(record);
     } else if (Date.now() - this.lastProgress >= 500) {
       this.lastProgress = Date.now();
@@ -138,10 +138,10 @@ export class DownloadManager {
     if (!record || record.state !== "failed" || !record.sourceReady || !this.sourceExists(id)) {
       if (record) {
         record.retryable = false;
-        record.error = "下载源文件已不可用，请从原网页重新下载。";
+        record.error = "The downloaded source file is no longer available. Download it again from the original page.";
         this.publish(record);
       }
-      throw new Error("下载源文件已不可用，请从原网页重新下载。");
+      throw new Error("The downloaded source file is no longer available. Download it again from the original page.");
     }
     this.enqueue(record);
     return { ok: true };
@@ -151,7 +151,7 @@ export class DownloadManager {
     if (!this.sourceExists(record.id)) {
       record.state = "failed";
       record.retryable = false;
-      record.error = "下载源文件不可用，请从原网页重新下载。";
+      record.error = "The downloaded source file is not available. Download it again from the original page.";
       this.publish(record);
       return;
     }
@@ -167,7 +167,7 @@ export class DownloadManager {
     this.queue = this.queue.then(async () => {
       try {
         const result = await this.save(record.id, record.name);
-        if (!result?.ok || typeof result.path !== "string") throw new Error(result?.error || "保存结果无效，请检查共享目录后重试。");
+        if (!result?.ok || typeof result.path !== "string") throw new Error(result?.error || "Invalid save result. Check the shared folder and try again.");
         record.state = "saved";
         record.path = result.path;
         record.name = result.name || record.name;
@@ -175,7 +175,7 @@ export class DownloadManager {
         if (result.warning) record.error = result.warning;
       } catch (error) {
         record.state = "failed";
-        record.error = String(error.message || "保存失败，请检查共享目录后重试。").slice(0, 300);
+        record.error = String(error.message || "Saving failed. Check the shared folder and try again.").slice(0, 300);
         record.retryable = this.sourceExists(record.id);
       }
       this.publish(record);
@@ -189,7 +189,7 @@ export class DownloadManager {
   sourceFile(id) {
     const record = this.records.get(id);
     if (!record?.sourceReady || record.state === "downloading" || record.state === "saving" || !this.sourceExists(id))
-      throw new Error("下载源文件不可用或尚未完成");
+      throw new Error("The downloaded source file is not available or not finished yet.");
     return join(this.directory, "Downloads", id);
   }
 }

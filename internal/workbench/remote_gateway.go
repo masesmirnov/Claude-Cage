@@ -96,7 +96,7 @@ func (g *remoteGateway) context() ClientContext {
 func (s *Server) clientRequest(w http.ResponseWriter, r *http.Request) {
 	g := s.remote
 	if g == nil {
-		http.Error(w, "远程连接服务不可用", 503)
+		http.Error(w, "The remote connection service is unavailable.", 503)
 		return
 	}
 	path := strings.TrimPrefix(r.URL.Path, "/api/client/")
@@ -141,7 +141,7 @@ func (s *Server) clientRequest(w http.ResponseWriter, r *http.Request) {
 			defer g.desktop.change.Unlock()
 		}
 		if host.ID != "" && g.hostInUse(host.ID) {
-			http.Error(w, "请先断开这台主机，再修改连接配置", 409)
+			http.Error(w, "Disconnect from this host first, then change the connection configuration.", 409)
 			return
 		}
 		saved, err := g.store.Upsert(host)
@@ -157,7 +157,7 @@ func (s *Server) clientRequest(w http.ResponseWriter, r *http.Request) {
 			defer g.desktop.change.Unlock()
 		}
 		if g.hostInUse(id) {
-			http.Error(w, "请先断开这台主机，再删除本机连接配置", 409)
+			http.Error(w, "Disconnect from this host first, then delete the local connection configuration.", 409)
 			return
 		}
 		if err := g.store.Delete(id); err != nil {
@@ -188,7 +188,7 @@ func (s *Server) clientRequest(w http.ResponseWriter, r *http.Request) {
 		jsonReply(w, state)
 	case r.Method == "POST" && (path == "disconnect" || path == "local"):
 		if path == "local" && g.clientOnly {
-			http.Error(w, "轻量客户端仅连接远程环境", 409)
+			http.Error(w, "The lightweight client only connects to remote environments.", 409)
 			return
 		}
 		var input struct {
@@ -256,11 +256,11 @@ func (s *Server) routeRemote(w http.ResponseWriter, r *http.Request) bool {
 		session, remote, err = desktop.acquire(requestConnection(r))
 	} else if !s.remote.isRemote() {
 		if s.clientOnly && r.URL.Path != "/api/diagnostics/events" {
-			http.Error(w, "请先连接远程主机", 409)
+			http.Error(w, "Connect to a remote host first.", 409)
 			return true
 		}
 		if id := requestConnection(r); id != "" && id != "local" {
-			http.Error(w, "连接已经切换，请重新打开当前工作台", 409)
+			http.Error(w, "The connection has switched. Reopen the current workbench.", 409)
 			return true
 		}
 		return false
@@ -272,26 +272,26 @@ func (s *Server) routeRemote(w http.ResponseWriter, r *http.Request) bool {
 		return true
 	}
 	if remote && (r.URL.Path == "/api/environment/storage" || r.URL.Path == "/api/environment/storage/recover") {
-		http.Error(w, "请在虚拟机所在电脑上调整环境存储", http.StatusForbidden)
+		http.Error(w, "Adjust the environment storage on the computer that hosts the virtual machine.", http.StatusForbidden)
 		return true
 	}
 	if err != nil {
-		http.Error(w, "连接不可用或已切换，请重新选择工作环境", 409)
+		http.Error(w, "The connection is unavailable or has switched. Select the work environment again.", 409)
 		return true
 	}
 	if r.URL.Path == "/api/diagnostics/export" {
 		if !s.diagnosticMu.TryLock() {
-			http.Error(w, "正在导出另一份诊断包，请稍候", http.StatusConflict)
+			http.Error(w, "Another diagnostics bundle is being exported. Wait a moment.", http.StatusConflict)
 			return true
 		}
 		defer s.diagnosticMu.Unlock()
 	}
 	if remote && strings.HasPrefix(r.URL.Path, "/api/mobile/") {
-		http.Error(w, "手机只连接当前电脑的 Cage 环境", http.StatusForbidden)
+		http.Error(w, "Your phone only connects to the Cage environment on the current computer.", http.StatusForbidden)
 		return true
 	}
 	if remote && (r.URL.Path == "/api/mobile-pair" || strings.HasPrefix(r.URL.Path, "/api/mobile-pair/")) {
-		http.Error(w, "请切换到这台电脑的本机环境，再管理手机配对", http.StatusForbidden)
+		http.Error(w, "Switch to the local environment on this computer, then manage phone pairing.", http.StatusForbidden)
 		return true
 	}
 	if remote && r.Method == "GET" && r.URL.Path == "/api/browser/files/saved" {
@@ -305,7 +305,7 @@ func (s *Server) routeRemote(w http.ResponseWriter, r *http.Request) bool {
 	}
 	target, err := url.Parse(session.Origin)
 	if err != nil {
-		http.Error(w, "远程入口无效", 502)
+		http.Error(w, "The remote entry is invalid.", 502)
 		return true
 	}
 	ctx, cancel := context.WithCancel(r.Context())
@@ -357,7 +357,7 @@ func (s *Server) routeRemote(w http.ResponseWriter, r *http.Request) bool {
 			return nil
 		},
 		ErrorHandler: func(w http.ResponseWriter, _ *http.Request, _ error) {
-			http.Error(w, "远程连接已中断；已提交的操作请重连后核对", http.StatusBadGateway)
+			http.Error(w, "The remote connection was interrupted. After reconnecting, check any operations that were already submitted.", http.StatusBadGateway)
 		},
 	}
 	proxy.ServeHTTP(w, r.WithContext(ctx))

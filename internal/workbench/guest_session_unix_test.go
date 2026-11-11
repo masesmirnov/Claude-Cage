@@ -59,7 +59,7 @@ func TestGuestSessionRunsScriptsOverOneConnection(t *testing.T) {
 	if reply, _, err = run(ctx, "cat; printf done"); err != nil || string(reply.stdout) != "done" {
 		t.Fatalf("stdin was not empty: %+v %v", reply, err)
 	}
-	if reply, _, err = run(ctx, "printf '多字节 ✓\\n\\0binary'"); err != nil || string(reply.stdout) != "多字节 ✓\n\x00binary" {
+	if reply, _, err = run(ctx, "printf 'ฟภม ✓\\n\\0binary'"); err != nil || string(reply.stdout) != "ฟภม ✓\n\x00binary" {
 		t.Fatalf("output changed in transit: %q %v", reply.stdout, err)
 	}
 	if starts.Load() != 1 {

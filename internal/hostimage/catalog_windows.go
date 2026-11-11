@@ -36,7 +36,7 @@ func expandWindowsCatalog(ctx context.Context, data []byte) ([]byte, error) {
 		return nil, err
 	}
 	if !info.Mode().IsRegular() || info.Size() > 8<<20 {
-		return nil, errors.New("微软安装目录文件无效")
+		return nil, errors.New("Invalid Microsoft installation catalog file.")
 	}
 	return os.ReadFile(path)
 }

@@ -27,7 +27,7 @@ cd "$work"
 cp "$kit"/{macos-cli.py,cli_channel.py,cli_channel.resume.md,claude_account_resume.md,claude-account.py} .
 runtime="$base/cage-cli-runtime-2.1.311-py3.13.18-git2.56.0"
 if [[ $components == --components ]]; then
-    [[ -x $runtime/bin/python3 && -x $runtime/bin/claude && -x $runtime/bin/git ]] || { echo '请先更新环境工具，再同步组件。' >&2; exit 1; }
+    [[ -x $runtime/bin/python3 && -x $runtime/bin/claude && -x $runtime/bin/git ]] || { echo 'Update the environment tools first, then sync the components.' >&2; exit 1; }
 else
 cp "$kit"/{claude,uv.tar.gz,python.tar.gz,git.tar.gz} .
 check() { [[ $(shasum -a 256 "$2" | cut -d' ' -f1) == "$1" ]]; }

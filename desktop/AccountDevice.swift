@@ -23,7 +23,7 @@ final class CageAccountDevice: NSObject, URLSessionTaskDelegate, @unchecked Send
     private let connection: String
 
     init(entry: URL, connection: String = "local") throws {
-        guard entry.scheme == "http", entry.host == "localhost", let ticket = entry.fragment, !ticket.isEmpty else { throw CageAccountError("本地账户连接无效") }
+        guard entry.scheme == "http", entry.host == "localhost", let ticket = entry.fragment, !ticket.isEmpty else { throw CageAccountError("The local account connection is invalid") }
         var parts = URLComponents(url: entry, resolvingAgainstBaseURL: false)!
         parts.fragment = nil; parts.path = ""; parts.query = nil
         base = parts.url!; self.ticket = ticket; self.connection = connection
@@ -41,9 +41,9 @@ final class CageAccountDevice: NSObject, URLSessionTaskDelegate, @unchecked Send
         if let body { request.setValue("application/json", forHTTPHeaderField: "Content-Type"); request.httpBody = try JSONSerialization.data(withJSONObject: body) }
         let (data, response) = try await session.data(for: request)
         guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
-            throw CageAccountError(String(data: data.prefix(512), encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "账户操作未完成")
+            throw CageAccountError(String(data: data.prefix(512), encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "Account operation was not completed")
         }
-        guard let value = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw CageAccountError("本地账户响应无效") }
+        guard let value = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw CageAccountError("The local account response is invalid") }
         return value
     }
 }
@@ -62,21 +62,21 @@ enum CageAccountKeychain {
     }
     static func remove(binding: String, kind: String) throws {
         let status = SecItemDelete(query(binding: binding, kind: kind) as CFDictionary)
-        guard status == errSecSuccess || status == errSecItemNotFound else { throw CageAccountError("无法移除本机钥匙串记录，请重试") }
+        guard status == errSecSuccess || status == errSecItemNotFound else { throw CageAccountError("Could not remove the local Keychain record. Try again.") }
     }
     static func store(_ credential: [String: Any], binding: String, kind: String) throws {
         var item = query(binding: binding, kind: kind)
         item[kSecValueData as String] = try JSONSerialization.data(withJSONObject: credential)
         if let id = credential["id"] as? String { item[kSecAttrGeneric as String] = Data(id.utf8) }
-        item[kSecAttrLabel as String] = kind == "biometric" ? "Cage 指纹解锁" : "Cage 记住登录"
+        item[kSecAttrLabel as String] = kind == "biometric" ? "Cage fingerprint unlock" : "Cage remembered sign-in"
         if kind == "biometric" {
             var error: Unmanaged<CFError>?
-            guard let access = SecAccessControlCreateWithFlags(nil, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .biometryCurrentSet, &error) else { throw CageAccountError("这台 Mac 无法创建指纹保护的凭据") }
+            guard let access = SecAccessControlCreateWithFlags(nil, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .biometryCurrentSet, &error) else { throw CageAccountError("This Mac cannot create fingerprint-protected credentials") }
             item[kSecAttrAccessControl as String] = access
         }
         try remove(binding: binding, kind: kind)
         let status = SecItemAdd(item as CFDictionary, nil)
-        guard status == errSecSuccess else { throw CageAccountError("macOS 未能保存快捷登录凭据（\(status)），密码登录仍然可用") }
+        guard status == errSecSuccess else { throw CageAccountError("Could not save the quick sign-in credentials in macOS (\(status)). Password sign-in still works.") }
     }
     // Inspect metadata only. Status checks must not read the secret or ask for
     // Touch ID, and must never search credentials belonging to another path.
@@ -107,7 +107,7 @@ enum CageAccountKeychain {
         var item = query(binding: binding, kind: kind)
         item[kSecReturnData as String] = true; item[kSecMatchLimit as String] = kSecMatchLimitOne
         let context = LAContext()
-        context.localizedReason = "解锁你的 Cage 工作空间"
+        context.localizedReason = "Unlock your Cage workspace"
         context.localizedFallbackTitle = ""
         if kind == "automatic" {
             // The login Keychain is local to this Mac and its ACL trusts the
@@ -117,9 +117,9 @@ enum CageAccountKeychain {
         item[kSecUseAuthenticationContext as String] = context
         var result: CFTypeRef?
         let status = SecItemCopyMatching(item as CFDictionary, &result)
-        if status == errSecUserCanceled { throw CageAccountError("已取消指纹验证，可继续使用密码") }
+        if status == errSecUserCanceled { throw CageAccountError("Fingerprint verification was canceled. You can still use your password.") }
         guard status == errSecSuccess, let data = result as? Data,
-              let value = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw CageAccountError("快捷登录不可用，请使用密码解锁后重新开启") }
+              let value = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw CageAccountError("Quick sign-in is unavailable. Unlock with your password, then turn it on again.") }
         return value
     }
 }
@@ -129,19 +129,19 @@ extension CageAccountDevice {
         defer { session.invalidateAndCancel() }
         _ = try await call("@session", ["token": ticket])
         let account = try await call("")
-        guard let accountBinding = account["device_binding"] as? String, accountBinding.count == 64 else { throw CageAccountError("当前后台不支持快捷登录，请先完成更新") }
+        guard let accountBinding = account["device_binding"] as? String, accountBinding.count == 64 else { throw CageAccountError("The current backend does not support quick sign-in. Finish the update first.") }
         var binding = accountBinding
         if connection != "local" {
             let selected = try await call("@context")
-            guard selected["connection_id"] as? String == connection else { throw CageAccountError("工作环境已切换，请重新解锁") }
+            guard selected["connection_id"] as? String == connection else { throw CageAccountError("The environment has changed. Unlock again.") }
             if selected["mode"] as? String == "remote" {
                 guard let host = selected["host_id"] as? String, !host.isEmpty,
                       let fingerprint = selected["host_fingerprint"] as? String, fingerprint.hasPrefix("SHA256:"),
-                      let instance = selected["instance_id"] as? String, instance.count == 64 else { throw CageAccountError("远程连接已经切换，请重新解锁当前主机") }
+                      let instance = selected["instance_id"] as? String, instance.count == 64 else { throw CageAccountError("The remote connection has changed. Unlock the current host again.") }
                 let scoped = ["remote", host, fingerprint, instance, accountBinding].joined(separator: "\u{0}")
                 binding = SHA256.hash(data: Data(scoped.utf8)).map { String(format: "%02x", $0) }.joined()
             } else if selected["mode"] as? String != "local" {
-                throw CageAccountError("请先选择工作环境")
+                throw CageAccountError("Select an environment first")
             }
         }
         let context = LAContext()
@@ -153,10 +153,10 @@ extension CageAccountDevice {
             })
             return ["supported": true, "biometric_available": biometricAvailable, "device_status": states]
         }
-        guard let kind, ["automatic", "biometric"].contains(kind) else { throw CageAccountError("快捷登录类型无效") }
+        guard let kind, ["automatic", "biometric"].contains(kind) else { throw CageAccountError("Invalid quick sign-in type") }
         switch operation {
         case "enable":
-            if kind == "biometric" && !biometricAvailable { throw CageAccountError("请先在 macOS 系统设置中设置 Touch ID") }
+            if kind == "biometric" && !biometricAvailable { throw CageAccountError("Set up Touch ID in macOS System Settings first") }
             let credential = try await call("/device-enroll", ["kind": kind])
             do { try CageAccountKeychain.store(credential, binding: binding, kind: kind) }
             catch {
@@ -168,12 +168,12 @@ extension CageAccountDevice {
             try CageAccountKeychain.remove(binding: binding, kind: kind)
         case "unlock":
             // Check persisted manual-lock state before touching the Keychain.
-            if kind == "automatic" && account["require_authentication"] as? Bool == true { throw CageAccountError("Cage 已手动锁定，请使用指纹或密码") }
-            guard let devices = account["devices"] as? [String: String], let expectedID = devices[kind] else { throw CageAccountError("请先使用密码登录，再开启快捷登录") }
+            if kind == "automatic" && account["require_authentication"] as? Bool == true { throw CageAccountError("Cage was locked manually. Use your fingerprint or password.") }
+            guard let devices = account["devices"] as? [String: String], let expectedID = devices[kind] else { throw CageAccountError("Sign in with your password first, then turn on quick sign-in") }
             let credential = try CageAccountKeychain.read(binding: binding, kind: kind)
-            guard credential["id"] as? String == expectedID else { throw CageAccountError("快捷登录授权已失效，请使用密码") }
+            guard credential["id"] as? String == expectedID else { throw CageAccountError("Quick sign-in authorization has expired. Use your password.") }
             _ = try await call("/device-unlock", ["kind": kind, "credential": credential])
-        default: throw CageAccountError("快捷登录操作无效")
+        default: throw CageAccountError("Invalid quick sign-in operation")
         }
         return ["ok": true]
     }

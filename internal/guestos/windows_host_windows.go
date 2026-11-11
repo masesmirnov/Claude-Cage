@@ -22,27 +22,27 @@ func probeWindowsHost(ctx context.Context) (bool, string) {
 	version := windows.RtlGetVersion()
 	const workstation = 1 // VER_NT_WORKSTATION
 	if version.ProductType != workstation || version.MajorVersion < 10 || version.BuildNumber < 22000 {
-		return false, "Windows 原生客机需要 Windows 11 桌面版宿主。"
+		return false, "A native Windows guest needs a Windows 11 desktop host."
 	}
 	var processMachine, nativeMachine uint16
 	if err := windows.IsWow64Process2(windows.CurrentProcess(), &processMachine, &nativeMachine); err != nil {
-		return false, "无法读取 Windows 主机的原生处理器架构。"
+		return false, "Could not read the native processor architecture of the Windows host."
 	}
 	if runtime.GOARCH != "amd64" || nativeMachine != pe.IMAGE_FILE_MACHINE_AMD64 {
-		return false, "Windows 原生客机需要 Intel 或 AMD x64 主机及 x64 版 Cage。"
+		return false, "A native Windows guest needs an Intel or AMD x64 host and the x64 build of Cage."
 	}
 	ctx, cancel := context.WithTimeout(ctx, 12*time.Second)
 	defer cancel()
 	cmd, err := systemPowerShellQuery(ctx, hyperVHostProbe)
 	if err != nil {
-		return false, "无法定位系统自带的 Windows PowerShell。"
+		return false, "Could not locate the Windows PowerShell that ships with the system."
 	}
 	output, err := cmd.Output()
 	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-		return false, "查询 Hyper-V 超时，请检查本机虚拟机管理服务后重试。"
+		return false, "Querying Hyper-V timed out. Check the local virtual machine management service and try again."
 	}
 	if ctx.Err() != nil {
-		return false, "已取消 Windows 主机预检。"
+		return false, "The Windows host preflight was canceled."
 	}
 	if err != nil {
 		var exit *exec.ExitError
@@ -51,12 +51,12 @@ func probeWindowsHost(ctx context.Context) (bool, string) {
 				return false, reason
 			}
 		}
-		return false, "无法通过系统 PowerShell 查询 Hyper-V，请检查 PowerShell 和 Windows 管理服务。"
+		return false, "Could not query Hyper-V through the system PowerShell. Check PowerShell and the Windows management service."
 	}
 	if strings.TrimSpace(string(output)) != "ready" {
-		return false, "Hyper-V 预检返回了无法识别的结果。"
+		return false, "The Hyper-V preflight returned a result that could not be recognized."
 	}
-	return true, "Hyper-V 平台已就绪；首次安装确认系统授权后，Cage 管理助手仅操作已绑定客机。"
+	return true, "The Hyper-V platform is ready. After you confirm the system authorization during the first installation, the Cage management helper only operates the bound guest."
 }
 
 func systemPowerShellQuery(ctx context.Context, script string) (*exec.Cmd, error) {
@@ -77,20 +77,20 @@ function Unavailable([string]$reason) { Write-Output $reason; exit 2 }
 
 $edition = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name EditionID).EditionID
 if ($edition -like 'Core*') {
-    Unavailable 'Windows 家庭版未提供完整的 Hyper-V 角色。此原型支持专业版、企业版和教育版。'
+    Unavailable 'Windows Home does not provide the full Hyper-V role. This prototype supports Pro, Enterprise and Education.'
 }
 $service = Get-Service -Name vmms -ErrorAction SilentlyContinue
 if (!$service) {
-    Unavailable '未检测到 Hyper-V 虚拟机管理服务（vmms），请检查 Windows 功能中的 Hyper-V 平台。'
+    Unavailable 'The Hyper-V virtual machine management service (vmms) was not detected. Check the Hyper-V platform in Windows Features.'
 }
 if ($service.Status -ne 'Running') {
-    Unavailable 'Hyper-V 虚拟机管理服务（vmms）当前未运行。'
+    Unavailable 'The Hyper-V virtual machine management service (vmms) is not running.'
 }
 if ((Get-CimInstance Win32_ComputerSystem).HypervisorPresent -ne $true) {
-    Unavailable 'Windows 未检测到正在运行的虚拟机监控程序，请检查固件虚拟化设置和 Hyper-V 启动状态。'
+    Unavailable 'Windows did not detect a running hypervisor. Check the firmware virtualization settings and the Hyper-V boot state.'
 }
 if (!(Get-Command 'Hyper-V\Get-VMHost' -ErrorAction SilentlyContinue)) {
-    Unavailable '缺少 Hyper-V PowerShell 管理模块，请检查 Windows 功能中的 Hyper-V 管理工具。'
+    Unavailable 'The Hyper-V PowerShell management module is missing. Check the Hyper-V management tools in Windows Features.'
 }
 Write-Output 'ready'
 `

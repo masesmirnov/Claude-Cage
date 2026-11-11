@@ -123,7 +123,7 @@ func TestWindowsStorageMigrationPreservesPairingAndPriorDisks(t *testing.T) {
 				if err != nil || !location.HasEnvironment {
 					t.Fatal("Windows environment not detected", location, err)
 				}
-				target := filepath.Join(t.TempDir(), "环境存储")
+				target := filepath.Join(t.TempDir(), "Хранилище")
 				moved, err := cage.MoveStorageWithRuntime(context.Background(), profile, target, location, runtime, nil)
 				if err != nil {
 					t.Fatal(err)

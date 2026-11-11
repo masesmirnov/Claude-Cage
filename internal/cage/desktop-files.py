@@ -29,7 +29,7 @@ def image_context():
     value = json.loads(result.stdout)
     context = value.get('context', '')
     if value.get('available') is not True or not re.fullmatch('[a-f0-9]{32}', context):
-        raise ValueError('图片接收位置尚未聚焦，请点击输入框后重试')
+        raise ValueError('The image destination is not focused. Click the input box and try again')
     return context
 
 
@@ -44,13 +44,13 @@ class Broker:
 
     def start(self, kind='paste', multiple=True, **metadata):
         if kind not in ('paste', 'drop', 'image', 'chooser', 'save', 'open'):
-            raise ValueError('文件传递方式无效')
+            raise ValueError('Invalid file transfer method')
         if kind == 'image':
             metadata['image_context'] = image_context()
             multiple = False
         with self.lock:
             if len(self.requests) >= 32:
-                raise ValueError('请先完成已打开的文件窗口')
+                raise ValueError('Finish the open file window first')
             key = str(uuid.uuid4())
             self.requests[key] = dict(id=key, kind=kind, multiple=multiple,
                                       files=[], busy=False, created=time.monotonic(), **metadata)
@@ -60,7 +60,7 @@ class Broker:
         with self.lock:
             for key, request in list(self.requests.items()):
                 if request['kind'] == 'open' and time.monotonic() - request['created'] > 60:
-                    self.complete_open(key, '本机文件操作已超时，请重新打开')
+                    self.complete_open(key, 'The local file operation timed out. Open it again')
             return {'uploads': [dict(id=r['id'], multiple=r['multiple'],
                                      title=r.get('title', ''), target='desktop',
                                      directory=r.get('directory', False))
@@ -71,14 +71,14 @@ class Broker:
 
     def open_path(self, path, action='open', **metadata):
         if action not in ('open', 'reveal') or not isinstance(path, str) or not path or '\x00' in path:
-            raise ValueError('文件打开请求无效')
+            raise ValueError('Invalid file open request')
         if path.startswith('file:'):
             uri = urlsplit(path)
             if uri.scheme != 'file' or uri.netloc not in ('', 'localhost') or uri.query or uri.fragment:
-                raise ValueError('请选择本机项目中的文件')
+                raise ValueError('Select a file in a local project')
             path = unquote(uri.path, errors='strict')
         if not Path(path).is_absolute():
-            raise ValueError('文件打开请求需要绝对路径')
+            raise ValueError('The file open request needs an absolute path')
         path = str(Path(path).resolve(strict=True))
         return self.start('open', False, path=path, action=action, **metadata)
 
@@ -88,7 +88,7 @@ class Broker:
             if not request or request['kind'] != 'open' or request['busy']:
                 return {'handled': True}
             if time.monotonic() - request['created'] > 60:
-                self.complete_open(key, '本机文件操作已超时，请重新打开')
+                self.complete_open(key, 'The local file operation timed out. Open it again')
                 return {'handled': True}
             request['busy'] = True
             path = request['path']
@@ -111,19 +111,19 @@ class Broker:
 
     def get(self, key):
         if key not in self.requests:
-            raise ValueError('上传窗口已关闭，请重新选择文件')
+            raise ValueError('The upload window was closed. Select the file again')
         return self.requests[key]
 
     def receive(self, key, name, chunks):
         if (not isinstance(name, str) or not name or len(name.encode()) > 255
                 or name in ('.', '..') or re.search(r'[/\\\x00-\x1f]', name)):
-            raise ValueError('文件名无效')
+            raise ValueError('Invalid file name')
         with self.lock:
             request = self.get(key)
             if request.get('directory'):
-                raise ValueError('请选择项目文件夹')
+                raise ValueError('Select a project folder')
             if request['busy'] or len(request['files']) >= (100 if request['multiple'] else 1):
-                raise ValueError('请选择允许数量的文件')
+                raise ValueError('Choose an allowed number of files')
             request['busy'] = True
         directory = self.directory / key / str(uuid.uuid4())
         accepted = False
@@ -136,14 +136,14 @@ class Broker:
                 for chunk in chunks:
                     size += len(chunk)
                     if size > LIMIT:
-                        raise ValueError('每个文件不能超过 2 GB')
+                        raise ValueError('Each file cannot exceed 2 GB')
                     with self.lock:
                         if self.requests.get(key) is not request:
-                            raise ValueError('上传已取消')
+                            raise ValueError('Upload canceled')
                     output.write(chunk)
             with self.lock:
                 if self.requests.get(key) is not request:
-                    raise ValueError('上传已取消')
+                    raise ValueError('Upload canceled')
                 request['files'].append(str(path))
                 accepted = True
             return dict(ok=True, name=name, size=size)
@@ -157,13 +157,13 @@ class Broker:
         with self.lock:
             request = self.get(key)
             if request['kind'] == 'image' or request['busy'] or not request['files']:
-                raise ValueError('请先选择并传递文件')
+                raise ValueError('Select and transfer files first')
             request['busy'] = True
         try:
             self.deliver(request, request['files'])
             with self.lock:
                 if self.requests.get(key) is not request:
-                    raise ValueError('上传已取消')
+                    raise ValueError('Upload canceled')
                 del self.requests[key]
             # Applications can read files lazily. Keep bytes for this session.
             return {'ok': True}
@@ -175,11 +175,11 @@ class Broker:
         with self.lock:
             request = self.get(key)
             if request['kind'] != 'image' or request['busy'] or len(request['files']) != 1:
-                raise ValueError('图片没有完整收到')
+                raise ValueError('The image was not received completely')
             request['busy'] = True
         try:
             if image_context() != request['image_context']:
-                raise ValueError('图片接收位置已变化，请重新粘贴')
+                raise ValueError('The image destination has changed. Paste again')
             paste_files(request['files'], expected_context=request['image_context'])
             return {'ok': True}
         finally:
@@ -197,11 +197,11 @@ class Broker:
         with self.lock:
             request = self.get(key)
             if request['kind'] != 'chooser' or not request.get('directory'):
-                raise ValueError('当前窗口没有请求文件夹')
+                raise ValueError('The current window did not request a folder')
             if request['busy']:
-                raise ValueError('文件夹正在交给应用')
+                raise ValueError('The folder is being handed to the app')
             if not isinstance(path, str) or not Path(path).is_absolute() or not Path(path).is_dir():
-                raise ValueError('项目文件夹尚未连接，请重新打开项目')
+                raise ValueError('The project folder is not connected. Reopen the project')
             request['files'] = [path]
         return self.finish(key)
 
@@ -218,34 +218,34 @@ class Handler(BaseHTTPRequestHandler):
             while True:
                 line = self.rfile.readline(128)
                 if not line.endswith(b'\r\n'):
-                    raise ValueError('文件传递中断')
+                    raise ValueError('The file transfer was interrupted')
                 size = int(line.split(b';', 1)[0], 16)
                 if size == 0:
                     if self.rfile.readline(128) != b'\r\n':
-                        raise ValueError('文件传递格式无效')
+                        raise ValueError('Invalid file transfer format')
                     return
                 if size < 0 or size > LIMIT:
-                    raise ValueError('每个文件不能超过 2 GB')
+                    raise ValueError('Each file cannot exceed 2 GB')
                 while size:
                     data = self.rfile.read(min(65536, size))
                     if not data:
-                        raise ValueError('文件传递中断')
+                        raise ValueError('The file transfer was interrupted')
                     size -= len(data)
                     yield data
                 if self.rfile.read(2) != b'\r\n':
-                    raise ValueError('文件传递格式无效')
+                    raise ValueError('Invalid file transfer format')
         elif length is not None:
             remaining = int(length)
             if remaining < 0 or remaining > LIMIT:
-                raise ValueError('每个文件不能超过 2 GB')
+                raise ValueError('Each file cannot exceed 2 GB')
             while remaining:
                 data = self.rfile.read(min(65536, remaining))
                 if not data:
-                    raise ValueError('文件传递中断')
+                    raise ValueError('The file transfer was interrupted')
                 remaining -= len(data)
                 yield data
         else:
-            raise ValueError('缺少文件长度')
+            raise ValueError('Missing file length')
 
     def route(self):
         route = urlsplit(self.path)
@@ -261,7 +261,7 @@ class Handler(BaseHTTPRequestHandler):
                 for chunk in self.chunks():
                     data.extend(chunk)
                     if len(data) > 65536:
-                        raise ValueError('文件请求过大')
+                        raise ValueError('File request too large')
                 value = json.loads(data or b'{}')
                 if route.path == '/start':
                     result = broker.start(value.get('kind', 'paste'))
@@ -272,7 +272,7 @@ class Handler(BaseHTTPRequestHandler):
                 elif route.path == '/cancel':
                     key = value.get('id', '')
                     if not re.fullmatch(r'[0-9a-f-]{36}', key):
-                        raise ValueError('文件请求无效')
+                        raise ValueError('Invalid file request')
                     result = broker.cancel(key)
                 elif route.path == '/directory':
                     result = broker.choose_directory(value.get('id', ''), value.get('path', ''))
@@ -285,9 +285,9 @@ class Handler(BaseHTTPRequestHandler):
                 elif route.path == '/download-retry' and broker.downloads:
                     result = broker.downloads.retry(value.get('id', ''))
                 else:
-                    raise ValueError('文件操作无效')
+                    raise ValueError('Invalid file operation')
             else:
-                raise ValueError('文件操作无效')
+                raise ValueError('Invalid file operation')
             body, status = json.dumps(result).encode(), 200
         except Exception as error:
             body, status = str(error).encode(), 400
@@ -356,30 +356,30 @@ class Portal:
         self.type_free = bind(self.glib, 'g_variant_type_free', None, p)
         self.connection = bind(self.gio, 'g_bus_get_sync', p, C.c_int, p, p)(2, None, None)
         if not self.connection:
-            raise RuntimeError('桌面文件选择服务无法连接会话')
+            raise RuntimeError('The desktop file chooser service cannot connect to the session')
         call = bind(self.gio, 'g_dbus_connection_call_sync', p, p, s, s, s, s, p, p, u, C.c_int, p, p)
         name_reply = call(self.connection, b'org.freedesktop.DBus', b'/org/freedesktop/DBus', b'org.freedesktop.DBus',
                          b'RequestName', self.tuple(self.new_string(b'org.freedesktop.portal.Desktop'), self.new_uint(4)),
                          None, 0, 5000, None, None)
         if not name_reply:
-            raise RuntimeError('桌面文件选择服务无法注册')
+            raise RuntimeError('The desktop file chooser service cannot be registered')
         code = self.child(name_reply, 0)
         code_value = bind(self.glib, 'g_variant_get_uint32', u, p)(code)
         self.unref(code)
         self.unref(name_reply)
         if code_value != 1:
-            raise RuntimeError('已有其他桌面文件选择服务')
+            raise RuntimeError('Another desktop file chooser service is already running')
         name_reply = call(self.connection, b'org.freedesktop.DBus', b'/org/freedesktop/DBus', b'org.freedesktop.DBus',
                          b'RequestName', self.tuple(self.new_string(b'org.freedesktop.FileManager1'), self.new_uint(4)),
                          None, 0, 5000, None, None)
         if not name_reply:
-            raise RuntimeError('本机文件打开服务无法注册')
+            raise RuntimeError('The local file open service cannot be registered')
         code = self.child(name_reply, 0)
         code_value = bind(self.glib, 'g_variant_get_uint32', u, p)(code)
         self.unref(code)
         self.unref(name_reply)
         if code_value != 1:
-            raise RuntimeError('已有其他文件管理服务')
+            raise RuntimeError('Another file manager service is already running')
         self.reply = bind(self.gio, 'g_dbus_method_invocation_return_value', None, p, p)
         self.error = bind(self.gio, 'g_dbus_method_invocation_return_dbus_error', None, p, s, s)
         self.emit = bind(self.gio, 'g_dbus_connection_emit_signal', C.c_int, p, s, s, s, s, p, p)
@@ -395,11 +395,11 @@ class Portal:
             _fields_ = [('method', method_type), ('get', property_type), ('set', p), ('padding', p * 8)]
         self.vtable = VTable(self.method_callback, self.property_callback, None)
         if not self.register(self.connection, ROOT.encode(), self.interface(self.node, PORTAL.encode()), C.byref(self.vtable), None, None, None):
-            raise RuntimeError('桌面文件选择接口无法注册')
+            raise RuntimeError('The desktop file chooser interface cannot be registered')
         for object_path, interface in ((ROOT, 'org.freedesktop.portal.OpenURI'),
                                        ('/org/freedesktop/FileManager1', 'org.freedesktop.FileManager1')):
             if not self.register(self.connection, object_path.encode(), self.interface(self.node, interface.encode()), C.byref(self.vtable), None, None, None):
-                raise RuntimeError('本机文件打开接口无法注册')
+                raise RuntimeError('The local file open interface cannot be registered')
         self.loop = bind(self.glib, 'g_main_loop_new', p, p, C.c_int)(None, False)
 
     def tuple(self, *values):
@@ -428,7 +428,7 @@ class Portal:
                 try:
                     count = bind(self.glib, 'g_variant_n_children', C.c_size_t, C.c_void_p)(uris)
                     if count > 32:
-                        raise ValueError('一次最多打开 32 个位置')
+                        raise ValueError('At most 32 locations can be opened at once')
                     for index in range(count):
                         uri = self.child(uris, index)
                         try:
@@ -451,13 +451,13 @@ class Portal:
                 directory = self.option(options, 'directory', False)
                 token = self.option(options, 'handle_token', 'cage_' + uuid.uuid4().hex)
                 if not re.fullmatch(r'[A-Za-z0-9_]+', token):
-                    raise ValueError('文件窗口标识无效')
+                    raise ValueError('Invalid file window ID')
                 handle = ROOT + '/request/' + sender.decode().lstrip(':').replace('.', '_') + '/' + token
                 if handle in self.objects:
-                    raise ValueError('文件窗口已打开')
+                    raise ValueError('The file window is already open')
                 object_id = self.register(self.connection, handle.encode(), self.interface(self.node, b'org.freedesktop.portal.Request'), C.byref(self.vtable), None, None, None)
                 if not object_id:
-                    raise ValueError('文件窗口无法打开')
+                    raise ValueError('The file window cannot be opened')
                 self.objects[handle] = object_id
                 key = None
                 try:
@@ -470,7 +470,7 @@ class Portal:
                         index = bind(self.glib, 'g_variant_get_handle', C.c_int, C.c_void_p)(title)
                         fd = bind(self.gio, 'g_unix_fd_list_get', C.c_int, C.c_void_p, C.c_int, C.c_void_p)(descriptors, index, None) if descriptors else -1
                         if fd < 0:
-                            raise ValueError('文件位置无法读取')
+                            raise ValueError('The file location cannot be read')
                         try:
                             key = self.broker.open_path(os.readlink('/proc/self/fd/' + str(fd)), 'reveal',
                                                        handle=handle, sender=sender.decode())['id']
@@ -482,7 +482,7 @@ class Portal:
                                           handle=handle, sender=sender.decode(), title=self.string(title, None).decode())['id']
                     if saving:
                         if not self.broker.downloads:
-                            raise ValueError('下载服务不可用')
+                            raise ValueError('Download service unavailable')
                         destination = self.broker.downloads.begin(self.option(options, 'current_name', 'download'))
                 except Exception:
                     self.unregister(self.connection, self.objects.pop(handle))
@@ -518,7 +518,7 @@ class Portal:
         response = self.tuple(self.new_uint(0 if paths is not None else (2 if request['kind'] == 'open' else 1)), self.array('{sv}', entries))
         if not self.emit(self.connection, request['sender'].encode(), request['handle'].encode(),
                          b'org.freedesktop.portal.Request', b'Response', response, None):
-            raise ValueError('原文件窗口已关闭')
+            raise ValueError('The original file window was closed')
         self.remove(request)
 
     def run(self):
@@ -536,7 +536,7 @@ def paste_files(paths, expected_context=None):
         if not ready or process.stdout.readline() != b'ok\n':
             process.terminate()
             process.wait(timeout=3)
-            raise ValueError('目标没有接收文件，请点击支持附件的输入框后重试')
+            raise ValueError('The target did not receive the file. Click an input that supports attachments and try again')
     finally:
         process.stdout.close()
 
@@ -559,11 +559,11 @@ def clipboard(paths, expected_context=None):
     clear_type = C.CFUNCTYPE(None, p, p)
     if expected_context is not None:
         if len(paths) != 1 or image_context() != expected_context:
-            raise ValueError('图片接收位置已变化，请重新粘贴')
+            raise ValueError('The image destination has changed. Paste again')
         with open(paths[0], 'rb') as image:
             data = image.read(20 * 1024 * 1024 + 1)
         if len(data) > 20 * 1024 * 1024 or not data.startswith(b'\x89PNG\r\n\x1a\n'):
-            raise ValueError('PNG 图片无效')
+            raise ValueError('Invalid PNG image')
         names, payloads = [b'image/png'], [data]
     else:
         names = [b'text/uri-list', b'x-special/gnome-copied-files']
@@ -593,7 +593,7 @@ def clipboard(paths, expected_context=None):
         raise RuntimeError('clipboard unavailable')
     flush()
     if expected_context is not None and image_context() != expected_context:
-        raise ValueError('图片接收位置已变化，请重新粘贴')
+        raise ValueError('The image destination has changed. Paste again')
     subprocess.run(['xdotool', 'key', '--clearmodifiers', 'ctrl+v'], check=True,
                    stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=3)
     timeout(120000, stop, None)

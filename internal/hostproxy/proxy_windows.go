@@ -43,7 +43,7 @@ func systemProxy(req *http.Request) (*url.URL, error) {
 		if err == windows.ERROR_FILE_NOT_FOUND {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("无法读取主机系统代理，未切换直连：%w", err)
+		return nil, fmt.Errorf("Could not read the host system proxy; no direct connection was used: %w", err)
 	}
 	defer freeString(config.URL)
 	defer freeString(config.Proxy)
@@ -51,7 +51,7 @@ func systemProxy(req *http.Request) (*url.URL, error) {
 	if config.URL != nil || config.AutoDetect != 0 {
 		handle, _, err := winhttp.NewProc("WinHttpOpen").Call(0, 1, 0, 0, 0)
 		if handle == 0 {
-			return nil, fmt.Errorf("无法解析主机自动代理：%w", err)
+			return nil, fmt.Errorf("Could not resolve the host automatic proxy: %w", err)
 		}
 		defer winhttp.NewProc("WinHttpCloseHandle").Call(handle)
 		winhttp.NewProc("WinHttpSetTimeouts").Call(handle, 15000, 15000, 15000, 15000)
@@ -75,14 +75,14 @@ func systemProxy(req *http.Request) (*url.URL, error) {
 				return nil, nil
 			} // PAC explicitly selected DIRECT.
 			if info.Proxy == nil {
-				return nil, fmt.Errorf("主机自动代理返回空地址，未切换直连")
+				return nil, fmt.Errorf("The host automatic proxy returned an empty address; no direct connection was used")
 			}
 			return windowsProxy(req, proxyString(info.Proxy), proxyString(info.Bypass))
 		}
 		// Windows commonly enables WPAD even when this network has no PAC.
 		// An explicitly configured PAC that fails must never become DIRECT.
 		if config.URL != nil || err != windows.Errno(12180) {
-			return nil, fmt.Errorf("主机 PAC/自动代理解析失败，未切换直连，请检查代理软件：%w", err)
+			return nil, fmt.Errorf("Resolving the host PAC/automatic proxy failed; no direct connection was used. Check the proxy software: %w", err)
 		}
 	}
 	return windowsProxy(req, proxyString(config.Proxy), proxyString(config.Bypass))

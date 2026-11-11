@@ -28,10 +28,10 @@ const macAccountDomain = "Cage shared macOS account v1"
 
 func validMacAccount(name, password string) error {
 	if !guestos.ValidMacOSAccountName(name) {
-		return errors.New("macOS 共用用户名需以小写英文字母开头，使用 1–31 个小写字母、数字或下划线；不能使用系统保留名称")
+		return errors.New("The macOS shared username must start with a lowercase English letter and use 1-31 lowercase letters, digits, or underscores. System reserved names cannot be used.")
 	}
 	if !guestos.ValidMacOSInstallPassword(password) {
-		return errors.New("macOS 共用密码需使用 8–256 个英文键盘可输入的字母、数字、空格或符号")
+		return errors.New("The macOS shared password must be 8-256 letters, digits, spaces, or symbols that can be typed on an English keyboard.")
 	}
 	return nil
 }
@@ -62,24 +62,24 @@ func sealMacAccount(record *accountRecord, key []byte, login macAccountData) err
 func (a *localAccount) openMacAccount() (macAccountData, error) {
 	var login macAccountData
 	if len(a.key) != 32 || a.record == nil {
-		return login, errors.New("请先解锁 Cage")
+		return login, errors.New("Unlock Cage first.")
 	}
 	if a.record.MacLogin == nil {
-		return login, errors.New("请先确认 Cage 用户名和密码，再安装 macOS 客机")
+		return login, errors.New("Confirm the Cage username and password before installing the macOS guest.")
 	}
 	block, _ := aes.NewCipher(a.key)
 	aead, _ := cipher.NewGCM(block)
 	sealed := a.record.MacLogin
 	if len(sealed.Nonce) != aead.NonceSize() {
-		return login, errors.New("客机共用凭据损坏，请恢复账户备份")
+		return login, errors.New("The guest shared credentials are corrupted. Restore the account backup.")
 	}
 	plain, err := aead.Open(nil, sealed.Nonce, sealed.Data, []byte(macAccountDomain))
 	if err != nil {
-		return login, errors.New("客机共用凭据无法解密，请恢复账户备份")
+		return login, errors.New("The guest shared credentials cannot be decrypted. Restore the account backup.")
 	}
 	defer clear(plain)
 	if json.Unmarshal(plain, &login) != nil || validMacAccount(a.record.Username, login.Password) != nil {
-		return login, errors.New("客机共用凭据无效，请恢复账户备份")
+		return login, errors.New("The guest shared credentials are invalid. Restore the account backup.")
 	}
 	return login, nil
 }
@@ -94,14 +94,14 @@ func (a *localAccount) prepareMacAccount(name, password string, guests map[strin
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if len(a.key) != 32 || a.record == nil {
-		return errors.New("请先解锁 Cage")
+		return errors.New("Unlock Cage first.")
 	}
 	if a.record.MacLogin != nil {
-		return errors.New("共用账密已经设置，请在账户设置中修改密码")
+		return errors.New("The shared credentials are already set. Change the password in the account settings.")
 	}
 	if a.record.TrustedDevice == "" {
 		if time.Now().Before(a.nextAttempt) {
-			return errors.New("请稍后再试")
+			return errors.New("Try again later.")
 		}
 		key, err := openAccountKey(a.record, password)
 		if err != nil {
@@ -120,7 +120,7 @@ func (a *localAccount) prepareMacAccount(name, password string, guests map[strin
 		return err
 	}
 	if err := writePrivate(a.path, &record); err != nil {
-		return errors.New("共用账密未能保存，原账户和文件已保留")
+		return errors.New("The shared credentials could not be saved. The original account and files were kept.")
 	}
 	a.record, a.trustedSession = &record, false
 	return nil
@@ -131,7 +131,7 @@ func (a *localAccount) macGuestCredentials(ctx context.Context, id uuid.UUID) (m
 		return macGuestCredential{}, ctx.Err()
 	}
 	if id == uuid.Nil {
-		return macGuestCredential{}, errors.New("缺少客机安装身份")
+		return macGuestCredential{}, errors.New("The guest installation identity is missing.")
 	}
 	a.mu.Lock()
 	if a.record != nil && a.record.MacLogin != nil {
@@ -176,7 +176,7 @@ func (a *localAccount) macGuestCredentials(ctx context.Context, id uuid.UUID) (m
 		return macGuestCredential{}, err
 	}
 	if err = writePrivate(a.path, &record); err != nil {
-		return macGuestCredential{}, errors.New("客机账密未能保存，请检查磁盘空间与目录权限")
+		return macGuestCredential{}, errors.New("The guest credentials could not be saved. Check disk space and directory permissions.")
 	}
 	a.record = &record
 	return guest, nil
@@ -185,7 +185,7 @@ func (a *localAccount) savedMacGuestPassword(ctx context.Context, id uuid.UUID) 
 	a.mu.Lock()
 	if len(a.key) != 32 || ctx.Err() != nil {
 		a.mu.Unlock()
-		return "", errors.New("请先解锁 Cage")
+		return "", errors.New("Unlock Cage first.")
 	}
 	if a.record.MacLogin != nil {
 		login, err := a.openMacAccount()
@@ -229,12 +229,12 @@ func (a *localAccount) syncMacPassword(ctx context.Context, id uuid.UUID, user s
 	}
 	if guest.Username != user {
 		a.mu.Unlock()
-		return errors.New("客机同步账户与安装记录不一致，原账户已保留")
+		return errors.New("The guest sync account does not match the installation record. The original account was kept.")
 	}
 	target := login.Password
 	a.mu.Unlock()
 	if err = apply(ctx, guest.Password, target); err != nil {
-		return errors.New("Cage 密码已保存；客机密码尚待同步，请启动客机后重试，期间客机仍可能需要原密码")
+		return errors.New("The Cage password was saved, but the guest password is still waiting to sync. Start the guest and try again. Until then the guest may still need the old password.")
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -244,7 +244,7 @@ func (a *localAccount) syncMacPassword(ctx context.Context, id uuid.UUID, user s
 	}
 	current, ok := login.Guests[id.String()]
 	if !ok || current != guest || login.Password != target {
-		return errors.New("客机密码同步记录已变化，请重试")
+		return errors.New("The guest password sync record has changed. Try again.")
 	}
 	current.Password = target
 	login.Guests[id.String()] = current
@@ -253,7 +253,7 @@ func (a *localAccount) syncMacPassword(ctx context.Context, id uuid.UUID, user s
 		return err
 	}
 	if err = writePrivate(a.path, &record); err != nil {
-		return errors.New("客机密码已更新，确认记录待保存；下次启动会重试确认")
+		return errors.New("The guest password was updated, but the confirmation record is waiting to be saved. The next start will retry the confirmation.")
 	}
 	a.record = &record
 	return nil

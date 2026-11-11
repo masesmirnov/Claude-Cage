@@ -20,7 +20,7 @@ import (
 
 func configureContainer(configPath string) error {
 	if runtime.GOOS != "linux" {
-		return errors.New("容器服务端需要 Linux；本机可使用轻量客户端连接")
+		return errors.New("The container server requires Linux. On this computer, use the light client to connect.")
 	}
 	profile := filepath.Dir(configPath)
 	entries, err := os.ReadDir(filepath.Join(profile, "state", "lima"))
@@ -28,17 +28,17 @@ func configureContainer(configPath string) error {
 		return err
 	}
 	if len(entries) > 0 {
-		return errors.New("此配置已有虚拟机数据；请为云端容器使用独立配置，原有数据保持不变")
+		return errors.New("This configuration already has virtual machine data. Use a separate configuration for cloud containers; the existing data is left unchanged.")
 	}
 	var config containerenv.Config
 	decoder := json.NewDecoder(io.LimitReader(os.Stdin, 64<<10))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&config); err != nil {
-		return errors.New("容器配置格式无效")
+		return errors.New("Invalid container configuration format.")
 	}
 	var extra any
 	if decoder.Decode(&extra) != io.EOF {
-		return errors.New("只接受一份容器配置")
+		return errors.New("Only one container configuration is accepted.")
 	}
 	if _, err := containerenv.Configure(profile, config); err != nil {
 		return err
@@ -57,13 +57,13 @@ func containerOperation(configPath string, args []string, cfg cage.Config) (bool
 		return false, nil
 	}
 	if runtime.GOOS != "linux" {
-		return true, errors.New("容器运行环境只能在 Linux 服务端使用")
+		return true, errors.New("The container runtime environment can only be used on a Linux server.")
 	}
 	if args[0] == "access" {
-		return true, errors.New("容器工作环境使用 Cage 工作台的受认证入口，不提供旧版独立查看器凭据")
+		return true, errors.New("Container work environments use the authenticated entry of the Cage workbench and do not provide legacy standalone viewer credentials.")
 	}
 	if args[0] != "run" && args[0] != "claude" && len(args) != 1 {
-		return true, errors.New("该容器管理命令不接受额外参数")
+		return true, errors.New("This container management command does not accept extra arguments.")
 	}
 	environment, err := containerenv.Load(profile)
 	if err != nil {
@@ -74,7 +74,7 @@ func containerOperation(configPath string, args []string, cfg cage.Config) (bool
 	switch args[0] {
 	case "stop":
 		if len(args) != 1 {
-			return true, errors.New("容器配置只管理自身的持久环境")
+			return true, errors.New("The container configuration only manages its own persistent environment.")
 		}
 		if err := environment.Stop(ctx); err != nil {
 			return true, err
@@ -125,7 +125,7 @@ func containerOperation(configPath string, args []string, cfg cage.Config) (bool
 	}
 	switch args[0] {
 	case "up":
-		fmt.Println("Cage 容器服务已启动；工作台完成网络检查后才会放行外网。")
+		fmt.Println("Cage container service started. The workbench allows internet access only after the network checks pass.")
 		return true, nil
 	case "update-tools":
 		return true, workbench.RunMaintenanceScript(ctx, configPath, cage.ToolsUpdateScript(), os.Stdout, os.Stderr)
@@ -137,7 +137,7 @@ func containerOperation(configPath string, args []string, cfg cage.Config) (bool
 		return true, workbench.RunEnvironmentCommand(ctx, configPath, append([]string{"claude"}, args[1:]...), os.Stdin, os.Stdout, os.Stderr, true)
 	case "run":
 		if len(args) < 2 {
-			return true, errors.New("cage run 需要指定命令")
+			return true, errors.New("cage run requires a command.")
 		}
 		return true, workbench.RunEnvironmentCommand(ctx, configPath, args[1:], os.Stdin, os.Stdout, os.Stderr, false)
 	}

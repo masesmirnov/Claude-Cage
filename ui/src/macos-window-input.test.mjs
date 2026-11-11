@@ -142,12 +142,12 @@ test("a frame change rejects queued input and disposal releases only its connect
   f.changeTarget();
   release();
   await gate;
-  await assert.rejects(drained, /输入窗口已变化/);
+  await assert.rejects(drained, /input window has changed/);
   assert.deepEqual(f.calls.map(call => call.action), ["input-reset"]);
   f.input.dispose();
   const count = f.calls.length;
   f.pointer("pointerdown");
   f.eventWindow.dispatchEvent(new Event("blur"));
-  await assert.rejects(f.input.run(() => {}), /连接已关闭/);
+  await assert.rejects(f.input.run(() => {}), /connection is closed/);
   assert.equal(f.calls.length, count);
 });

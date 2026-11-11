@@ -21,29 +21,29 @@ export function DiagnosticSettings() {
     try {
       if (nativeAvailable()) {
         const result = await native("exportDiagnostics");
-        if (!result?.canceled) setNotice("诊断包已保存。分享前请检查其中内容。");
+        if (!result?.canceled) setNotice("Diagnostics bundle saved. Review its contents before sharing.");
       } else {
         // Fetch before downloading so authentication or disk failures are shown.
         const response = await fetch(runtimeURL("/diagnostics/export"));
-        if (!response.ok) throw new Error((await response.text()).trim() || "诊断包导出失败");
-        if (!response.headers.get("content-type")?.startsWith("application/zip")) throw new Error("当前后台不支持诊断导出，请重新打开 Cage");
+        if (!response.ok) throw new Error((await response.text()).trim() || "Diagnostics bundle export failed.");
+        if (!response.headers.get("content-type")?.startsWith("application/zip")) throw new Error("The current backend does not support diagnostics export. Reopen Cage.");
         const url = URL.createObjectURL(await response.blob());
         const link = document.createElement("a"); link.href = url; link.download = "cage-diagnostics.zip"; link.click();
         setTimeout(() => URL.revokeObjectURL(url), 30_000);
-        setNotice("诊断包已下载。分享前请检查其中内容。");
+        setNotice("Diagnostics bundle downloaded. Review its contents before sharing.");
       }
     } catch (error) { setError(error.message); }
     finally { setBusy(false); }
   };
-  return <section className="settings-group" aria-label="日志与诊断">
-    <h3>日志与诊断</h3>
-    <p className="footnote">自动记录应用故障并脱敏，保留 14 天。每个后台日志上限 40 MiB，环境服务预算 10 MiB。诊断包会同时收集桌面连接与当前环境的记录，最大 96 MiB。采集范围限于故障日志与运行状态。</p>
-    {info && <p className="footnote">{remote ? "服务器" : "本机"}日志 {(info.bytes / 1024 / 1024).toFixed(1)} MiB · {info.files} 个文件</p>}
+  return <section className="settings-group" aria-label="Logs and diagnostics">
+    <h3>Logs and diagnostics</h3>
+    <p className="footnote">App failures are recorded automatically with sensitive data redacted, and kept for 14 days. Each backend log is capped at 40 MiB, with a 10 MiB budget for environment services. The diagnostics bundle collects records from both the desktop connection and the current environment, up to 96 MiB, limited to failure logs and runtime status.</p>
+    {info && <p className="footnote">{remote ? "Server" : "Local"} logs {(info.bytes / 1024 / 1024).toFixed(1)} MiB · {info.files} files</p>}
     <button className="secondary-button" disabled={busy} onClick={save}>
       {busy ? <LoaderCircle size={14} className="spin" /> : <ArrowDownToLine size={14} />}
-      {busy ? "正在导出…" : remote ? "导出服务器诊断包" : "导出诊断包"}
+      {busy ? "Exporting…" : remote ? "Export server diagnostics bundle" : "Export diagnostics bundle"}
     </button>
-    <p className="footnote">{remote ? "诊断包包含本机界面与当前云端主机的脱敏日志、版本和收集状态，需要保持远程连接。导出后保存在你选择的本机位置。" : "诊断包包含界面与环境的脱敏日志、版本和收集状态，环境离线时仍可导出本机记录。只保存在你选择的位置。"}</p>
+    <p className="footnote">{remote ? "The diagnostics bundle includes redacted logs, versions and collection status from the local UI and the current cloud host, so the remote connection must stay up. It is saved to the local location you choose after export." : "The diagnostics bundle includes redacted logs, versions and collection status from the UI and the environment, and local records can still be exported while the environment is offline. It is saved only where you choose."}</p>
     {notice && <p role="status">{notice}</p>}
     {error && <p role="alert" className="error-message">{error}</p>}
   </section>;
@@ -56,10 +56,10 @@ export class DiagnosticBoundary extends React.Component {
   render() {
     if (!this.state.failed) return this.props.children;
     return <main style={{ padding: 32 }}>
-      <h2>工作台显示遇到异常</h2>
-      <p>后台任务仍可继续运行。可以导出诊断包，再重新加载界面。</p>
+      <h2>The workbench ran into a display error</h2>
+      <p>Background tasks can keep running. You can export a diagnostics bundle, then reload the interface.</p>
       <DiagnosticSettings />
-      <button className="primary-button" onClick={() => location.reload()}>重新加载界面</button>
+      <button className="primary-button" onClick={() => location.reload()}>Reload interface</button>
     </main>;
   }
 }

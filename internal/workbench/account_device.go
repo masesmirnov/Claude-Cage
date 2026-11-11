@@ -37,7 +37,7 @@ func (a *localAccount) enrollDevice(kind string) (deviceCredential, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if !validDeviceKind(kind) || len(a.key) != 32 {
-		return deviceCredential{}, errors.New("请先解锁 Cage，再设置快捷登录")
+		return deviceCredential{}, errors.New("Unlock Cage first, then set up quick sign-in.")
 	}
 	secret := make([]byte, 32)
 	if _, err := rand.Read(secret); err != nil {
@@ -61,7 +61,7 @@ func (a *localAccount) enrollDevice(kind string) (deviceCredential, error) {
 	}
 	record.Devices[kind] = device
 	if err := writePrivate(a.path, record); err != nil {
-		return deviceCredential{}, errors.New("快捷登录未能保存，请重试")
+		return deviceCredential{}, errors.New("Quick sign-in could not be saved. Try again.")
 	}
 	a.record = &record
 	return deviceCredential{ID: device.ID, Secret: base64.RawStdEncoding.EncodeToString(secret)}, nil
@@ -70,13 +70,13 @@ func (a *localAccount) revokeDevice(kind string) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if !validDeviceKind(kind) || len(a.key) != 32 {
-		return errors.New("请先解锁 Cage")
+		return errors.New("Unlock Cage first.")
 	}
 	record := *a.record
 	record.Devices = maps.Clone(record.Devices)
 	delete(record.Devices, kind)
 	if err := writePrivate(a.path, record); err != nil {
-		return errors.New("快捷登录未能关闭，请重试")
+		return errors.New("Quick sign-in could not be turned off. Try again.")
 	}
 	a.record = &record
 	return nil
@@ -91,7 +91,7 @@ func (a *localAccount) clearAuthenticationRequirement() error {
 	record := *a.record
 	record.RequireAuthentication = false
 	if err := writePrivate(a.path, record); err != nil {
-		return errors.New("无法保存解锁状态，请重试")
+		return errors.New("The unlock state could not be saved. Try again.")
 	}
 	a.record = &record
 	return nil
@@ -100,24 +100,24 @@ func (a *localAccount) unlockDevice(kind string, credential deviceCredential) er
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if a.record == nil || !validDeviceKind(kind) {
-		return errors.New("快捷登录不可用，请使用密码")
+		return errors.New("Quick sign-in is unavailable. Use your password.")
 	}
 	if kind == "automatic" && a.record.RequireAuthentication {
-		return errors.New("Cage 已手动锁定，请使用指纹或密码")
+		return errors.New("Cage was locked manually. Use your fingerprint or password.")
 	}
 	device, ok := a.record.Devices[kind]
 	if !ok || device.ID != credential.ID {
-		return errors.New("快捷登录授权已失效，请使用密码")
+		return errors.New("The quick sign-in authorization is no longer valid. Use your password.")
 	}
 	secret, err := base64.RawStdEncoding.DecodeString(credential.Secret)
 	if err != nil || len(secret) != 32 {
-		return errors.New("快捷登录凭据无效")
+		return errors.New("The quick sign-in credentials are invalid.")
 	}
 	defer clear(secret)
 	aead, _ := deviceAEAD(secret)
 	key, err := aead.Open(nil, device.Nonce, device.SealedKey, []byte(kind+":"+device.ID))
 	if err != nil {
-		return errors.New("快捷登录凭据无效")
+		return errors.New("The quick sign-in credentials are invalid.")
 	}
 	if err = a.clearAuthenticationRequirement(); err != nil {
 		clear(key)
@@ -139,7 +139,7 @@ func (a *localAccount) lockAccess(logout bool) error {
 		record.TrustedUnlock = nil
 	}
 	if err := writePrivate(a.path, record); err != nil {
-		return errors.New("无法保存账户锁定状态，请重试")
+		return errors.New("The account lock state could not be saved. Try again.")
 	}
 	a.record = &record
 	if a.cancel != nil {

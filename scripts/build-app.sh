@@ -19,7 +19,7 @@ check_destination() {
     echo 'Build destination is not a Cage application.' >&2; exit 1
   fi
   if ! codesign --verify --deep --strict "$target"; then
-    echo '现有 Cage 应用包含修改内容或无法验证完整性，已保留。请将个人文件移出应用包，或选择新的构建目录后重试。' >&2
+    echo 'The existing Cage app contains modified content or its integrity cannot be verified, so it was kept. Move personal files out of the app bundle, or choose a new build directory and try again.' >&2
     exit 1
   fi
   local running_pids

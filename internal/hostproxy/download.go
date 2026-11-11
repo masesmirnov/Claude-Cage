@@ -26,18 +26,18 @@ func Download(ctx context.Context, address, target, name, accept, cache, digest 
 	resolve := tr.Proxy
 	tr.Proxy = func(req *http.Request) (*url.URL, error) {
 		proxy, err := resolve(req)
-		route := "主机直连"
+		route := "Direct host connection"
 		if err != nil {
-			route = "主机代理解析失败"
+			route = "Host proxy resolution failed"
 		} else if proxy != nil {
-			route = "主机代理"
+			route = "Host proxy"
 		}
-		fmt.Fprintf(out, "%s：%s\n", name, route)
+		fmt.Fprintf(out, "%s: %s\n", name, route)
 		return proxy, err
 	}
 	client := &http.Client{Transport: tr, CheckRedirect: func(req *http.Request, previous []*http.Request) error {
 		if req.URL.Scheme != "https" || req.URL.User != nil || len(previous) >= 5 {
-			return errors.New("下载重定向无效")
+			return errors.New("Invalid download redirect.")
 		}
 		return nil
 	}}
@@ -46,7 +46,7 @@ func Download(ctx context.Context, address, target, name, accept, cache, digest 
 	}
 	raw, err := hex.DecodeString(digest)
 	if err != nil || len(raw) != sha256.Size || !filepath.IsAbs(cache) {
-		return errors.New("安装包缓存目录或校验值无效")
+		return errors.New("Invalid installer cache directory or checksum.")
 	}
 	digest = hex.EncodeToString(raw)
 	dir := filepath.Join(cache, digest)
@@ -56,7 +56,7 @@ func Download(ctx context.Context, address, target, name, accept, cache, digest 
 	for _, path := range []string{cache, dir} {
 		info, err := os.Lstat(path)
 		if err != nil || !info.IsDir() {
-			return errors.New("安装包缓存目录无效")
+			return errors.New("Invalid installer cache directory.")
 		}
 	}
 	return lockutil.WithDirLock(dir, func() error {
@@ -79,7 +79,7 @@ func downloadAttempts(ctx context.Context, client *http.Client, address, target,
 		switch {
 		case err == nil:
 			if !info.Mode().IsRegular() {
-				return errors.New("安装包缓存路径无效")
+				return errors.New("Invalid installer cache path.")
 			}
 			if digest != "" && !restart {
 				offset = info.Size()
@@ -111,13 +111,13 @@ func downloadAttempts(ctx context.Context, client *http.Client, address, target,
 			if err = os.Remove(target); err != nil {
 				return err
 			}
-			err = errors.New("SHA-256 校验失败")
+			err = errors.New("SHA-256 verification failed")
 		}
 		if err == nil {
 			return nil
 		}
 		// Only downloadOnce's sanitized errors may reach the job log.
-		fmt.Fprintf(out, "%s 下载第 %d/3 次失败：%s\n", name, attempt, err)
+		fmt.Fprintf(out, "%s download attempt %d/3 failed: %s\n", name, attempt, err)
 		if attempt < 3 {
 			fmt.Fprintf(out, "CAGE_HOST_RETRY %s %d\n", name, attempt+1)
 			select {
@@ -127,18 +127,18 @@ func downloadAttempts(ctx context.Context, client *http.Client, address, target,
 			}
 		}
 	}
-	return fmt.Errorf("%s 主机下载失败，请检查以上下载方式和网络后继续安装", name)
+	return fmt.Errorf("%s host download failed. Check the download methods above and the network, then continue the installation", name)
 }
 
-var errInvalidRange = errors.New("服务器返回的续传范围与现有进度不一致")
-var errRangeExhausted = errors.New("服务器没有更多可续传的数据")
+var errInvalidRange = errors.New("The resume range returned by the server does not match the existing progress.")
+var errRangeExhausted = errors.New("The server has no more data to resume.")
 
 func downloadOnce(parent context.Context, client *http.Client, address, target, name, accept string, out io.Writer, idle time.Duration, offset int64) error {
 	ctx, cancel := context.WithCancel(parent)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, address, nil)
 	if err != nil || req.URL.Scheme != "https" || req.URL.User != nil {
-		return errors.New("主机安装材料必须通过 HTTPS 下载")
+		return errors.New("Host installation files must be downloaded over HTTPS.")
 	}
 	if accept != "" {
 		req.Header.Set("Accept", accept)
@@ -149,7 +149,7 @@ func downloadOnce(parent context.Context, client *http.Client, address, target, 
 	}
 	response, err := client.Do(req)
 	if err != nil {
-		return errors.New("连接失败或等待响应超时")
+		return errors.New("Connection failed or timed out waiting for a response.")
 	}
 	defer response.Body.Close()
 	flags := os.O_WRONLY | os.O_CREATE
@@ -174,14 +174,14 @@ func downloadOnce(parent context.Context, client *http.Client, address, target, 
 		}
 		fallthrough
 	default:
-		return fmt.Errorf("下载返回 HTTP %d", response.StatusCode)
+		return fmt.Errorf("The download returned HTTP %d", response.StatusCode)
 	}
 	if encoding := response.Header.Get("Content-Encoding"); encoding != "" && !strings.EqualFold(encoding, "identity") {
-		return errors.New("下载编码不支持字节校验")
+		return errors.New("The download encoding does not support byte verification.")
 	}
 	file, err := os.OpenFile(target, flags, 0600)
 	if err != nil {
-		return errors.New("无法写入安装缓存")
+		return errors.New("Could not write to the installer cache.")
 	}
 	defer file.Close()
 	// Check the latest activity while holding the same lock used by the body
@@ -217,7 +217,7 @@ func downloadOnce(parent context.Context, client *http.Client, address, target, 
 			last = time.Now()
 			mu.Unlock()
 			if _, err = file.Write(buffer[:n]); err != nil {
-				return errors.New("写入安装缓存失败")
+				return errors.New("Writing to the installer cache failed.")
 			}
 			received += int64(n)
 		}
@@ -227,12 +227,12 @@ func downloadOnce(parent context.Context, client *http.Client, address, target, 
 		}
 		if readErr == io.EOF {
 			if total > 0 && received != total {
-				return errors.New("下载未收到预期的全部字节")
+				return errors.New("The download did not receive all the expected bytes.")
 			}
 			return file.Close()
 		}
 		if readErr != nil {
-			return errors.New("下载中断或长时间未收到数据")
+			return errors.New("The download was interrupted or no data was received for a long time.")
 		}
 	}
 }

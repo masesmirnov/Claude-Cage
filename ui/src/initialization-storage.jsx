@@ -20,15 +20,15 @@ export function InitializationStorage({ value, onChange, disabled }) {
       if (directory) { onChange({ ...value, directory }); setError(""); }
     } catch (error) { setError(error.message); }
   }
-  return <section className="initialization-storage" aria-label="环境存储目录">
-    <label htmlFor="initialization-directory">存储目录</label>
-    <p>系统镜像、下载缓存和虚拟磁盘保存在这里。已填入默认目录，也可以选择其他本地磁盘上的专用空文件夹。</p>
-    <p>这是 Cage 的环境数据目录。更新、重装或卸载应用会保留这里的数据；请勿手动删除。</p>
+  return <section className="initialization-storage" aria-label="Environment storage directory">
+    <label htmlFor="initialization-directory">Storage directory</label>
+    <p>The system image, download cache and virtual disk are stored here. The default directory is filled in; you can also choose a dedicated empty folder on another local disk.</p>
+    <p>This is Cage's environment data directory. Updating, reinstalling or uninstalling the app keeps the data here; do not delete it manually.</p>
     <div className="initialization-directory-control">
-      <input id="initialization-directory" value={value?.directory || ""} disabled={locked} spellCheck={false} placeholder={value ? "请输入存储目录的完整路径" : "正在读取默认目录…"} onChange={event => onChange({ ...value, directory: event.target.value })} />
-      {nativeAvailable() && <button type="button" disabled={locked} onClick={choose}><FolderOpen size={16} />选择文件夹</button>}
+      <input id="initialization-directory" value={value?.directory || ""} disabled={locked} spellCheck={false} placeholder={value ? "Enter the full path of the storage directory" : "Reading the default directory…"} onChange={event => onChange({ ...value, directory: event.target.value })} />
+      {nativeAvailable() && <button type="button" disabled={locked} onClick={choose}><FolderOpen size={16} />Choose folder</button>}
     </div>
-    {value?.location.has_environment && <p>已有虚拟磁盘，继续使用原存储目录。完成初始化后可在设置中迁移。</p>}
-    {error && <p role="alert">{error}<button onClick={() => { setError(""); retry(value => value + 1); }}>重新读取</button></p>}
+    {value?.location.has_environment && <p>A virtual disk already exists, so the original storage directory stays in use. You can migrate it in Settings after setup finishes.</p>}
+    {error && <p role="alert">{error}<button onClick={() => { setError(""); retry(value => value + 1); }}>Reload</button></p>}
   </section>;
 }

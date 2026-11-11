@@ -36,11 +36,11 @@ try {
     $script:phase='terminal_ready';$terminal=Start-Bridge 'terminal';Send-JSON $terminal @{action='open';cols=160;rows=35;workspace='home';shell='powershell'}
     if(!(Read-JSON $terminal).ready){throw 'The ordinary GUI ConPTY did not become ready.'}
     Send-JSON $terminal @{action='resize';cols=160;rows=40}
-    $script:phase='host_text_ack';$seed="Windows host 中文 😀`nsecond line";Send-JSON $clipboard @{serial=1;text=$seed};Read-Ack 1
+    $script:phase='host_text_ack';$seed="Windows host $([char]0xE9)$([char]0xE8) 😀`nsecond line";Send-JSON $clipboard @{serial=1;text=$seed};Read-Ack 1
     $expected=SHA $utf8.GetBytes($seed)
     $script:phase='host_text_native_read';$read=Invoke-Native '$b=[Text.Encoding]::UTF8.GetBytes([Windows.Forms.Clipboard]::GetText());$result=[BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($b)).Replace("-","").ToLowerInvariant()'
     if($read -ne $expected){throw 'Native GUI clipboard text does not match the host write.'}
-    $guest='Windows guest 中文 😀';$guest64=[Convert]::ToBase64String($utf8.GetBytes($guest))
+    $guest="Windows guest $([char]0xE9)$([char]0xE8) 😀";$guest64=[Convert]::ToBase64String($utf8.GetBytes($guest))
     $script:phase='guest_text_write';$null=Invoke-Native ('$text=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String("'+$guest64+'"));[Windows.Forms.Clipboard]::SetText($text);$result="written"')
     if((Read-Guest 'text').text -ne $guest){throw 'Native guest text did not reach the host.'}
     # A small valid PNG fixture has stable bytes, dimensions and transparency.
@@ -52,14 +52,14 @@ try {
     $script:phase='guest_png_write';$null=Invoke-Native 'Add-Type -AssemblyName System.Drawing;$im=[Drawing.Bitmap]::new(9,5);$g=[Drawing.Graphics]::FromImage($im);$g.Clear([Drawing.Color]::Coral);$s=[IO.MemoryStream]::new();$im.Save($s,[Drawing.Imaging.ImageFormat]::Png);$d=[Windows.Forms.DataObject]::new();$d.SetData("PNG",$false,$s);$d.SetImage($im);[Windows.Forms.Clipboard]::SetDataObject($d,$true);$g.Dispose();$im.Dispose();$result="written"'
     $returned=[Convert]::FromBase64String((Read-Guest 'png').png);$pngImage=[Drawing.Image]::FromStream([IO.MemoryStream]::new($returned));if($pngImage.Width -ne 9 -or $pngImage.Height -ne 5){throw 'Native guest PNG did not reach the host.'};$pngImage.Dispose()
     $fixture=Join-Path $EvidenceDirectory ([guid]::NewGuid().ToString('N'));$null=[IO.Directory]::CreateDirectory($fixture)
-    $file=Join-Path $fixture '中文😀.txt';$content=$utf8.GetBytes('Host to guest file 中文😀');[IO.File]::WriteAllBytes($file,$content)
+    $file=Join-Path $fixture "$([char]0xE9)$([char]0xE8)😀.txt";$content=$utf8.GetBytes("Host to guest file $([char]0xE9)$([char]0xE8)😀");[IO.File]::WriteAllBytes($file,$content)
     $script:phase='host_file_import';$writer=Start-Bridge 'export' $true;Send-JSON $writer @($file);$writer.StandardInput.Close()
     $importer=Start-Bridge 'import';$writer.StandardOutput.BaseStream.CopyTo($importer.StandardInput.BaseStream);$importer.StandardInput.Close();$imported=Read-JSON $importer;Check-Exit $writer;Check-Exit $importer
     if(@($imported.paths).Count -ne 1){throw 'The imported file selection is invalid.'}
     $script:phase='host_file_ack';Send-JSON $clipboard @{serial=3;files=@($imported.paths)};Read-Ack 3
     $script:phase='host_file_native_read';$read=Invoke-Native '$files=[Windows.Forms.Clipboard]::GetFileDropList();if($files.Count -ne 1){throw "selection_invalid"};$b=[IO.File]::ReadAllBytes($files[0]);$result=[BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($b)).Replace("-","").ToLowerInvariant()'
     if($read -ne (SHA $content)){throw 'The actual native GUI file-drop bytes do not match.'}
-    $guestContent=$utf8.GetBytes('Guest to host file 中文😀');$guest64=[Convert]::ToBase64String($guestContent)
+    $guestContent=$utf8.GetBytes("Guest to host file $([char]0xE9)$([char]0xE8)😀");$guest64=[Convert]::ToBase64String($guestContent)
     $script:phase='guest_file_native_write';$null=Invoke-Native ('$dir=Join-Path ([IO.Path]::GetTempPath()) ("cage-clipboard-qa-"+[guid]::NewGuid().ToString("N"));$null=[IO.Directory]::CreateDirectory($dir);$f=Join-Path $dir "guest.txt";[IO.File]::WriteAllBytes($f,[Convert]::FromBase64String("'+$guest64+'"));$list=[Collections.Specialized.StringCollection]::new();$null=$list.Add($f);[Windows.Forms.Clipboard]::SetFileDropList($list);$result="written"')
     $selected=Read-Guest 'files';$exporter=Start-Bridge 'export';Send-JSON $exporter @($selected.files);$exporter.StandardInput.Close()
     $reader=Start-Bridge 'import' $true;$exporter.StandardOutput.BaseStream.CopyTo($reader.StandardInput.BaseStream);$reader.StandardInput.Close();$received=Read-JSON $reader;Check-Exit $exporter;Check-Exit $reader

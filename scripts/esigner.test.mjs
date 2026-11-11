@@ -87,7 +87,7 @@ public class Signer {
   execFileSync('javac', ['-d', temp, source]);
   const jar = join(temp, 'fixture.jar');
   execFileSync('jar', ['--create', '--file', jar, '--main-class', 'Signer', '-C', temp, 'Signer.class']);
-  const values = [' spaces ', 'quote"slash\\tab\t', '中文路径/空 格.exe', '#hash', '@value', '-password=dummy-password'];
+  const values = [' spaces ', 'quote"slash\\tab\t', 'Путь/Пустой файл.exe', '#hash', '@value', '-password=dummy-password'];
   for (const fail of [false, true]) {
     const marker = join(temp, fail ? 'failure-marker' : 'success-marker');
     let calls = 0;

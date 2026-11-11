@@ -74,7 +74,7 @@ class DownloadSaveTests(unittest.TestCase):
 
     def test_only_fixed_guid_and_leaf_names_are_accepted(self):
         valid = '01234567-89ab-cdef-0123-456789abcdef'
-        helper.checked_download(valid, '中文文件.txt')
+        helper.checked_download(valid, 'Файл.txt')
         for name in ('../outside', '/absolute', '.', '..', 'bad\0name'):
             with self.assertRaises(ValueError):
                 helper.checked_download(valid, name)

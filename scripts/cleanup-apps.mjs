@@ -101,7 +101,7 @@ if (
   for (const bundle of await cleanupApps({
     keep, roots,
     onInUse: (bundle) => console.error(`Old Cage App is still running; quit it and rerun cleanup: ${bundle}`),
-    onModified: (bundle) => console.error(`旧应用包含修改内容或无法验证完整性，文件已保留：${bundle}`),
+    onModified: (bundle) => console.error(`The old app contains modified content or its integrity cannot be verified; files were kept: ${bundle}`),
   }))
     console.log(`Removed old App: ${bundle}`);
 }

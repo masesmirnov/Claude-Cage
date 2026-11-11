@@ -16,7 +16,7 @@ func (s *Server) submitJob(kind string, run func() error) (Job, error) {
 		return Job{}, errJobsClosed
 	}
 	if s.storageRecoveryError != "" && kind != "storage-recovery" {
-		err := fmt.Errorf("环境存储待恢复，请在设置中恢复后继续。%s", s.storageRecoveryError)
+		err := fmt.Errorf("Environment storage needs to be restored. Restore it in Settings, then continue. %s", s.storageRecoveryError)
 		s.mu.Unlock()
 		return Job{}, err
 	}
@@ -40,7 +40,7 @@ func (s *Server) submitJob(kind string, run func() error) (Job, error) {
 	}, afterSuccess, run)
 	s.mu.Unlock()
 	if intentFailed {
-		_ = s.closeProxyGate("网络恢复意图无法保存，外网保持关闭")
+		_ = s.closeProxyGate("The network recovery intent could not be saved. Internet access stays off")
 	}
 	return job, err
 }

@@ -302,7 +302,7 @@ func TestReposWalk(t *testing.T) {
 func TestVisible(t *testing.T) {
 	for in, want := range map[string]string{
 		"core.editor = vi":  "core.editor = vi",
-		"été 日本 😀":          "été 日本 😀",
+		"été Привет 😀":      "été Привет 😀",
 		"a\x1b[2Jb":         "a?[2Jb",
 		"a‮b":               "a?b",
 		"a​b⁦c":             "a?b?c",

@@ -7,7 +7,7 @@ var file = Path.Combine(user, "settings.json");
 try
 {
     if (WindowsEditorPreferences.TrustDefault(root) != false) throw new Exception("new Cage preference was not initialized");
-    var original = "{\n // retain this comment 中文\n \"editor.fontSize\": 19,\n}\n";
+    var original = "{\n // retain this comment Привет\n \"editor.fontSize\": 19,\n}\n";
     File.WriteAllText(file, original);
     if (WindowsEditorPreferences.TrustDefault(root) != false || !File.ReadAllText(file).Contains(original[1..], StringComparison.Ordinal)) throw new Exception("existing comments/settings were replaced");
     foreach (var encoding in new Encoding[] { new UTF8Encoding(true), Encoding.Unicode })

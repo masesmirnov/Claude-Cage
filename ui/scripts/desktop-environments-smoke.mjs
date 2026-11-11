@@ -11,7 +11,7 @@ const reports = resolve(
 await mkdir(reports, { recursive: true });
 const host = {
   id: "fixture-host",
-  name: "开发云服务器",
+  name: "Dev cloud server",
   host: "dev.example",
   user: "cage",
   port: 22,
@@ -20,7 +20,7 @@ const host = {
 const second = {
   ...host,
   id: "fixture-second",
-  name: "第二台开发机",
+  name: "Second dev machine",
   host: "test.example",
 };
 let generation = 0;
@@ -77,7 +77,7 @@ const { browser, page, state, errors } = await createWorkbench({
         Object.assign(
           view.candidate.connection,
           failSSH
-            ? { state: "failed", message: "无法连接云端服务" }
+            ? { state: "failed", message: "Cannot reach the cloud service." }
             : { state: "connected" },
         );
       }
@@ -107,7 +107,7 @@ const { browser, page, state, errors } = await createWorkbench({
       if (body.local_action === "stop") {
         assert.equal(body.local_controller_id, local.controller_id);
         if (staleStop)
-          return route.fulfill({ status: 423, body: "请切回本机解锁" });
+          return route.fulfill({ status: 423, body: "Switch back to this computer to unlock." });
         stopLocal();
       }
       switchTo(view.candidate.mode, view.candidate.connection.host_id);
@@ -116,7 +116,7 @@ const { browser, page, state, errors } = await createWorkbench({
     if (path === "/client/local-stop") {
       assert.equal(body.local_controller_id, local.controller_id);
       if (staleStop)
-        return route.fulfill({ status: 423, body: "请切回本机解锁" });
+        return route.fulfill({ status: 423, body: "Switch back to this computer to unlock." });
       stopLocal();
       return reply(view);
     }
@@ -132,20 +132,20 @@ const click = (name) => page.getByRole("button", { name, exact: true }).click();
 const visible = (name) =>
   page.getByText(name, { exact: true }).first().waitFor();
 try {
-  await page.getByRole("heading", { name: "先启动 Cage 环境" }).waitFor();
+  await page.getByRole("heading", { name: "Start the Cage environment first" }).waitFor();
   assert.equal(view.mode, "local");
   assert.equal(state.requests.some(r => r.path === "/start"), false);
-  await click("SSH 主机");
+  await click("SSH hosts");
   // The working surface survives opening the sidebar and a failed candidate.
-  await page.getByRole("heading", { name: "先启动 Cage 环境" }).waitFor();
-  await click("返回工作台侧栏");
-  await page.getByRole("navigation", { name: "主导航" }).waitFor();
-  await click("SSH 主机");
-  await click("连接此主机");
-  await page.getByText("正在验证…", { exact: true }).waitFor();
+  await page.getByRole("heading", { name: "Start the Cage environment first" }).waitFor();
+  await click("Back to the workbench sidebar");
+  await page.getByRole("navigation", { name: "Main navigation" }).waitFor();
+  await click("SSH hosts");
+  await click("Connect to this host");
+  await page.getByText("Verifying…", { exact: true }).waitFor();
   assert.equal(await page.getByRole("dialog").count(), 0);
   holdSSH = false;
-  await visible("无法连接云端服务");
+  await visible("Cannot reach the cloud service.");
   assert.equal(view.mode, "local");
   failSSH = false;
   Object.assign(local, {
@@ -154,51 +154,51 @@ try {
     live_terminals: 2,
     controller_id: "local-identity",
   });
-  await click("连接此主机");
-  const decision = page.getByRole("dialog", { name: "切换到 SSH 主机" });
+  await click("Connect to this host");
+  const decision = page.getByRole("dialog", { name: "Switch to an SSH host" });
   await decision.waitFor();
   await page.keyboard.press("Escape");
   await decision.waitFor({ state: "hidden" });
   assert.equal(view.mode, "local");
   assert.equal(local.running, true);
-  await click("连接此主机");
+  await click("Connect to this host");
   await decision.waitFor();
   await page.screenshot({ path: join(reports, "ssh-switch-confirmation.png") });
-  await click("保留本机运行");
-  await visible("本机也在运行");
-  await visible("SSH · 云端运行");
+  await click("Keep the local environment running");
+  await visible("This computer is also running");
+  await visible("SSH · Running in the cloud");
   assert.equal(view.mode, "remote");
   assert.equal(local.running, true);
-  await click("停止本机环境");
+  await click("Stop the local environment");
   staleStop = true;
-  await click("确认停止本机");
-  await visible("本机环境已锁定。请先返回本机解锁，再停止本机环境。");
+  await click("Confirm stopping the local environment");
+  await visible("The local environment is locked. Go back to this computer and unlock it before stopping the local environment.");
   assert.equal(view.mode, "remote");
   assert.equal(state.account.unlocked, true);
-  await click("返回本机解锁");
+  await click("Back to this computer to unlock");
   await page.locator(".client-toolbar").waitFor({state: "hidden"});
-  await page.getByRole("navigation", {name: "主导航"}).waitFor();
+  await page.getByRole("navigation", {name: "Main navigation"}).waitFor();
   assert.equal(view.mode, "local");
   staleStop = false;
-  await click("SSH 主机");
-  await click("连接此主机");
+  await click("SSH hosts");
+  await click("Connect to this host");
   await decision.waitFor();
-  await click("保留本机运行");
-  await visible("SSH · 云端运行");
-  await click("SSH 主机");
+  await click("Keep the local environment running");
+  await visible("SSH · Running in the cloud");
+  await click("SSH hosts");
   await page.screenshot({ path: join(reports, "ssh-sidebar-background.png") });
-  await page.getByRole("button", { name: /第二台开发机/ }).click();
-  await click("连接此主机");
+  await page.getByRole("button", { name: /Second dev machine/ }).click();
+  await click("Connect to this host");
   await decision.waitFor();
   assert.equal(view.host_id, host.id, "A remains selected before B's commit");
   staleStop = true;
-  await click("停止本机并连接");
-  await decision.getByRole("button", { name: "返回本机解锁" }).waitFor();
+  await click("Stop the local environment and connect");
+  await decision.getByRole("button", { name: "Back to this computer to unlock" }).waitFor();
   assert.equal(view.host_id, host.id);
   const cancelled = view.candidate.id;
-  await click("返回本机解锁");
+  await click("Back to this computer to unlock");
   await page.locator(".client-toolbar").waitFor({state: "hidden"});
-  await page.getByRole("navigation", {name: "主导航"}).waitFor();
+  await page.getByRole("navigation", {name: "Main navigation"}).waitFor();
   assert.ok(
     actions.some(
       ([path, body]) =>
@@ -206,17 +206,17 @@ try {
     ),
   );
   staleStop = false;
-  await click("SSH 主机");
-  await click("连接此主机");
+  await click("SSH hosts");
+  await click("Connect to this host");
   await decision.waitFor();
-  await click("保留本机运行");
-  await visible("SSH · 云端运行");
-  await click("SSH 主机");
-  await page.getByRole("button", { name: /第二台开发机/ }).click();
-  await click("连接此主机");
+  await click("Keep the local environment running");
+  await visible("SSH · Running in the cloud");
+  await click("SSH hosts");
+  await page.getByRole("button", { name: /Second dev machine/ }).click();
+  await click("Connect to this host");
   await decision.waitFor();
-  await click("停止本机并连接");
-  await visible("SSH · 云端运行");
+  await click("Stop the local environment and connect");
+  await visible("SSH · Running in the cloud");
   assert.equal(view.host_id, second.id);
   assert.equal(local.running, false);
   Object.assign(local, {
@@ -224,14 +224,14 @@ try {
     live_terminals: 1,
     controller_id: "new-local-identity",
   });
-  await click("停止本机环境");
-  await click("确认停止本机");
-  await visible("SSH · 云端运行");
+  await click("Stop the local environment");
+  await click("Confirm stopping the local environment");
+  await visible("SSH · Running in the cloud");
   assert.equal(view.mode, "remote");
   assert.equal(local.running, false);
-  await click("SSH 主机");
-  await click("断开连接");
-  await page.getByRole("complementary", { name: "SSH 主机" }).waitFor();
+  await click("SSH hosts");
+  await click("Disconnect");
+  await page.getByRole("complementary", { name: "SSH hosts" }).waitFor();
   assert.equal(view.mode, "none");
   assert.equal(
     actions.some(

@@ -26,20 +26,20 @@ export function hasFiles(data) {
 
 export async function imagePayload(file) {
   if (!imageTypes.has(file.type))
-    throw new Error("请选择 PNG、JPEG、WebP 或 GIF 图片");
+    throw new Error("Choose a PNG, JPEG, WebP or GIF image.");
   if (!file.size || file.size > imageLimit)
-    throw new Error("每张图片不能超过 20 MB");
+    throw new Error("Each image must be 20 MB or smaller.");
   const url = URL.createObjectURL(file);
   try {
     const image = new Image();
     await new Promise((resolve, reject) => {
       image.onload = resolve;
       image.onerror = () =>
-        reject(new Error("图片无法读取，请重新复制或选择图片"));
+        reject(new Error("The image could not be read. Copy or choose it again."));
       image.src = url;
     });
     if (image.naturalWidth * image.naturalHeight > 40_000_000)
-      throw new Error("图片不能超过 4000 万像素");
+      throw new Error("The image cannot exceed 40 megapixels.");
     // Normalize host bitmap formats and animated images to one PNG frame.
     const canvas = document.createElement("canvas");
     canvas.width = image.naturalWidth;
@@ -49,11 +49,11 @@ export async function imagePayload(file) {
       canvas.toBlob(resolve, "image/png"),
     );
     if (!png || png.size > imageLimit)
-      throw new Error("转换后的图片超过 20 MB，请缩小图片后重试");
+      throw new Error("The converted image exceeds 20 MB. Use a smaller image and try again.");
     return await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve({ png: reader.result.split(",")[1] });
-      reader.onerror = () => reject(new Error("图片读取失败"));
+      reader.onerror = () => reject(new Error("The image could not be read."));
       reader.readAsDataURL(png);
     });
   } finally {
@@ -68,7 +68,7 @@ export async function readClipboardContent() {
       !value ||
       (typeof value.png !== "string" && typeof value.text !== "string" && typeof value.fileSelection !== "string")
     )
-      throw new Error("剪贴板读取失败，请重新打开新版 Cage 后重试");
+      throw new Error("Reading the clipboard failed. Reopen the latest Cage and try again.");
     return value;
   }
   if (navigator.clipboard.read) {
@@ -81,7 +81,7 @@ export async function readClipboardContent() {
       if (item.types.includes("text/plain"))
         return { text: await (await item.getType("text/plain")).text() };
     }
-    throw new Error("剪贴板中没有可粘贴的图片或文本");
+    throw new Error("The clipboard has no image or text to paste.");
   }
   return { text: await navigator.clipboard.readText() };
 }
@@ -90,11 +90,11 @@ export function prepareClipboardPaste(target, id, { windowTarget, valid = () => 
   let disposed = false, sent = false;
   const destination = { target, id, pid: windowTarget?.pid, window: windowTarget?.window };
   const check = () => {
-    if (disposed || !valid()) throw new Error("粘贴接收位置已切换，请重新粘贴");
+    if (disposed || !valid()) throw new Error("The paste destination has changed. Paste again.");
   };
   const prepared = api("/input/paste/start", destination).then(result => {
     if (result?.available !== true || typeof result.transfer !== "string" && typeof result.context !== "string")
-      throw new Error("客机尚未确认粘贴接收位置，请同步环境组件后重试");
+      throw new Error("The guest has not confirmed the paste destination. Sync the environment components and try again.");
     return { transfer: result.transfer, context: result.context };
   });
   // Source reading starts independently. A sender using this binding observes
@@ -110,7 +110,7 @@ export function prepareClipboardPaste(target, id, { windowTarget, valid = () => 
       check();
       const binding = await prepared;
       check();
-      if (sent) throw new Error("本次粘贴已经提交，请核对接收结果");
+      if (sent) throw new Error("This paste was already submitted. Check the result at the destination.");
       sent = true;
       try { return await api(typeof payload.text === "string" ? "/input/text" : "/input/image", { ...payload, ...destination, ...binding }); }
       finally { dispose(); }

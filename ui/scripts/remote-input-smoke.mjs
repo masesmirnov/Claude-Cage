@@ -15,7 +15,7 @@ try {
   await page.route("**/remote-input-smoke", (route) =>
     route.fulfill({
       contentType: "text/html; charset=utf-8",
-      body: '<div id="remote"><canvas tabindex="-1"></canvas></div><input aria-label="本机地址栏">',
+      body: '<div id="remote"><canvas tabindex="-1"></canvas></div><input aria-label="Local address bar">',
     }),
   );
   await page.goto(origin + "/remote-input-smoke");
@@ -138,7 +138,7 @@ try {
     };
     rfb.focus();
   });
-  const target = page.getByLabel("Cage 网页输入");
+  const target = page.getByLabel("Cage web input");
   const keys = () =>
     page.evaluate(() =>
       probe.packets.filter(p => p[0] !== 248).map((p) => {
@@ -203,11 +203,11 @@ try {
   // Exercise Chromium's composition implementation as well as the explicit
   // cross-engine event sequences below. This still does not use macOS Pinyin.
   const cdp = await page.context().newCDPSession(page);
-  for (const character of ["？", "？", "，", "。", "！"]) {
+  for (const character of ["¿", "¿", "¡", "«", "»"]) {
     await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: character, code: "Slash", text: character });
     await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: character, code: "Slash" });
   }
-  assert.deepEqual(await texts(), ["？", "？", "，", "。", "！"]);
+  assert.deepEqual(await texts(), ["¿", "¿", "¡", "«", "»"]);
   assert.deepEqual(await keys(), [], "fullwidth punctuation must bypass X11 keysyms");
   await clear();
   await page.keyboard.press("Shift+?");
@@ -221,8 +221,8 @@ try {
   });
   assert.equal(await target.inputValue(), "nihao");
   assert.deepEqual(await keys(), []);
-  await cdp.send("Input.insertText", { text: "你好" });
-  assert.deepEqual(await texts(), ["你好"]);
+  await cdp.send("Input.insertText", { text: "Привет" });
+  assert.deepEqual(await texts(), ["Привет"]);
   assert.deepEqual(await keys(), []);
   assert.equal(await target.inputValue(), "");
   await clear();
@@ -254,9 +254,9 @@ try {
     [],
     "candidate selection must not reach the guest",
   );
-  await dispatch("compositionend", { data: "你好🙂" });
+  await dispatch("compositionend", { data: "Привет🙂" });
   await dispatch("input", {
-    data: "你好🙂",
+    data: "Привет🙂",
     inputType: "insertFromComposition",
   });
   await page.keyboard.press("Enter");
@@ -266,9 +266,9 @@ try {
   );
   assert.equal(await target.inputValue(), "");
   await clear();
-  await compose("你");
-  await compose("你");
-  assert.deepEqual(await texts(), ["你", "你"]);
+  await compose("Я");
+  await compose("Я");
+  assert.deepEqual(await texts(), ["Я", "Я"]);
   await clear();
   // A delayed commit must keep subsequent Enter behind text completion.
   await page.evaluate(() => {
@@ -316,7 +316,7 @@ try {
   );
   await dispatch("compositionend", { data: "" });
   await clear();
-  await page.getByLabel("本机地址栏").fill("本机文字");
+  await page.getByLabel("Local address bar").fill("local text");
   assert.deepEqual(await keys(), []);
   await page.evaluate(() => probe.rfb.focus());
   await page.keyboard.press("Meta+f");
@@ -326,7 +326,7 @@ try {
   );
   await clear();
   await page.evaluate(() => probe.setActive(false));
-  await compose("后台不提交");
+  await compose("background not committed");
   assert.deepEqual(await keys(), []);
   await page.evaluate(() => {
     probe.setActive(true);
@@ -348,7 +348,7 @@ try {
   });
   const nativeCDP = await page.context().newCDPSession(page);
   await nativeCDP.send("Input.imeSetComposition", { text: "ni'hao", selectionStart: 6, selectionEnd: 6 });
-  await nativeCDP.send("Input.insertText", { text: "你好？" });
+  await nativeCDP.send("Input.insertText", { text: "Привет¿" });
   await page.waitForFunction(() => !!probe.finishComposition);
   await page.keyboard.press("Enter");
   assert.deepEqual(await keys(), [], "Enter must wait behind the native composition commit");
@@ -357,7 +357,7 @@ try {
   assert.equal(nativeMessages.at(-1).mode, "commit");
   assert.ok(nativeMessages.slice(1, -1).every(({ mode }) => mode === "update"));
   assert.ok(nativeMessages.some(({ text }) => text === "ni'hao"));
-  assert.equal(nativeMessages.at(-1).text, "你好？");
+  assert.equal(nativeMessages.at(-1).text, "Привет¿");
   assert.equal(new Set(nativeMessages.map(({ session }) => session)).size, 1);
   await page.evaluate(() => probe.finishComposition());
   assert.deepEqual((await keys()).map(({ sym }) => sym), [0xff0d, 0xff0d]);
@@ -382,23 +382,23 @@ try {
     const emit = value => window.dispatchEvent(new CustomEvent("cage-native-input", { detail: { owner, ...value } }));
     emit({kind:"compositionstart"});
     emit({kind:"compositionupdate",text:"ni'hao",selectionStart:3,selectionEnd:6});
-    emit({kind:"compositionend",text:"你好"});
-    emit({kind:"input",text:"？"});
+    emit({kind:"compositionend",text:"Привет"});
+    emit({kind:"input",text:"¿"});
     emit({kind:"keydown",key:"?",code:"Slash",textKey:true});
     emit({kind:"keyup",key:"?",code:"Slash"});
-    window.dispatchEvent(new CustomEvent("cage-native-input", {detail:{owner:"stale",kind:"input",text:"误写"}}));
+    window.dispatchEvent(new CustomEvent("cage-native-input", {detail:{owner:"stale",kind:"input",text:"stale"}}));
   });
   assert.deepEqual((await page.evaluate(() => probe.compositions)).map(({mode})=>mode), ["begin","update","commit"]);
-  assert.deepEqual(await texts(), ["？"], "native direct punctuation is committed exactly once");
+  assert.deepEqual(await texts(), ["¿"], "native direct punctuation is committed exactly once");
   assert.deepEqual((await keys()).map(({sym})=>sym), [63,63], "native ASCII punctuation keeps the key path without needing a DOM default action");
-  await page.getByLabel("本机地址栏").focus();
+  await page.getByLabel("Local address bar").focus();
   await page.waitForFunction(() => probe.nativeRequests.some(value => value.operation === "deactivate"));
   await clear();
   await page.evaluate(() => {
     const oldTarget = document.activeElement;
     probe.input.dispose();
     oldTarget.dispatchEvent(
-      new CompositionEvent("compositionend", { data: "迟到的文字" }),
+      new CompositionEvent("compositionend", { data: "late text" }),
     );
     probe.rfb.focus();
   });

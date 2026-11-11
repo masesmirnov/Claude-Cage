@@ -21,15 +21,15 @@ if ($ManifestPath) {
     $manifestFile=Get-Item -LiteralPath $ManifestPath -Force
     if ($ManifestSHA256 -notmatch '^[a-fA-F0-9]{64}$' -or $manifestFile -isnot [IO.FileInfo] -or $manifestFile.Length -gt 4MB -or
         $manifestFile.Attributes -band [IO.FileAttributes]::ReparsePoint -or (Get-FileHash -LiteralPath $ManifestPath).Hash -ne $ManifestSHA256) {
-        throw '组件清单无法核验，请从 Cage 重新继续安装。'
+        throw 'The component manifest could not be verified. Continue the installation again from Cage.'
     }
     $componentManifest=Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
-    if ($componentManifest.protocol -ne 1 -or $componentManifest.system -cne 'windows-11' -or $componentManifest.revision -notmatch '^[a-f0-9]{64}$') { throw '原生组件清单无效。' }
+    if ($componentManifest.protocol -ne 1 -or $componentManifest.system -cne 'windows-11' -or $componentManifest.revision -notmatch '^[a-f0-9]{64}$') { throw 'The native component manifest is invalid.' }
     $kitRoot=[IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\')+'\'
     foreach ($entry in $componentManifest.files) {
         $source=[IO.Path]::GetFullPath((Join-Path $kitRoot $entry.source))
         if (!$source.StartsWith($kitRoot,[StringComparison]::OrdinalIgnoreCase) -or (Get-FileHash -LiteralPath $source).Hash -ne $entry.sha256) {
-            throw '当前应用组件包已变化，请重新继续安装。'
+            throw 'The current app component package has changed. Continue the installation again.'
         }
     }
 }
@@ -201,7 +201,7 @@ try {
     }
     if (!$GuestAdministrator) {
         Write-Output 'CAGE_GUEST_STAGE windows-11 credentials'
-        $GuestAdministrator=Get-Credential -Message '先在虚拟机连接窗口完成 Windows 设置并登录桌面，再输入客机管理员账户。新建 ISO 安装请使用安装前设置的本地账户。请保持此 PowerShell 安装窗口开启。'
+        $GuestAdministrator=Get-Credential -Message 'Finish the Windows setup and sign in to the desktop in the virtual machine connection window first, then enter the guest administrator account. For a new ISO installation, use the local account set before installation. Keep this PowerShell installation window open.'
     } else { Write-Output 'CAGE_GUEST_STAGE windows-11 services' }
     if (!$GuestAdministrator) { throw 'Windows guest setup canceled.' }
     $session=New-PSSession -VMId $VMId -Credential $GuestAdministrator
@@ -259,11 +259,11 @@ try {
             if (!$entry.target -or !$entry.target.StartsWith('bridge/')) { continue }
             $relative=$entry.target.Substring(7)
             if ($relative -in @('Cage.GuestClipboard.exe','cage-guest-files.exe','cage-guest-boot.exe')) { continue }
-            if ($entry.source -cne ('payload/'+$relative) -or $relative -match '(^|/)\.\.?(/|$)|[:\\]') { throw '组件安装位置无效。' }
+            if ($entry.source -cne ('payload/'+$relative) -or $relative -match '(^|/)\.\.?(/|$)|[:\\]') { throw 'The component install location is invalid.' }
             $targetFile=Join-Path $extras $relative
             $null=New-Item -ItemType Directory -Path ([IO.Path]::GetDirectoryName($targetFile)) -Force
             Copy-Item -LiteralPath (Join-Path $PSScriptRoot $entry.source) -Destination $targetFile -Force
-            if ((Get-FileHash -LiteralPath $targetFile).Hash -ne $entry.installed_sha256) { throw '复制后的组件摘要不匹配。' }
+            if ((Get-FileHash -LiteralPath $targetFile).Hash -ne $entry.installed_sha256) { throw 'The component digest after copying does not match.' }
         }
     }
     $nodeArchive=[IO.Compression.ZipFile]::OpenRead($files.node)

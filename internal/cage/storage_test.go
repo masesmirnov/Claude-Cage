@@ -50,7 +50,7 @@ func TestStorageMovePreservesLegacyDiskAndColdBackup(t *testing.T) {
 	copy(payload[3<<20:], []byte("guest tail"))
 	writeStorageFixture(t, filepath.Join(profile, "state", file), payload)
 	writeStorageFixture(t, filepath.Join(profile, "account.json"), []byte("account"))
-	target := filepath.Join(root, "中文 folder")
+	target := filepath.Join(root, "Привет folder")
 	loc, err := MoveStorage(context.Background(), profile, target, storageExpectation(t, profile), nil)
 	if err != nil {
 		t.Fatal(err)

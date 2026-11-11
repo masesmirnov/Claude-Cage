@@ -35,7 +35,7 @@ func (s *Server) monitorProxyInterface() {
 		return
 	}
 	// Revoke the previous report before the asynchronous recovery can start.
-	if err := s.closeProxyGate("物理网卡已变化，正在重新绑定代理并检查出口"); err != nil {
+	if err := s.closeProxyGate("The physical network adapter changed. Rebinding the proxy and checking the exit"); err != nil {
 		return
 	}
 	s.mu.Lock()
@@ -45,7 +45,7 @@ func (s *Server) monitorProxyInterface() {
 }
 
 func (s *Server) rebindProxyInterface() error {
-	s.setMessage("正在识别物理网卡并重新绑定代理…")
+	s.setMessage("Identifying the physical network adapter and rebinding the proxy…")
 	cfg, err := loadConfig(s.configPath)
 	if err != nil {
 		return err

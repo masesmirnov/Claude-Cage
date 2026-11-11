@@ -52,13 +52,13 @@ func defaultAppearance() Appearance {
 
 func (a Appearance) validate() error {
 	if a.Mode != "system" && a.Mode != "light" && a.Mode != "dark" {
-		return errors.New("请选择跟随系统、浅色或深色外观")
+		return errors.New("Choose system, light, or dark appearance.")
 	}
 	if a.UIFontSize < 12 || a.UIFontSize > 24 || a.CodeFontSize < 10 || a.CodeFontSize > 24 {
-		return errors.New("界面字号范围为 12–24，代码字号范围为 10–24")
+		return errors.New("The interface font size must be 12-24 and the code font size 10-24.")
 	}
 	if a.ReducedMotion != "system" && a.ReducedMotion != "on" && a.ReducedMotion != "off" {
-		return errors.New("减少动态效果选项无效")
+		return errors.New("The reduce motion option is invalid.")
 	}
 	if err := validateAppearanceTheme(a.Light); err != nil {
 		return err
@@ -67,16 +67,16 @@ func (a Appearance) validate() error {
 		return err
 	}
 	if len(a.CustomThemes) > 50 {
-		return errors.New("最多保存 50 个自定义主题，请先删除不需要的主题")
+		return errors.New("You can save at most 50 custom themes. Delete the ones you do not need first.")
 	}
 	ids := make(map[string]bool)
 	for _, saved := range a.CustomThemes {
 		if !regexp.MustCompile(`^[a-zA-Z0-9_-]{1,80}$`).MatchString(saved.ID) || ids[saved.ID] {
-			return errors.New("自定义主题标识无效或重复")
+			return errors.New("The custom theme ID is invalid or duplicated.")
 		}
 		ids[saved.ID] = true
 		if strings.TrimSpace(saved.Name) == "" || utf8.RuneCountInString(saved.Name) > 80 {
-			return errors.New("请输入 1–80 个字符的主题名称")
+			return errors.New("Enter a theme name of 1-80 characters.")
 		}
 		if err := validateAppearanceTheme(saved.Light); err != nil {
 			return err
@@ -94,17 +94,17 @@ var appearanceColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
 func validateAppearanceTheme(theme AppearanceTheme) error {
 	if !appearanceColor.MatchString(theme.Accent) || !appearanceColor.MatchString(theme.Surface) || !appearanceColor.MatchString(theme.Ink) {
-		return errors.New("颜色须为六位十六进制值，例如 #fdf6e3")
+		return errors.New("Colors must be six-digit hex values, for example #fdf6e3.")
 	}
 	if theme.Contrast < 0 || theme.Contrast > 100 {
-		return errors.New("对比度范围为 0–100")
+		return errors.New("Contrast must be between 0 and 100.")
 	}
 	if utf8.RuneCountInString(theme.Preset) > 80 {
-		return errors.New("主题名称过长")
+		return errors.New("The theme name is too long.")
 	}
 	for _, font := range []string{theme.Fonts.UI, theme.Fonts.Code} {
 		if utf8.RuneCountInString(font) > 200 || strings.ContainsAny(font, ";{}<>\r\n") {
-			return errors.New("字体名称无效")
+			return errors.New("The font name is invalid.")
 		}
 	}
 	for field, colors := range map[string]map[string]string{"colors": theme.Colors, "terminal": theme.Terminal} {
@@ -121,7 +121,7 @@ func validateAppearanceTheme(theme AppearanceTheme) error {
 				}
 			}
 			if !found || !appearanceColor.MatchString(value) {
-				return errors.New("元素颜色无效或包含不支持的颜色项目")
+				return errors.New("An element color is invalid or contains an unsupported color item.")
 			}
 		}
 	}
@@ -135,7 +135,7 @@ func (s *Server) getAppearance(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(b, &a)
 	}
 	if err != nil && !os.IsNotExist(err) {
-		requestError(w, errors.New("无法读取已保存的外观设置"))
+		requestError(w, errors.New("The saved appearance settings could not be read."))
 		return
 	}
 	if err = a.validate(); err != nil {
@@ -156,7 +156,7 @@ func (s *Server) saveAppearance(w http.ResponseWriter, r *http.Request) {
 	}
 	// Appearance has no VM or network side effects and uses its own atomic file.
 	if err := writePrivate(filepath.Join(s.profile, "appearance.json"), a); err != nil {
-		requestError(w, errors.New("外观设置未能保存，请重试"))
+		requestError(w, errors.New("The appearance settings could not be saved. Try again."))
 		return
 	}
 	jsonReply(w, a)
@@ -180,10 +180,10 @@ func readCodexAppearance(configPath string) (Appearance, error) {
 	}
 	b, err := os.ReadFile(configPath)
 	if err != nil {
-		return a, errors.New("未找到本机 Codex 配置")
+		return a, errors.New("No local Codex configuration was found.")
 	}
 	if err = toml.Unmarshal(b, &config); err != nil {
-		return a, errors.New("无法解析本机 Codex 配置")
+		return a, errors.New("The local Codex configuration could not be parsed.")
 	}
 	d := config.Desktop
 	if d.Mode != "" {
@@ -226,7 +226,7 @@ func readCodexAppearance(configPath string) (Appearance, error) {
 func (s *Server) codexAppearance(w http.ResponseWriter, r *http.Request) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		requestError(w, errors.New("无法定位本机用户目录"))
+		requestError(w, errors.New("The local user directory could not be located."))
 		return
 	}
 	a, err := readCodexAppearance(filepath.Join(home, ".codex", "config.toml"))

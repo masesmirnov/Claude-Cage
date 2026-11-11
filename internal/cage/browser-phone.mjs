@@ -15,7 +15,7 @@ const keys = new Map([
 
 function dimensions({ width, height }) {
   if (!Number.isInteger(width) || width < 240 || width > 1440 ||
-      !Number.isInteger(height) || height < 160 || height > 1600) throw new Error("手机视口大小无效");
+      !Number.isInteger(height) || height < 160 || height > 1600) throw new Error("Invalid phone viewport size.");
   return { width, height };
 }
 
@@ -28,7 +28,7 @@ class BrowserPipe {
     let buffered = [];
     const disconnected = () => {
       this.dead = true;
-      for (const call of this.calls.values()) call.reject(phoneError(410, "远程浏览器已关闭"));
+      for (const call of this.calls.values()) call.reject(phoneError(410, "The remote browser has closed."));
       this.calls.clear();
       this.process.kill();
     };
@@ -47,14 +47,14 @@ class BrowserPipe {
         const call = this.calls.get(event.id);
         if (!call) continue;
         this.calls.delete(event.id);
-        if (event.error) call.reject(new Error("Chromium 暂时无法完成此操作"));
+        if (event.error) call.reject(new Error("Chromium cannot complete this operation right now."));
         else call.resolve(event.result);
       }
       if (data.length) buffered.push(data);
     });
   }
   async send(method, params = {}, sessionId) {
-    if (this.dead) throw phoneError(410, "远程浏览器已关闭");
+    if (this.dead) throw phoneError(410, "The remote browser has closed.");
     const id = ++this.sequence;
     let timer;
     try {
@@ -62,7 +62,7 @@ class BrowserPipe {
         // The first CDP command includes macOS Chrome's cold process startup.
         let timeout = method === "Page.navigate" || method === "Page.navigateToHistoryEntry" ? 12000 : 4500;
         if (method === "Target.getTargets" && process.platform === "darwin") timeout = 75000;
-        timer = setTimeout(() => reject(new Error("远程浏览器操作超时")), timeout);
+        timer = setTimeout(() => reject(new Error("The remote browser operation timed out.")), timeout);
         this.calls.set(id, { resolve, reject });
         this.process.stdio[3].write(JSON.stringify({ id, method, params, sessionId }) + "\0");
       });
@@ -96,7 +96,7 @@ async function saveLanguage(profile, language) {
   const file = join(directory, "Preferences");
   let settings = {};
   try { settings = JSON.parse(await readFile(file, "utf8")); }
-  catch (error) { if (error.code !== "ENOENT") throw new Error("手机浏览器资料暂时无法读取"); }
+  catch (error) { if (error.code !== "ENOENT") throw new Error("The phone browser data cannot be read right now."); }
   settings.intl ??= {};
   settings.intl.accept_languages = language;
   settings.intl.selected_languages = language;
@@ -118,29 +118,29 @@ export class PhoneBrowser {
   }
   run(operation, input, signal) {
     // Serialize screenshot/context checks with all layout and input changes.
-    if (this.pending >= 12) return Promise.reject(new Error("手机浏览器正在处理上一项操作"));
+    if (this.pending >= 12) return Promise.reject(new Error("The phone browser is still handling the previous operation."));
     this.pending++;
     const task = this.queue.then(() => this.perform(operation, input, signal));
     this.queue = task.catch(() => {}).finally(() => { this.pending--; });
     return task;
   }
   async perform(operation, input, signal) {
-    if (!input || !validID.test(input.id)) throw new Error("手机浏览器会话无效");
+    if (!input || !validID.test(input.id)) throw new Error("Invalid phone browser session.");
     if (operation === "open") {
       const size = dimensions(input);
-      if (typeof input.profile !== "string" || !/^[a-f0-9]{64}$/.test(input.profile)) throw new Error("手机浏览器资料无效");
+      if (typeof input.profile !== "string" || !/^[a-f0-9]{64}$/.test(input.profile)) throw new Error("Invalid phone browser data.");
       const url = input.url ? webAddress(input.url) : "";
       if (!this.session) {
         try { await this.open(input.id, input.profile, size, url, signal); }
         catch (error) {
           if (error.status === 403 || error.status === 409) throw error;
-          throw phoneError(503, "客机浏览器暂时无法启动，请稍后重新打开");
+          throw phoneError(503, "The guest browser cannot start right now. Reopen it later.");
         }
       }
-      else if (input.profile !== this.session.profile) throw phoneError(409, "另一部手机正在使用浏览器");
+      else if (input.profile !== this.session.profile) throw phoneError(409, "Another phone is using the browser.");
     }
     const s = this.session;
-    if (!s || s.id !== input.id) throw phoneError(410, "手机浏览器会话已结束，请重新打开");
+    if (!s || s.id !== input.id) throw phoneError(410, "The phone browser session has ended. Reopen it.");
     clearTimeout(this.timer);
     this.timer = setTimeout(() => { void this.run("close", { id: s.id }).catch(() => {}); }, idleTimeout).unref();
     if (operation === "open") return { id: s.id };
@@ -153,7 +153,7 @@ export class PhoneBrowser {
         try { return await this.frame(s); } catch { return { id: s.id }; }
       }
     } else if (operation === "close") await this.dispose(s);
-    else throw new Error("未知的手机浏览器操作");
+    else throw new Error("Unknown phone browser operation.");
     return { id: input.id };
   }
   async open(id, profile, size, url, signal) {
@@ -184,7 +184,7 @@ export class PhoneBrowser {
       signal?.throwIfAborted();
       const { targetInfos } = await pipe.send("Target.getTargets");
       const target = targetInfos.find(t => t.type === "page" && t.url === "about:blank");
-      if (!target) throw phoneError(503, "客机浏览器尚未就绪，请稍后重新打开");
+      if (!target) throw phoneError(503, "The guest browser is not ready yet. Reopen it later.");
       s.targetId = target.targetId;
       const { sessionId } = await pipe.send("Target.attachToTarget", { targetId: target.targetId, flatten: true });
       s.send = (method, params) => pipe.send(method, params, sessionId);
@@ -256,8 +256,8 @@ export class PhoneBrowser {
       before.failed ? { focus: "", password: false } : this.focus(s, before),
     ]);
     const after = await this.document(s);
-    if (before.token !== after.token) throw phoneError(409, "页面正在切换，请重新读取画面");
-    if (!picture.data || picture.data.length > 2500000) throw new Error("远程画面过大，请减小视口");
+    if (before.token !== after.token) throw phoneError(409, "The page is switching. Read the screen again.");
+    if (!picture.data || picture.data.length > 2500000) throw new Error("The remote screen is too large. Reduce the viewport.");
     const metadata = { id: s.id, url: after.url, title: info.targetInfo.title.slice(0, 512), width: s.width,
       height: s.height, document: after.token, ...focus };
     const tag = createHash("sha256").update(JSON.stringify(metadata)).update(picture.data, "ascii").digest("hex").slice(0, 32);
@@ -269,7 +269,7 @@ export class PhoneBrowser {
     if (type === "resize") return this.resize(s, dimensions(input));
     if (type === "navigate") return s.send("Page.navigate", { url: webAddress(input.url) });
     const doc = await this.document(s);
-    if (doc.token !== input.document) throw phoneError(409, "页面已切换，请重新读取画面");
+    if (doc.token !== input.document) throw phoneError(409, "The page has switched. Read the screen again.");
     if (type === "back" || type === "forward") {
       const history = await s.send("Page.getNavigationHistory");
       const entry = history.entries[history.currentIndex + (type === "back" ? -1 : 1)];
@@ -277,25 +277,25 @@ export class PhoneBrowser {
       return;
     }
     if (type === "reload") return s.send("Page.reload");
-    if (doc.failed) throw new Error("网页加载失败，请检查地址或重新载入");
+    if (doc.failed) throw new Error("The page failed to load. Check the address or reload.");
     if (type === "text" || type === "key") {
       if (type === "text" || input.key === "Enter" || input.focus) {
         const actual = await this.focus(s, doc);
-        if (!actual.focus || actual.focus !== input.focus) throw phoneError(409, "输入框已改变，请重新点选");
+        if (!actual.focus || actual.focus !== input.focus) throw phoneError(409, "The input field has changed. Tap it again.");
       }
       if (type === "text") {
-        if (typeof input.text !== "string" || !input.text || Buffer.byteLength(input.text) > 8192) throw new Error("输入文字无效");
+        if (typeof input.text !== "string" || !input.text || Buffer.byteLength(input.text) > 8192) throw new Error("Invalid input text.");
         return s.send("Input.insertText", { text: input.text });
       }
       const code = keys.get(input.key);
-      if (!code) throw new Error("按键不受支持");
+      if (!code) throw new Error("Unsupported key.");
       const key = { key: input.key, code: input.key, windowsVirtualKeyCode: code };
       await s.send("Input.dispatchKeyEvent", { ...key, type: "keyDown", ...(input.key === "Enter" ? { text: "\r" } : {}) });
       await s.send("Input.dispatchKeyEvent", { ...key, type: "keyUp" });
       return;
     }
     if (!Number.isFinite(input.x) || !Number.isFinite(input.y) ||
-        input.x < 0 || input.y < 0 || input.x >= s.width || input.y >= s.height) throw new Error("触点不在当前画面内");
+        input.x < 0 || input.y < 0 || input.x >= s.width || input.y >= s.height) throw new Error("The touch point is outside the current screen.");
     // CDP takes CSS coordinates; pages without a viewport meta tag can
     // render a 980px layout scaled down into a 390px phone image.
     const x = input.x / doc.scale, y = input.y / doc.scale;
@@ -303,8 +303,8 @@ export class PhoneBrowser {
       await s.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
       await s.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
     } else if (type === "scroll") {
-      if (![input.dx, input.dy].every(n => Number.isFinite(n) && Math.abs(n) <= 3200)) throw new Error("滚动距离无效");
+      if (![input.dx, input.dy].every(n => Number.isFinite(n) && Math.abs(n) <= 3200)) throw new Error("Invalid scroll distance.");
       await s.send("Input.dispatchMouseEvent", { type: "mouseWheel", x, y, deltaX: input.dx / doc.scale, deltaY: input.dy / doc.scale });
-    } else throw new Error("未知的浏览器动作");
+    } else throw new Error("Unknown browser action.");
   }
 }

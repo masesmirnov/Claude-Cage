@@ -13,7 +13,7 @@ const site = http.createServer((request, response) => {
   response.setHeader("Content-Type", "text/html; charset=utf-8");
   response.end(`<!doctype html><button id="copy">Copy</button><script>
     const originalWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
-    window.action = () => navigator.clipboard.writeText("中文🙂\\nexact text");
+    window.action = () => navigator.clipboard.writeText("Привет🙂\\nexact text");
     document.querySelector("button").onclick = () => {
       window.finished = false;
       Promise.resolve().then(() => action()).then(() => { finished = true; }, () => { finished = true; });
@@ -74,9 +74,9 @@ try {
   });
   await page.waitForTimeout(50);
   assert.deepEqual(copies, []);
-  await click(page, ["中文🙂\nexact text"]);
+  await click(page, ["Привет🙂\nexact text"]);
   await page.reload();
-  await click(page, ["中文🙂\nexact text"]);
+  await click(page, ["Привет🙂\nexact text"]);
 
   await page.evaluate(() => {
     window.action = () =>
@@ -91,12 +91,12 @@ try {
     document.addEventListener("copy", (event) => {
       event.clipboardData.setData("text/plain", "first value");
       event.clipboardData.clearData("text/plain");
-      event.clipboardData.setData("text", "execCommand 精确文本");
+      event.clipboardData.setData("text", "execCommand Точный текст");
       event.preventDefault();
     });
     window.action = () => document.execCommand("copy");
   });
-  await click(page, ["execCommand 精确文本"]);
+  await click(page, ["execCommand Точный текст"]);
 
   for (const mode of ["textarea", "input", "shadow", "password", "collapsed"]) {
     await page.reload();
@@ -109,7 +109,7 @@ try {
           mode === "input" || mode === "password" ? "input" : "textarea",
         );
         if (mode === "password") field.type = "password";
-        field.value = "默认复制🙂\n保留\u00a0空格";
+        field.value = "Копия по умолчанию🙂\nСохранить\u00a0пробел";
         let parent = document.body;
         if (mode === "shadow") {
           const host = document.createElement("div");
@@ -125,8 +125,8 @@ try {
     }, mode);
     const expected =
       mode === "input"
-        ? "默认复制🙂保留\u00a0空格"
-        : "默认复制🙂\n保留\u00a0空格";
+        ? "Копия по умолчанию🙂Сохранить\u00a0пробел"
+        : "Копия по умолчанию🙂\nСохранить\u00a0пробел";
     const exported = mode !== "password" && mode !== "collapsed";
     await click(page, exported ? [expected] : []);
     assert.equal(
@@ -263,7 +263,7 @@ try {
   assert.match(result.skipped[0]?.reason, /writeText/);
   await click(modified, []);
   await modified.reload();
-  await click(modified, ["中文🙂\nexact text"]);
+  await click(modified, ["Привет🙂\nexact text"]);
 
   const poisoned = await context.newPage();
   await poisoned.goto(origin);
@@ -303,7 +303,7 @@ try {
   await modified.frameLocator("iframe").locator("#copy").click();
   await modified.waitForTimeout(100);
   assert.deepEqual(copies.slice(frameCount), [
-    { id: "modified", text: "中文🙂\nexact text", context: frameContext },
+    { id: "modified", text: "Привет🙂\nexact text", context: frameContext },
   ]);
 
   await modified.evaluate(() => {

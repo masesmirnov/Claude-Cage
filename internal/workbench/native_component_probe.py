@@ -38,7 +38,7 @@ def snapshot(receipt=Path('/var/db/cage-components.json')):
             result['manifest']['revision'] = ''
         result['installed'] = not result['missing']
     except (OSError, ValueError, KeyError, TypeError):
-        result['error'] = '客机尚无可核验的组件记录，请同步环境组件。'
+        result['error'] = 'The guest has no verifiable component record. Sync the environment components.'
     # Launching code-server, even with --version, can create a user config
     # and print its path before the version on first use.
     editor = Path('/usr/local/libexec/cage-workbench-browser-4.145.0-pw1.65.0/editor')

@@ -137,7 +137,7 @@ func TestWindowsMobileHandlerUsesHostRecordGrantAndRejectsPhoneGuestPaths(t *tes
 	t.Setenv("CAGE_WINDOWS_CLI_RELAY_CAPTURE", capture)
 	requestID := uuid.NewString()
 	path := "/api/mobile/cli/sessions/" + record.ID + "/messages"
-	body := `{"request_id":"` + requestID + `","text":"中文 fixture"}`
+	body := `{"request_id":"` + requestID + `","text":"ฐฑ fixture"}`
 	w := windowsPhoneRequest(t, s, "POST", path, body, s.phones.roomProof)
 	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), `"acknowledged_request_id":"`+requestID+`"`) {
 		t.Fatalf("native receipt failed: %d %s", w.Code, w.Body.String())

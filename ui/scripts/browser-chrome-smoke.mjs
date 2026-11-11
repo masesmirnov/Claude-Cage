@@ -68,7 +68,7 @@ async function start() {
   const account = await (await fetch(origin + "/api/account", { headers })).json();
   const password = "favorites-fixture-only";
   const unlocked = await fetch(origin + "/api/account/" + (account.exists ? "unlock" : "create"), {
-    method: "POST", headers, body: JSON.stringify({ username: "收藏测试", password, confirm_password: password }),
+    method: "POST", headers, body: JSON.stringify({ username: "Favorites test", password, confirm_password: password }),
   });
   assert.ok(unlocked.ok, "the isolated favorites fixture requires an unlocked local account");
 }
@@ -99,16 +99,16 @@ try {
       path: path.join(output, name + ".png"),
       animations: "disabled",
     });
-  const tabs = page.getByRole("tablist", { name: "浏览器标签页" });
+  const tabs = page.getByRole("tablist", { name: "Browser tabs" });
   await page
-    .getByRole("button", { name: "启动 Cage 环境", exact: true })
+    .getByRole("button", { name: "Start Cage environment", exact: true })
     .click();
   await page
-    .getByRole("heading", { name: "Cage 环境已就绪", exact: true })
+    .getByRole("heading", { name: "The Cage environment is ready", exact: true })
     .waitFor();
-  await page.getByRole("button", { name: "打开浏览器", exact: true }).click();
+  await page.getByRole("button", { name: "Open browser", exact: true }).click();
   await tabs.getByRole("tab").waitFor();
-  await page.getByRole("button", { name: "新建网页", exact: true }).click();
+  await page.getByRole("button", { name: "New web page", exact: true }).click();
   await page.waitForFunction(
     () => document.querySelectorAll('.browser-tabs [role="tab"]').length === 2,
   );
@@ -116,7 +116,7 @@ try {
     state.tabs.push({
       id: "qa-" + i,
       kind: "web",
-      title: "设计文档 " + i,
+      title: "Design doc " + i,
       url: `https://example.com/${i}`,
     });
   await page.waitForFunction(
@@ -148,8 +148,8 @@ try {
   assert.ok(layout.active > layout.other);
   assert.ok(layout.centers < 1);
   await shot("desktop-tabs");
-  const from = tabs.getByRole("tab", { name: "设计文档 3", exact: true });
-  const to = tabs.getByRole("tab", { name: "设计文档 6", exact: true });
+  const from = tabs.getByRole("tab", { name: "Design doc 3", exact: true });
+  const to = tabs.getByRole("tab", { name: "Design doc 6", exact: true });
   const initial = await from.boundingBox(),
     target = await to.boundingBox();
   const before = await to.boundingBox();
@@ -189,100 +189,100 @@ try {
   await page.mouse.up();
   assert.deepEqual(await tabs.getByRole("tab").allTextContents(), ordered);
   await page.reload();
-  await page.getByRole("button", { name: "打开浏览器", exact: true }).click();
+  await page.getByRole("button", { name: "Open browser", exact: true }).click();
   assert.deepEqual(await tabs.getByRole("tab").allTextContents(), ordered);
   checks.push(
     "8 tabs: aligned add button, active expansion, pointer tracking and live neighbor movement, Escape cancellation, persisted order",
   );
 
-  await tabs.getByRole("tab", { name: "设计文档 3", exact: true }).click();
-  await page.getByRole("button", { name: "收藏此页", exact: true }).click();
-  await page.getByLabel("收藏名称", { exact: true }).fill("Cage 设计资料");
-  await page.getByLabel("新收藏夹名称", { exact: true }).fill("工作资料");
-  await page.getByRole("button", { name: "保存", exact: true }).click();
+  await tabs.getByRole("tab", { name: "Design doc 3", exact: true }).click();
+  await page.getByRole("button", { name: "Favorite this page", exact: true }).click();
+  await page.getByLabel("Favorite name", { exact: true }).fill("Cage design notes");
+  await page.getByLabel("New folder name", { exact: true }).fill("Work notes");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await page
-    .getByRole("dialog", { name: "添加收藏", exact: true })
+    .getByRole("dialog", { name: "Add favorite", exact: true })
     .waitFor({ state: "hidden" });
   await page
-    .getByRole("button", { name: "编辑此页收藏", exact: true })
+    .getByRole("button", { name: "Edit favorite for this page", exact: true })
     .waitFor();
   let saved = JSON.parse(
     await fs.readFile(path.join(profile, "favorites.json"), "utf8"),
   );
-  assert.equal(saved.items[0].title, "Cage 设计资料");
-  assert.equal(saved.folders[0].title, "工作资料");
+  assert.equal(saved.items[0].title, "Cage design notes");
+  assert.equal(saved.folders[0].title, "Work notes");
   await page.keyboard.press("Meta+d");
-  await page.getByLabel("收藏名称", { exact: true }).fill("待重试的收藏");
+  await page.getByLabel("Favorite name", { exact: true }).fill("Favorite to retry");
   // Make the real persistence path unreadable as a file, then restore it.
   await fs.rename(
     path.join(profile, "favorites.json"),
     path.join(profile, "favorites.backup"),
   );
   await fs.mkdir(path.join(profile, "favorites.json"));
-  await page.getByRole("button", { name: "保存", exact: true }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await page
-    .getByRole("dialog", { name: "编辑收藏", exact: true })
+    .getByRole("dialog", { name: "Edit favorite", exact: true })
     .getByRole("alert")
     .waitFor();
   assert.equal(
-    await page.getByLabel("收藏名称", { exact: true }).inputValue(),
-    "待重试的收藏",
+    await page.getByLabel("Favorite name", { exact: true }).inputValue(),
+    "Favorite to retry",
   );
   await fs.rmdir(path.join(profile, "favorites.json"));
   await fs.rename(
     path.join(profile, "favorites.backup"),
     path.join(profile, "favorites.json"),
   );
-  await page.getByRole("button", { name: "保存", exact: true }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await page
-    .getByRole("dialog", { name: "编辑收藏", exact: true })
+    .getByRole("dialog", { name: "Edit favorite", exact: true })
     .waitFor({ state: "hidden" });
   await stop();
   await start();
   await page.reload();
-  await page.getByRole("button", { name: "打开浏览器", exact: true }).click();
+  await page.getByRole("button", { name: "Open browser", exact: true }).click();
   await page.keyboard.press("Meta+Shift+o");
-  const panel = page.getByRole("dialog", { name: "收藏夹", exact: true });
+  const panel = page.getByRole("dialog", { name: "Favorites", exact: true });
   await panel
-    .getByRole("button", { name: "编辑收藏 待重试的收藏", exact: true })
+    .getByRole("button", { name: "Edit favorite Favorite to retry", exact: true })
     .waitFor();
   await shot("favorites");
-  await page.getByLabel("搜索收藏", { exact: true }).fill("不存在");
-  await panel.getByText("没有匹配的收藏").waitFor();
-  await page.getByLabel("搜索收藏", { exact: true }).fill("example.com/3");
+  await page.getByLabel("Search favorites", { exact: true }).fill("does not exist");
+  await panel.getByText("No matching favorites").waitFor();
+  await page.getByLabel("Search favorites", { exact: true }).fill("example.com/3");
   await panel
-    .getByRole("button", { name: "编辑收藏 待重试的收藏", exact: true })
+    .getByRole("button", { name: "Edit favorite Favorite to retry", exact: true })
     .click();
-  await chooseInline(page.getByLabel("保存到收藏夹", { exact: true }), "");
-  await page.getByRole("button", { name: "保存", exact: true }).click();
+  await chooseInline(page.getByLabel("Save to folder", { exact: true }), "");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await page
-    .getByRole("dialog", { name: "编辑收藏", exact: true })
+    .getByRole("dialog", { name: "Edit favorite", exact: true })
     .waitFor({ state: "hidden" });
   saved = JSON.parse(
     await fs.readFile(path.join(profile, "favorites.json"), "utf8"),
   );
   assert.equal(saved.items[0].folder_id, "");
-  await page.getByLabel("搜索收藏", { exact: true }).fill("");
+  await page.getByLabel("Search favorites", { exact: true }).fill("");
   await chooseInline(page
-    .getByLabel("筛选收藏夹", { exact: true }), saved.folders[0].id);
-  await page.getByRole("button", { name: "重命名收藏夹", exact: true }).click();
-  await page.getByLabel("收藏名称", { exact: true }).fill("常用资料");
-  await page.getByRole("button", { name: "保存", exact: true }).click();
+    .getByLabel("Filter folders", { exact: true }), saved.folders[0].id);
+  await page.getByRole("button", { name: "Rename folder", exact: true }).click();
+  await page.getByLabel("Favorite name", { exact: true }).fill("Frequent notes");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await page
-    .getByRole("dialog", { name: "重命名收藏夹", exact: true })
+    .getByRole("dialog", { name: "Rename folder", exact: true })
     .waitFor({ state: "hidden" });
   await page
-    .getByRole("button", { name: "删除收藏夹，收藏移至未分类", exact: true })
+    .getByRole("button", { name: "Delete folder; favorites move to Uncategorized", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "重命名收藏夹", exact: true })
+    .getByRole("button", { name: "Rename folder", exact: true })
     .waitFor({ state: "hidden" });
-  await panel.getByRole("button", { name: /^待重试的收藏/ }).click();
+  await panel.getByRole("button", { name: /^Favorite to retry/ }).click();
   await panel.waitFor({ state: "hidden" });
   assert.equal(state.tabs.at(-1).url, "https://example.com/3");
-  await page.getByRole("button", { name: "编辑此页收藏", exact: true }).click();
-  await page.getByRole("button", { name: "删除收藏", exact: true }).click();
-  await page.getByRole("button", { name: "收藏此页", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Edit favorite for this page", exact: true }).click();
+  await page.getByRole("button", { name: "Delete favorite", exact: true }).click();
+  await page.getByRole("button", { name: "Favorite this page", exact: true }).waitFor();
   saved = JSON.parse(
     await fs.readFile(path.join(profile, "favorites.json"), "utf8"),
   );
@@ -296,7 +296,7 @@ try {
     state.tabs.push({
       id: "qa-" + i,
       kind: "web",
-      title: "参考网页 " + i,
+      title: "Reference page " + i,
       url: `https://example.com/${i}`,
     });
   await page.waitForFunction(
@@ -311,18 +311,18 @@ try {
     await shot("many-tabs-" + width);
   }
   await page.setViewportSize({ width: 820, height: 558 });
-  await page.getByRole("button", { name: "搜索标签页", exact: true }).click();
+  await page.getByRole("button", { name: "Search tabs", exact: true }).click();
   await page
-    .getByLabel("搜索已打开的标签页", { exact: true })
-    .fill("参考网页 28");
+    .getByLabel("Search open tabs", { exact: true })
+    .fill("Reference page 28");
   await page
-    .getByRole("dialog", { name: "搜索标签页", exact: true })
-    .getByRole("button", { name: "参考网页 28", exact: true })
+    .getByRole("dialog", { name: "Search tabs", exact: true })
+    .getByRole("button", { name: "Reference page 28", exact: true })
     .click();
   await page.waitForFunction(
     () =>
       document.querySelector('.browser-tabs [aria-selected="true"]')
-        .textContent === "参考网页 28",
+        .textContent === "Reference page 28",
   );
   await page.evaluate(() =>
     document.documentElement.style.setProperty("--ui-font-size", "20px"),

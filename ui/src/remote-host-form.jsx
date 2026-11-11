@@ -45,7 +45,7 @@ export function HostForm({ initial, platform, onSaved, onClose }) {
   }
   return (
     <Modal
-      title={form.id ? "编辑远程主机" : "添加远程主机"}
+      title={form.id ? "Edit remote host" : "Add remote host"}
       onClose={busy ? undefined : onClose}
     >
       <form className="remote-host-form" onSubmit={save}>
@@ -56,29 +56,29 @@ export function HostForm({ initial, platform, onSaved, onClose }) {
         )}
         <fieldset disabled={busy}>
           <label>
-            主机名称
+            Host name
             <input
               required
               value={form.name}
               onChange={(event) => update("name", event.target.value)}
-              placeholder="例如：东京开发机"
+              placeholder="For example: Tokyo dev machine"
               maxLength={200}
             />
           </label>
           <div className="remote-form-row">
             <label>
-              服务器地址
+              Server address
               <input
                 required
                 value={form.host}
                 onChange={(event) => update("host", event.target.value)}
-                placeholder="IP 地址或域名"
+                placeholder="IP address or domain"
                 autoComplete="off"
                 spellCheck="false"
               />
             </label>
             <label className="remote-port">
-              SSH 端口
+              SSH port
               <input
                 required
                 type="number"
@@ -90,7 +90,7 @@ export function HostForm({ initial, platform, onSaved, onClose }) {
             </label>
           </div>
           <label>
-            SSH 用户名
+            SSH username
             <input
               required
               value={form.user}
@@ -101,9 +101,9 @@ export function HostForm({ initial, platform, onSaved, onClose }) {
             />
           </label>
           <label>
-            SSH 登录方式
+            SSH sign-in method
             <InlineSelect
-              aria-label="SSH 登录方式"
+              aria-label="SSH sign-in method"
               value={form.auth.kind}
               onValueChange={(kind) =>
                 update("auth", {
@@ -113,15 +113,15 @@ export function HostForm({ initial, platform, onSaved, onClose }) {
                 })
               }
             >
-              <option value="key_file">本机密钥文件</option>
-              <option value="agent">本机 SSH agent</option>
+              <option value="key_file">Local key file</option>
+              <option value="agent">Local SSH agent</option>
             </InlineSelect>
           </label>
           {form.auth.kind === "key_file" && (
             <label>
-              本机私钥文件
+              Local private key file
               <input
-                aria-label="本机私钥文件"
+                aria-label="Local private key file"
                 required
                 value={form.auth.identity_file}
                 onChange={(event) =>
@@ -132,48 +132,48 @@ export function HostForm({ initial, platform, onSaved, onClose }) {
                 }
                 placeholder={
                   platform === "windows"
-                    ? "C:\\Users\\你的名字\\.ssh\\id_ed25519"
-                    : "/Users/你的名字/.ssh/id_ed25519"
+                    ? "C:\\Users\\your-name\\.ssh\\id_ed25519"
+                    : "/Users/your-name/.ssh/id_ed25519"
                 }
                 autoComplete="off"
                 spellCheck="false"
               />
-              <small>填写绝对路径。密钥留在本机，不上传到云端。</small>
+              <small>Enter an absolute path. The key stays on this computer and is not uploaded to the cloud.</small>
             </label>
           )}
           <details>
-            <summary>云端安装路径</summary>
+            <summary>Cloud install paths</summary>
             <div className="remote-advanced">
               <label>
-                Cage 程序路径
+                Cage program path
                 <input
                   value={form.executable || ""}
                   onChange={(event) => update("executable", event.target.value)}
                   placeholder="cage"
                   spellCheck="false"
                 />
-                <small>默认使用 cage，也可填写云端程序的绝对路径。</small>
+                <small>Defaults to cage; you can also enter the absolute path of the cloud program.</small>
               </label>
               <label>
-                Cage 配置文件
+                Cage config file
                 <input
                   value={form.config_path || ""}
                   onChange={(event) =>
                     update("config_path", event.target.value)
                   }
-                  placeholder="默认使用云端账户的 ~/.claude-cage/config.json"
+                  placeholder="Defaults to ~/.claude-cage/config.json of the cloud account"
                   spellCheck="false"
                 />
-                <small>自定义时填写云端绝对路径。</small>
+                <small>For a custom path, enter the absolute cloud path.</small>
               </label>
             </div>
           </details>
           <div className="remote-button-row">
             <button className="primary" type="submit">
-              保存主机
+              Save host
             </button>
             <button type="button" onClick={onClose}>
-              取消
+              Cancel
             </button>
           </div>
         </fieldset>

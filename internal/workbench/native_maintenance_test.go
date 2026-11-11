@@ -218,13 +218,13 @@ func TestNativeMaintenanceRejectsLiveTerminalsBeforeJob(t *testing.T) {
 			s.terminals.sessions = map[string]*terminalSession{"active": {}}
 			for _, route := range []string{"/api/environment/update", "/api/environment/tools"} {
 				response := nativeMaintenanceRequest(s, "POST", route, "{}")
-				if response.Code != 409 || !strings.Contains(response.Body.String(), "结束正在运行的终端") || s.jobs.snapshot().Running {
+				if response.Code != 409 || !strings.Contains(response.Body.String(), "end any running terminals") || s.jobs.snapshot().Running {
 					t.Fatal(response.Code, response.Body.String())
 				}
 			}
 			s.terminals.sessions = nil
 			response := nativeMaintenanceRequest(s, "POST", "/api/environment/update", "{}")
-			if response.Code != 409 || !strings.Contains(response.Body.String(), "启动并登录客机") {
+			if response.Code != 409 || !strings.Contains(response.Body.String(), "Start and sign in to the guest") {
 				t.Fatal(response.Code, response.Body.String())
 			}
 		})

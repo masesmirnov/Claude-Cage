@@ -10,8 +10,8 @@ import (
 
 func detachWorker(*exec.Cmd) {}
 func tryLockRuntime(string) (func(), error) {
-	return nil, errors.New("容器运行环境仅支持 Linux 服务器")
+	return nil, errors.New("The container runtime environment is only supported on Linux servers.")
 }
 func lockRuntime(context.Context, string) (func(), error) {
-	return nil, errors.New("容器运行环境仅支持 Linux 服务器")
+	return nil, errors.New("The container runtime environment is only supported on Linux servers.")
 }

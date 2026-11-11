@@ -213,7 +213,7 @@ test('custom release notes come from the immutable source and are published with
   const f = await repositoryFixture(t);
   f.context.notesPath = 'docs/releases/v99.1.0-rc.1.md';
   await mkdir(join(f.root, 'docs/releases'), { recursive: true });
-  await writeFile(join(f.root, f.context.notesPath), '# 本轮更新\n\n功能与已验证范围。\n');
+  await writeFile(join(f.root, f.context.notesPath), '# Release notes\n\nFeatures and verified scope.\n');
   f.git(['add', f.context.notesPath]);
   f.git(['commit', '--quiet', '-m', 'Public release notes']);
   f.context.sourceSha = f.state.main = f.git(['rev-parse', 'HEAD']);
@@ -223,7 +223,7 @@ test('custom release notes come from the immutable source and are published with
   const files = await uploadFiles(f.root, candidate.version);
   const release = await publish(f, candidate, files);
   assert.equal(release.prerelease, true);
-  assert.ok(release.body.endsWith('# 本轮更新\n\n功能与已验证范围。'));
+  assert.ok(release.body.endsWith('# Release notes\n\nFeatures and verified scope.'));
   assert.equal(f.state.calls.some(call => call.path.endsWith('/generate-notes')), false);
   for (const notesPath of ['../private.md', 'docs/../private.md', '/docs/notes.md', 'docs/notes.txt']) {
     await assert.rejects(releaseNotes(f.root, { ...candidate, notesPath }), /committed Markdown/);

@@ -29,7 +29,7 @@ func TestNativeStatusExposesMaintenanceFailureAndRestoreRoute(t *testing.T) {
 				t.Fatal(err)
 			}
 			s.guestUpdateRequired = true
-			s.guestUpdateError = "同步未完成，可保留原环境重试"
+			s.guestUpdateError = "Sync is not finished. You can keep the original environment and retry"
 			response := windowsBrowserRequestForTest(s, "GET", "/api/status", nil)
 			var state struct {
 				System         string `json:"guest_system"`

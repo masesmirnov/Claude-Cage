@@ -5,7 +5,7 @@ import { canonicalExitPolicy } from "./safety-state.mjs";
 
 const countries =
   "US GB CA DE FR NL SE FI IE CH AU NZ JP SG KR HK MO TW IN BR".split(" ");
-const names = new Intl.DisplayNames(["zh-CN"], { type: "region" });
+const names = new Intl.DisplayNames(["en-US"], { type: "region" });
 
 export function ExitPolicyFields({
   value,
@@ -35,13 +35,13 @@ export function ExitPolicyFields({
   return (
     <>
       <div className="section-title">
-        <h3>IP 变化规则</h3>
-        <p>中国大陆出口禁止放行；静态 IP 和不限地区也必须确认出口国家。</p>
+        <h3>IP change rules</h3>
+        <p>Exits in mainland China are never allowed; static IPs and any-region also require confirming the exit country.</p>
       </div>
       <label className="toggle-row">
         <span>
-          <strong>静态 IP</strong>
-          <small>开启后，检测到其他 IPv4 地址会暂停外网。</small>
+          <strong>Static IP</strong>
+          <small>When on, detecting a different IPv4 address pauses internet access.</small>
         </span>
         <input
           type="checkbox"
@@ -54,10 +54,10 @@ export function ExitPolicyFields({
       </label>
       {policy.mode === "static" ? (
         <label>
-          绑定的 IPv4 地址
+          Bound IPv4 address
           <input
             value={policy.ip}
-            placeholder="首次保存时绑定检测到的地址"
+            placeholder="The detected address is bound on first save"
             spellCheck="false"
             onChange={(e) => update("ip", e.target.value)}
           />
@@ -65,29 +65,29 @@ export function ExitPolicyFields({
       ) : (
         <>
           <label>
-            动态 IP 的允许范围
+            Allowed range for dynamic IPs
             <InlineSelect
-              aria-label="动态 IP 的允许范围"
+              aria-label="Allowed range for dynamic IPs"
               value={policy.scope}
               onValueChange={(next) => update("scope", next)}
             >
-              <option value="city">同一城市</option>
-              <option value="region">同一州／省</option>
-              <option value="country">同一国家／地区</option>
-              <option value="any">不限地区（中国大陆除外）</option>
+              <option value="city">Same city</option>
+              <option value="region">Same state/province</option>
+              <option value="country">Same country/region</option>
+              <option value="any">Any region (except mainland China)</option>
             </InlineSelect>
           </label>
           {policy.scope !== "any" && (
             <>
               <label>
-                允许的国家／地区代码
+                Allowed country/region code
                 <InlineSelect editable
-                  aria-label="允许的国家／地区代码"
+                  aria-label="Allowed country/region code"
                   value={policy.country_code}
                   onValueChange={(next) =>
                     update("country_code", next.toUpperCase())
                   }
-                  placeholder="例如 US；留空则在首次保存时绑定"
+                  placeholder="For example US; leave blank to bind on first save"
                   maxLength={2}
                   spellCheck="false"
                 >
@@ -101,20 +101,20 @@ export function ExitPolicyFields({
               {(policy.scope === "city" || policy.scope === "region") && (
                 <div className="field-row">
                   <label>
-                    所属州／省
+                    State/province
                     <input
                       value={policy.region}
                       onChange={(e) => update("region", e.target.value)}
-                      placeholder="例如 California"
+                      placeholder="For example California"
                     />
                   </label>
                   {policy.scope === "city" && (
                     <label>
-                      允许的城市
+                      Allowed city
                       <input
                         value={policy.city}
                         onChange={(e) => update("city", e.target.value)}
-                        placeholder="例如 Los Angeles"
+                        placeholder="For example Los Angeles"
                       />
                     </label>
                   )}
@@ -122,10 +122,10 @@ export function ExitPolicyFields({
               )}
               <p className="field-help">
                 {policy.scope === "city"
-                  ? "城市同时匹配所属国家和州／省。名称以定位结果为准，建议使用检测结果填写。"
+                  ? "A city must match both its country and state/province. Names follow the geolocation result, so fill them in from the check result."
                   : policy.scope === "region"
-                    ? "州／省同时匹配所属国家，包括日本的都道府县。名称以检测结果为准。"
-                    : "建议先检测出口，再使用检测到的国家／地区填写。"}
+                    ? "A state/province must match its country, including Japanese prefectures. Names follow the check result."
+                    : "Check the exit first, then fill in the detected country/region."}
               </p>
             </>
           )}
@@ -138,7 +138,7 @@ export function ExitPolicyFields({
           ) : (
             <Globe2 size={15} />
           )}
-          检测当前出口
+          Check current exit
         </button>
         <button
           disabled={
@@ -148,7 +148,7 @@ export function ExitPolicyFields({
           }
           onClick={bind}
         >
-          用检测结果填写
+          Fill in from check result
         </button>
       </div>
       {observation && (
@@ -159,16 +159,16 @@ export function ExitPolicyFields({
           <code>{observation.ip}</code>
           <small>
             {observation.country_code} ·{" "}
-            {new Date(observation.checked_at).toLocaleTimeString("zh-CN")}
+            {new Date(observation.checked_at).toLocaleTimeString("en-US")}
           </small>
         </div>
       )}
       <p className="footnote">
-        已有绑定会保留，重检和重启不会自动更换基准。命中大陆网段、定位为中国大陆、无法确认出口地区或超出保存范围时暂停外网，离线终端和文件仍可使用。
+        An existing binding is kept; rechecking and restarting never replace the baseline automatically. Internet access is paused when the exit hits a mainland China range, is located in mainland China, its region cannot be confirmed, or it falls outside the saved range. Offline terminals and files remain usable.
       </p>
       <p className="field-help">
-        范围依据 IP 数据库的近似定位。后台约每 30
-        秒采样，不能代替代理自身的分流约束。
+        The range is based on approximate IP database geolocation. The backend samples about every 30
+        seconds, which cannot replace the proxy's own routing constraints.
       </p>
     </>
   );

@@ -53,14 +53,14 @@ export async function createWorkbench({
       state: "ok",
       ready: true,
       can_enable: false,
-      message: "本机 Git 安全保护已启用。",
+      message: "Git protection is enabled on this computer.",
     },
     failHostGit: false,
     saves: [],
     requests: [],
     terminalConnections: 0,
     initialization: structuredClone(initialization),
-    account: { exists: true, unlocked: true, username: "林间工作室", avatar: "" },
+    account: { exists: true, unlocked: true, username: "Forest Studio", avatar: "" },
     accountPassword: "fixture-password",
     failAccountSave: false,
     settings: {
@@ -132,21 +132,21 @@ export async function createWorkbench({
     if (path === "/account") return route.fulfill({ json: accountView() });
     if (path.startsWith("/account/")) {
       const action = path.split("/").at(-1);
-      if (!["create", "unlock"].includes(action) && !state.account.unlocked) return route.fulfill({ status: 423, body: "请先解锁 Cage" });
+      if (!["create", "unlock"].includes(action) && !state.account.unlocked) return route.fulfill({ status: 423, body: "Unlock Cage first" });
       if (action === "create") {
-        if (state.account.exists || !body.username?.trim() || body.password?.length < 8 || body.password !== body.confirm_password) return route.fulfill({ status: 400, body: "账户信息无效" });
+        if (state.account.exists || !body.username?.trim() || body.password?.length < 8 || body.password !== body.confirm_password) return route.fulfill({ status: 400, body: "Invalid account details" });
         Object.assign(state.account, { exists: true, unlocked: true, username: body.username.trim(), avatar: body.avatar || "" });
         state.accountPassword = body.password;
       } else if (action === "unlock") {
-        if (body.password !== state.accountPassword) return route.fulfill({ status: 400, contentType: "text/plain; charset=utf-8", body: "密码不正确" });
+        if (body.password !== state.accountPassword) return route.fulfill({ status: 400, contentType: "text/plain; charset=utf-8", body: "Incorrect password" });
         state.account.unlocked = true;
         state.account.require_authentication = false;
       } else if (action === "profile") {
-        if (state.failAccountSave) return route.fulfill({ status: 400, body: "资料未能保存，请重试" });
+        if (state.failAccountSave) return route.fulfill({ status: 400, body: "Details could not be saved. Try again." });
         Object.assign(state.account, { username: body.username.trim(), avatar: body.avatar });
       } else if (action === "password") {
-        if (body.old_password !== state.accountPassword) return route.fulfill({ status: 400, body: "密码不正确" });
-        if (body.password?.length < 8 || body.password !== body.confirm_password) return route.fulfill({ status: 400, body: "新密码无效" });
+        if (body.old_password !== state.accountPassword) return route.fulfill({ status: 400, body: "Incorrect password" });
+        if (body.password?.length < 8 || body.password !== body.confirm_password) return route.fulfill({ status: 400, body: "Invalid new password" });
         state.accountPassword = body.password;
       } else if (action === "lock") { state.account.unlocked = false; state.account.require_authentication = true; }
       else if (action === "suspend") state.account.unlocked = false;
@@ -161,7 +161,7 @@ export async function createWorkbench({
       }
       return route.fulfill({ json: accountView() });
     }
-    if (!state.account.unlocked && !["/session", "/launch", "/appearance"].includes(path)) return route.fulfill({ status: 423, body: "Cage 已锁定，请先登录" });
+    if (!state.account.unlocked && !["/session", "/launch", "/appearance"].includes(path)) return route.fulfill({ status: 423, body: "Cage is locked. Sign in first." });
     if (browserRequest && path.startsWith("/browser/") && path !== "/browser/events") return browserRequest(route, path, body);
     if (path.startsWith("/cli/")) {
       if (cliRequest) return cliRequest(route, path, body);
@@ -169,7 +169,7 @@ export async function createWorkbench({
       if (account) return route.fulfill({ json: { session: { id: account[1] }, supported: false, candidates: [] } });
       return route.fulfill({ json: { sessions: [], notice: "" } });
     }
-    if (startupFailure && path === "/status") return route.fulfill({ status: 503, body: "测试：控制服务暂不可用" });
+    if (startupFailure && path === "/status") return route.fulfill({ status: 503, body: "Test: control service unavailable" });
     let result = {};
     if (path === "/favorites") {
       if (favoritesRequest) return route.fulfill(await favoritesRequest(request));
@@ -178,17 +178,17 @@ export async function createWorkbench({
     if (path === "/host/git") {
       if (request.method() === "POST") {
         if (!body?.confirm)
-          return route.fulfill({ status: 400, body: "请先确认启用保护" });
+          return route.fulfill({ status: 400, body: "Confirm enabling protection first" });
         if (state.failHostGit)
           return route.fulfill({
             status: 500,
-            body: "未能保存 Git 安全设置，请检查写入权限后重试。",
+            body: "Could not save the Git safety setting. Check write permission and try again.",
           });
         state.hostGit = {
           state: "ok",
           ready: true,
           can_enable: false,
-          message: "本机 Git 安全保护已启用。",
+          message: "Git protection is enabled on this computer.",
         };
       }
       return route.fulfill({ json: state.hostGit });
@@ -200,7 +200,7 @@ export async function createWorkbench({
         if (state.failAppearance)
           return route.fulfill({
             status: 500,
-            body: "外观设置未能保存，请重试",
+            body: "Appearance settings could not be saved. Try again.",
           });
         state.appearance = structuredClone(body);
       }
@@ -213,8 +213,8 @@ export async function createWorkbench({
         sources: [
           {
             id: "fixture-source",
-            name: "测试来源",
-            nodes: [{ id: "fixture-node", name: "测试节点", type: "http" }],
+            name: "Test source",
+            nodes: [{ id: "fixture-node", name: "Test node", type: "http" }],
             remote: false,
             interval_hours: 0,
           },
@@ -223,7 +223,7 @@ export async function createWorkbench({
         core_available: true,
         running: true,
         state: state.status.vm_running ? "ready" : "prepared",
-        state_label: state.status.vm_running ? "已联网" : "待启动环境",
+        state_label: state.status.vm_running ? "Online" : "Waiting to start environment",
         network_open: Boolean(state.status.vm_running),
       };
     else if (path === "/settings" && request.method() === "GET")
@@ -231,15 +231,15 @@ export async function createWorkbench({
     else if (path === "/status")
       result = { ...state.status, workspace: state.settings.workspace };
     else if (path === "/projects/remove") {
-      if (!body.workspace || body.workspace === state.status.environment_directory) return route.fulfill({ status: 400, body: "默认工作区保留" });
-      if (state.failRemove || state.terminals.some(terminal => terminal.workspace === body.workspace && !terminal.closed) || state.tabs.some(tab => tab.kind === "editor" && tab.workspace === body.workspace)) return route.fulfill({ status: 409, contentType: "text/plain; charset=utf-8", body: "请先关闭此项目的终端和编辑器，再移除项目" });
+      if (!body.workspace || body.workspace === state.status.environment_directory) return route.fulfill({ status: 400, body: "The default workspace is kept" });
+      if (state.failRemove || state.terminals.some(terminal => terminal.workspace === body.workspace && !terminal.closed) || state.tabs.some(tab => tab.kind === "editor" && tab.workspace === body.workspace)) return route.fulfill({ status: 409, contentType: "text/plain; charset=utf-8", body: "Close this project's terminals and editors first, then remove the project" });
       state.status.projects = state.status.projects.filter(path => path !== body.workspace);
       if (state.settings.workspace === body.workspace) state.settings.workspace = state.status.environment_directory;
       result = { workspace: state.settings.workspace };
     }
     else if (path === "/projects/open") {
-      if (state.failJob) return route.fulfill({ status: 400, contentType: "text/plain; charset=utf-8", body: "项目文件夹连接失败，原项目保持不变" });
-      if (!body.add && !state.status.projects.includes(body.workspace)) return route.fulfill({ status: 400, body: "请选择已授权的项目" });
+      if (state.failJob) return route.fulfill({ status: 400, contentType: "text/plain; charset=utf-8", body: "Failed to connect to the project folder. The original project is unchanged." });
+      if (!body.add && !state.status.projects.includes(body.workspace)) return route.fulfill({ status: 400, body: "Choose an authorized project" });
       if (body.add && !state.status.projects.includes(body.workspace)) state.status.projects.push(body.workspace);
       if (body.activate) {
         state.settings.workspace = body.workspace;
@@ -253,7 +253,7 @@ export async function createWorkbench({
         return route.fulfill({
           status: 400,
           contentType: "text/plain; charset=utf-8",
-          body: "保存失败，请重试",
+          body: "Save failed. Try again.",
         });
       const id = "job-" + ++state.sequence;
       const switching = state.settings.workspace !== body.workspace;
@@ -272,7 +272,7 @@ export async function createWorkbench({
         id,
         kind: switching ? "project" : "settings",
         running: false,
-        error: state.failJob ? "项目文件夹连接失败，原项目保持不变" : "",
+        error: state.failJob ? "Failed to connect to the project folder. The original project is unchanged." : "",
       };
       result = { id };
     } else if (path === "/start") {
@@ -304,14 +304,14 @@ export async function createWorkbench({
       });
     else if (path === "/browser/preferences") {
       if (request.method() === "POST") {
-        if (state.failSave) return route.fulfill({ status: 500, body: "浏览器设置保存失败，请重试" });
+        if (state.failSave) return route.fulfill({ status: 500, body: "Browser settings could not be saved. Try again." });
         state.settings.browser_home_url = body.browser_home_url;
       }
       result = { browser_home_url: state.settings.browser_home_url };
     }
     else if (path === "/browser/settings") {
       let tab = state.tabs.find(tab => tab.kind === "browser-settings");
-      if (!tab) { tab = { id: "browser-settings", kind: "browser-settings", title: "设置", url: "cage://settings#general" }; state.tabs.push(tab); }
+      if (!tab) { tab = { id: "browser-settings", kind: "browser-settings", title: "Settings", url: "cage://settings#general" }; state.tabs.push(tab); }
       tab.url = "cage://settings#" + (body?.mode || "general"); state.active = tab.id; result = tab;
     }
     else if (path === "/browser/extensions") result = { items: [] };
@@ -326,11 +326,11 @@ export async function createWorkbench({
       )
         return route.fulfill({
           status: 400,
-          body: "请先通过打开项目添加该文件夹",
+          body: "Add this folder through Open project first",
         });
       const tab = {
         id: "term-" + ++state.sequence,
-        title: "终端 " + (state.terminals.length + 1),
+        title: "Terminal " + (state.terminals.length + 1),
         workspace: body?.workspace || state.settings.workspace,
       };
       state.terminals.push(tab);
@@ -347,7 +347,7 @@ export async function createWorkbench({
       if (path.endsWith("editor") && !state.status.projects.includes(workspace))
         return route.fulfill({
           status: 400,
-          body: "请先通过打开项目添加该文件夹",
+          body: "Add this folder through Open project first",
         });
       let tab =
         path.endsWith("editor") &&
@@ -359,7 +359,7 @@ export async function createWorkbench({
           id: "web-" + ++state.sequence,
           kind: path.endsWith("editor") ? "editor" : "web",
           workspace: path.endsWith("editor") ? workspace : undefined,
-          title: path.endsWith("editor") ? "文件编辑器" : "新标签页",
+          title: path.endsWith("editor") ? "File editor" : "New tab",
           url: body?.url || state.settings.browser_home_url,
         };
         state.tabs.push(tab);
@@ -373,7 +373,7 @@ export async function createWorkbench({
     } else if (path === "/browser/navigate")
       Object.assign(
         state.tabs.find((tab) => tab.id === body.id),
-        { url: body.url, title: "本地预览" },
+        { url: body.url, title: "Local preview" },
       );
     else if (path === "/settings/probe")
       result = {
@@ -387,7 +387,7 @@ export async function createWorkbench({
   });
   if (beforeNavigate) await beforeNavigate(page, state);
   await page.goto(url || process.env.CAGE_UI_URL || "http://127.0.0.1:5198");
-  if (waitForReady && !startupFailure && !state.status.vm_running && clientContext.mode !== "none") await page.getByRole("heading", { name: state.initialization.required ? state.initialization.started ? "安装并检查客机环境" : "为 Cage 准备独立环境" : "先启动 Cage 环境" }).waitFor();
+  if (waitForReady && !startupFailure && !state.status.vm_running && clientContext.mode !== "none") await page.getByRole("heading", { name: state.initialization.required ? state.initialization.started ? "Install and check the guest environment" : "Prepare a separate environment for Cage" : "Start the Cage environment first" }).waitFor();
   return { browser, context, page, state, errors };
 }
 

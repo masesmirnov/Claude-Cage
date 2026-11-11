@@ -12,13 +12,13 @@ func localStorageVolume(path string) error {
 		return err
 	}
 	if info.Flags&unix.MNT_LOCAL == 0 {
-		return errors.New("环境存储需要本地磁盘")
+		return errors.New("Environment storage needs a local disk.")
 	}
 	if unix.ByteSliceToString(info.Fstypename[:]) != "apfs" {
-		return errors.New("请选择本地 APFS 卷，环境需要私有文件权限和稀疏磁盘支持")
+		return errors.New("Choose a local APFS volume. The environment needs private file permissions and sparse disk support.")
 	}
 	if info.Flags&unix.MNT_IGNORE_OWNERSHIP != 0 {
-		return errors.New("请在 Finder 的磁盘“显示简介”中取消“忽略此宗卷的所有权”，或选择其他 APFS 磁盘")
+		return errors.New("In Finder, clear \"Ignore ownership on this volume\" in the disk's Get Info, or choose another APFS disk.")
 	}
 	return nil
 }

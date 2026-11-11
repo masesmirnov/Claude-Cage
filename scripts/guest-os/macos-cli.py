@@ -21,7 +21,7 @@ def macos_launch(request):
                and (prefix[4] == "default" or re.fullmatch("[a-f0-9]{24}", prefix[4])))
     ccs = len(prefix) == 2 and prefix[0] == "ccs" and re.fullmatch("[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}", prefix[1])
     if prefix != ["claude"] and not managed and not ccs:
-        raise ValueError("不支持的客机 Claude 启动命令")
+        raise ValueError("Unsupported guest Claude launch command")
     # Adopt a nested transcript only inside the same approved mount, without
     # traversing symbolic links or interpreting a saved path in a shell.
     subdir = request.get("project_subdir")
@@ -31,12 +31,12 @@ def macos_launch(request):
             device = os.fstat(directory).st_dev
             for part in subdir.split("/"):
                 if part in ("", ".", ".."):
-                    raise ValueError("会话目录无效")
+                    raise ValueError("Invalid session directory")
                 child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=directory)
                 os.close(directory)
                 directory = child
                 if os.fstat(directory).st_dev != device:
-                    raise ValueError("会话目录不属于当前挂载")
+                    raise ValueError("The session directory does not belong to the current mount")
             os.fchdir(directory)
         finally:
             os.close(directory)

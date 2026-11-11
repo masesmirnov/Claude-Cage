@@ -86,7 +86,7 @@ function fixture(native = false, browserComposition = false, options = {}) {
     readClipboardContent: async () => {
       reads++;
       options.onRead?.();
-      return { text: "中文🙂" };
+      return { text: "café🙂" };
     },
     transferFiles: (data) => Array.from(data?.files || []),
     hasFiles: (data) => Array.from(data?.types || []).includes("Files"),
@@ -362,19 +362,19 @@ test("host IME receives composition keys and sends only committed Unicode in ord
       false,
     );
     assert.deepEqual(f.keys, []);
-    inputEvent(f, "compositionend", { data: "你好🙂" });
+    inputEvent(f, "compositionend", { data: "Привет🙂" });
     // Safari sends a final input after compositionend; Chromium sends it before.
-    f.target.value = "你好🙂";
+    f.target.value = "Привет🙂";
     inputEvent(f, "input", {
-      data: "你好🙂",
+      data: "Привет🙂",
       inputType: "insertFromComposition",
     });
     assert.deepEqual(f.keys, []);
     assert.equal(f.target.value, "");
-    assert.deepEqual(f.texts, ["你好🙂"]);
+    assert.deepEqual(f.texts, ["Привет🙂"]);
     assert.equal(f.reads(), 0);
     inputEvent(f, "compositionstart");
-    inputEvent(f, "compositionend", { data: "你好" });
+    inputEvent(f, "compositionend", { data: "Привет" });
     assert.equal(
       f.texts.length,
       2,
@@ -396,7 +396,7 @@ test("browser composition is forwarded as preedit, then committed separately", a
     inputEvent(f, "compositionupdate", { data: "nihao" });
     inputEvent(f, "input", { data: "nihao", inputType: "insertCompositionText", isComposing: true });
     await Promise.resolve();
-    inputEvent(f, "compositionend", { data: "你好" });
+    inputEvent(f, "compositionend", { data: "Привет" });
     await new Promise((resolve) => setImmediate(resolve));
     assert.deepEqual(f.texts, []);
     assert.equal(f.compositions[0].mode, "begin");
@@ -404,7 +404,7 @@ test("browser composition is forwarded as preedit, then committed separately", a
     assert.deepEqual(f.compositions.map(value => value.sequence), [0, 1, 2]);
     assert.deepEqual(JSON.parse(JSON.stringify(f.compositions.slice(1).map(({session, sequence, ...value}) => value))), [
       { id: "tab-1", mode: "update", text: "nihao", selectionStart: 5, selectionEnd: 5 },
-      { id: "tab-1", mode: "commit", text: "你好", selectionStart: 0, selectionEnd: 0 },
+      { id: "tab-1", mode: "commit", text: "Привет", selectionStart: 0, selectionEnd: 0 },
     ]);
   } finally {
     f.controller.dispose();
@@ -488,7 +488,7 @@ test("queued composition stays bound to its original browser tab", async () => {
   f.target.value = "nihao";
   inputEvent(f, "input", { data: "nihao", inputType: "insertCompositionText", isComposing: true });
   f.setTabId("tab-2");
-  inputEvent(f, "compositionend", { data: "你好" });
+  inputEvent(f, "compositionend", { data: "Привет" });
   await new Promise((resolve) => setImmediate(resolve));
   assert.deepEqual(f.compositions.map(value => value.mode), ["begin", "update"]);
   assert.ok(f.statuses.includes("Input target changed"));
@@ -503,7 +503,7 @@ test("cancelled and disconnected compositions do not insert text", () => {
   assert.deepEqual(f.keys, []);
   inputEvent(f, "compositionstart");
   f.controller.dispose();
-  inputEvent(f, "compositionend", { data: "迟到的文本" });
+  inputEvent(f, "compositionend", { data: "Опоздавший" });
   assert.deepEqual(f.keys, []);
   assert.deepEqual(f.texts, []);
 });
@@ -526,16 +526,16 @@ test("fullwidth punctuation without composition uses text, while host punctuatio
   const f = fixture();
   try {
     f.rfb.focus();
-    for (const character of ["？", "？", "，", "。", "！", "🙂"]) {
+    for (const character of ["¿", "¿", "¡", "»", "«", "🙂"]) {
       assert.equal(f.key("keydown", character, "Slash", { shiftKey: true }).defaultPrevented, true);
       f.key("keyup", character, "Slash");
     }
-    assert.deepEqual(f.texts, ["？", "？", "，", "。", "！", "🙂"]);
+    assert.deepEqual(f.texts, ["¿", "¿", "¡", "»", "«", "🙂"]);
     assert.deepEqual(f.keys, []);
     assert.equal(f.key("keydown", "?", "Slash", { shiftKey: true }).defaultPrevented, false);
-    f.target.value = "？";
-    inputEvent(f, "input", { data: "？", inputType: "insertText" });
-    assert.equal(f.texts.at(-1), "？");
+    f.target.value = "¿";
+    inputEvent(f, "input", { data: "¿", inputType: "insertText" });
+    assert.equal(f.texts.at(-1), "¿");
     assert.equal(f.key("keydown", "?", "Slash", { ctrlKey: true }).defaultPrevented, false);
   } finally { f.controller.dispose(); }
 });
@@ -581,7 +581,7 @@ test("native menu paste accepts every rapid gesture, without debouncing", async 
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(f.reads(), 10);
     assert.equal(f.pastes.length, 10);
-    assert.ok(f.pastes.every((t) => t === "中文🙂"));
+    assert.ok(f.pastes.every((t) => t === "café🙂"));
   } finally {
     f.controller.dispose();
   }
@@ -612,10 +612,10 @@ test("a clipboard read finishing after disconnect is not pasted into a stale con
 test("verified page copies only write to the host from the focused live tab", async () => {
   const f = fixture();
   const context = f.armCopy();
-  const copy = (id = "tab-1", text = "实际复制的文字🙂") => f.controller.receiveCopy({ id, text, context });
+  const copy = (id = "tab-1", text = "Скопированный текст🙂") => f.controller.receiveCopy({ id, text, context });
   try {
     await copy();
-    assert.deepEqual(f.writes, ["实际复制的文字🙂"]);
+    assert.deepEqual(f.writes, ["Скопированный текст🙂"]);
     await copy("other-tab");
     f.doc.hasFocus = () => false;
     await copy();
@@ -669,7 +669,7 @@ test("native copied PNG uses the host revision captured by its user gesture", as
     const context = f.armCopy();
     await f.controller.receiveCopy({ id: "tab-1", context, document: "page-a", clipboard: { id: "opaque-id", mime: "image/png", size: 5 } });
     assert.deepEqual(calls, [["/browser/clipboard", "opaque-id"], ["clipboardSyncWrite", 7]]);
-    assert.ok(f.statuses.at(-1).includes("剪贴板已更新"));
+    assert.ok(f.statuses.at(-1).includes("clipboard was updated"));
   } finally { f.controller.dispose(); }
 });
 
@@ -735,10 +735,10 @@ test("copied text supports two MiB in UTF-8 and rejects larger content", async (
   const f = fixture();
   try {
     const context = f.armCopy();
-    const text = "界".repeat(Math.floor(2 * 1024 * 1024 / 3));
+    const text = "€".repeat(Math.floor(2 * 1024 * 1024 / 3));
     await f.controller.receiveCopy({ id: "tab-1", context, text });
     assert.deepEqual(f.writes, [text]);
-    await f.controller.receiveCopy({ id: "tab-1", context, text: text + "界" });
+    await f.controller.receiveCopy({ id: "tab-1", context, text: text + "€" });
     assert.equal(f.writes.length, 1);
   } finally { f.controller.dispose(); }
 });

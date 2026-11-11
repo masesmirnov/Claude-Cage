@@ -42,7 +42,7 @@ func TestFileInputBrowserGestureAuthorizationAndTarget(t *testing.T) {
 
 func TestDesktopDownloadsRegisterOnlyCompletedFilesInSharedDownloadDirectory(t *testing.T) {
 	s := testServer(t)
-	name := "视频.mp4"
+	name := "ฝพ.mp4"
 	item := map[string]any{"id": testBrowserFileID, "name": name, "state": "saved",
 		"path": strings.TrimRight(guestPath(s.environmentDir()), "/") + "/Downloads/" + name}
 	result := map[string]any{"downloads": []any{item}}
@@ -119,7 +119,7 @@ func TestDesktopDirectorySelectionRequiresAuthorizedProject(t *testing.T) {
 	workspace, _ := json.Marshal(t.TempDir())
 	w := request(s, "POST", "/api/input/files/directory", s.origin,
 		`{"target":"desktop","id":"`+testBrowserFileID+`","workspace":`+string(workspace)+`}`, true)
-	if w.Code != 400 || !strings.Contains(w.Body.String(), "请先通过打开项目") {
+	if w.Code != 400 || !strings.Contains(w.Body.String(), "opening the project first") {
 		t.Fatal("existing unshared directory accepted", w.Code, w.Body.String())
 	}
 	for _, body := range []string{

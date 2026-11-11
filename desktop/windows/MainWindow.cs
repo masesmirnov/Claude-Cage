@@ -8,11 +8,11 @@ internal sealed class MainWindow : Form
 {
     private WebView2 web = new() { Dock = DockStyle.Fill, Visible = false };
     private readonly NativeInput nativeInput;
-    private readonly Label message = new() { AutoSize = true, MaximumSize = new Size(720, 0), Text = "正在启动 Cage 工作台…", Margin = new Padding(12) };
+    private readonly Label message = new() { AutoSize = true, MaximumSize = new Size(720, 0), Text = "Starting the Cage workbench…", Margin = new Padding(12) };
     private readonly FlowLayoutPanel status = new() { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(48), WrapContents = false };
-    private readonly Button retry = new() { Text = "重试连接", AutoSize = true, Visible = false };
-    private readonly Button existing = new() { Text = "打开现有环境保存文件", AutoSize = true, Visible = false };
-    private readonly Button complete = new() { Text = "保存后停止环境并完成更新", AutoSize = true, Visible = false };
+    private readonly Button retry = new() { Text = "Retry connection", AutoSize = true, Visible = false };
+    private readonly Button existing = new() { Text = "Open saved environment files", AutoSize = true, Visible = false };
+    private readonly Button complete = new() { Text = "Save, stop environment, and update", AutoSize = true, Visible = false };
     private readonly NotifyIcon tray;
     private readonly AppUpdater updater;
     private int expectedPort;
@@ -40,11 +40,11 @@ internal sealed class MainWindow : Form
             if (ConfirmStop()) await Bootstrap("--complete-update");
         };
         var trayMenu = new TrayMenu();
-        trayMenu.Items.Add("打开 Cage", null, (_, _) => RestoreWindow());
-        trayMenu.Items.Add("检查应用更新…", null, (_, _) => updater!.Handle("check"));
-        trayMenu.Items.Add("关于 Cage", null, (_, _) => MessageBox.Show(this, $"Cage {AppUpdater.Version}\n本机隔离编码工作区", "关于 Cage"));
+        trayMenu.Items.Add("Open Cage", null, (_, _) => RestoreWindow());
+        trayMenu.Items.Add("Check for app updates…", null, (_, _) => updater!.Handle("check"));
+        trayMenu.Items.Add("About Cage", null, (_, _) => MessageBox.Show(this, $"Cage {AppUpdater.Version}\nIsolated local coding workspace", "About Cage"));
         trayMenu.Items.Add(new ToolStripSeparator());
-        trayMenu.Items.Add("退出 Cage…", null, (_, _) => RequestQuit());
+        trayMenu.Items.Add("Quit Cage…", null, (_, _) => RequestQuit());
         trayMenu.Opening += (_, _) => (chrome ?? new WindowChrome(BackColor, ForeColor, false)).ApplyMenu(trayMenu);
         tray = new NotifyIcon { Icon = Icon, Text = "Cage", Visible = true, ContextMenuStrip = trayMenu };
         tray.DoubleClick += (_, _) => RestoreWindow();
@@ -125,8 +125,8 @@ internal sealed class MainWindow : Form
     }
 
     private bool ConfirmStop() => MessageBox.Show(this,
-        "请先保存编辑器中的文件并结束正在运行的工作。继续后 Cage 会停止环境、安装已验证的更新并重新启动。",
-        "保存并停止环境后安装重启", MessageBoxButtons.OKCancel, MessageBoxIcon.Information) == DialogResult.OK;
+        "Save the files in the editor and finish any running work first. Continuing makes Cage stop the environment, install the verified update, and restart.",
+        "Save, stop environment, install, and restart", MessageBoxButtons.OKCancel, MessageBoxIcon.Information) == DialogResult.OK;
 
     public void RestoreWindow() { Show(); if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal; Activate(); PublishVisibility(); }
     private void RequestQuit()
@@ -179,16 +179,16 @@ internal sealed class MainWindow : Form
             core.DownloadStarting += (_, e) => e.Cancel = true;
             core.PermissionRequested += (_, e) => e.State = CoreWebView2PermissionState.Deny;
             core.WebMessageReceived += Receive;
-            core.ProcessFailed += (_, _) => { webFailed = true; Error("工作台显示进程已退出。后台任务保留，可重试连接。"); };
+            core.ProcessFailed += (_, _) => { webFailed = true; Error("The workbench display process has exited. Background tasks are kept; you can retry the connection."); };
             core.NavigationCompleted += (_, e) => {
                 if (!e.IsSuccess) {
                     var reason = e.WebErrorStatus.ToString() switch {
-                        "Timeout" => "等待本机后台响应超时",
-                        "CannotConnect" => "本机后台没有接受连接，可能尚未启动或已经退出",
-                        "ConnectionAborted" or "ConnectionReset" => "本机工作台连接在加载完成前中断",
-                        _ => "内置网页组件未能加载本机工作台（错误类型 " + e.WebErrorStatus + "）",
+                        "Timeout" => "timed out waiting for the local backend to respond",
+                        "CannotConnect" => "the local backend did not accept the connection; it may not have started or may have exited",
+                        "ConnectionAborted" or "ConnectionReset" => "the local workbench connection dropped before loading finished",
+                        _ => "the built-in web component could not load the local workbench (error type " + e.WebErrorStatus + ")",
                     };
-                    Error("打开工作台失败：" + reason + "。请点击“重试连接”；仍失败时请保留此错误提示并反馈给维护者。后台任务不会因此自动结束。"); return;
+                    Error("Opening the workbench failed: " + reason + ". Click \"Retry connection\". If it still fails, keep this message and report it to the maintainers. Background tasks are not stopped automatically."); return;
                 }
                 status.Hide(); web.Show(); web.Focus(); PublishVisibility();
             };
@@ -199,16 +199,16 @@ internal sealed class MainWindow : Form
         }
         catch (WebView2RuntimeNotFoundException)
         {
-            Error("缺少 Microsoft Edge WebView2 Runtime。请运行 Cage 安装程序安装随附运行时后重试。");
+            Error("The Microsoft Edge WebView2 Runtime is missing. Run the Cage installer to install the bundled runtime, then try again.");
             webFailed = true;
         }
-        catch (Exception error) { webFailed = true; Error("无法初始化工作台：" + error.Message); }
+        catch (Exception error) { webFailed = true; Error("Could not initialize the workbench: " + error.Message); }
         finally { retry.Enabled = true; }
     }
 
     private async Task SmokeDeadline()
     {
-        try { await Task.Delay(TimeSpan.FromSeconds(120), lifetime.Token); await CompleteSmoke(false, "工作台未在自检期限内确认就绪"); }
+        try { await Task.Delay(TimeSpan.FromSeconds(120), lifetime.Token); await CompleteSmoke(false, "The workbench did not confirm ready within the self-test deadline"); }
         catch (OperationCanceledException) { }
     }
 
@@ -237,7 +237,7 @@ internal sealed class MainWindow : Form
                     await using var capture = File.Create(Path.ChangeExtension(Program.SmokeOutput, ".png"));
                     await web.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, capture);
                 }
-                catch (Exception error) { errors.Add("无法保存工作台画面：" + error.Message); }
+                catch (Exception error) { errors.Add("Could not save the workbench screenshot: " + error.Message); }
             }
             var controllers = Backend.CaptureSmokeControllers();
             try
@@ -246,7 +246,7 @@ internal sealed class MainWindow : Form
                 var (exit, data) = await Backend.Json(["prepare-update", "--json"], shutdown.Token, TimeSpan.FromSeconds(20));
                 prepareExit = exit;
                 prepareStatus = data.Text("status") is "prepared" or "stop_required" or "error" ? data.Text("status") : "unexpected";
-                if (exit != 0 || data.Text("status") != "prepared") throw new IOException("自检结束时无法确认后台已停止");
+                if (exit != 0 || data.Text("status") != "prepared") throw new IOException("Could not confirm the backend stopped at the end of the self-test");
                 await Task.WhenAll(controllers.Select(process => process.WaitForExitAsync(shutdown.Token)));
             }
             finally { foreach (var process in controllers) process.Dispose(); }
@@ -265,7 +265,7 @@ internal sealed class MainWindow : Form
                 web.Dispose();
                 await exited.Task.WaitAsync(shutdown.Token);
             }
-            catch (Exception error) { errors.Add("自检浏览器尚未退出：" + error.Message); }
+            catch (Exception error) { errors.Add("The self-test browser has not exited: " + error.Message); }
             finally { environment.BrowserProcessExited -= BrowserExited; }
         }
         try
@@ -287,14 +287,14 @@ internal sealed class MainWindow : Form
     {
         if (bootstrapping || web.CoreWebView2 == null) return;
         bootstrapping = true;
-        message.Text = "正在连接 Cage 工作台…"; status.Show(); status.BringToFront();
+        message.Text = "Connecting to the Cage workbench…"; status.Show(); status.BringToFront();
         retry.Hide(); existing.Hide(); complete.Hide();
         try
         {
             smokePhase = "starting_backend";
             var (exit, data) = await Backend.Json(["desktop", "--json", ..options], lifetime.Token);
             smokePhase = "backend_returned";
-            if (exit != 0) throw new IOException(data.Text("message") is { Length: > 0 } detail ? detail : "工作台未能启动");
+            if (exit != 0) throw new IOException(data.Text("message") is { Length: > 0 } detail ? detail : "The workbench could not start");
             controllerNeedsUpdate = data.Text("status") != "ready";
             if (data.Text("status") == "upgrade_pending")
             {
@@ -302,27 +302,27 @@ internal sealed class MainWindow : Form
             }
             var entry = UpdatePolicy.Entry(data.Text("url")); expectedPort = entry.Port;
             smokePhase = "loading_workbench";
-            Text = controllerNeedsUpdate ? "Cage（更新待完成）" : "Cage";
+            Text = controllerNeedsUpdate ? "Cage (update pending)" : "Cage";
             web.CoreWebView2.Navigate(entry.AbsoluteUri);
         }
-        catch (OperationCanceledException) { if (!lifetime.IsCancellationRequested) Error("启动工作台失败：等待本机后台响应超时。请点击“重试连接”；仍失败时请保留此提示并反馈给维护者。"); }
+        catch (OperationCanceledException) { if (!lifetime.IsCancellationRequested) Error("Starting the workbench failed: timed out waiting for the local backend to respond. Click \"Retry connection\". If it still fails, keep this message and report it to the maintainers."); }
         catch (Exception error) {
             _ = Backend.Report("Workbench startup failed: " + error);
-            Error(error.Message.Any(c => c is >= '\u4E00' and <= '\u9FFF') ? error.Message : "启动工作台失败：本机后台未返回可识别的原因（错误类型 " + error.GetType().Name + "）。请点击“重试连接”；仍失败时请保留此提示并反馈给维护者。");
+            Error(error.Message.Length > 0 && char.IsUpper(error.Message[0]) ? error.Message : "Starting the workbench failed: the local backend returned no recognizable reason (error type " + error.GetType().Name + "). Click \"Retry connection\". If it still fails, keep this message and report it to the maintainers.");
         }
         finally { bootstrapping = false; }
     }
 
     private object RememberFiles(string[] paths)
     {
-        if (paths.Length is 0 or > 100) throw new InvalidDataException("请选择 1 至 100 个文件");
+        if (paths.Length is 0 or > 100) throw new InvalidDataException("Select 1 to 100 files");
         foreach (var path in paths)
         {
-            if (!Path.IsPathFullyQualified(path) || path.StartsWith(@"\\", StringComparison.Ordinal)) throw new InvalidDataException("请选择本机文件");
+            if (!Path.IsPathFullyQualified(path) || path.StartsWith(@"\\", StringComparison.Ordinal)) throw new InvalidDataException("Select local files");
             var file = new FileInfo(path);
             if (!file.Exists || (file.Attributes & (FileAttributes.Directory | FileAttributes.ReparsePoint)) != 0)
-                throw new InvalidDataException("请选择普通文件，暂不支持文件夹或链接");
-            if (file.Length > 2L * 1024 * 1024 * 1024) throw new InvalidDataException("每个文件不能超过 2 GB");
+                throw new InvalidDataException("Select regular files. Folders and links are not supported.");
+            if (file.Length > 2L * 1024 * 1024 * 1024) throw new InvalidDataException("Each file cannot exceed 2 GB");
         }
         var now = DateTime.UtcNow;
         foreach (var key in fileSelections.Where(item => item.Value.Expires <= now).Select(item => item.Key).ToArray()) fileSelections.Remove(key);
@@ -347,14 +347,14 @@ internal sealed class MainWindow : Form
             if (!Guid.TryParse(id, out _)) return;
             // Match the Linux bridge envelope limit. A 20 MiB PNG needs about
             // 27 MiB after Base64 encoding; retain the ID to reply on rejection.
-            if (message.Length > 30 * 1024 * 1024) throw new InvalidDataException("请求内容过大，请减少图片或文本内容后重试");
+            if (message.Length > 30 * 1024 * 1024) throw new InvalidDataException("The request is too large. Reduce the images or text and try again.");
             var request = body.GetProperty("request");
             object? result;
             switch (request.Text("action"))
             {
                 case "remoteInput": result = nativeInput.ProcessRequest(request, web, web.ZoomFactor); break;
                 case "exportDiagnostics":
-                    using (var picker = new SaveFileDialog { Title = "导出诊断包", Filter = "诊断包 (*.zip)|*.zip", FileName = "cage-diagnostics.zip", DefaultExt = "zip", AddExtension = true })
+                    using (var picker = new SaveFileDialog { Title = "Export diagnostics bundle", Filter = "Diagnostics bundle (*.zip)|*.zip", FileName = "cage-diagnostics.zip", DefaultExt = "zip", AddExtension = true })
                     {
                         if (picker.ShowDialog(this) != DialogResult.OK) { result = new { canceled = true }; break; }
                         var connection = request.Text("connection_id");
@@ -364,25 +364,25 @@ internal sealed class MainWindow : Form
                     }
                     break;
                 case "workbenchReady":
-                    if (controllerNeedsUpdate) throw new IOException("后台版本尚未同步，更新未完成");
+                    if (controllerNeedsUpdate) throw new IOException("The backend version is not yet in sync; the update is not finished");
                     updater.MarkReady(); result = true; _ = CompleteSmoke(); break;
                 case "appUpdate": result = updater.Handle(request.Text("operation")); break;
                 case "importTheme":
-                    using (var picker = new OpenFileDialog { Filter = "Cage 主题 (*.json)|*.json", Title = "导入主题", Multiselect = false })
+                    using (var picker = new OpenFileDialog { Filter = "Cage theme (*.json)|*.json", Title = "Import theme", Multiselect = false })
                     {
                         if (picker.ShowDialog(this) != DialogResult.OK) { result = ""; break; }
                         using var stream = File.OpenRead(picker.FileName);
-                        if (stream.Length > 256 * 1024) throw new InvalidDataException("主题文件不能超过 256 KB");
+                        if (stream.Length > 256 * 1024) throw new InvalidDataException("The theme file cannot exceed 256 KB");
                         using var reader = new StreamReader(stream, new System.Text.UTF8Encoding(false, true));
                         result = reader.ReadToEnd();
                     }
                     break;
                 case "exportTheme":
                     var themeText = request.Text("text");
-                    if (System.Text.Encoding.UTF8.GetByteCount(themeText) > 256 * 1024) throw new InvalidDataException("主题文件不能超过 256 KB");
+                    if (System.Text.Encoding.UTF8.GetByteCount(themeText) > 256 * 1024) throw new InvalidDataException("The theme file cannot exceed 256 KB");
                     var themeDocument = JsonDocument.Parse(themeText).RootElement;
-                    if (themeDocument.Text("format") != "cage-theme" || themeDocument.GetProperty("version").GetInt32() != 1) throw new InvalidDataException("主题文件格式无效");
-                    using (var picker = new SaveFileDialog { Filter = "Cage 主题 (*.json)|*.json", Title = "导出主题", FileName = Path.GetFileName(request.Text("filename")), DefaultExt = "json", AddExtension = true })
+                    if (themeDocument.Text("format") != "cage-theme" || themeDocument.GetProperty("version").GetInt32() != 1) throw new InvalidDataException("Invalid theme file format");
+                    using (var picker = new SaveFileDialog { Filter = "Cage theme (*.json)|*.json", Title = "Export theme", FileName = Path.GetFileName(request.Text("filename")), DefaultExt = "json", AddExtension = true })
                     {
                         if (picker.ShowDialog(this) != DialogResult.OK) { result = false; break; }
                         File.WriteAllText(picker.FileName, themeText, new System.Text.UTF8Encoding(false)); result = true;
@@ -392,9 +392,9 @@ internal sealed class MainWindow : Form
                 {
                     var connection = request.Text("connection_id");
                     var accessMode = request.Text("mode");
-                    if (connection.Length == 0 || accessMode is not ("read" or "write")) throw new InvalidDataException("请在云端工作台重新选择项目");
+                    if (connection.Length == 0 || accessMode is not ("read" or "write")) throw new InvalidDataException("Select the project again in the cloud workbench");
                     using var picker = new FolderBrowserDialog {
-                        Description = accessMode == "write" ? "云端 Cage 可以读取、修改和删除所选项目中的文件。" : "云端 Cage 可以读取所选项目中的文件。",
+                        Description = accessMode == "write" ? "Cloud Cage can read, modify, and delete files in the selected project." : "Cloud Cage can read files in the selected project.",
                         UseDescriptionForTitle = true, ShowNewFolderButton = false
                     };
                     if (picker.ShowDialog(this) != DialogResult.OK) { result = new { canceled = true }; break; }
@@ -403,7 +403,7 @@ internal sealed class MainWindow : Form
                     result = response.Data; break;
                 }
                 case "chooseFolder":
-                    using (var picker = new FolderBrowserDialog { Description = request.Text("purpose") == "environmentStorage" ? "请选择用于保存镜像和虚拟磁盘的空文件夹。" : "仅此文件夹会与 Cage 共享。请选择具体项目。", UseDescriptionForTitle = true, ShowNewFolderButton = true })
+                    using (var picker = new FolderBrowserDialog { Description = request.Text("purpose") == "environmentStorage" ? "Choose an empty folder to store images and virtual disks." : "Only this folder will be shared with Cage. Choose a specific project.", UseDescriptionForTitle = true, ShowNewFolderButton = true })
                         result = picker.ShowDialog(this) == DialogResult.OK ? picker.SelectedPath : "";
                     break;
                 case "clipboardRead": result = Clipboard.ContainsText() ? Clipboard.GetText() : ""; break;
@@ -415,7 +415,7 @@ internal sealed class MainWindow : Form
                 case "desktopFileAction":
                 {
                     var fileRequestID = request.Text("id");
-                    if (!Guid.TryParse(fileRequestID, out _)) throw new InvalidDataException("文件打开标识无效");
+                    if (!Guid.TryParse(fileRequestID, out _)) throw new InvalidDataException("Invalid file open ID");
                     var connection = request.Text("connection_id");
                     var response = await Backend.Json(["desktop-file", "--json", "--connection", string.IsNullOrEmpty(connection) ? "local" : connection, fileRequestID], lifetime.Token, TimeSpan.FromMinutes(30));
                     if (response.Exit != 0) throw new IOException(response.Data.Text("message"));
@@ -425,16 +425,16 @@ internal sealed class MainWindow : Form
                 case "browserDownloadAction":
                 {
                     var downloadID = request.Text("id");
-                    if (!Guid.TryParse(downloadID, out _)) throw new InvalidDataException("下载标识无效");
+                    if (!Guid.TryParse(downloadID, out _)) throw new InvalidDataException("Invalid download ID");
                     var operation = request.Text("action") == "saveBrowserDownload" ? "save" : request.Text("operation");
-                    if (operation is not ("save" or "open" or "reveal")) throw new InvalidDataException("下载操作无效");
+                    if (operation is not ("save" or "open" or "reveal")) throw new InvalidDataException("Invalid download operation");
                     var connection = request.Text("connection_id");
                     var arguments = new List<string> { "browser-file", "--json", "--connection", string.IsNullOrEmpty(connection) ? "local" : connection, operation, downloadID };
                     if (operation == "save")
                     {
                         var fileName = Path.GetFileName(request.Text("name"));
                         foreach (var character in Path.GetInvalidFileNameChars()) fileName = fileName.Replace(character, '_');
-                        using var picker = new SaveFileDialog { Title = "将下载另存为到本机", FileName = fileName, OverwritePrompt = true, AddExtension = false };
+                        using var picker = new SaveFileDialog { Title = "Save download to this computer", FileName = fileName, OverwritePrompt = true, AddExtension = false };
                         if (picker.ShowDialog(this) != DialogResult.OK) { result = new { canceled = true }; break; }
                         arguments.Add(picker.FileName);
                     }
@@ -446,38 +446,38 @@ internal sealed class MainWindow : Form
                     if (Clipboard.ContainsFileDropList()) result = RememberFiles(Clipboard.GetFileDropList().Cast<string>().ToArray());
                     else if (Clipboard.ContainsImage())
                     {
-                        using var clipboardImage = Clipboard.GetImage() ?? throw new InvalidDataException("无法读取剪贴板图片");
-                        if ((long)clipboardImage.Width * clipboardImage.Height > 40_000_000) throw new InvalidDataException("图片不能超过 4000 万像素");
+                        using var clipboardImage = Clipboard.GetImage() ?? throw new InvalidDataException("Could not read the clipboard image");
+                        if ((long)clipboardImage.Width * clipboardImage.Height > 40_000_000) throw new InvalidDataException("Images cannot exceed 40 million pixels");
                         using var imageStream = new MemoryStream();
                         clipboardImage.Save(imageStream, System.Drawing.Imaging.ImageFormat.Png);
-                        if (imageStream.Length > 20 * 1024 * 1024) throw new InvalidDataException("图片不能超过 20 MB");
+                        if (imageStream.Length > 20 * 1024 * 1024) throw new InvalidDataException("Images cannot exceed 20 MB");
                         result = new { png = Convert.ToBase64String(imageStream.ToArray()) };
                     }
                     else result = new { text = Clipboard.ContainsText() ? Clipboard.GetText() : "" };
                     break;
                 case "chooseGuestMedia":
-                    using (var picker = new OpenFileDialog { Title = "选择 Windows 11 x64 安装镜像", Filter = "Windows ISO (*.iso)|*.iso", Multiselect = false })
+                    using (var picker = new OpenFileDialog { Title = "Choose Windows 11 x64 installation image", Filter = "Windows ISO (*.iso)|*.iso", Multiselect = false })
                         result = picker.ShowDialog(this) == DialogResult.OK ? picker.FileName : "";
                     break;
                 case "guestInstallReference":
                     var reference = request.Text("kind") switch {
                         "windows-media" => "https://www.microsoft.com/software-download/windows11",
                         "editor-license" => "https://aka.ms/vscode-server-license",
-                        _ => throw new InvalidDataException("未知的安装参考页面")
+                        _ => throw new InvalidDataException("Unknown installation reference page")
                     };
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(reference) { UseShellExecute = true });
                     result = true; break;
                 case "chooseUploadFiles":
-                    using (var picker = new OpenFileDialog { Title = "选择本机文件", Multiselect = request.TryGetProperty("multiple", out var multiple) && multiple.ValueKind == JsonValueKind.True, CheckFileExists = true })
+                    using (var picker = new OpenFileDialog { Title = "Choose local files", Multiselect = request.TryGetProperty("multiple", out var multiple) && multiple.ValueKind == JsonValueKind.True, CheckFileExists = true })
                         result = picker.ShowDialog(this) == DialogResult.OK ? RememberFiles(picker.FileNames) : new { canceled = true };
                     break;
                 case "uploadHostFiles":
                 {
                     var target = request.Text("target");
                     var uploadID = request.Text("id");
-                    if (target is not ("browser" or "desktop" or "terminal") || !(target == "terminal" ? System.Text.RegularExpressions.Regex.IsMatch(uploadID, "^[a-f0-9]{16}$") : Guid.TryParse(uploadID, out _))) throw new InvalidDataException("文件上传目标无效");
+                    if (target is not ("browser" or "desktop" or "terminal") || !(target == "terminal" ? System.Text.RegularExpressions.Regex.IsMatch(uploadID, "^[a-f0-9]{16}$") : Guid.TryParse(uploadID, out _))) throw new InvalidDataException("Invalid file upload target");
                     if (!fileSelections.Remove(request.Text("selection"), out var selected) || selected.Expires <= DateTime.UtcNow)
-                        throw new InvalidDataException("文件选择已过期，请重新复制或选择文件");
+                        throw new InvalidDataException("The file selection has expired. Copy or select the files again.");
                     var connection = request.Text("connection_id");
                     var arguments = new List<string> { "upload-files", "--json", "--connection", string.IsNullOrEmpty(connection) ? "local" : connection, target, uploadID };
                     arguments.AddRange(selected.Paths);
@@ -492,7 +492,7 @@ internal sealed class MainWindow : Form
                 case "appearance":
                     var mode = request.Text("mode"); var background = request.Text("background");
                     if (mode is not ("system" or "light" or "dark") || !System.Text.RegularExpressions.Regex.IsMatch(background, "^#[0-9a-fA-F]{6}$"))
-                        throw new InvalidDataException("外观参数无效");
+                        throw new InvalidDataException("Invalid appearance settings");
                     var foreground = request.Text("foreground");
                     BackColor = ColorTranslator.FromHtml(background); web.DefaultBackgroundColor = BackColor;
                     var ink = System.Text.RegularExpressions.Regex.IsMatch(foreground, "^#[0-9a-fA-F]{6}$")
@@ -502,15 +502,15 @@ internal sealed class MainWindow : Form
                     web.CoreWebView2.Profile.PreferredColorScheme = mode == "dark" ? CoreWebView2PreferredColorScheme.Dark : mode == "light" ? CoreWebView2PreferredColorScheme.Light : CoreWebView2PreferredColorScheme.Auto;
                     result = true; break;
                 case "accountDevice":
-                    if (request.Text("operation") != "status") throw new InvalidDataException("此平台暂不支持快捷登录");
+                    if (request.Text("operation") != "status") throw new InvalidDataException("Quick sign-in is not supported on this platform yet");
                     result = new { supported = false }; break;
                 case "refreshSession":
                     var (exit, data) = await Backend.Json(controllerNeedsUpdate ? ["desktop", "--json", "--existing"] : ["desktop", "--json"], lifetime.Token);
-                    if (exit != 0) throw new IOException("工作台会话恢复失败");
+                    if (exit != 0) throw new IOException("Workbench session restore failed");
                     result = new { url = UpdatePolicy.Entry(data.Text("url")).AbsoluteUri }; break;
                 case "reconnect": result = true; _ = Bootstrap(); break;
                 case "quitNow": result = true; allowQuit = true; BeginInvoke(Close); break;
-                default: throw new InvalidDataException("未知原生操作");
+                default: throw new InvalidDataException("Unknown native operation");
             }
             if (!web.IsDisposed) web.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new { id, result }));
         }
@@ -576,7 +576,7 @@ internal sealed class MainWindow : Form
             const id = crypto.randomUUID();
             // File commands have a 30-minute backend deadline. Leave time for
             // the native file dialog and the final subprocess response.
-            const timer = setTimeout(() => { pending.delete(id); reject(new Error('原生操作超时，请重试')); }, fileActions.has(request.action) ? 3600000 : 240000);
+            const timer = setTimeout(() => { pending.delete(id); reject(new Error('Native operation timed out. Try again.')); }, fileActions.has(request.action) ? 3600000 : 240000);
             pending.set(id, {resolve, reject, timer}); chrome.webview.postMessage({id, request});
           }); }};
           Object.defineProperty(window, 'webkit', {value: {messageHandlers: {cage}}, writable: false});

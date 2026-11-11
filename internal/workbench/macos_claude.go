@@ -77,15 +77,15 @@ func (s *Server) macOSClaudeWindow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !validMacOSWindowRequest(input) {
-		http.Error(w, "客机窗口操作或尺寸无效", http.StatusBadRequest)
+		http.Error(w, "The guest window operation or size is invalid.", http.StatusBadRequest)
 		return
 	}
 	s.macOSWindowRPC(w, r, macOSWindowClientRequest(input, false))
 }
 
 var (
-	errMacWindowInput   = errors.New("单次窗口输入过长")
-	errMacWindowConnect = errors.New("无法连接虚拟 Mac")
+	errMacWindowInput   = errors.New("The window input is too long for a single request.")
+	errMacWindowConnect = errors.New("Could not connect to the virtual Mac.")
 )
 
 func (s *Server) macOSWindowRPC(w http.ResponseWriter, r *http.Request, input macOSWindowRequest) {
@@ -157,7 +157,7 @@ func (s *Server) macOSWindowCall(parent context.Context, input macOSWindowReques
 	}
 	waitErr := cmd.Wait()
 	if readErr != nil || waitErr != nil || len(reply) > maxReply || !json.Valid(reply) {
-		return nil, errors.New("请先登录虚拟 Mac 的普通账户，并完成 Apple 设置助理。")
+		return nil, errors.New("Sign in to a regular account on the virtual Mac and finish Apple Setup Assistant first.")
 	}
 	return reply, nil
 }

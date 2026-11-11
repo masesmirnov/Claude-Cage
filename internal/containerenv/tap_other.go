@@ -9,5 +9,5 @@ import (
 )
 
 func RunTAP(context.Context, io.Reader, io.Writer) error {
-	return errors.New("Cage 容器运行环境仅支持 Linux 服务器")
+	return errors.New("The Cage container runtime environment is only supported on Linux servers.")
 }

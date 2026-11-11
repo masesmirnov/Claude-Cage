@@ -81,14 +81,14 @@ func TestLocalExtensionImportCopiesProgramOnly(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	write(filepath.Join(root, "Local State"), `{"profile":{"info_cache":{"Default":{"name":"工作配置"}}}}`)
+	write(filepath.Join(root, "Local State"), `{"profile":{"info_cache":{"Default":{"name":"₩₹₵₸"}}}}`)
 	write(filepath.Join(profile, "Secure Preferences"), `{"extensions":{"settings":{"`+id+`":{"state":1,"path":"`+id+`/1.0_0"}}}}`)
 	write(filepath.Join(directory, "manifest.json"), `{"manifest_version":3,"name":"Test extension","version":"1.0","permissions":["storage"],"content_scripts":[{"matches":["https://example.test/*"],"js":["main.js"]}]}`)
 	write(filepath.Join(directory, "main.js"), `globalThis.testExtension=true`)
 	write(filepath.Join(profile, "Cookies"), "PRIVATE_COOKIE_FIXTURE")
 	write(filepath.Join(profile, "Preferences"), `{"unrelated_secret":"PRIVATE_PROFILE_FIXTURE"}`)
 	profiles := scanLocalBrowserProfiles([]localBrowserRoot{{"Edge", root}})
-	if len(profiles) != 1 || profiles[0].Name != "工作配置" || len(profiles[0].Extensions) != 1 {
+	if len(profiles) != 1 || profiles[0].Name != "₩₹₵₸" || len(profiles[0].Extensions) != 1 {
 		t.Fatalf("scan: %+v", profiles)
 	}
 	extension := profiles[0].Extensions[0]

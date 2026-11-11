@@ -38,7 +38,7 @@ final class HostCredentials {
     private SecretKey key(boolean create) throws Exception {
         KeyStore store = store();
         if (store.containsAlias(ALIAS)) return (SecretKey) store.getKey(ALIAS, null);
-        if (!create) throw new IOException("设备凭据不可用。");
+        if (!create) throw new IOException("Device credentials are unavailable.");
         KeyGenerator generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
         generator.init(new KeyGenParameterSpec.Builder(ALIAS, KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
             .setKeySize(256).setBlockModes(KeyProperties.BLOCK_MODE_GCM)
@@ -65,25 +65,25 @@ final class HostCredentials {
             String saved = prefs.getString(entry(relay, pin), null);
             if (saved == null) change.remove(SEALED); else change.putString(SEALED, saved);
         }
-        if (!change.commit()) throw new IOException("无法保存主机。");
+        if (!change.commit()) throw new IOException("Could not save the host.");
     }
     synchronized String lookup(String relay, String pin) throws Exception {
         String value = matches(relay,pin) ? prefs.getString(SEALED, "") : prefs.getString(entry(relay, pin), "");
         String[] parts = value.split("\\.", -1);
-        if (parts.length != 2) throw new IOException("无可用重连凭据。");
+        if (parts.length != 2) throw new IOException("No reconnect credentials are available.");
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.DECRYPT_MODE, key(false), new GCMParameterSpec(128, Base64.decode(parts[0], Base64.NO_WRAP)));
         cipher.updateAAD(context(relay, pin));
         byte[] plain = cipher.doFinal(Base64.decode(parts[1], Base64.NO_WRAP));
         try {
             String token = StandardCharsets.UTF_8.newDecoder().decode(ByteBuffer.wrap(plain)).toString();
-            if (!Invitation.capability(token)) throw new IOException("重连凭据无效。");
+            if (!Invitation.capability(token)) throw new IOException("The reconnect credentials are invalid.");
             return token;
         } finally { Arrays.fill(plain, (byte) 0); }
     }
     synchronized void forget() throws Exception {
         // Other computers share the encryption key. Forget only the selected host.
         if (!prefs.edit().remove(entry(prefs.getString("relay", ""), prefs.getString("pin", "")))
-                .remove(SEALED).remove("relay").remove("pin").commit()) throw new IOException("无法移除主机。");
+                .remove(SEALED).remove("relay").remove("pin").commit()) throw new IOException("Could not remove the host.");
     }
 }

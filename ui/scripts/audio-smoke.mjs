@@ -23,7 +23,7 @@ await page.addInitScript(() => {
 await page.route("**/audio-test", async route => route.fulfill({ contentType: "text/html", body: await vite.transformIndexHtml("/audio-test", '<div id="root"></div><script type="module" src="/scripts/audio-fixture.jsx"></script>') }));
 const format = { format: "s16le", sample_rate: 48000, channels: 2 };
 let permissionMissing = false;
-const permissionMessage = "请在虚拟 Mac 的系统设置中允许 Cage Guest Window 录制屏幕和系统声音";
+const permissionMessage = "Allow Cage Guest Window to record the screen and system audio in the virtual Mac's system settings";
 await page.route("**/api/audio", route => route.fulfill(permissionMissing
   ? { status: 409, contentType: "text/plain", body: permissionMessage }
   : { json: format }));
@@ -49,7 +49,7 @@ const rms = () => page.evaluate(() => {
 try {
   await page.goto(origin + "/audio-test");
   await page.waitForFunction(() => !!window.testAudioContext);
-  const slider = page.getByRole("slider", { name: "环境音量" });
+  const slider = page.getByRole("slider", { name: "Environment volume" });
   const speaker = page.locator(".audio-controls button");
   assert.equal(await slider.count(), 0);
   await speaker.click();
@@ -75,31 +75,31 @@ try {
     window.testAudioAnalyser.fftSize = 2048;
     window.testAudioGain.connect(window.testAudioAnalyser);
   });
-  await page.locator('input[aria-label="环境音量"]').press("End");
+  await page.locator('input[aria-label="Environment volume"]').press("End");
   await page.waitForFunction(() => window.testAudioGain.gain.value === 1);
   let full;
   for (let i = 0; i < 100; i++) { full = await rms(); if (full > .19) break; await new Promise(r => setTimeout(r, 20)); }
   assert.ok(full > .19 && full < .24, `real audio RMS ${full}`);
-  for (let i = 0; i < 50; i++) await page.locator('input[aria-label="环境音量"]').press("ArrowLeft");
+  for (let i = 0; i < 50; i++) await page.locator('input[aria-label="Environment volume"]').press("ArrowLeft");
   await page.waitForFunction(() => window.testAudioGain.gain.value === .5);
   let half;
   for (let i = 0; i < 100; i++) { half = await rms(); if (half > .09 && half < .13) break; await new Promise(r => setTimeout(r, 20)); }
   assert.ok(half > .09 && half < .13, `half-volume RMS ${half}`);
-  await page.getByRole("button", { name: "静音", exact: true }).click();
+  await page.getByRole("button", { name: "Mute", exact: true }).click();
   await waitFor(() => open === 0);
   await page.waitForFunction(() => window.testAudioContext.state === "suspended");
-  await page.getByRole("button", { name: "取消静音", exact: true }).click();
+  await page.getByRole("button", { name: "Unmute", exact: true }).click();
   await waitFor(() => connected === 2 && open === 1);
   await page.locator("output").filter({ hasText: "playing" }).waitFor();
   permissionMissing = true;
-  await page.getByRole("button", { name: "静音", exact: true }).click();
+  await page.getByRole("button", { name: "Mute", exact: true }).click();
   await waitFor(() => open === 0);
-  await page.getByRole("button", { name: "取消静音", exact: true }).click();
+  await page.getByRole("button", { name: "Unmute", exact: true }).click();
   await page.waitForFunction(message => document.querySelector(".audio-controls button")?.title.includes(message), permissionMessage);
   assert.ok((await speaker.getAttribute("title")).includes(permissionMessage), "guest permission failure stays available on the audio control");
   permissionMissing = false;
   await page.locator("output").filter({ hasText: "playing" }).waitFor();
-  await page.getByRole("button", { name: "停止测试环境" }).click();
+  await page.getByRole("button", { name: "Stop test environment" }).click();
   await waitFor(() => open === 0);
   assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem("cage.audio")).volume), .5);
   assert.deepEqual(errors, []);

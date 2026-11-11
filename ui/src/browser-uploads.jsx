@@ -29,7 +29,7 @@ export function BrowserUploads({ requests = [], onStatus }) {
       files.length > (request.multiple ? 100 : 1) ||
       files.some((file) => file.size > 2 * 1024 ** 3)
     ) {
-      setError("每个文件不能超过 2 GB；多选最多 100 个文件。");
+      setError("Each file must be 2 GB or smaller; you can select up to 100 files.");
       return;
     }
     const controller = new AbortController();
@@ -38,7 +38,7 @@ export function BrowserUploads({ requests = [], onStatus }) {
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        setProgress(`正在传递 ${i + 1}/${files.length}：${file.name}`);
+        setProgress(`Transferring ${i + 1}/${files.length}: ${file.name}`);
         setPercent(0);
         await uploadFile(
           `/input/files/${target}/${request.id}?${new URLSearchParams({ name: file.name })}`,
@@ -52,16 +52,16 @@ export function BrowserUploads({ requests = [], onStatus }) {
           },
         );
       }
-      setProgress("正在交给应用…");
+      setProgress("Handing over to the app…");
       await api(action("finish"), body);
-      onStatus("所选文件已交给应用，请在应用中确认上传结果");
+      onStatus("The selected files were handed to the app. Confirm the upload result in the app.");
     } catch (error) {
       if (!controller.signal.aborted) {
         setError(error.message);
         setProgress("");
         // A failed batch must not retain half of the selected files.
         await api(action("cancel"), body).catch(() => {});
-        onStatus(`${error.message}；请重新点击上传按钮`);
+        onStatus(`${error.message}. Click the upload button again.`);
       }
     }
   };
@@ -70,29 +70,29 @@ export function BrowserUploads({ requests = [], onStatus }) {
     try {
       const selection = await native("chooseUploadFiles", { multiple: request.multiple });
       if (selection.canceled) { cancel(); return; }
-      setProgress("正在传递所选文件…");
+      setProgress("Transferring the selected files…");
       await native("uploadHostFiles", { target, id: request.id, selection: selection.fileSelection });
       await api(action("finish"), body);
       setHidden(request.id);
-      onStatus("所选文件已交给应用，请在应用中确认上传结果");
+      onStatus("The selected files were handed to the app. Confirm the upload result in the app.");
     } catch (error) {
       setError(error.message); setProgress("");
       await api(action("cancel"), body).catch(() => {});
-      onStatus(`${error.message}；请重新点击上传按钮`);
+      onStatus(`${error.message}. Click the upload button again.`);
     }
   };
   return (
     <Modal
-      title="上传本机文件"
+      title="Upload local files"
       onClose={cancel}
-      footer={<button onClick={cancel}>取消上传</button>}
+      footer={<button onClick={cancel}>Cancel upload</button>}
     >
       <div className="modal-body browser-upload-body">
         <p>
-          选择要上传的图片、视频或文档。仅传递所选文件，目标网页或应用负责处理附件。
+          Choose the images, videos or documents to upload. Only the selected files are transferred; the target page or app handles the attachments.
         </p>
-        {nativeAvailable() ? <button className="primary" disabled={Boolean(progress)} onClick={() => void choose()}>选择本机文件</button> : <label className="field">
-          选择本机文件
+        {nativeAvailable() ? <button className="primary" disabled={Boolean(progress)} onClick={() => void choose()}>Choose local files</button> : <label className="field">
+          Choose local files
           <input
             type="file"
             multiple={request.multiple}
@@ -107,7 +107,7 @@ export function BrowserUploads({ requests = [], onStatus }) {
             <p role="status">
               {progress}{nativeAvailable() ? "" : ` · ${percent}%`}
             </p>
-            <progress aria-label="文件传递进度" max="100" value={nativeAvailable() ? undefined : percent} />
+            <progress aria-label="File transfer progress" max="100" value={nativeAvailable() ? undefined : percent} />
           </>
         )}
         {error && <p role="alert">{error}</p>}

@@ -48,7 +48,7 @@ func (r *Runtime) Prepare(ctx context.Context, log io.Writer) error {
 		return err
 	}
 	if !rootless {
-		return errors.New("Cage 只允许使用独立 rootless 容器引擎")
+		return errors.New("Cage only allows a separate rootless container engine.")
 	}
 	if err := r.ensureResourceSlice(ctx); err != nil {
 		return err
@@ -62,22 +62,22 @@ func (r *Runtime) Prepare(ctx context.Context, log io.Writer) error {
 			return err
 		}
 		if container.HostConfig.CgroupParent != r.resourceSlice() {
-			return errors.New("已有容器缺少宿主资源边界；未重建或删除原数据")
+			return errors.New("The existing container is missing the host resource boundary. The original data was not rebuilt or deleted.")
 		}
 		return r.recordStorage(ctx, container.ID)
 	}
 	for _, device := range []string{"/dev/fuse", "/dev/net/tun"} {
 		info, err := os.Stat(device)
 		if err != nil || info.Mode()&os.ModeDevice == 0 {
-			return fmt.Errorf("服务器缺少容器所需设备 %s", device)
+			return fmt.Errorf("The server is missing the device %s required by the container.", device)
 		}
 	}
 	image, err := r.output(ctx, "image", "inspect", "--format", "{{.Id}}", r.config.Image)
 	if err != nil {
-		return errors.New("指定的固定容器基础镜像尚未安装，请先完成服务器部署")
+		return errors.New("The specified pinned container base image is not installed yet. Finish the server deployment first.")
 	}
 	if !imageIDPattern.MatchString(strings.TrimSpace(string(image))) {
-		return errors.New("容器基础镜像没有有效 SHA-256 标识")
+		return errors.New("The container base image has no valid SHA-256 ID.")
 	}
 	if _, err := r.output(ctx, r.createArguments()...); err != nil {
 		return err
@@ -87,7 +87,7 @@ func (r *Runtime) Prepare(ctx context.Context, log io.Writer) error {
 		return err
 	}
 	if container == nil {
-		return errors.New("容器创建后未能验证身份")
+		return errors.New("The container identity could not be verified after creation.")
 	}
 	if err := checkContainerConfiguration(container); err != nil {
 		return err

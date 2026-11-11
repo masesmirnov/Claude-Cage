@@ -52,7 +52,7 @@ enum UpdatesTests {
         for name in personalFiles {
             let file = profile.appendingPathComponent(name)
             try CageUpdateFiles.privateDirectory(file.deletingLastPathComponent())
-            let bytes = Data("Keep \(name): 历史、收藏和登录状态\n\0".utf8)
+            let bytes = Data("Keep \(name): История, избранное и состояние входа\n\0".utf8)
             try CageUpdateFiles.write(bytes, to: file)
             personalData[name] = bytes
         }

@@ -71,7 +71,7 @@ func TestMacOSPhoneDesktopUsesPrivateRPCAndUTF8Envelope(t *testing.T) {
 			input.Text = strings.Repeat("\x01", 8192)
 			mu.Lock()
 			if len(calls) == 3 {
-				input.Text = strings.Repeat("中", 2730) + "ab"
+				input.Text = strings.Repeat("ฐ", 2730) + "ab"
 			}
 			mu.Unlock()
 		}

@@ -31,14 +31,14 @@ type tailnetForward struct {
 // All application data stays inside the guest; only a loopback port is opened.
 func (n *node) openForward(ctx context.Context, host string, port int) (string, error) {
 	if port < 1 || port > 65535 {
-		return "", errors.New("服务端口必须介于 1 和 65535 之间")
+		return "", errors.New("The service port must be between 1 and 65535.")
 	}
 	out, err := n.snapshot(ctx)
 	if err != nil {
 		return "", err
 	}
 	if n.server == nil || out.Backend != "Running" {
-		return "", errors.New("请先连接 Tailscale")
+		return "", errors.New("Connect to Tailscale first.")
 	}
 	host = strings.TrimSuffix(strings.ToLower(host), ".")
 	ip := ""
@@ -51,14 +51,14 @@ func (n *node) openForward(ctx context.Context, host string, port int) (string, 
 		}
 	}
 	if ip == "" {
-		return "", errors.New("设备未出现在当前 Tailscale 网络中")
+		return "", errors.New("The device is not in the current Tailscale network.")
 	}
 	key := net.JoinHostPort(ip, strconv.Itoa(port))
 	if previous := n.forwards[key]; previous != nil && previous.server == n.server {
 		return previous.Address, nil
 	}
 	if len(n.forwards) >= 32 {
-		return "", errors.New("最多同时连接 32 个私网服务，请断开 Tailscale 后重试")
+		return "", errors.New("At most 32 private network services can be connected at once. Disconnect Tailscale and try again.")
 	}
 	listener, err := net.Listen("tcp4", "127.0.0.1:0")
 	if err != nil {

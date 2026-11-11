@@ -4,10 +4,10 @@ import { ArrowDownToLine, Box, Layers3, PackageOpen, SlidersHorizontal } from "l
 import "./setup-progress.css";
 
 const stages = [
-  ["image", "系统镜像", ArrowDownToLine],
-  ["packages", "系统软件", Layers3],
-  ["tools", "开发工具", PackageOpen],
-  ["services", "环境服务", SlidersHorizontal],
+  ["image", "System image", ArrowDownToLine],
+  ["packages", "System software", Layers3],
+  ["tools", "Developer tools", PackageOpen],
+  ["services", "Environment services", SlidersHorizontal],
 ];
 
 function bytes(value) {
@@ -29,41 +29,41 @@ export function SetupProgress({ job, onDetails, onStop, onRetry, disconnected })
   const failed = Boolean(job.error);
   const waitingForWindows = windows && operation === "oobe";
   const canContinue = failed || (waitingForWindows && !job.running);
-  const meter = knownSize ? `${bytes(received)} / ${bytes(total)}` : hasBytes ? `已接收 ${bytes(received)}` : "";
-  return <section className={`setup-progress${failed ? " setup-progress-failed" : ""}`} aria-label="环境安装进度">
-    <ol className="setup-stages" aria-label="安装阶段">
-      {stages.map(([key, name]) => <li key={key} aria-current={key === phase ? "step" : undefined}>{native && key === "image" ? "安装材料" : native && key === "packages" ? "系统安装" : name}</li>)}
+  const meter = knownSize ? `${bytes(received)} / ${bytes(total)}` : hasBytes ? `Received ${bytes(received)}` : "";
+  return <section className={`setup-progress${failed ? " setup-progress-failed" : ""}`} aria-label="Environment installation progress">
+    <ol className="setup-stages" aria-label="Installation stages">
+      {stages.map(([key, name]) => <li key={key} aria-current={key === phase ? "step" : undefined}>{native && key === "image" ? "Installation media" : native && key === "packages" ? "System installation" : name}</li>)}
     </ol>
     <div className="setup-transfer">
       <div className="setup-transfer-heading">
         <span className="setup-transfer-icon"><Icon size={19} aria-hidden="true" /></span>
         <div className="setup-transfer-description">
-          <h2>{label || stage?.[1] || "正在准备环境"}</h2>
+          <h2>{label || stage?.[1] || "Preparing the environment"}</h2>
           {meter && <span className="setup-transfer-bytes">{meter}</span>}
           {hasBytes && operation !== "verify" && Number.isFinite(bytes_per_second) && bytes_per_second > 0 && <span className="setup-transfer-bytes"> · {bytes(bytes_per_second)}/s</span>}
         </div>
         {knownSize && <strong className="setup-transfer-number">{percent}<small>%</small></strong>}
       </div>
-      {!failed && !waitingForWindows && <div role="progressbar" aria-label={label || stage?.[1] || "当前操作"}
+      {!failed && !waitingForWindows && <div role="progressbar" aria-label={label || stage?.[1] || "Current operation"}
         aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent ?? undefined}
-        aria-valuetext={knownSize ? `${percent}%，${meter}` : meter || undefined}
+        aria-valuetext={knownSize ? `${percent}%, ${meter}` : meter || undefined}
         className={knownSize ? "setup-meter" : "setup-meter setup-meter-active"}>
         <span style={knownSize ? { width: `${received / total * 100}%` } : undefined} />
       </div>}
-      {windows && operation === "account" && <p className="setup-transfer-hint">为虚拟 Windows 设置新的本地管理员名称和密码。安装后用此账户登录客机，并在继续安装时再次输入。</p>}
-      {waitingForWindows && <p className="setup-transfer-hint">在虚拟机连接（VMConnect）窗口选择 Windows 版本、磁盘和区域，使用安装前设置的本地管理员登录桌面，再回到 Cage 继续。本轮 PowerShell 创建窗口会自动关闭。</p>}
-      {windows && operation === "credentials" && <p className="setup-transfer-hint">确认客机已登录桌面，在 PowerShell 安装窗口输入客机管理员账户。请保持该窗口开启，等待组件安装结束。</p>}
-      {windows && ["media", "tools", "services"].includes(operation) && <p className="setup-transfer-hint">请保持 PowerShell 安装窗口开启，Cage 完成组件安装后会自动关闭。</p>}
+      {windows && operation === "account" && <p className="setup-transfer-hint">Set a new local administrator name and password for the virtual Windows. After installation, sign in to the guest with this account and enter it again when you continue the installation.</p>}
+      {waitingForWindows && <p className="setup-transfer-hint">In the virtual machine connection (VMConnect) window, choose the Windows edition, disk and region, sign in to the desktop with the local administrator you set before installing, then return to Cage to continue. This round's PowerShell window closes automatically.</p>}
+      {windows && operation === "credentials" && <p className="setup-transfer-hint">Confirm the guest is signed in to the desktop, then enter the guest administrator account in the PowerShell installation window. Keep that window open and wait for the component installation to finish.</p>}
+      {windows && ["media", "tools", "services"].includes(operation) && <p className="setup-transfer-hint">Keep the PowerShell installation window open; Cage closes it automatically once the components are installed.</p>}
       {failed && <>
         <p className="setup-transfer-error" role="alert"><SafetyMessage message={job.error} /></p>
-        <p className="setup-transfer-hint">可手动继续安装，已保存的下载会尝试续传。</p>
+        <p className="setup-transfer-hint">You can continue the installation manually; saved downloads will try to resume.</p>
       </>}
     </div>
     <div className="setup-transfer-actions">
-      <button className="text-button" type="button" onClick={onDetails}>操作详情</button>
+      <button className="text-button" type="button" onClick={onDetails}>Operation details</button>
       {canContinue
-        ? <button type="button" className="primary" onClick={onRetry} disabled={disconnected}>{waitingForWindows && !failed ? "已进入桌面，继续安装" : "继续安装"}</button>
-        : <button type="button" onClick={onStop} disabled={disconnected}>停止安装</button>}
+        ? <button type="button" className="primary" onClick={onRetry} disabled={disconnected}>{waitingForWindows && !failed ? "At the desktop, continue installation" : "Continue installation"}</button>
+        : <button type="button" onClick={onStop} disabled={disconnected}>Stop installation</button>}
     </div>
   </section>;
 }

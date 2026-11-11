@@ -4,7 +4,7 @@
 	classes = {};
 	objectVersion = 56;
 	objects = {
-		010000000000000000000001 = {isa = PBXProject; attributes = {LastUpgradeCheck = 1600;}; buildConfigurationList = 030000000000000000000001; compatibilityVersion = "Xcode 14.0"; developmentRegion = zh_CN; hasScannedForEncodings = 0; knownRegions = (zh_CN, Base); mainGroup = 020000000000000000000001; productRefGroup = 020000000000000000000002; projectDirPath = ""; projectRoot = ""; targets = (040000000000000000000001,040000000000000000000301); };
+		010000000000000000000001 = {isa = PBXProject; attributes = {LastUpgradeCheck = 1600;}; buildConfigurationList = 030000000000000000000001; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = 020000000000000000000001; productRefGroup = 020000000000000000000002; projectDirPath = ""; projectRoot = ""; targets = (040000000000000000000001,040000000000000000000301); };
 		020000000000000000000001 = {isa = PBXGroup; children = (020000000000000000000003, 050000000000000000000005, 050000000000000000000006, 050000000000000000000008, 050000000000000000000010, 020000000000000000000002); sourceTree = "<group>";};
 		020000000000000000000002 = {isa = PBXGroup; children = (050000000000000000000007,050000000000000000000307); name = Products; sourceTree = "<group>";};
 		020000000000000000000003 = {isa = PBXGroup; children = (050000000000000000000011, 050000000000000000000001, 050000000000000000000009, 050000000000000000000002, 050000000000000000000003, 050000000000000000000004); path = CageMobile; sourceTree = "<group>";};

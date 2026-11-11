@@ -13,7 +13,7 @@ import (
 )
 
 func TestWindowsFirmwareArgument(t *testing.T) {
-	dir := filepath.Join(t.TempDir(), "测试安装, Cage", "share")
+	dir := filepath.Join(t.TempDir(), "Тест установки, Cage", "share")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -40,9 +40,9 @@ func TestWindowsPackagedFirmwareBeatsOldUserCopy(t *testing.T) {
 		t.Skip("Windows QEMU distribution layout")
 	}
 	root := t.TempDir()
-	home := filepath.Join(root, "用户")
+	home := filepath.Join(root, "Пользователь")
 	t.Setenv("USERPROFILE", home)
-	binDir := filepath.Join(root, "安装目录", "qemu")
+	binDir := filepath.Join(root, "Каталог", "qemu")
 	const name = "edk2-x86_64-code.fd"
 	bundled := filepath.Join(binDir, "share", name)
 	for _, path := range []string{filepath.Join(home, ".local", "share", "qemu", name), bundled} {

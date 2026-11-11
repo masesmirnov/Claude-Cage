@@ -9,5 +9,5 @@ import (
 )
 
 func WindowsInstallCommand(context.Context, string, string, Installation) (*exec.Cmd, error) {
-	return nil, errors.New("Windows 客机需要 Windows 11 x64 Hyper-V 主机")
+	return nil, errors.New("A Windows guest needs a Windows 11 x64 Hyper-V host.")
 }

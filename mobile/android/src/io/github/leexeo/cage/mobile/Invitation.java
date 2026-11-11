@@ -22,21 +22,21 @@ final class Invitation {
     static final class Saved {
         final String relay, pin, lookup;
         Saved(JSONObject object) throws Exception {
-            if (object.length() != 4 || !Integer.valueOf(1).equals(object.opt("version"))) throw new IOException("连接文件版本无效。");
+            if (object.length() != 4 || !Integer.valueOf(1).equals(object.opt("version"))) throw new IOException("The connection file version is invalid.");
             relay = relay(object.getString("relay"));
             pin = pin(object.getString("host_pin"));
             lookup = object.getString("lookup_token");
-            if (!capability(lookup)) throw new IOException("连接文件无效。");
+            if (!capability(lookup)) throw new IOException("The connection file is invalid.");
         }
     }
 
     static JSONObject read(InputStream stream) throws Exception {
-        if (stream == null) throw new IOException("无法读取邀请文件。");
+        if (stream == null) throw new IOException("Could not read the invitation file.");
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         byte[] chunk = new byte[1024];
         int count;
         while ((count = stream.read(chunk)) != -1) {
-            if (buffer.size() + count > 4096) throw new IOException("邀请文件过大。");
+            if (buffer.size() + count > 4096) throw new IOException("The invitation file is too large.");
             buffer.write(chunk, 0, count);
         }
         return new JSONObject(new String(buffer.toByteArray(), StandardCharsets.UTF_8));
@@ -53,7 +53,7 @@ final class Invitation {
         String room = object.getString("id"), token = object.getString("client_token");
         Instant expiry = Instant.parse(object.getString("expires_at"));
         if (object.length() != 3 || !capability(room) || !capability(token) || !expiry.isAfter(Instant.now())) {
-            throw new IOException("邀请无效或已过期。");
+            throw new IOException("The invitation is invalid or has expired.");
         }
         return new Invitation(room, token, expiry);
     }
@@ -63,7 +63,7 @@ final class Invitation {
         if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null ||
             uri.getRawUserInfo() != null || uri.getRawQuery() != null || uri.getRawFragment() != null ||
             !(uri.getRawPath().isEmpty() || uri.getRawPath().equals("/")) || uri.getPort() == 0 || uri.getPort() > 65535) {
-            throw new IllegalArgumentException("请填写 HTTPS 中继地址，地址中只保留主机和端口。");
+            throw new IllegalArgumentException("Enter an HTTPS relay address with only the host and port.");
         }
         return new URI("https", null, uri.getHost(), uri.getPort(), null, null, null).toASCIIString();
     }
@@ -77,6 +77,6 @@ final class Invitation {
                 if (bytes.length == 32 && encoded.equals(Base64.encodeToString(bytes, Base64.NO_WRAP))) return pin;
             } catch (IllegalArgumentException ignored) { }
         }
-        throw new IllegalArgumentException("电脑指纹需要完整的 sha256: 值。");
+        throw new IllegalArgumentException("The computer fingerprint needs the full sha256: value.");
     }
 }

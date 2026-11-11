@@ -12,19 +12,19 @@ import (
 
 func TestWindowsMaintenanceFailureRetainsStageForBothJobs(t *testing.T) {
 	cause := errors.New("synthetic maintenance process failed")
-	for _, action := range []string{"修复 Windows 系统助手", "更新原生客机组件"} {
+	for _, action := range []string{"Repairing the Windows system management helper", "Updating the native guest components"} {
 		for _, test := range []struct {
 			phase, reason, next string
 		}{
-			{"AUTHORIZATION_CANCELED", "已取消 Windows 管理员授权", "系统授权窗口"},
-			{"AUTHORIZATION", "授权窗口未能打开", "本机 Cage"},
-			{"VALIDATION", "绑定或组件清单", "重新安装完整 Cage"},
-			{"HOST_MANAGER", "系统管理助手安装", "修复系统助手"},
-			{"GUEST_CONNECTION", "客机连接未完成", "管理员账户"},
-			{"GUEST_COMPONENTS", "客机组件安装", "同步环境组件"},
-			{"HOST_RELAY", "主机连接组件更新", "占用连接组件"},
-			{"PACKAGE_PREPARATION", "组件包准备", "系统盘空间"},
-			{"FAILED", "Windows 维护未完成", "导出诊断包"},
+			{"AUTHORIZATION_CANCELED", "Windows administrator authorization was canceled", "Windows authorization window"},
+			{"AUTHORIZATION", "authorization window could not open", "Cage on this computer"},
+			{"VALIDATION", "binding or component manifest", "reinstall the full Cage app"},
+			{"HOST_MANAGER", "system management helper installation", "repairing the system helper"},
+			{"GUEST_CONNECTION", "guest connection was not completed", "administrator account"},
+			{"GUEST_COMPONENTS", "guest component installation", "syncing the environment components"},
+			{"HOST_RELAY", "host connection component update", "using the connection component"},
+			{"PACKAGE_PREPARATION", "component package preparation", "system drive space"},
+			{"FAILED", "Windows maintenance was not completed", "export a diagnostics bundle"},
 		} {
 			t.Run(action+"/"+test.phase, func(t *testing.T) {
 				output := "CAGE_WINDOWS_MAINTENANCE_" + test.phase + " synthetic stage\naccess is denied token=private-stage-secret"
@@ -47,9 +47,9 @@ func TestBrowserFailureExplainsOperationAndKnownCause(t *testing.T) {
 		status     int
 		body, want string
 	}{
-		{400, `{"error":"Tab no longer exists"}`, "标签页已关闭"},
-		{401, `{"error":"private token=do-not-display"}`, "授权"},
-		{503, `{"error":"private token=do-not-display"}`, "尚未就绪"},
+		{400, `{"error":"Tab no longer exists"}`, "the tab was closed"},
+		{401, `{"error":"private token=do-not-display"}`, "authorization"},
+		{503, `{"error":"private token=do-not-display"}`, "not ready"},
 		{500, `{"error":"private token=do-not-display"}`, "HTTP 500"},
 	} {
 		t.Run(fmt.Sprint(tc.status), func(t *testing.T) {
@@ -69,8 +69,8 @@ func TestBrowserFailureExplainsOperationAndKnownCause(t *testing.T) {
 }
 
 func TestFileServiceRetainsKnownRejectionAndHidesUnknownBody(t *testing.T) {
-	known := fileServiceFailure(400, []byte("上传窗口已关闭，请重新选择文件"))
-	if !strings.Contains(known.Error(), "上传窗口已关闭") || !strings.Contains(known.Error(), "重新点击") {
+	known := fileServiceFailure(400, []byte("The upload window was closed. Select the file again"))
+	if !strings.Contains(known.Error(), "upload window was closed") || !strings.Contains(known.Error(), "upload button") {
 		t.Fatalf("file window reason lost: %v", known)
 	}
 	unknown := fileServiceFailure(500, []byte("unknown response token=private-file-secret"))

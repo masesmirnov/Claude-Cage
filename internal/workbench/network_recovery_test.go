@@ -44,7 +44,7 @@ func TestExitProbeTimeoutKeepsExistingLeaseWithoutRenewing(t *testing.T) {
 		t.Fatalf("successful observation did not renew and clear the retry notice: before=%+v after=%+v monitorError=%q", before, gate.Status(), s.safety.monitorError)
 	}
 	s.safety.VerifiedAt = time.Now().Add(-time.Minute)
-	gate.Close("检查或监测授权已到期")
+	gate.Close("Check or monitoring authorization expired")
 	s.monitorSafetyWithProbe(func(context.Context, cage.Config) (string, error) {
 		t.Fatal("expired gate must not probe or reopen")
 		return "", nil
@@ -61,7 +61,7 @@ func TestWindowsFastPacketReconnectSchedulesFreshCheck(t *testing.T) {
 	}{
 		{"Windows packet reconnect", windowsPacketDisconnectedReason, true, false, true},
 		{"user pause", windowsPacketDisconnectedReason, true, true, false},
-		{"policy refusal", "当前出口不符合已保存的地区约束", true, false, false},
+		{"policy refusal", "The current exit does not match the saved region restriction", true, false, false},
 		{"other guest", windowsPacketDisconnectedReason, false, false, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -205,8 +205,8 @@ func TestNetworkRecoveryAdmissionRequiresObservedPressureToDefer(t *testing.T) {
 		status  cage.ResourceStatus
 		wantJob bool
 	}{
-		{"memory target could not be applied", cage.ResourceStatus{ObservedAt: now, Error: "内存目标未能应用，保持当前配置"}, true},
-		{"failed sample retains stale guest pressure", cage.ResourceStatus{ObservedAt: now.Add(-time.Minute), Error: "资源采样暂时不可用，已暂停内存回收", Pressure: true}, true},
+		{"memory target could not be applied", cage.ResourceStatus{ObservedAt: now, Error: "The memory target could not be applied. Keeping the current configuration"}, true},
+		{"failed sample retains stale guest pressure", cage.ResourceStatus{ObservedAt: now.Add(-time.Minute), Error: "Resource sampling is temporarily unavailable. Memory reclaim was paused", Pressure: true}, true},
 		{"current guest pressure", cage.ResourceStatus{ObservedAt: now, Pressure: true}, false},
 		{"current host pressure", cage.ResourceStatus{HostPressure: true}, false},
 	} {

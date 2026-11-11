@@ -30,7 +30,7 @@ test('parses canonical SemVer and rejects ambiguous or unsupported forms', () =>
   assert.deepEqual(parseVersion('1.2.3-alpha.10'), { major: 1n, minor: 2n, patch: 3n, prerelease: ['alpha', '10'] });
   assert.deepEqual(parseVersion('0.0.0-0'), { major: 0n, minor: 0n, patch: 0n, prerelease: ['0'] });
   assert.deepEqual(parseVersion('1.0.0-01a'), { major: 1n, minor: 0n, patch: 0n, prerelease: ['01a'] });
-  for (const invalid of [null, 1, '', 'v1.2.3', '1.2', '01.2.3', '1.02.3', '1.2.03', '1.2.3-01', '1.2.3-a.00', '1.2.3-', '1.2.3-a..b', '1.2.3+build', '1.2.3-a+b', ' 1.2.3', '1.2.3\n', '1.2.3-中文']) {
+  for (const invalid of [null, 1, '', 'v1.2.3', '1.2', '01.2.3', '1.02.3', '1.2.03', '1.2.3-01', '1.2.3-a.00', '1.2.3-', '1.2.3-a..b', '1.2.3+build', '1.2.3-a+b', ' 1.2.3', '1.2.3\n', '1.2.3-Привет']) {
     assert.throws(() => parseVersion(invalid), /version|SemVer|prerelease/i, String(invalid));
   }
 });

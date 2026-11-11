@@ -99,7 +99,7 @@ func TestInitialMacPasswordCanBeEnteredAtTheLoginWindow(t *testing.T) {
 			t.Fatal("rejected an enterable password")
 		}
 	}
-	for _, value := range []string{"short", "中文输入示例密码", "abcde\tfgh", strings.Repeat("a", 257)} {
+	for _, value := range []string{"short", "ПарольПример", "abcde\tfgh", strings.Repeat("a", 257)} {
 		if ValidMacOSInstallPassword(value) {
 			t.Fatal("accepted an unsupported password")
 		}

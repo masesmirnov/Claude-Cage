@@ -30,13 +30,13 @@ func (s *Store) ImportOnce(directories ...string) error {
 				// choices; do not silently change the pin of an existing host.
 				p.ID = newID()
 				p.HostKey = nil
-				p.Name = "旧入口 · " + p.Name
+				p.Name = "Legacy entry: " + p.Name
 				if len(p.Name) > 200 {
 					p.Name = old.Name
 				}
 			}
 			if len(merged) >= 100 {
-				return failure("profile_limit", "已有主机列表合计超过 100 项，请整理后重试；原配置已保留")
+				return failure("profile_limit", "The combined host list exceeds 100 entries. Tidy it up and try again; the original configuration was kept.")
 			}
 			seen[p.ID] = p
 			merged = append(merged, p)

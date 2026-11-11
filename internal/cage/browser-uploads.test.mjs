@@ -26,7 +26,7 @@ test("binary files retain their names and bytes, and only the original input rec
   const bytes = Buffer.from([0, 255, 27, 99, 0]);
   await f.manager.receive(
     f.id,
-    "参考视频.mp4",
+    "Образец видео.mp4",
     Readable.from([bytes.subarray(0, 2), bytes.subarray(2)]),
   );
   await f.manager.receive(f.id, "empty.txt", Readable.from([]));
@@ -49,8 +49,8 @@ test("cancel during a stream refuses the rest and never assigns partial files", 
     f.manager.cancel(f.id);
     yield Buffer.from("discarded");
   }
-  await assert.rejects(f.manager.receive(f.id, "video.mp4", chunks()), /取消/);
-  await assert.rejects(f.manager.finish(f.id), /关闭/);
+  await assert.rejects(f.manager.receive(f.id, "video.mp4", chunks()), /canceled/);
+  await assert.rejects(f.manager.finish(f.id), /closed/);
   assert.deepEqual(f.calls, []);
 });
 
@@ -59,16 +59,16 @@ test("a stale chooser and traversal names cannot select arbitrary files", async 
   for (const name of ["../secret", "a/b", "a\\b", "..", "a\u0000b"]) {
     await assert.rejects(
       f.manager.receive(f.id, name, Readable.from([Buffer.from("data")])),
-      /文件名/,
+      /file name/,
     );
   }
   await f.manager.receive(f.id, "one.txt", Readable.from([Buffer.from("one")]));
   await assert.rejects(
     f.manager.receive(f.id, "two.txt", Readable.from([])),
-    /数量/,
+    /number of files/,
   );
   f.manager.cancelTab("tab-1");
-  await assert.rejects(f.manager.finish(f.id), /关闭/);
+  await assert.rejects(f.manager.finish(f.id), /closed/);
   assert.deepEqual(f.calls, []);
 });
 

@@ -49,7 +49,7 @@ class ChannelTests(unittest.TestCase):
         request = str(uuid.uuid4())
         body = "show </channel> literally\n<channel cage_request=\"other\">example</channel>"
         self.assertEqual(channel.channel_message('<channel source="cage" cage_request="' + request + '">\n' + body + '\n</channel>'), (request, body))
-        self.assertEqual(channel.clip_text("你好abc", 4), "你")
+        self.assertEqual(channel.clip_text("ฎฏabc", 4), "ฎ")
 
     def test_account_switch_preserves_tools_and_receipt(self):
         tool = {"type":"tool_use","id":"tool-completed","name":"Bash","input":{"command":"already completed"}}
@@ -91,7 +91,7 @@ class ChannelTests(unittest.TestCase):
         channel.save(self.root/connection/"state.json",state)
         completed=type("Result",(),{"returncode":0,"stdout":"[]"})()
         with patch.object(channel,"active_sessions",return_value=[]),patch.object(channel.subprocess,"run",return_value=completed):
-            with self.assertRaisesRegex(ValueError,"工具"): channel.prepare_account_switch(request)
+            with self.assertRaisesRegex(ValueError,"tool"): channel.prepare_account_switch(request)
         self.assertTrue(path.exists())
         self.assertFalse((self.root.parent/"cli-account-switches"/switch_id/"history.jsonl").exists())
 
@@ -266,20 +266,20 @@ class ChannelTests(unittest.TestCase):
         self.history(self.session, self.project, [
             {"type": "user", "message": {"content": "run"}},
             {"type": "assistant", "message": {"content": [
-                {"type": "tool_use", "id": "tool-1", "name": "Bash", "input": {"description": "检查结果", "command": "private-command"}},
+                {"type": "tool_use", "id": "tool-1", "name": "Bash", "input": {"description": "Check result", "command": "private-command"}},
                 {"type": "tool_use", "id": "tool-2", "name": "Read", "input": {"file_path": "result.md"}},
             ]}},
             {"type": "user", "message": {"content": [
                 {"type": "tool_result", "tool_use_id": "tool-2", "content": "private-output"},
                 {"type": "tool_result", "tool_use_id": "tool-1", "is_error": True},
             ]}},
-            {"type": "user", "isMeta": True, "message": {"content": "<task-notification><summary>完成</summary></task-notification>"}},
+            {"type": "user", "isMeta": True, "message": {"content": "<task-notification><summary>Done</summary></task-notification>"}},
         ])
         view = channel.view(channel.config_directory("default"), self.session)
         self.assertEqual(len(view["turns"]), 2)
         tools = view["turns"][0]["tools"]
         self.assertEqual([(t["name"], t["status"], t["detail"]) for t in tools],
-                         [("Bash", "failed", "检查结果"), ("Read", "completed", "result.md")])
+                         [("Bash", "failed", "Check result"), ("Read", "completed", "result.md")])
         self.assertTrue(view["turns"][1]["prompt"].startswith("<task-notification>"))
         self.assertNotIn("private-", json.dumps(view))
 

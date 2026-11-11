@@ -43,18 +43,18 @@ stage="$(mktemp -d "$PWD/_output/dmg-stage.XXXXXX")"
 trap 'rm -rf "$stage"' EXIT
 ditto "$bundle" "$stage/Cage.app"
 ln -s /Applications "$stage/Applications"
-cat > "$stage/安装说明 - Read Me.txt" <<'EOF'
-Cage — 本机隔离编码工作区
+cat > "$stage/Installation Notes - Read Me.txt" <<'EOF'
+Cage: isolated local coding workspace
 
-1. 将 Cage.app 拖入 Applications（应用程序）。
-2. 从应用程序打开 Cage，设置本地账户，并按首次引导选择客机系统、存储位置和代理。
-3. 添加自己的 Clash/Mihomo YAML 订阅或配置并选择节点，创建和启动环境。首次需下载系统镜像和工具，请保持网络连接。
-4. 打开项目或新建终端，输入 claude，并在 Cage 浏览器内登录自己的 Claude 账户。
+1. Drag Cage.app into Applications.
+2. Open Cage from Applications, set up a local account, and follow the first-run guide to choose the guest system, storage location, and proxy.
+3. Add your own Clash/Mihomo YAML subscription or configuration and choose a node, then create and start the environment. The first run downloads a system image and tools, so stay connected to the internet.
+4. Open a project or a new terminal, type claude, and sign in to your own Claude account in the Cage browser.
 
-需要 Apple Silicon Mac、macOS 14 或更新版本。无需安装 Go、Node.js 或 Clash。
-代理服务与 Claude 账户需自行准备。具体版本与发布状态以发行说明为准。
-共享项目中的文件修改会直接写回 Mac；请备份重要项目。
-升级前请退出 Cage 并停止环境，再替换应用程序；配置与项目文件会保留。
+Requires an Apple Silicon Mac and macOS 14 or later. You do not need to install Go, Node.js, or Clash.
+You need to provide your own proxy service and Claude account. See the release notes for the exact version and release status.
+Changes to files in shared projects are written directly back to the Mac; back up important projects.
+Before upgrading, quit Cage and stop the environment, then replace the app; configuration and project files are kept.
 
 Drag Cage.app into Applications, then open it from Applications.
 Complete the local account and environment setup, add your own Clash/Mihomo
@@ -62,9 +62,9 @@ YAML subscription or configuration, select a node, and start the environment.
 Initial setup downloads the selected guest system and developer tools.
 Requires Apple Silicon and macOS 14+. Your own proxy and Claude account are required.
 
-入门 / Getting started:
+Getting started:
 https://github.com/Lee-xeo/Claude-Cage/blob/main/docs/getting-started.md
-问题反馈 / Issues:
+Issues:
 https://github.com/Lee-xeo/Claude-Cage/issues
 EOF
 artifact="Cage-$version-macos-arm64.dmg"

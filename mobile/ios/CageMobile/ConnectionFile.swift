@@ -5,8 +5,8 @@ enum InputError: LocalizedError {
     case invalid, unavailable
     var errorDescription: String? {
         switch self {
-        case .invalid: return "连接文件或指纹格式无效。"
-        case .unavailable: return "无法读取已保存的凭据，请解锁手机或重新导入连接文件。"
+        case .invalid: return "The connection file or fingerprint format is invalid."
+        case .unavailable: return "Could not read the saved credentials. Unlock your phone or import the connection file again."
         }
     }
 }

@@ -67,25 +67,25 @@ try {
     try {
       await page.goto(entry.url);
       if (phase === "install") {
-        await page.getByRole("heading", { name: "注册 Cage 账户", exact: true }).waitFor();
-        await page.getByRole("checkbox", { name: /^记住我/ }).uncheck();
-        await page.getByLabel("用户名", { exact: true }).fill(username);
-        await page.getByLabel("设置密码", { exact: true }).fill(password);
-        await page.getByLabel("确认密码", { exact: true }).fill(password);
-        await page.getByRole("button", { name: "创建本地账户", exact: true }).click();
+        await page.getByRole("heading", { name: "Register a Cage account", exact: true }).waitFor();
+        await page.getByRole("checkbox", { name: /^Remember me/ }).uncheck();
+        await page.getByLabel("Username", { exact: true }).fill(username);
+        await page.getByLabel("Set password", { exact: true }).fill(password);
+        await page.getByLabel("Confirm password", { exact: true }).fill(password);
+        await page.getByRole("button", { name: "Create local account", exact: true }).click();
       } else {
-        await page.getByLabel("账户密码", { exact: true }).fill(password);
-        await page.getByRole("button", { name: "解锁 Cage", exact: true }).click();
+        await page.getByLabel("Account password", { exact: true }).fill(password);
+        await page.getByRole("button", { name: "Unlock Cage", exact: true }).click();
       }
-      await page.getByRole("heading", { name: "为 Cage 准备独立环境", exact: true }).waitFor();
-      assert.equal(await page.getByRole("navigation", { name: "主导航" }).count(), 0, "workbench must remain hidden before initialization");
+      await page.getByRole("heading", { name: "Prepare a separate environment for Cage", exact: true }).waitFor();
+      assert.equal(await page.getByRole("navigation", { name: "Main navigation" }).count(), 0, "workbench must remain hidden before initialization");
       if (evidence) await page.screenshot({ animations: "disabled", path: path.join(evidence, `${phase}-initialization.png`) });
-      await page.getByRole("button", { name: "下一步：配置代理", exact: true }).click();
-      await page.getByRole("heading", { name: "连接你的网络代理", exact: true }).waitFor();
-      assert.ok(await page.getByRole("button", { name: "开始安装", exact: true }).isDisabled(), "a fresh profile must require a proxy before installing");
+      await page.getByRole("button", { name: "Next: configure proxy", exact: true }).click();
+      await page.getByRole("heading", { name: "Connect your network proxy", exact: true }).waitFor();
+      assert.ok(await page.getByRole("button", { name: "Start installation", exact: true }).isDisabled(), "a fresh profile must require a proxy before installing");
       // Do not start a VM or configure real network credentials in package-preservation QA.
-      await page.getByRole("button", { name: "上一步", exact: true }).click();
-      await page.getByRole("heading", { name: "为 Cage 准备独立环境", exact: true }).waitFor();
+      await page.getByRole("button", { name: "Back", exact: true }).click();
+      await page.getByRole("heading", { name: "Prepare a separate environment for Cage", exact: true }).waitFor();
       const account = await page.evaluate(async () => {
         const context = await (await fetch("/api/client/context")).json();
         return (await fetch("/api/account", { headers: { "X-Cage-Connection": context.connection_id } })).json();

@@ -10,7 +10,7 @@ internal static class UpdateRecovery
     {
         var (exit, result) = await Backend.JsonAt(BackendPath(backup), ["prepare-update", "--json", "--stop"], cancellation);
         if (exit != 0 || result.Text("status") != "prepared")
-            throw new IOException("旧版后台无法确认环境已停止，原应用备份已保留");
+            throw new IOException("The old backend could not confirm the environment stopped; the original app backup was kept");
     }
 
     public static void CleanupDirectory(string? path)

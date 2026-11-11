@@ -30,7 +30,7 @@ func TestMacOSDesktopAttachmentsUsePrivateNativeOperations(t *testing.T) {
 				Operation string
 				Files     []string
 			}
-			if json.NewDecoder(reader).Decode(&request) != nil || request.Operation != "discard" || len(request.Files) != 1 || request.Files[0] != "/tmp/cage-clipboard-12345/资料.bin" {
+			if json.NewDecoder(reader).Decode(&request) != nil || request.Operation != "discard" || len(request.Files) != 1 || request.Files[0] != "/tmp/cage-clipboard-12345/หฬ.bin" {
 				return 1, true
 			}
 			mu.Lock()
@@ -42,7 +42,7 @@ func TestMacOSDesktopAttachmentsUsePrivateNativeOperations(t *testing.T) {
 		if command == "exec '/Applications/Cage Guest Clipboard.app/Contents/MacOS/CageGuestClipboard' --client upload" {
 			line, err := reader.ReadBytes('\n')
 			var request struct{ Name string }
-			if err != nil || json.Unmarshal(line, &request) != nil || (request.Name != "资料.bin" && request.Name != "image.png") {
+			if err != nil || json.Unmarshal(line, &request) != nil || (request.Name != "หฬ.bin" && request.Name != "image.png") {
 				return 1, true
 			}
 			var data bytes.Buffer
@@ -100,7 +100,7 @@ func TestMacOSDesktopAttachmentsUsePrivateNativeOperations(t *testing.T) {
 			}
 			json.NewEncoder(channel).Encode(map[string]any{"ok": true})
 		case "files-add":
-			if request.ID != id || len(request.Files) != 1 || (request.Files[0] != "/tmp/cage-clipboard-12345/资料.bin" && request.Files[0] != "/tmp/cage-clipboard-12345/image.png") {
+			if request.ID != id || len(request.Files) != 1 || (request.Files[0] != "/tmp/cage-clipboard-12345/หฬ.bin" && request.Files[0] != "/tmp/cage-clipboard-12345/image.png") {
 				return 1, true
 			}
 			mu.Lock()
@@ -140,7 +140,7 @@ func TestMacOSDesktopAttachmentsUsePrivateNativeOperations(t *testing.T) {
 		t.Fatalf("start failed: %d %s", start.Code, start.Body.String())
 	}
 	content := []byte{0, 255, 128, 1, 2, 3}
-	upload := windowsBrowserRequestForTest(s, http.MethodPost, "/api/input/files/desktop/"+id+"?name=%E8%B5%84%E6%96%99.bin", content)
+	upload := windowsBrowserRequestForTest(s, http.MethodPost, "/api/input/files/desktop/"+id+"?name=%E0%B8%AB%E0%B8%AC.bin", content)
 	if upload.Code != http.StatusOK || strings.Contains(upload.Body.String(), "/tmp/") {
 		t.Fatalf("upload failed or exposed private path: %d %s", upload.Code, upload.Body.String())
 	}
@@ -178,7 +178,7 @@ func TestMacOSDesktopAttachmentsUsePrivateNativeOperations(t *testing.T) {
 	}
 	rejectAdd = true
 	mu.Unlock()
-	failed := windowsBrowserRequestForTest(s, http.MethodPost, "/api/input/files/desktop/"+id+"?name=%E8%B5%84%E6%96%99.bin", content)
+	failed := windowsBrowserRequestForTest(s, http.MethodPost, "/api/input/files/desktop/"+id+"?name=%E0%B8%AB%E0%B8%AC.bin", content)
 	mu.Lock()
 	defer mu.Unlock()
 	if failed.Code == http.StatusOK || !discarded {
@@ -187,11 +187,11 @@ func TestMacOSDesktopAttachmentsUsePrivateNativeOperations(t *testing.T) {
 }
 
 func TestMacOSDesktopAttachmentPathsRejectEscapes(t *testing.T) {
-	if !validMacOSClipboardAttachment("/var/folders/ab/xyz/T/cage-clipboard-123/资料.bin", "资料.bin") {
+	if !validMacOSClipboardAttachment("/var/folders/ab/xyz/T/cage-clipboard-123/หฬ.bin", "หฬ.bin") {
 		t.Fatal("private guest cache refused")
 	}
-	for _, value := range []string{"/Users/cage/secret.txt", "/tmp/cage-clipboard-123/../secret.txt", "/tmp/cage-clipboard-123/file:stream", "/tmp/other-123/资料.bin", "/tmp/cage-clipboard-abc/资料.bin"} {
-		if validMacOSClipboardAttachment(value, "资料.bin") {
+	for _, value := range []string{"/Users/cage/secret.txt", "/tmp/cage-clipboard-123/../secret.txt", "/tmp/cage-clipboard-123/file:stream", "/tmp/other-123/หฬ.bin", "/tmp/cage-clipboard-abc/หฬ.bin"} {
+		if validMacOSClipboardAttachment(value, "หฬ.bin") {
 			t.Fatal("unregistered path form accepted")
 		}
 	}

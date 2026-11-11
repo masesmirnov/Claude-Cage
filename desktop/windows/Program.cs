@@ -30,7 +30,7 @@ internal static class Program
         ApplicationConfiguration.Initialize();
         if (RuntimeInformation.OSArchitecture != Architecture.X64 || Environment.OSVersion.Version.Build < 19045)
         {
-            MessageBox.Show("Cage 需要 Windows 10 22H2（19045）或 Windows 11，x64（Intel/AMD）系统。", "Cage");
+            MessageBox.Show("Cage requires Windows 10 22H2 (19045) or Windows 11, x64 (Intel/AMD).", "Cage");
             return 1;
         }
         var sid = WindowsIdentity.GetCurrent().User?.Value ?? Environment.UserName;
@@ -44,8 +44,8 @@ internal static class Program
                 using var client = new NamedPipeClientStream(".", "Cage-" + key, PipeDirection.Out, PipeOptions.CurrentUserOnly);
                 client.Connect(3000); client.WriteByte(1);
             }
-            catch (IOException) { MessageBox.Show("Cage 已在运行，但窗口暂时无法唤起。请从任务栏打开 Cage。", "Cage"); }
-            catch (TimeoutException) { MessageBox.Show("Cage 正在启动，请稍候。", "Cage"); }
+            catch (IOException) { MessageBox.Show("Cage is already running, but its window cannot be brought up right now. Open Cage from the taskbar.", "Cage"); }
+            catch (TimeoutException) { MessageBox.Show("Cage is starting. Please wait.", "Cage"); }
             return 0;
         }
         using var form = new MainWindow();

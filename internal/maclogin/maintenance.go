@@ -35,33 +35,33 @@ func (w maintenanceWindow) probeMessage() string {
 	var message string
 	switch w.Error {
 	case "requires_gui_login":
-		return "请先登录并解锁虚拟 Mac 的客机账户"
+		return "Sign in and unlock the guest account of the virtual Mac first."
 	case "maintenance_window_unavailable":
-		return "还没有可显示的系统授权窗口，请重新打开客机授权设置"
+		return "There is no system authorization window to show yet. Reopen the guest authorization settings."
 	case "maintenance_window_obscured":
-		message = "授权窗口被其他客机窗口遮挡"
+		message = "The authorization window is covered by another guest window"
 	case "maintenance_foreground_changed":
-		message = "客机前台已切换到其他窗口"
+		message = "The guest foreground switched to another window"
 	default:
-		return "请保持系统设置或系统授权窗口位于客机前台，再重新打开维护画面"
+		return "Keep System Settings or the system authorization window in the guest foreground, then reopen the maintenance screen."
 	}
 	detail := ""
 	if maintenanceBundleID.MatchString(w.BlockingBundle) {
 		detail = w.BlockingBundle
 		if detail == "com.apple.notificationcenterui" {
-			detail = "通知中心"
+			detail = "Notification Center"
 		}
 	}
 	if w.BlockingPID > 0 {
 		detail += fmt.Sprintf(" PID %d", w.BlockingPID)
 	}
 	if w.BlockingWindow > 0 {
-		detail += fmt.Sprintf(" 窗口 %d", w.BlockingWindow)
+		detail += fmt.Sprintf(" window %d", w.BlockingWindow)
 	}
 	if detail != "" {
-		message += "（" + strings.TrimSpace(detail) + "）"
+		message += " (" + strings.TrimSpace(detail) + ")"
 	}
-	return message + "，请重新打开客机授权设置"
+	return message + ". Reopen the guest authorization settings."
 }
 
 func (w maintenanceWindow) valid(user string) bool {

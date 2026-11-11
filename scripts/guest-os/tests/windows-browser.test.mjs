@@ -28,10 +28,10 @@ test("Windows controller accepts only loopback proxy and HTTP pages without cred
     assert.throws(() => checkedBrowserURL(value), { code: "invalid_url" });
   for (const name of ["../secret", "a\\b", "C:secret", "CON.txt", "lpt1", "a.", "a ", "a\0b"])
     assert.equal(validWindowsBrowserFileName(name), false);
-  assert.equal(validWindowsBrowserFileName("参考🙂.txt"), true);
+  assert.equal(validWindowsBrowserFileName("Образец🙂.txt"), true);
 });
 test("Cage editor changes only its fixed low-priority trust default in the official metadata", () => {
-  const data = { configurationDefaults: { "editor.fontSize": 19 }, remoteAuthority: "fixture.localhost", other: "keep & < > ' \" 中文" };
+  const data = { configurationDefaults: { "editor.fontSize": 19 }, remoteAuthority: "fixture.localhost", other: "keep & < > ' \" Привет" };
   const encoded = JSON.stringify(data).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const html = `<meta id="vscode-workbench-web-configuration" data-settings="${encoded}"><meta id="vscode-workbench-auth-session" data-settings="untouched">`;
   const result = applyWindowsEditorHTMLDefault(html, false);
@@ -59,7 +59,7 @@ async function fixture(t, configured = {}) {
     res.end(`<!doctype html><title>${req.url}</title>${editorMetadata}<style>body{margin:20px}textarea,input,button{display:block;margin:10px;width:300px;height:45px}#drop{height:100px;width:400px;border:1px solid}</style>
       <textarea id="first"></textarea><textarea id="second"></textarea><input id="file" type="file" multiple>
       <button id="copy">Copy actual clipboard</button><a id="download" href="/download">Download</a><div id="drop" tabindex="0">Drop files</div>
-      <script>copy.onclick=()=>navigator.clipboard.writeText('实际复制🙂');
+      <script>copy.onclick=()=>navigator.clipboard.writeText('Реальная копия🙂');
       window.selectionEvents=[]; document.addEventListener('selectionchange',()=>selectionEvents.push(String(getSelection())));
       window.dropped=[]; drop.ondragover=e=>e.preventDefault(); drop.ondrop=async e=>{e.preventDefault();window.dropped=await Promise.all([...e.dataTransfer.files].map(async f=>({name:f.name,bytes:[...new Uint8Array(await f.arrayBuffer())]})))};</script>`);
   });
@@ -149,10 +149,10 @@ integration("actual Chromium tabs restore and project switching retains unsaved 
   const one = await f.open("/one"), two = await f.open("/two");
   await f.call("activate", { id: one.id });
   await f.click(one.id, one.page, "#first");
-  await f.call("insert-text", { id: one.id, text: "网页未保存内容" });
+  await f.call("insert-text", { id: one.id, text: "Несохраненное содержимое страницы" });
   await f.call("activate", { id: two.id });
   await f.call("activate", { id: one.id });
-  assert.equal(await one.page.locator("#first").inputValue(), "网页未保存内容");
+  assert.equal(await one.page.locator("#first").inputValue(), "Несохраненное содержимое страницы");
   await one.page.evaluate(() => { document.cookie = "cage_fixture=opaque-value; SameSite=Lax"; });
   const cookies = await f.call("cookies", { id: one.id, mode: "list", scope: "site" });
   const cookie = cookies.cookies.find(c => c.name === "cage_fixture"); assert(cookie); assert.equal(cookie.value, undefined);
@@ -160,11 +160,11 @@ integration("actual Chromium tabs restore and project switching retains unsaved 
   const projectA = "a".repeat(24), projectB = "b".repeat(24);
   const editorA = await f.call("editor", { workspace: projectA });
   const pageA = f.context().pages().find(p => p.url().endsWith(projectA)); await pageA.waitForLoadState();
-  await f.click(editorA.id, pageA, "#first"); await f.call("insert-text", { id: editorA.id, text: "未保存编辑器缓冲区" });
+  await f.click(editorA.id, pageA, "#first"); await f.call("insert-text", { id: editorA.id, text: "Несохраненный буфер редактора" });
   const editorB = await f.call("editor", { workspace: projectB });
   const returned = await f.call("editor", { workspace: projectA });
   assert.equal(returned.id, editorA.id); assert.notEqual(editorB.id, editorA.id);
-  assert.equal(await pageA.locator("#first").inputValue(), "未保存编辑器缓冲区");
+  assert.equal(await pageA.locator("#first").inputValue(), "Несохраненный буфер редактора");
   const cookieA = await f.context().cookies(pageA.url());
   assert.equal(cookieA.find(c => c.name === "editor_fixture").value, projectA);
   const privateTab = await f.open("/private", true);
@@ -176,7 +176,7 @@ integration("actual Chromium tabs restore and project switching retains unsaved 
   // keeps those buffers visible with their project access blocked on restart.
   for (const editor of restored.tabs.filter(t => t.kind === "editor")) {
     assert.equal(editor.blocked, true);
-    await assert.rejects(f.call("insert-text", { id: editor.id, text: "迟到输入" }), { code: "project_grant_unavailable" });
+    await assert.rejects(f.call("insert-text", { id: editor.id, text: "Поздний ввод" }), { code: "project_grant_unavailable" });
   }
 });
 (process.env.CAGE_BROWSER_TEST_PLATFORM === "darwin" ? test.skip : integration)("Windows private editor connection applies only the issued alias's HTML defaults through loopback", async t => {
@@ -191,9 +191,9 @@ integration("actual Chromium tabs restore and project switching retains unsaved 
   const page = f.context().pages().find(page => page.url() === url.href); await page.waitForLoadState();
   const metadata = await page.locator('#vscode-workbench-web-configuration').getAttribute('data-settings');
   assert.deepEqual(JSON.parse(metadata), { remoteAuthority: url.host, configurationDefaults: { "editor.fontSize": 19, "security.workspace.trust.enabled": false } });
-  await assert.rejects(f.privateRequest({ operation: "editor-connect", input: { ...input, trust_default: { arbitrary: false } } }), /默认策略/);
+  await assert.rejects(f.privateRequest({ operation: "editor-connect", input: { ...input, trust_default: { arbitrary: false } } }), /default policy/);
   await f.privateRequest({ operation: "editor-revoke", input: { workspace: project, connection } });
-  await assert.rejects(f.call("frame", {}, "GET"), /授权/);
+  await assert.rejects(f.call("frame", {}, "GET"), /authorization/);
   assert(opened.id);
 });
 
@@ -230,14 +230,14 @@ integration("native page copy completion carries current context and ignores a s
   const context = "c".repeat(32);
   await f.call("copy-context", { id: one.id, context });
   await f.click(one.id, one.page, "#copy");
-  await one.page.waitForFunction(() => navigator.clipboard.readText().then(v => v === "实际复制🙂"));
+  await one.page.waitForFunction(() => navigator.clipboard.readText().then(v => v === "Реальная копия🙂"));
   let result;
   for (let i = 0; i < 20; i++) {
     result = await f.call("events", {}, "GET");
     if (result.events.some(e => e.type === "clipboard")) break;
     await new Promise(resolve => setTimeout(resolve, 25));
   }
-  assert(result.events.some(e => e.type === "clipboard" && e.value.text === "实际复制🙂" && e.value.context === context));
+  assert(result.events.some(e => e.type === "clipboard" && e.value.text === "Реальная копия🙂" && e.value.context === context));
   const after = result.sequence;
   await one.page.evaluate(() => { const data = new DataTransfer(); data.setData("text/plain", "forged"); document.dispatchEvent(new ClipboardEvent("copy", { clipboardData: data })); });
   assert.equal((await f.call("events", { after }, "GET")).events.filter(e => e.type === "clipboard").length, 0);
@@ -253,7 +253,7 @@ integration("64 KiB file blocks reach native chooser/drop, reject switched targe
     await new Promise(resolve => setTimeout(resolve, 25));
   }
   assert.equal(chooser.kind, "chooser");
-  async function transfer(id, bytes, name = "参考🙂.bin") {
+  async function transfer(id, bytes, name = "Образец🙂.bin") {
     const opened = await f.call("file-open", { direction: "upload", id, name, length: bytes.length });
     let sequence = 0;
     for (let offset = 0; offset < bytes.length; offset += 64 << 10) {
@@ -265,7 +265,7 @@ integration("64 KiB file blocks reach native chooser/drop, reject switched targe
   await transfer(chooser.id, f.payload);
   await f.call("upload-finish", { id: chooser.id });
   const selected = await one.page.locator("#file").evaluate(async e => ({ name: e.files[0].name, bytes: [...new Uint8Array(await e.files[0].arrayBuffer())] }));
-  assert.equal(selected.name, "参考🙂.bin"); assert.deepEqual(Buffer.from(selected.bytes), f.payload);
+  assert.equal(selected.name, "Образец🙂.bin"); assert.deepEqual(Buffer.from(selected.bytes), f.payload);
   const box = await one.page.locator("#drop").boundingBox(), size = one.page.viewportSize();
   const drop = await f.call("upload-start", { id: one.id, kind: "drop", x: (box.x + 20) / size.width, y: (box.y + 20) / size.height });
   await transfer(drop.id, Buffer.from("dropped"), "drop.txt"); await f.call("upload-finish", { id: drop.id });
@@ -274,7 +274,7 @@ integration("64 KiB file blocks reach native chooser/drop, reject switched targe
   const stale = await f.call("upload-start", { id: one.id, kind: "paste" });
   const opened = await f.call("file-open", { direction: "upload", id: stale.id, name: "late.txt", length: 4 });
   await f.open("/other");
-  await assert.rejects(f.call("file-chunk", { transfer: opened.transfer, sequence: 0, data: Buffer.from("late").toString("base64") }), /切换/);
+  await assert.rejects(f.call("file-chunk", { transfer: opened.transfer, sequence: 0, data: Buffer.from("late").toString("base64") }), /file upload page has changed/);
   await f.call("activate", { id: one.id }); await f.click(one.id, one.page, "#download");
   let record;
   for (let i = 0; i < 100; i++) {
@@ -339,12 +339,12 @@ integration("physical frame geometry, RFB key/pointer and composition reject lat
   const session = "d".repeat(32), common = { id: one.id, target: "browser", session };
   await f.call("ime", { ...common, mode: "begin", sequence: 0, context: status.context });
   await f.call("ime", { ...common, mode: "update", sequence: 1, text: "nihao", selectionStart: 5, selectionEnd: 5 });
-  await f.call("ime", { ...common, mode: "commit", sequence: 2, text: "你好🙂" });
-  assert.equal(await one.page.locator("#first").inputValue(), "ab你好🙂");
+  await f.call("ime", { ...common, mode: "commit", sequence: 2, text: "Привет🙂" });
+  assert.equal(await one.page.locator("#first").inputValue(), "abПривет🙂");
   const next = await f.call("ime", { id: one.id, target: "browser", mode: "status" });
   await f.call("ime", { ...common, mode: "begin", sequence: 3, context: next.context });
   await f.click(one.id, one.page, "#second");
-  await assert.rejects(f.call("ime", { ...common, mode: "commit", sequence: 4, text: "迟到" }), /target changed/);
+  await assert.rejects(f.call("ime", { ...common, mode: "commit", sequence: 4, text: "Поздно" }), /target changed/);
   assert.equal(await one.page.locator("#second").inputValue(), "");
   await f.call("resize", { width: 1200, height: 900 });
   await assert.rejects(f.call("input", { ...input, mask: 1 }), /target changed/);
@@ -477,8 +477,8 @@ integration("pixel wheel preserves distance and still rejects stale targets and 
   await f.call("input", { ...wheel, mask: 8, deltaY: -360 });
   await page.waitForFunction(() => scrollY === 360);
   await assert.rejects(f.call("input", { ...wheel, target: "stale" }), /target changed/);
-  await assert.rejects(f.call("input", { ...wheel, deltaY: 2049 }), /滚动距离/);
-  await assert.rejects(f.call("input", { ...wheel, mask: 17 }), /滚动距离/);
+  await assert.rejects(f.call("input", { ...wheel, deltaY: 2049 }), /scroll distance/);
+  await assert.rejects(f.call("input", { ...wheel, mask: 17 }), /scroll distance/);
   assert.equal(await page.evaluate(() => scrollY), 360);
 });
 
@@ -552,10 +552,10 @@ macImages("Mac image preparation rejects a changed field before accepting bytes"
   const png = await one.page.screenshot({ type: "png" });
   await f.click(one.id, one.page, "#second");
   await assert.rejects(f.call("image-chunk", { transfer: prepared.transfer, sequence: 0, length: png.length, data: png.toString("base64") }), /target changed/i);
-  await assert.rejects(f.call("image-finish", { transfer: prepared.transfer, sequence: 0 }), /已关闭|顺序/);
+  await assert.rejects(f.call("image-finish", { transfer: prepared.transfer, sequence: 0 }), /closed|order/);
   const cancelled = await f.call("image-start", { id: one.id });
   await f.call("image-cancel", { transfer: cancelled.transfer });
-  await assert.rejects(f.call("image-finish", { transfer: cancelled.transfer, sequence: 0 }), /已关闭|顺序/);
+  await assert.rejects(f.call("image-finish", { transfer: cancelled.transfer, sequence: 0 }), /closed|order/);
 });
 
 macImages("Mac clipboard text uses one bounded transfer and one final insertion", async t => {
@@ -567,7 +567,7 @@ macImages("Mac clipboard text uses one bounded transfer and one final insertion"
   });
   await f.click(one.id, one.page, "#first");
   assert.equal(f.launchOptions().ignoreDefaultArgs.includes("--mute-audio"), true);
-  const text = "中".repeat(Math.floor((2 << 20) / 3)) + "ab", bytes = Buffer.from(text);
+  const text = "€".repeat(Math.floor((2 << 20) / 3)) + "ab", bytes = Buffer.from(text);
   assert.equal(bytes.length, 2 << 20);
   const prepared = await f.call("paste-start", { id: one.id });
   let sequence = 0;
@@ -584,7 +584,7 @@ macImages("Mac clipboard text uses one bounded transfer and one final insertion"
   assert.equal(pasted.trusted, true);
   assert.equal(pasted.text, text);
   const tooLarge = await f.call("paste-start", { id: one.id });
-  await assert.rejects(f.call("paste-chunk", { transfer: tooLarge.transfer, sequence: 0, length: bytes.length + 1, mime: "text/plain", data: "YQ==" }), /大小/);
+  await assert.rejects(f.call("paste-chunk", { transfer: tooLarge.transfer, sequence: 0, length: bytes.length + 1, mime: "text/plain", data: "YQ==" }), /size/);
 });
 
 const macImagePaste = playwrightPath && executablePath && process.env.CAGE_BROWSER_TEST_PLATFORM === "darwin" && process.env.CAGE_BROWSER_TEST_PNG_PASTE === "1" ? test : test.skip;
@@ -630,7 +630,7 @@ macImagePaste("Mac headless image transfer delivers an actual PNG paste event", 
   assert.equal(pasted.trusted, true);
   assert.equal(pasted.type, "image/png");
   assert.deepEqual(Buffer.from(pasted.bytes).subarray(0, 8), png.subarray(0, 8));
-  await assert.rejects(f.call("image-finish", { transfer: prepared.transfer, sequence }), /已关闭|顺序/);
+  await assert.rejects(f.call("image-finish", { transfer: prepared.transfer, sequence }), /closed|order/);
 });
 
 async function readClipboardReference(f, copied) {
@@ -694,7 +694,7 @@ macImagePaste("Mac webpage PNG copy exports a bound reference with the original 
 
 macImagePaste("Mac native copy and cut preserve 2 MiB UTF-8 text and reject superseded reads", async t => {
   const f = await fixture(t), one = await f.open();
-  const text = "中".repeat(Math.floor((2 << 20) / 3)) + "ab";
+  const text = "€".repeat(Math.floor((2 << 20) / 3)) + "ab";
   await one.page.locator("#first").fill(text);
   await one.page.locator("#first").selectText();
   const copied = await f.call("copy", { id: one.id, context: "1".repeat(32) });

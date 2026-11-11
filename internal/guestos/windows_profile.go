@@ -35,15 +35,15 @@ func WindowsProfilePath(root string) string { return filepath.Join(root, "window
 func (p WindowsProfile) validate() error {
 	if p.Version != 1 || p.VMID == uuid.Nil || !windowsGUISID.MatchString(p.GUIUserSID) ||
 		len(p.GUIUser) > 256 || strings.ContainsAny(p.GUIUser, "\x00\r\n") {
-		return errors.New("Windows 客机标识或图形用户无效")
+		return errors.New("Invalid Windows guest ID or graphical user.")
 	}
 	for _, path := range []string{p.InstanceDirectory, p.RelayExecutable, p.PairingFile} {
 		if !filepath.IsAbs(path) || strings.ContainsAny(path, "\x00\r\n") {
-			return errors.New("Windows 客机配置需要绝对本机路径")
+			return errors.New("The Windows guest configuration needs an absolute local path.")
 		}
 	}
 	if p.NetworkPairingFile != "" && (!filepath.IsAbs(p.NetworkPairingFile) || strings.ContainsAny(p.NetworkPairingFile, "\x00\r\n")) {
-		return errors.New("Windows 客机网络配对需要绝对本机路径")
+		return errors.New("The Windows guest network pairing needs an absolute local path.")
 	}
 	return nil
 }
@@ -58,7 +58,7 @@ func LoadWindowsProfile(root string) (*WindowsProfile, error) {
 		return nil, err
 	}
 	if !info.Mode().IsRegular() || info.Size() == 0 || info.Size() > 16<<10 {
-		return nil, errors.New("Windows 客机配置文件无效")
+		return nil, errors.New("Invalid Windows guest configuration file.")
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -68,7 +68,7 @@ func LoadWindowsProfile(root string) (*WindowsProfile, error) {
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
 	if decoder.Decode(&binding) != nil || decoder.Decode(new(any)) != io.EOF {
-		return nil, errors.New("Windows 客机配置格式无效")
+		return nil, errors.New("Invalid Windows guest configuration format.")
 	}
 	if err := binding.validate(); err != nil {
 		return nil, err
@@ -101,16 +101,16 @@ func WindowsRelayCommand(ctx context.Context, root, operation string, args ...st
 		return nil, err
 	}
 	if p == nil {
-		return nil, errors.New("此配置尚未绑定 Windows 客机")
+		return nil, errors.New("This configuration is not bound to a Windows guest yet.")
 	}
 	switch operation {
 	case "versions":
 	case "stream", "status", "import", "export", "terminal", "browser", "desktop", "attachments", "audio", "resources", "diagnostics", "safety", "project-mount", "network-stream", "network-settings", "cli":
 	default:
-		return nil, errors.New("Windows 客机剪贴板操作无效")
+		return nil, errors.New("Invalid Windows guest clipboard operation.")
 	}
 	if len(args) != 0 && !(operation == "export" && len(args) == 1 && args[0] == "--paths-stdin") {
-		return nil, errors.New("Windows 客机文件路径必须通过标准输入传递")
+		return nil, errors.New("Windows guest file paths must be passed through standard input.")
 	}
 	argv := append([]string{"--relay-profile", WindowsProfilePath(root), operation}, args...)
 	return exec.CommandContext(ctx, p.RelayExecutable, argv...), nil

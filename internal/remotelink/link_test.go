@@ -99,7 +99,7 @@ func TestMutualTLSAndBidirectionalStream(t *testing.T) {
 	if _, err := rand.Read(payload); err != nil {
 		t.Fatal(err)
 	}
-	reply := []byte("手机已连接，回复不依赖 WebSocket 消息边界。")
+	reply := []byte("Телефон подключен, ответ не зависит от WebSocket границ сообщений.")
 	done := make(chan error, 1)
 	go func() {
 		received := make([]byte, len(payload))

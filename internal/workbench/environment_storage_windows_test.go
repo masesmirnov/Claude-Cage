@@ -16,7 +16,7 @@ import (
 func TestWindowsJunctionCannotExposePrivateDirectory(t *testing.T) {
 	s := testServer(t)
 	parent := t.TempDir()
-	alias := filepath.Join(parent, "环境别名")
+	alias := filepath.Join(parent, "นบปผ")
 	cmd := exec.Command("cmd.exe", "/d", "/v:off", "/c", "mklink", "/J", alias, s.profile)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("create directory junction: %v, %s", err, out)

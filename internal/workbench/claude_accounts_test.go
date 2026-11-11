@@ -17,12 +17,12 @@ import (
 func TestClaudeAccountPanelConcurrentWindowsAndLock(t *testing.T) {
 	s := testServer(t)
 	accountID := strings.Repeat("a", 24)
-	list := claudeAccountList{Accounts: []claudeAccount{{ID: accountID, Label: "原名称", Enabled: true, Status: "ready"}}}
+	list := claudeAccountList{Accounts: []claudeAccount{{ID: accountID, Label: "Original name", Enabled: true, Status: "ready"}}}
 	if err := s.saveClaudeAccounts(list); err != nil {
 		t.Fatal(err)
 	}
 	var wg sync.WaitGroup
-	for _, mutation := range []string{`"label":"工作"`, `"enabled":false`} {
+	for _, mutation := range []string{`"label":"Work"`, `"enabled":false`} {
 		wg.Add(1)
 		go func(mutation string) {
 			defer wg.Done()
@@ -34,17 +34,17 @@ func TestClaudeAccountPanelConcurrentWindowsAndLock(t *testing.T) {
 	}
 	wg.Wait()
 	list, err := s.loadClaudeAccounts()
-	if err != nil || len(list.Accounts) != 1 || list.Accounts[0].Enabled || list.Accounts[0].Label != "工作" {
+	if err != nil || len(list.Accounts) != 1 || list.Accounts[0].Enabled || list.Accounts[0].Label != "Work" {
 		t.Fatalf("lost concurrent edit: %+v %v", list, err)
 	}
 	a := list.Accounts[0]
-	w := request(s, "POST", "/api/claude-accounts", s.origin, `{"action":"update","id":"`+a.ID+`","label":"已归档","enabled":false}`, true)
+	w := request(s, "POST", "/api/claude-accounts", s.origin, `{"action":"update","id":"`+a.ID+`","label":"Archived","enabled":false}`, true)
 	if w.Code != 200 {
 		t.Fatal(w.Code, w.Body)
 	}
 	reopened := &Server{profile: s.profile}
 	list, err = reopened.loadClaudeAccounts()
-	if err != nil || list.Accounts[0].Enabled || list.Accounts[0].Label != "已归档" {
+	if err != nil || list.Accounts[0].Enabled || list.Accounts[0].Label != "Archived" {
 		t.Fatalf("updated settings did not persist: %+v %v", list, err)
 	}
 	w = request(s, "POST", "/api/claude-accounts", s.origin, `{"action":"update","id":"`+a.ID+`","enabled":true}`, true)
@@ -221,7 +221,7 @@ func TestClaudeProjectAffinityYieldsToAvailabilityAndLoad(t *testing.T) {
 func TestClaudeDraftCancellationRespectsAdmissionsAndBoundIdentities(t *testing.T) {
 	s := testServer(t)
 	draft := strings.Repeat("a", 24)
-	list := claudeAccountList{Accounts: []claudeAccount{{ID: draft, Label: "新账号", Status: "pending", Enabled: true}}}
+	list := claudeAccountList{Accounts: []claudeAccount{{ID: draft, Label: "New account", Status: "pending", Enabled: true}}}
 	if err := s.saveClaudeAccounts(list); err != nil {
 		t.Fatal(err)
 	}

@@ -74,7 +74,7 @@ final class ConnectionModel: ObservableObject {
                 trusted = saved.host; relay = saved.host.relay; pin = saved.host.pin; hasSaved = true
             }
         } catch {
-            status = "无法读取已保存的连接，请解锁手机后重新打开。"
+            status = "Could not read the saved connection. Unlock your phone and reopen the app."
         }
         if let selected = UserDefaults.standard.string(forKey:"preferred-relay") {relay = selected}
         DispatchQueue.global(qos: .userInitiated).async {
@@ -91,7 +91,7 @@ final class ConnectionModel: ObservableObject {
         connecting = true; generation += 1
         let attempt = generation
         let address = UserDefaults.standard.string(forKey: "preferred-relay") ?? trusted?.relay ?? CMConnection.defaultRelay()
-        status = "正在与电脑配对…"
+        status = "Pairing with the computer…"
         linkQueue.async {
             let result = Result { () throws -> HostAccess in
                 let data = Data(try CMConnection.pair(code: code, relay: address).utf8)
@@ -117,53 +117,53 @@ final class ConnectionModel: ObservableObject {
         let input = relay.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let u = URLComponents(string: input), u.scheme?.lowercased() == "https",
               let host=u.host, !host.isEmpty, u.user==nil, u.password==nil, u.query==nil, u.fragment==nil,
-              (u.path=="" || u.path=="/"), (1...65535).contains(u.port ?? 443) else {status="请填写有效的 HTTPS 地址。";return}
+              (u.path=="" || u.path=="/"), (1...65535).contains(u.port ?? 443) else {status="Enter a valid HTTPS address.";return}
         relay=input.hasSuffix("/") ? String(input.dropLast()) : input
         UserDefaults.standard.set(relay,forKey:"preferred-relay")
-        status="中继设置已保存。"
+        status="Relay settings saved."
     }
     func saveTrust() {
         guard verified, let host = try? Host(relay: relay, pin: pin), let data = try? JSONEncoder().encode(host) else {
-            status = "请填写有效的中继地址，核对电脑指纹后再保存。"; return
+            status = "Enter a valid relay address and check the computer fingerprint before saving."; return
         }
         do {
             if let record = imported {
-                guard record.host == host else { status = "填写内容与连接文件不一致，请重新核对。"; return }
+                guard record.host == host else { status = "The entries do not match the connection file. Check them again."; return }
                 try HostKeychain.write(record)
                 hasSaved = true
             } else if trusted != host {
                 hasSaved = try HostKeychain.read(host: host) != nil
             }
-        } catch { status = "无法安全保存主机，请解锁手机后重试。"; return }
+        } catch { status = "Could not save the host securely. Unlock your phone and try again."; return }
         trusted = host; UserDefaults.standard.set(host.relay,forKey:"preferred-relay"); UserDefaults.standard.set(data, forKey: trustKey); verified = false
         imported = nil; needsTrust = false
-        status = hasSaved ? "已保存这台电脑，可以重新连接。" : "已保存主机指纹。"
+        status = hasSaved ? "This computer is saved. You can reconnect." : "Host fingerprint saved."
     }
     func loadInvitation(_ file: URL) {
         invitation = nil; imported = nil; needsTrust = false; hasInvitation = false; verified = false
         do {
             switch try ConnectionFile.load(file) {
             case .temporary(let room):
-                invitation = room; hasInvitation = true; status = "已导入本次临时邀请。"
+                invitation = room; hasInvitation = true; status = "Temporary invitation imported."
             case .persistent(let saved):
                 imported = saved; needsTrust = true; relay = saved.host.relay; pin = saved.host.pin
-                status = "请与电脑上独立显示的指纹核对，再保存这台主机。"
+                status = "Compare with the fingerprint shown separately on the computer, then save this host."
             }
-        } catch { status = "文件无效或临时邀请已过期，请重新导入。" }
+        } catch { status = "The file is invalid or the temporary invitation has expired. Import it again." }
     }
     func forget() {
-        do { try HostKeychain.forget(host: trusted) } catch { status = "移除未完成，请解锁手机后重试。"; return }
+        do { try HostKeychain.forget(host: trusted) } catch { status = "Removal was not completed. Unlock your phone and try again."; return }
         UserDefaults.standard.removeObject(forKey: trustKey)
         trusted = nil; imported = nil; invitation = nil; relay = UserDefaults.standard.string(forKey:"preferred-relay") ?? CMConnection.defaultRelay(); pin = ""
         hasSaved = false; needsTrust = false; verified = false; hasInvitation = false
-        status = "已忘记主机。"
+        status = "Host forgotten."
     }
     func connect() {
         connect(openArchived: false)
     }
     private func connect(openArchived: Bool) {
         guard !connecting, !needsTrust, let host = trusted else {
-            status = "请先核对并保存这台主机。"; return
+            status = "Check and save this host first."; return
         }
         openArchivedAfterConnect = openArchived
         if let existing = devices.first(where: {$0.id == host.relay + "|" + host.pin}) {
@@ -176,12 +176,12 @@ final class ConnectionModel: ObservableObject {
         }
         let item = invitation
 
-        guard item != nil || hasSaved else { status = "请导入连接文件或有效的临时邀请。"; return }
-        if let item, (item.expiry ?? .distantPast) <= Date() { invitation = nil; hasInvitation = false; status = "临时邀请已过期，请重新连接或导入新邀请。"; return }
-        guard let directory = Bundle.main.url(forResource: "mobile-ui", withExtension: nil) else { status = "安装包缺少工作台资源。"; return }
+        guard item != nil || hasSaved else { status = "Import a connection file or a valid temporary invitation."; return }
+        if let item, (item.expiry ?? .distantPast) <= Date() { invitation = nil; hasInvitation = false; status = "The temporary invitation has expired. Reconnect or import a new invitation."; return }
+        guard let directory = Bundle.main.url(forResource: "mobile-ui", withExtension: nil) else { status = "The app package is missing workbench resources."; return }
         invitation = nil; hasInvitation = false; connecting = true; generation += 1
         let attempt = generation
-        status = "正在验证电脑并连接…"
+        status = "Verifying the computer and connecting…"
         linkQueue.async {
             let result = Result {
                 if let item { return try CMConnection.connect(relay: host.relay, room: item.id, token: item.client_token, pin: host.pin, assets: directory.path) }
@@ -237,7 +237,7 @@ final class ConnectionModel: ObservableObject {
         web.navigationDelegate = delegate
         // WKWebView holds its navigation delegate weakly.
         navigationDelegates[id] = delegate
-        devices.append(ConnectedDevice(id: id, name: "已连接电脑", connection: connection, webView: web))
+        devices.append(ConnectedDevice(id: id, name: "Connected computer", connection: connection, webView: web))
         selectDevice(id)
         var launch = connection.launchURL
         if openArchivedAfterConnect {
@@ -284,7 +284,7 @@ final class ConnectionModel: ObservableObject {
     func reconnect() {disconnect(); connect()}
     func startPreview() {
         #if targetEnvironment(simulator)
-        for (id, name) in [("preview-mac", "我的电脑 · 模拟器预览"), ("preview-linux", "Linux 工作站 · 模拟器预览")] {
+        for (id, name) in [("preview-mac", "My computer (simulator preview)"), ("preview-linux", "Linux workstation (simulator preview)")] {
             if !devices.contains(where: {$0.id == id}) {
                 let preview = SimulatorWorkspacePreview.makeWebView(model: self, id: id)
                 devices.append(ConnectedDevice(id: id, name: name, connection: nil, webView: preview.web))
@@ -358,7 +358,7 @@ private struct QRScanner: UIViewControllerRepresentable {
             for case .barcode(let barcode) in items {
                 guard !finished, let code = barcode.payloadStringValue else {continue}
                 guard code.hasPrefix("CAGE1:"), code.utf8.count <= 4096 else {
-                    hint.wrappedValue = "请扫描电脑「设置 → 远程连接」中的 Cage 配对二维码"; continue
+                    hint.wrappedValue = "Scan the Cage pairing QR code in \"Settings → Remote connection\" on your computer"; continue
                 }
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                 finished = true; scanner.stopScanning(); result(code); return
@@ -408,7 +408,7 @@ private struct QRScannerScreen: View {
     let result: (String?) -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var sweeping = false
-    @State private var hint = "将 Cage 配对二维码放入框内\n在电脑「设置 → 远程连接」中生成"
+    @State private var hint = "Place the Cage pairing QR code in the frame\nGenerate it on your computer in \"Settings → Remote connection\""
     private let accent = Color(red: 0.91, green: 0.72, blue: 0.62)
     var body: some View {
         GeometryReader { geometry in
@@ -436,9 +436,9 @@ private struct QRScannerScreen: View {
                     .animation(reduceMotion ? nil : .linear(duration: 2.4).repeatForever(autoreverses: true), value: sweeping)
                     .accessibilityHidden(true)
                 VStack(spacing: 12) {
-                    Text("连接你的电脑").font(.title2.bold())
+                    Text("Connect your computer").font(.title2.bold())
                     Text(hint).font(.subheadline).foregroundStyle(.white.opacity(0.88)).multilineTextAlignment(.center)
-                    Text(simulatorPreviewEnabled ? "模拟器预览 · 即将进入示例工作台" : "仅识别 Cage 配对码")
+                    Text(simulatorPreviewEnabled ? "Simulator preview: opening the sample workbench soon" : "Cage pairing codes only")
                         .font(.caption).foregroundStyle(.white.opacity(0.6))
                 }.foregroundStyle(.white).padding(.horizontal, 24).padding(.bottom, 24).accessibilityElement(children: .combine)
             }.background(Color.black).onAppear {sweeping = true}
@@ -467,8 +467,8 @@ private struct ConnectionSheet: View {
                 VStack(spacing: 12) {
                     Image("PairDevices").resizable().scaledToFit().frame(maxWidth: .infinity)
                         .frame(height: 150).accessibilityHidden(true)
-                    Text("连接电脑").font(.title.bold())
-                    Text("在电脑的 Cage 设置中打开「远程连接」，生成配对二维码或复制配对码。")
+                    Text("Connect computer").font(.title.bold())
+                    Text("On your computer, open \"Remote connection\" in Cage settings and generate a pairing QR code or copy a pairing code.")
                         .font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
                         .padding(.bottom, 10)
                     Button {
@@ -477,19 +477,19 @@ private struct ConnectionSheet: View {
                             guard DataScannerViewController.isSupported,
                                   await AVCaptureDevice.requestAccess(for: .video),
                                   DataScannerViewController.isAvailable else {
-                                model.status = "相机暂不可用，请检查相机权限或使用配对码。"; return
+                                model.status = "The camera is unavailable. Check camera permission or use a pairing code."; return
                             }
                             scanning = true
                         }
-                    } label: {ActionLabel(title: "扫码连接", symbol: "qrcode.viewfinder")}
-                    Button {manual = true} label: {ActionLabel(title: "使用配对码", symbol: "key", primary: false)}
+                    } label: {ActionLabel(title: "Scan QR code", symbol: "qrcode.viewfinder")}
+                    Button {manual = true} label: {ActionLabel(title: "Use pairing code", symbol: "key", primary: false)}
                     if model.hasSaved || model.hasInvitation {
-                        Button("重新连接", action: model.connect).frame(minHeight: 44).disabled(!model.canConnect)
+                        Button("Reconnect", action: model.connect).frame(minHeight: 44).disabled(!model.canConnect)
                     }
                     if !model.devices.isEmpty {
                         Divider().padding(.vertical, 8)
-                        Text("已连接设备").font(.headline).frame(maxWidth: .infinity, alignment: .leading)
-                        Text("长按设备可取消连接").font(.footnote).foregroundStyle(.secondary)
+                        Text("Connected devices").font(.headline).frame(maxWidth: .infinity, alignment: .leading)
+                        Text("Long-press a device to disconnect").font(.footnote).foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         ForEach(model.devices) {device in
                             Button {if disconnecting == nil {model.selectDevice(device.id)}} label: {
@@ -497,7 +497,7 @@ private struct ConnectionSheet: View {
                                     .frame(minHeight: 48).contentShape(Rectangle())
                             }
                             .simultaneousGesture(LongPressGesture().onEnded { _ in disconnecting = device })
-                            .accessibilityAction(named: Text("取消连接")) {disconnecting = device}
+                            .accessibilityAction(named: Text("Disconnect")) {disconnecting = device}
                         }
                     }
                     status
@@ -507,26 +507,26 @@ private struct ConnectionSheet: View {
                 .navigationDestination(isPresented: $manual) {
                     Form {
                         Section {
-                            SecureField("粘贴电脑上的一次性配对码", text: $code)
+                            SecureField("Paste the one-time pairing code from your computer", text: $code)
                                 .textInputAutocapitalization(.never).autocorrectionDisabled()
-                            Button("连接电脑") {model.pair(code: code); code = ""}
+                            Button("Connect computer") {model.pair(code: code); code = ""}
                                 .accessibilityIdentifier("redeem-pair-code")
                                 .disabled(code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.connecting)
                         }
                         if !model.status.isEmpty {Section {status}}
-                    }.navigationTitle("配对码")
+                    }.navigationTitle("Pairing code")
                 }
                 .sheet(item: $disconnecting) {device in
                     VStack(spacing: 20) {
-                        Text("取消连接？").font(.title2.bold())
+                        Text("Disconnect?").font(.title2.bold())
                         Text(device.name).foregroundStyle(.secondary)
-                        Text("将关闭这台设备的连接。已保存的配对信息会保留。")
+                        Text("This closes the connection for this device. Saved pairing information is kept.")
                             .font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                        Button("取消连接", role: .destructive) {
+                        Button("Disconnect", role: .destructive) {
                             model.disconnectDevice(device.id)
                             disconnecting = nil
                         }.frame(maxWidth: .infinity, minHeight: 48)
-                        Button("保留连接") {disconnecting = nil}.frame(minHeight: 44)
+                        Button("Stay connected") {disconnecting = nil}.frame(minHeight: 44)
                     }.padding(24).presentationDetents([.height(300)]).presentationDragIndicator(.visible)
                 }
                 .sheet(isPresented: $scanning, onDismiss: {
@@ -537,9 +537,9 @@ private struct ConnectionSheet: View {
                             scanning = false
                             if simulatorPreviewEnabled {previewScanned = true}
                             else if let result {model.pair(code: result)}
-                            else {model.status = "无法读取二维码，请重试或使用配对码。"}
-                        }.navigationTitle("扫描电脑二维码").navigationBarTitleDisplayMode(.inline)
-                        .toolbar {Button("取消") {scanning = false}}
+                            else {model.status = "Could not read the QR code. Try again or use a pairing code."}
+                        }.navigationTitle("Scan computer QR code").navigationBarTitleDisplayMode(.inline)
+                        .toolbar {Button("Cancel") {scanning = false}}
                     }
                 }
         }.disabled(model.connecting).interactiveDismissDisabled(model.connecting)
@@ -554,7 +554,7 @@ private struct ConnectionSheet: View {
 }
 
 private enum CageTheme: String, CaseIterable {
-    case system = "跟随系统", light = "浅色", dark = "深色"
+    case system = "Follow system", light = "Light", dark = "Dark"
     var scheme: ColorScheme? {
         switch self {case .system: return nil; case .light: return .light; case .dark: return .dark}
     }
@@ -572,7 +572,7 @@ private struct SettingsScreen: View {
 
     var body: some View {
         Form {
-            Section("外观") {
+            Section("Appearance") {
                 DisclosureGroup(isExpanded: $themes) {
                     ForEach(CageTheme.allCases, id: \.self) {option in
                         Button {
@@ -584,42 +584,42 @@ private struct SettingsScreen: View {
                     }
                 } label: {
                     HStack {
-                        Label("主题", systemImage: "circle.lefthalf.filled")
+                        Label("Theme", systemImage: "circle.lefthalf.filled")
                         Spacer(); Text(theme.rawValue).foregroundStyle(.secondary)
                     }
                 }
             }
-            Section("电脑连接") {
-                Button("已归档会话", action: model.openArchivedSessions)
+            Section("Computer connection") {
+                Button("Archived sessions", action: model.openArchivedSessions)
                     .disabled(model.selectedDevice == nil && !model.canConnect)
-                DisclosureGroup("中继设置", isExpanded: $relaySettings) {
-                    Toggle("使用自建中继", isOn: Binding(get: {model.relay != CMConnection.defaultRelay()},
+                DisclosureGroup("Relay settings", isExpanded: $relaySettings) {
+                    Toggle("Use a self-hosted relay", isOn: Binding(get: {model.relay != CMConnection.defaultRelay()},
                                                      set: {model.relay = $0 ? "" : CMConnection.defaultRelay()}))
                     if model.relay != CMConnection.defaultRelay() {
-                        TextField("自建 VPS 的 HTTPS 地址", text: $model.relay)
+                        TextField("HTTPS address of your own VPS", text: $model.relay)
                             .keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
-                    } else {Text("Cage 官方中继").foregroundStyle(.secondary)}
-                    Button("保存中继设置", action: model.saveRelay)
+                    } else {Text("Official Cage relay").foregroundStyle(.secondary)}
+                    Button("Save relay settings", action: model.saveRelay)
                 }
-                DisclosureGroup("指纹与连接文件", isExpanded: $advanced) {
-                    Text(CMConnection.usesSimulatorIdentity ? "模拟器测试身份的指纹" : "这台手机的指纹").font(.headline)
+                DisclosureGroup("Fingerprint and connection file", isExpanded: $advanced) {
+                    Text(CMConnection.usesSimulatorIdentity ? "Simulator test identity fingerprint" : "This phone's fingerprint").font(.headline)
                     Text(model.fingerprint).font(.caption.monospaced()).textSelection(.enabled)
-                    Button("复制手机指纹") {UIPasteboard.general.string = model.fingerprint; model.status = "手机指纹已复制"}
+                    Button("Copy phone fingerprint") {UIPasteboard.general.string = model.fingerprint; model.status = "Phone fingerprint copied"}
                         .disabled(model.fingerprint.isEmpty)
-                    Button("导入连接文件") {picking = true}
-                    TextField("电脑指纹 sha256:…", text: $model.pin).textInputAutocapitalization(.never).autocorrectionDisabled()
-                    Toggle("已核对电脑指纹", isOn: $model.verified)
-                    Button("保存已核对的主机", action: model.saveTrust).disabled(!model.verified)
-                    if model.hasInvitation || model.hasSaved {Button("连接工作台", action: connect).disabled(!model.canConnect)}
+                    Button("Import connection file") {picking = true}
+                    TextField("Computer fingerprint sha256:…", text: $model.pin).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    Toggle("Computer fingerprint checked", isOn: $model.verified)
+                    Button("Save checked host", action: model.saveTrust).disabled(!model.verified)
+                    if model.hasInvitation || model.hasSaved {Button("Connect to workbench", action: connect).disabled(!model.canConnect)}
                 }
-                if model.canForget {Button("忘记主机", role: .destructive) {confirmingForget = true}}
+                if model.canForget {Button("Forget host", role: .destructive) {confirmingForget = true}}
             }
             if !model.status.isEmpty {Section {Text(model.status).font(.footnote).foregroundStyle(.secondary)}}
-        }.navigationTitle("设置").disabled(model.connecting)
-            .alert("忘记主机？", isPresented: $confirmingForget) {
-                Button("取消", role: .cancel) {}
-                Button("忘记主机", role: .destructive, action: model.forget)
-            } message: {Text("将移除这台电脑的地址、指纹和重连凭据。")}
+        }.navigationTitle("Settings").disabled(model.connecting)
+            .alert("Forget host?", isPresented: $confirmingForget) {
+                Button("Cancel", role: .cancel) {}
+                Button("Forget host", role: .destructive, action: model.forget)
+            } message: {Text("This removes this computer's address, fingerprint, and reconnect credentials.")}
             .fileImporter(isPresented: $picking, allowedContentTypes: [.json, .plainText]) {result in
                 if case .success(let file) = result {model.loadInvitation(file)}
             }
@@ -672,7 +672,7 @@ struct CageMobileApp: App {
                             Text("Cage").font(.system(size: 36, weight: .semibold, design: .rounded))
                         }
                         Button {pairing = true} label: {
-                            ActionLabel(title: "连接电脑", symbol: "desktopcomputer", height: 60)
+                            ActionLabel(title: "Connect computer", symbol: "desktopcomputer", height: 60)
                         }
                     }.frame(maxWidth: 276).padding(.top, 32)
                     Spacer(minLength: 12)
@@ -683,7 +683,7 @@ struct CageMobileApp: App {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {showingSettings = true} label: {Image(systemName: "gearshape")}
-                        .accessibilityLabel("设置")
+                        .accessibilityLabel("Settings")
                 }
             }
     }

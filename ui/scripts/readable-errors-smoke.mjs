@@ -10,12 +10,12 @@ for (const platform of ["darwin", "windows", "linux"]) {
   });
   const { page, browser, state, errors } = fixture;
   try {
-    state.status.job = { id: "readable-failure", kind: "start", running: false, message: "启动环境失败", error: "下载 Linux 镜像失败：等待下载服务器响应超时。请检查所选节点，再继续安装。", log: "fixture download timeout" };
+    state.status.job = { id: "readable-failure", kind: "start", running: false, message: "Starting the environment failed", error: "Downloading the Linux image failed: timed out waiting for the download server to respond. Check the selected node, then continue the installation.", log: "fixture download timeout" };
     await page.reload();
-    await page.getByText("启动环境失败", { exact: true }).first().waitFor();
-    await page.getByRole("alert").filter({ hasText: "等待下载服务器响应超时" }).first().waitFor();
-    await page.getByRole("button", { name: "查看操作详情", exact: true }).first().click();
-    await page.getByRole("dialog", { name: "操作详情", exact: true }).getByText("fixture download timeout", { exact: true }).waitFor();
+    await page.getByText("Starting the environment failed", { exact: true }).first().waitFor();
+    await page.getByRole("alert").filter({ hasText: "timed out waiting for the download server to respond" }).first().waitFor();
+    await page.getByRole("button", { name: "View operation details", exact: true }).first().click();
+    await page.getByRole("dialog", { name: "Operation details", exact: true }).getByText("fixture download timeout", { exact: true }).waitFor();
     await page.keyboard.press("Escape");
     await page.screenshot({ path: `${output}/${platform}-startup.png` });
 
@@ -25,7 +25,7 @@ for (const platform of ["darwin", "windows", "linux"]) {
       try { await api("/environment/resources"); return "unexpected success"; }
       catch (error) { return { message: error.message, status: error.status }; }
     });
-    assert.match(failure.message, /资源配置.*HTTP 503.*尚未就绪/);
+    assert.match(failure.message, /resource settings.*HTTP 503.*not ready/);
     assert.equal(failure.status, 503);
     assert.ok(!failure.message.includes("private-test-secret") && !failure.message.includes("<html>"));
     await page.route("**/api/environment/resources", route => route.fulfill({ status: 200, contentType: "application/json", body: "not-json token=private-test-secret" }));
@@ -33,7 +33,7 @@ for (const platform of ["darwin", "windows", "linux"]) {
       const { api } = await import("/src/api.js");
       try { await api("/environment/resources"); } catch (error) { return error.message; }
     });
-    assert.match(malformed, /资源配置.*格式无效/);
+    assert.match(malformed, /resource settings.*format is invalid/);
     assert.ok(!malformed.includes("private-test-secret"));
     assert.deepEqual(errors, []);
     await writeFile(`${output}/${platform}.json`, JSON.stringify({ platform, failure, malformed }, null, 2));

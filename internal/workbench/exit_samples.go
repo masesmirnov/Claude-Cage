@@ -17,27 +17,27 @@ func incompleteExitSamples(hostIP string, hostErr error, terminal networkObserva
 		observation networkObservation
 		err         error
 	}{
-		{"宿主", networkObservation{Status: 200, IP: hostIP}, hostErr},
-		{"虚拟机终端", terminal, terminalErr},
-		{"浏览器", browser, browserErr},
+		{"Host", networkObservation{Status: 200, IP: hostIP}, hostErr},
+		{"VM terminal", terminal, terminalErr},
+		{"Browser", browser, browserErr},
 	} {
 		var reason string
 		switch {
 		case sample.err != nil:
-			reason = diagnostics.Redact(usererror.Display("读取采样", sample.err, "请重新检测。").Error())
+			reason = diagnostics.Redact(usererror.Display("Reading the sample", sample.err, "Run the check again.").Error())
 		case sample.observation.Status == 0:
-			reason = "没有收到检测通道的响应"
+			reason = "no response was received from the check channel"
 		case sample.observation.Status != 200:
-			reason = fmt.Sprintf("检测通道返回 HTTP %d，未取得出口地址", sample.observation.Status)
+			reason = fmt.Sprintf("the check channel returned HTTP %d and no exit address was obtained", sample.observation.Status)
 		case sample.observation.IP == "":
-			reason = "检测通道没有返回出口地址"
+			reason = "the check channel did not return an exit address"
 		}
 		if reason != "" {
-			missing = append(missing, sample.name+"："+reason)
+			missing = append(missing, sample.name+": "+reason)
 		}
 	}
 	if len(missing) == 0 {
 		return ""
 	}
-	return "出口采样不完整，无法确认配置范围（" + strings.Join(missing, "；") + "）"
+	return "Exit sampling is incomplete, so the configuration scope cannot be confirmed (" + strings.Join(missing, "; ") + ")"
 }

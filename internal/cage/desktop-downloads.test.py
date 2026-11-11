@@ -41,7 +41,7 @@ class DesktopDownloadsTests(unittest.TestCase):
         return self.manager.snapshot()[0]
 
     def test_chromium_partial_is_not_published_until_final_rename(self):
-        target = Path(self.manager.begin('视频 #+%.mp4'))
+        target = Path(self.manager.begin('Видео #+%.mp4'))
         target.write_bytes(b'')  # Chromium reserves the destination first.
         temporary = target.with_name(target.name + '.crdownload')
         temporary.write_bytes(b'partial')
@@ -139,7 +139,7 @@ class DesktopDownloadsTests(unittest.TestCase):
         client.signal_subscribe(None, 'org.freedesktop.portal.Request', 'Response', None, None,
                                 Gio.DBusSignalFlags.NONE, response)
         result = client.call_sync('org.freedesktop.portal.Desktop', files.ROOT, files.PORTAL, 'SaveFile',
-            GLib.Variant('(ssa{sv})', ('', '保存视频', {'current_name': GLib.Variant('s', '真实视频.mp4'),
+            GLib.Variant('(ssa{sv})', ('', 'Save video', {'current_name': GLib.Variant('s', 'Настоящее видео.mp4'),
                                                      'handle_token': GLib.Variant('s', 'save_probe')})),
             GLib.VariantType.new('(o)'), Gio.DBusCallFlags.NONE, 5000, None)
         self.assertTrue(result.unpack()[0].endswith('/save_probe'))
@@ -151,7 +151,7 @@ class DesktopDownloadsTests(unittest.TestCase):
         self.assertEqual(Path(self.wait()['path']).read_bytes(), b'real dbus export')
         received.clear()
         client.call_sync('org.freedesktop.portal.Desktop', files.ROOT, files.PORTAL, 'OpenFile',
-            GLib.Variant('(ssa{sv})', ('', '打开文件', {'handle_token': GLib.Variant('s', 'open_probe')})),
+            GLib.Variant('(ssa{sv})', ('', 'Open file', {'handle_token': GLib.Variant('s', 'open_probe')})),
             GLib.VariantType.new('(o)'), Gio.DBusCallFlags.NONE, 5000, None)
         request = broker.snapshot()['uploads'][0]
         broker.cancel(request['id'])

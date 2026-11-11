@@ -9,10 +9,10 @@ func Applied(profile, endpoint, revision string) (Store, error) {
 		return p, err
 	}
 	if _, ok := p.Find(p.Selected); !ok {
-		return p, errors.New("尚未选择代理节点，请在网络与代理中添加来源并选择节点")
+		return p, errors.New("No proxy node has been selected yet. Add a source and select a node in Network and proxy.")
 	}
 	if revision == "" || p.Revision == "" || revision != p.Revision || endpoint != p.Endpoint() {
-		return p, errors.New("代理节点尚未应用或配置不一致，请重新应用节点；外网保持关闭")
+		return p, errors.New("The proxy node has not been applied or its configuration is inconsistent. Apply the node again; internet access stays off.")
 	}
 	if _, err := p.Route(); err != nil {
 		return p, err

@@ -50,22 +50,22 @@ func (p Policy) Normalized() Policy {
 func (p Policy) Validate() error {
 	p = p.Normalized()
 	if p.Mode != "static" && p.Mode != "dynamic" {
-		return errors.New("请选择静态或动态 IP")
+		return errors.New("Choose a static or dynamic IP.")
 	}
 	if p.Scope != "any" && p.Scope != "country" && p.Scope != "region" && p.Scope != "city" {
-		return errors.New("请选择动态 IP 的允许范围")
+		return errors.New("Choose the allowed range for the dynamic IP.")
 	}
 	if p.IP != "" {
 		ip, err := netip.ParseAddr(p.IP)
 		if err != nil || !ip.Is4() || !ip.IsGlobalUnicast() || ip.IsPrivate() {
-			return errors.New("固定出口应填写公网 IPv4 地址")
+			return errors.New("A fixed exit needs a public IPv4 address.")
 		}
 	}
 	if p.CountryCode != "" && !regexp.MustCompile(`^[A-Z]{2}$`).MatchString(p.CountryCode) {
-		return errors.New("国家或地区代码应为两个字母，例如 US")
+		return errors.New("The country or region code must be two letters, for example US.")
 	}
 	if len(p.Region) > 120 || len(p.City) > 120 {
-		return errors.New("地区名称过长")
+		return errors.New("The region name is too long.")
 	}
 	return nil
 }
@@ -114,39 +114,39 @@ func (p Policy) Evaluate(ip string, location *Location) (State, string) {
 	}
 	if p.NeedsBinding() {
 		if p.Mode == "dynamic" && p.CountryCode == "" {
-			return Unknown, "动态 IP 的允许国家或地区尚未绑定，外网保持关闭。请在网络与代理设置中确认出口地区"
+			return Unknown, "The allowed country or region for the dynamic IP is not bound yet. Internet access stays off. Confirm the exit region in the network and proxy settings"
 		}
-		return Unknown, "尚未绑定出口规则，请在设置中确认检测到的 IP 或地区"
+		return Unknown, "No exit rule is bound yet. Confirm the detected IP or region in Settings"
 	}
 	if p.Mode == "static" {
 		if p.IP != ip {
-			return Failed, "检测出口已偏离绑定的静态 IP"
+			return Failed, "The check exit has drifted from the bound static IP"
 		}
-		return Passed, "检测出口与绑定的静态 IP 一致"
+		return Passed, "The check exit matches the bound static IP"
 	}
 	if p.Scope == "any" {
-		return Passed, "动态 IP 可在非中国大陆地区变化，流量仍须经指定代理"
+		return Passed, "The dynamic IP may change outside mainland China, and traffic must still go through the specified proxy"
 	}
 	if !strings.EqualFold(p.CountryCode, location.CountryCode) {
-		return Failed, "检测出口超出允许的国家或地区"
+		return Failed, "The check exit is outside the allowed countries or regions"
 	}
 	if p.Scope == "country" {
-		return Passed, "检测出口位于允许的国家或地区"
+		return Passed, "The check exit is in an allowed country or region"
 	}
 	if location.Region == "" {
-		return Unknown, "当前位置缺少州或省，不能确认允许范围"
+		return Unknown, "The current location has no state or province, so the allowed range cannot be confirmed"
 	}
 	if !strings.EqualFold(p.Region, strings.Join(strings.Fields(location.Region), " ")) {
-		return Failed, "检测出口超出允许的州或省范围"
+		return Failed, "The check exit is outside the allowed states or provinces"
 	}
 	if p.Scope == "region" {
-		return Passed, "检测出口位于允许的州或省"
+		return Passed, "The check exit is in an allowed state or province"
 	}
 	if location.City == "" {
-		return Unknown, "当前位置缺少州、省或城市，不能确认城市范围"
+		return Unknown, "The current location has no state, province or city, so the city range cannot be confirmed"
 	}
 	if !strings.EqualFold(p.City, strings.Join(strings.Fields(location.City), " ")) {
-		return Failed, "检测出口超出允许的城市范围"
+		return Failed, "The check exit is outside the allowed city range"
 	}
-	return Passed, "检测出口位于允许的城市及其所属州、省"
+	return Passed, "The check exit is in an allowed city and its state or province"
 }

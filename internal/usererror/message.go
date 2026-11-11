@@ -28,7 +28,7 @@ func (e *failure) Error() string { return e.message }
 func (e *failure) Unwrap() error { return e.cause }
 
 func New(action, reason, next string, cause error) error {
-	return &failure{message: action + "失败：" + strings.TrimRight(reason, "。；;") + "。" + next, cause: cause}
+	return &failure{message: action + " failed: " + strings.TrimRight(reason, ".;") + ". " + next, cause: cause}
 }
 
 func Wrap(action string, cause error, next string) error {
@@ -37,12 +37,12 @@ func Wrap(action string, cause error, next string) error {
 	}
 	reason := Reason(cause)
 	if reason == "" {
-		reason = "未能取得可识别的错误原因"
+		reason = "no recognizable error cause was obtained"
 	}
 	return New(action, reason, next, cause)
 }
 
-// Existing Chinese validation messages describe product rules and must survive
+// Existing validation messages that start with an uppercase letter describe product rules and must survive
 // unchanged. Unknown system exceptions receive an operation and a next step.
 func Display(action string, cause error, next string) error {
 	if cause == nil {
@@ -52,8 +52,11 @@ func Display(action string, cause error, next string) error {
 	case *fs.PathError, *os.SyscallError, syscall.Errno, *exec.ExitError, net.Error:
 		return Wrap(action, cause, next)
 	}
-	if strings.IndexFunc(cause.Error(), func(r rune) bool { return unicode.Is(unicode.Han, r) }) >= 0 {
-		return cause
+	for _, r := range cause.Error() {
+		if unicode.IsUpper(r) {
+			return cause
+		}
+		break
 	}
 	return Wrap(action, cause, next)
 }
@@ -63,45 +66,45 @@ func Reason(err error) string {
 		return ""
 	}
 	if errors.Is(err, context.Canceled) {
-		return "操作已取消"
+		return "the operation was canceled"
 	}
 	var timeout net.Error
 	if errors.Is(err, context.DeadlineExceeded) || errors.As(err, &timeout) && timeout.Timeout() {
-		return "等待响应超时"
+		return "timed out waiting for a response"
 	}
 	var dns *net.DNSError
 	if errors.As(err, &dns) {
-		return "无法解析服务器域名"
+		return "could not resolve the server domain name"
 	}
 	var authority x509.UnknownAuthorityError
 	var hostname x509.HostnameError
 	var certificate x509.CertificateInvalidError
 	var record tls.RecordHeaderError
 	if errors.As(err, &authority) || errors.As(err, &hostname) || errors.As(err, &certificate) {
-		return "服务器证书验证未通过"
+		return "server certificate verification failed"
 	}
 	if errors.As(err, &record) {
-		return "服务器没有返回有效的加密连接响应"
+		return "the server did not return a valid encrypted connection response"
 	}
 	switch {
 	case errors.Is(err, fs.ErrPermission):
-		return "系统拒绝访问所需文件或目录"
+		return "the system denied access to a required file or directory"
 	case errors.Is(err, fs.ErrNotExist), errors.Is(err, exec.ErrNotFound):
-		return "所需文件或程序不存在"
+		return "a required file or program does not exist"
 	case errors.Is(err, syscall.ENOSPC) || runtime.GOOS == "windows" && (errors.Is(err, syscall.Errno(112)) || errors.Is(err, syscall.Errno(39))):
-		return "磁盘剩余空间不足"
+		return "the disk is out of free space"
 	case errors.Is(err, syscall.EROFS):
-		return "目标磁盘为只读，无法写入"
+		return "the target disk is read-only and cannot be written"
 	case errors.Is(err, syscall.ECONNREFUSED):
-		return "目标服务拒绝了连接"
+		return "the target service refused the connection"
 	case errors.Is(err, syscall.ECONNRESET), errors.Is(err, syscall.EPIPE), errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
-		return "连接在返回完整结果前中断"
+		return "the connection was interrupted before a complete result was returned"
 	case errors.Is(err, syscall.ENETUNREACH), errors.Is(err, syscall.EHOSTUNREACH):
-		return "当前网络无法到达目标服务"
+		return "the current network cannot reach the target service"
 	}
 	var exit *exec.ExitError
 	if errors.As(err, &exit) {
-		return fmt.Sprintf("程序提前结束（退出码 %d），未返回可识别的原因", exit.ExitCode())
+		return fmt.Sprintf("the program exited early (exit code %d) without a recognizable reason", exit.ExitCode())
 	}
 	return ""
 }

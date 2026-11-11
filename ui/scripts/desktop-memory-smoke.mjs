@@ -9,9 +9,9 @@ let unavailable = true;
 const desktop = { installed: true, running: false, failed: true, failure_reason: "oom-kill", version: "4.4212.0" };
 await page.route("**/api/claude-desktop**", async route => {
   if (route.request().method() === "POST") {
-    return route.fulfill({ status: 502, body: "测试：打开操作失败，请重试" });
+    return route.fulfill({ status: 502, body: "Test: open failed. Try again." });
   }
-  if (unavailable) return route.fulfill({ status: 502, body: "无法读取 Claude Desktop 状态，请重试" });
+  if (unavailable) return route.fulfill({ status: 502, body: "Cannot read the Claude Desktop status. Try again." });
   return route.fulfill({ json: desktop });
 });
 try {
@@ -19,20 +19,20 @@ try {
   state.status.ready = true;
   await page.reload();
   await page.getByRole("button", { name: "Claude Desktop", exact: true }).click();
-  await page.getByRole("alert").filter({ hasText: "无法读取 Claude Desktop 状态" }).waitFor();
+  await page.getByRole("alert").filter({ hasText: "Cannot read the Claude Desktop status" }).waitFor();
   unavailable = false;
-  await page.getByRole("button", { name: "刷新 Claude Desktop 状态", exact: true }).click();
-  await page.getByRole("alert").filter({ hasText: "环境内存不足" }).waitFor();
-  assert.equal(await page.getByText("无法读取 Claude Desktop 状态，请重试", { exact: true }).count(), 0);
+  await page.getByRole("button", { name: "Refresh Claude Desktop status", exact: true }).click();
+  await page.getByRole("alert").filter({ hasText: "The environment ran out of memory" }).waitFor();
+  assert.equal(await page.getByText("Cannot read the Claude Desktop status. Try again.", { exact: true }).count(), 0);
   await page.screenshot({ path: new URL("oom-message.png", output).pathname });
   desktop.failed = false;
   desktop.failure_reason = "";
-  await page.getByRole("button", { name: "刷新 Claude Desktop 状态", exact: true }).click();
+  await page.getByRole("button", { name: "Refresh Claude Desktop status", exact: true }).click();
   await page.getByRole("alert").waitFor({ state: "hidden" });
-  await page.getByRole("button", { name: "打开 Claude Desktop", exact: true }).click();
-  await page.getByRole("alert").filter({ hasText: "打开操作失败" }).waitFor();
-  await page.getByRole("button", { name: "刷新 Claude Desktop 状态", exact: true }).click();
-  await page.getByRole("alert").filter({ hasText: "打开操作失败" }).waitFor();
+  await page.getByRole("button", { name: "Open Claude Desktop", exact: true }).click();
+  await page.getByRole("alert").filter({ hasText: "open failed" }).waitFor();
+  await page.getByRole("button", { name: "Refresh Claude Desktop status", exact: true }).click();
+  await page.getByRole("alert").filter({ hasText: "open failed" }).waitFor();
   assert.deepEqual(errors, []);
   const checks = ["status recovery clears stale read error", "OOM reason displayed", "healthy status clears OOM message", "status polling preserves failed user operation"];
   await fs.writeFile(new URL("ui-checks.json", output), JSON.stringify({ complete: true, checks }, null, 2));

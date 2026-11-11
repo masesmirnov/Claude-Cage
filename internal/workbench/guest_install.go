@@ -79,10 +79,10 @@ func (s *Server) guestInstallView() (guestInstallView, error) {
 		}
 		catalog := pending.SourceKind == guestos.LinuxImageSource && canInstallCatalogLinux(pending.System) && pending.Source.Host.Arch == runtime.GOARCH
 		if !catalog && pending.System != v.System {
-			return v, errors.New("客户机安装记录与这台宿主不匹配")
+			return v, errors.New("The guest installation record does not match this host.")
 		}
 		if pending.SourceKind == guestos.LinuxImageSource && !catalog {
-			return v, errors.New("客户机镜像架构与这台主机不匹配，请恢复原主机环境")
+			return v, errors.New("The guest image architecture does not match this host. Restore the original host environment.")
 		}
 		mac, err := guestos.LoadMacOSProfile(s.profile)
 		if err != nil {
@@ -105,7 +105,7 @@ func (s *Server) guestInstallView() (guestInstallView, error) {
 		return v, nil
 	}
 	if !hostimage.IsLinux(v.System) && !guestos.HasNativeWorkbenchKit(s.exe, v.System) {
-		v.Reason = "此构建缺少原生客户机安装组件"
+		v.Reason = "This build is missing the native guest installation components."
 		return v, nil
 	}
 	v.Available = true
@@ -114,7 +114,7 @@ func (s *Server) guestInstallView() (guestInstallView, error) {
 
 func (s *Server) guestInstallation(w http.ResponseWriter, r *http.Request) {
 	if !s.hasTrustedView(r) || !s.localVMStorage() {
-		http.Error(w, "请在本机 Cage 窗口选择客户机系统", http.StatusForbidden)
+		http.Error(w, "Choose the guest system in the Cage window on this computer.", http.StatusForbidden)
 		return
 	}
 	v, err := s.guestInstallView()
@@ -141,7 +141,7 @@ func (s *Server) guestInstallation(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !v.Reselect || s.busy() || !s.op.TryLock() {
-			http.Error(w, "安装任务或磁盘已存在，请继续原安装", http.StatusConflict)
+			http.Error(w, "An installation task or disk already exists. Continue the original installation.", http.StatusConflict)
 			return
 		}
 		defer s.op.Unlock()
@@ -153,7 +153,7 @@ func (s *Server) guestInstallation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !v.Activate || !s.op.TryLock() {
-		http.Error(w, "客户机尚未完成安装", http.StatusConflict)
+		http.Error(w, "The guest has not finished installing.", http.StatusConflict)
 		return
 	}
 	if v.Pending != nil && v.Pending.System == guestos.Windows11 {
@@ -172,7 +172,7 @@ func (s *Server) guestInstallation(w http.ResponseWriter, r *http.Request) {
 func (s *Server) installedWindowsVMOwner(install guestos.Installation) (string, error) {
 	binding, err := guestos.LoadWindowsProfile(s.profile)
 	if err != nil || binding == nil || install.System != guestos.Windows11 || install.ID == uuid.Nil {
-		return "", errors.New("Windows 安装绑定尚未确认，请继续原安装；原磁盘和账户已保留")
+		return "", errors.New("The Windows installation binding is not confirmed. Continue the original installation. The original disk and account were kept.")
 	}
 	state, err := cage.StoragePhysicalPath(filepath.Join(s.profile, "state"))
 	if err != nil {
@@ -182,14 +182,14 @@ func (s *Server) installedWindowsVMOwner(install guestos.Installation) (string, 
 	receipt, err := os.ReadFile(filepath.Join(s.profile, "windows-install-vm.txt"))
 	id, parseErr := uuid.Parse(strings.TrimSpace(string(receipt)))
 	if err != nil || parseErr != nil || id != binding.VMID || !strings.EqualFold(filepath.Clean(binding.InstanceDirectory), filepath.Clean(expected)) {
-		return "", errors.New("Windows 安装记录与原客机不匹配，请核对原环境；现有数据已保留")
+		return "", errors.New("The Windows installation record does not match the original guest. Check the original environment. Existing data was kept.")
 	}
 	return "windows/" + binding.VMID.String() + "/Running", nil
 }
 
 func (s *Server) beginGuestInstall(w http.ResponseWriter, r *http.Request, in guestInstallRequest) {
 	if in.System == guestos.MacOS && !s.account.view().MacOSCredentialsReady {
-		http.Error(w, "请先注册或确认 Cage 账密，再安装 macOS 客机", http.StatusConflict)
+		http.Error(w, "Register or confirm the Cage credentials before installing the macOS guest.", http.StatusConflict)
 		return
 	}
 	v, err := s.guestInstallView()
@@ -202,13 +202,13 @@ func (s *Server) beginGuestInstall(w http.ResponseWriter, r *http.Request, in gu
 		catalog = v.Pending.SourceKind == guestos.LinuxImageSource
 	}
 	if (!catalog && (!v.Available || v.System != in.System)) || !s.hasTrustedView(r) || (!v.Fresh && v.Pending == nil) || v.Activate {
-		http.Error(w, "当前环境无法安装所选客户机系统", http.StatusConflict)
+		http.Error(w, "The current environment cannot install the selected guest system.", http.StatusConflict)
 		return
 	}
 	install := guestos.Installation{Version: 1, System: in.System, Media: in.Media, SHA256: strings.ToLower(in.SHA256), ID: uuid.New(), EditorTerms: in.EditorTerms}
 	if v.Pending != nil {
 		if v.Pending.System != in.System || (in.Media != "" && in.Media != v.Pending.Media) || (in.SHA256 != "" && !strings.EqualFold(in.SHA256, v.Pending.SHA256)) {
-			http.Error(w, "必须使用原先选择的系统和安装介质继续安装", http.StatusConflict)
+			http.Error(w, "Continue the installation with the system and installation media chosen originally.", http.StatusConflict)
 			return
 		}
 		install = *v.Pending
@@ -219,13 +219,13 @@ func (s *Server) beginGuestInstall(w http.ResponseWriter, r *http.Request, in gu
 			return
 		}
 		if plan.Key() != in.CloneKey || plan.Host.System != in.System {
-			requestError(w, errors.New("本机版本或系统镜像信息已变化，请重新检测并匹配"))
+			requestError(w, errors.New("The version of this computer or the system image information has changed. Check and match again."))
 			return
 		}
 		install.Source = plan
 	} else if catalog {
 		if in.Media != "" || in.SHA256 != "" || in.EditorTerms {
-			requestError(w, errors.New("Ubuntu 使用 Cage 校验过的官方镜像，无需另选安装介质"))
+			requestError(w, errors.New("Ubuntu uses the official image verified by Cage. You do not need to choose installation media."))
 			return
 		}
 		plan, err := linuxGuestImagePlan(r.Context(), s.profile, in.System, runtime.GOARCH)
@@ -240,7 +240,7 @@ func (s *Server) beginGuestInstall(w http.ResponseWriter, r *http.Request, in gu
 		return
 	}
 	s.launch(w, "guest-install", func() error {
-		s.jobs.execution().setSetupProgress(&SetupProgress{Phase: "image", System: install.System, Label: "正在准备 " + guestProgressName(install.System) + " 安装材料"})
+		s.jobs.execution().setSetupProgress(&SetupProgress{Phase: "image", System: install.System, Label: "Preparing " + guestProgressName(install.System) + " installation files"})
 		if err := requireHostGit(s.operationContext()); err != nil {
 			return err
 		}
@@ -261,12 +261,12 @@ func (s *Server) beginGuestInstall(w http.ResponseWriter, r *http.Request, in gu
 			return err
 		}
 		if current == nil && loc.HasEnvironment || current != nil && *current != install {
-			return errors.New("已有其他环境或安装任务，请重新打开安装页面")
+			return errors.New("Another environment or installation task already exists. Reopen the installation page.")
 		}
 		if install.Media != "" {
 			f, err := os.Stat(install.Media)
 			if err != nil || !f.Mode().IsRegular() {
-				return errors.New("原安装镜像不可读，请恢复其原路径后重试")
+				return errors.New("The original installation image cannot be read. Restore it to its original path and try again.")
 			}
 		}
 		if install.System == guestos.Windows11 {
@@ -293,9 +293,9 @@ func (s *Server) beginGuestInstall(w http.ResponseWriter, r *http.Request, in gu
 			}
 			minimumGiB += int((install.Source.RemainingBytes(cache) + (1 << 30) - 1) / (1 << 30))
 			if available, ok := host.FreeGiB(cache); ok && available < minimumGiB {
-				return fmt.Errorf("创建所选系统至少需要 %d GiB 可用空间，当前有 %d GiB，请在存储设置中选择空间充足的位置", minimumGiB, available)
+				return fmt.Errorf("Creating the selected system needs at least %d GiB of free space, but only %d GiB is available. Choose a location with enough space in the storage settings.", minimumGiB, available)
 			}
-			s.setMessage("正在准备 " + guestProgressName(install.System) + " 官方系统镜像…")
+			s.setMessage("Preparing the official " + guestProgressName(install.System) + " system image…")
 			transport := hostproxy.NewTransport()
 			defer transport.CloseIdleConnections()
 			prepared, prepareErr := hostimage.Prepare(s.operationContext(), cache, install.Source, s.jobs.execution(), transport)
@@ -319,7 +319,7 @@ func (s *Server) beginGuestInstall(w http.ResponseWriter, r *http.Request, in gu
 				return err
 			}
 			if saved == "" && !unstarted {
-				return errors.New("客机安装凭据缺失，请恢复加密保险箱；现有账户和磁盘已保留")
+				return errors.New("The guest installation credentials are missing. Restore the encrypted vault. The existing account and disk were kept.")
 			}
 			credential, err = s.account.macGuestCredentials(s.operationContext(), install.ID)
 			if err != nil {
@@ -338,8 +338,8 @@ func (s *Server) beginGuestInstall(w http.ResponseWriter, r *http.Request, in gu
 			}
 			return guestos.FinishLinuxInstallation(s.profile, install.ID)
 		}
-		s.setMessage("正在安装所选客户机系统…")
-		s.jobs.execution().setSetupProgress(&SetupProgress{Phase: "packages", System: install.System, Label: "正在安装 " + guestProgressName(install.System) + " 系统"})
+		s.setMessage("Installing the selected guest system…")
+		s.jobs.execution().setSetupProgress(&SetupProgress{Phase: "packages", System: install.System, Label: "Installing " + guestProgressName(install.System)})
 		var cmd *exec.Cmd
 		if install.System == guestos.MacOS {
 			cmd = exec.CommandContext(s.operationContext(), s.exe, "guest-os", "macos", "install")
@@ -354,7 +354,7 @@ func (s *Server) beginGuestInstall(w http.ResponseWriter, r *http.Request, in gu
 		cmd.Stdout = s.jobs.execution()
 		cmd.Stderr = s.jobs.execution()
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("客户机安装未完成，已保留安装进度和文件。请点击「继续安装」。若仍失败，请在设置中导出诊断包：%w", err)
+			return fmt.Errorf("Guest installation was not completed. Installation progress and files were kept. Click \"Continue installation\". If it still fails, export a diagnostics bundle in Settings: %w", err)
 		}
 		return nil
 	})

@@ -17,21 +17,21 @@ import { networkState, reportForSharing } from "./safety-state.mjs";
 
 const diagnostics = [
   {
-    name: "IP 质量",
+    name: "IP quality",
     source: "ip.net.coffee",
     url: "https://ip.net.coffee/claude/",
-    description: "查看 IP 属性、ASN、信誉评分与网络诊断。",
+    description: "View IP attributes, ASN, reputation score and network diagnostics.",
   },
   {
-    name: "浏览器信息",
+    name: "Browser information",
     source: "fuck-claude.com",
     url: "https://fuck-claude.com/",
-    description: "查看时区、语言、字体等浏览器信号的社区评估。",
+    description: "View the community's assessment of browser signals such as time zone, language and fonts.",
   },
 ];
 
 export async function bindDetectedMacOSExit(ip, onConfirm) {
-  if (!(await onConfirm({ title: "绑定固定出口？", body: `客机终端、浏览器和代理均测得 ${ip}。保存后请重启客机并重新检测。`, confirm: "绑定固定出口" }))) return null;
+  if (!(await onConfirm({ title: "Bind the fixed exit?", body: `The guest terminal, browser and proxy all measured ${ip}. After saving, restart the guest and check again.`, confirm: "Bind fixed exit" }))) return null;
   return api("/macos/exit-policy", { ip });
 }
 
@@ -59,9 +59,9 @@ export function SafetyPanel({
       status.vm_running &&
       !safety.gate &&
       !(await onConfirm({
-        title: "重启环境并加载检测组件？",
-        body: "当前终端会话将结束。请先保存文件，浏览器登录与项目文件会保留。",
-        confirm: "重启并检查",
+        title: "Restart the environment and load the check components?",
+        body: "The current terminal sessions will end. Save your files first; browser sign-ins and project files are kept.",
+        confirm: "Restart and check",
       }))
     )
       return;
@@ -82,9 +82,9 @@ export function SafetyPanel({
   const copy = async () => {
     try {
       await writeClipboard(JSON.stringify(reportForSharing(report), null, 2));
-      setNotice("已复制报告，不含代理凭据、IP 地址和本机路径");
+      setNotice("Report copied, without proxy credentials, IP addresses or local paths");
     } catch {
-      setError("无法写入本机剪贴板，请检查浏览器的剪贴板权限。");
+      setError("Could not write to the local clipboard. Check the browser's clipboard permission.");
     }
   };
   const open = async (url) => {
@@ -92,17 +92,17 @@ export function SafetyPanel({
   };
   return (
     <Modal
-      title="网络与隔离检查"
+      title="Network and isolation checks"
       wide
       onClose={onClose}
       footer={
         <>
           <span className="save-note">
-            {busy ? status.job.message : "外网关闭时，离线终端和文件仍可使用"}
+            {busy ? status.job.message : "While internet access is off, offline terminals and files remain usable"}
           </span>
           {(online || network.mode === "checking") && (
             <button onClick={pause}>
-              {network.mode === "checking" ? "取消检测并关闭外网" : "暂停外网"}
+              {network.mode === "checking" ? "Cancel the check and turn internet access off" : "Pause internet access"}
             </button>
           )}
           <button className="primary" disabled={busy} onClick={run}>
@@ -112,23 +112,23 @@ export function SafetyPanel({
               <ShieldCheck size={15} />
             )}
             {busy
-              ? "检查进行中"
+              ? "Check in progress"
               : online
-                ? "暂停外网并重检"
+                ? "Pause internet access and check again"
                 : status.ready && safety.gate
-                  ? "重新检测"
+                  ? "Check again"
                   : status.vm_running
-                    ? "重启并检查"
-                    : "启动并检查"}
+                    ? "Restart and check"
+                    : "Start and check"}
           </button>
         </>
       }
     >
       <div className="modal-body safety-body">
         {safety.macos_exit_candidate?.ip && <button disabled={busy} onClick={async () => {
-          try { if (await bindDetectedMacOSExit(safety.macos_exit_candidate.ip, onConfirm)) setNotice("固定出口已提交，请在保存完成后重启客机并重新检测。"); }
+          try { if (await bindDetectedMacOSExit(safety.macos_exit_candidate.ip, onConfirm)) setNotice("The fixed exit was submitted. Once saving finishes, restart the guest and check again."); }
           catch (e) { setError(e.message); }
-        }}>绑定检测到的固定出口 {safety.macos_exit_candidate.ip}</button>}
+        }}>Bind the detected fixed exit {safety.macos_exit_candidate.ip}</button>}
         <div className={`safety-summary ${network.mode}`}>
           {online ? (
             <ShieldCheck size={27} />
@@ -143,15 +143,15 @@ export function SafetyPanel({
               {busy
                 ? status.job.message
                 : online
-                  ? status.network_error || "关键检查已通过，后台继续核对出口规则与环境配置。"
+                  ? status.network_error || "Critical checks passed. The backend keeps verifying the exit rules and environment configuration."
                   : status.network_error || safety.error ||
                     safety.gate?.reason ||
-                    "完成关键检查后，才允许连接外部网站。"}
+                    "Connecting to external sites is allowed only after the critical checks are completed."}
             </p>
           </div>
           <button className="text-button" onClick={() => onSettings("network")}>
             <Settings size={15} />
-            出口规则
+            Exit rules
           </button>
         </div>
         {(error || notice) && (
@@ -163,20 +163,20 @@ export function SafetyPanel({
           </div>
         )}
         <div className="safety-section-heading">
-          <h4>关键检查</h4>
-          <span>{total ? `${passed} / ${total} 通过` : "尚无检测记录"}</span>
+          <h4>Critical checks</h4>
+          <span>{total ? `${passed} / ${total} passed` : "No check records yet"}</span>
           {report && (
             <button className="text-button" onClick={copy}>
               <Copy size={14} />
-              复制报告
+              Copy report
             </button>
           )}
         </div>
         {report ? (
           <>
             <p className="safety-timestamp">
-              检测于 {new Date(report.created_at).toLocaleString("zh-CN")} ·{" "}
-              {online ? "当前运行实例" : "报告不代表当前已放行"}
+              Checked on {new Date(report.created_at).toLocaleString("en-US")} ·{" "}
+              {online ? "Current running instance" : "The report does not mean internet access is currently allowed"}
             </p>
             <div className="safety-checks">
               {report.checks
@@ -198,12 +198,12 @@ export function SafetyPanel({
                         <strong>{check.title}</strong>
                         <span>
                           {check.state === "passed"
-                            ? "通过"
+                            ? "Passed"
                             : check.state === "failed"
-                              ? "未通过"
+                              ? "Failed"
                               : busy && check.checked_at === report.created_at
-                                ? "待检查"
-                                : "未知"}
+                                ? "To check"
+                                : "Unknown"}
                         </span>
                         <ChevronDown size={14} />
                       </summary>
@@ -220,7 +220,7 @@ export function SafetyPanel({
           </>
         ) : (
           <p className="safety-empty">
-            检查涵盖出站规则、代理故障关闭、DNS、共享目录、宿主管理接口，以及系统和浏览器的实际配置。关键项失败或未知时保持外网关闭。
+            The checks cover outbound rules, proxy fail-closed behavior, DNS, shared directories, host management interfaces, and the actual system and browser configuration. When a critical item fails or is unknown, internet access stays off.
           </p>
         )}
         {report?.checks?.some((check) => !check.critical) && (
@@ -231,7 +231,7 @@ export function SafetyPanel({
                 <p key={check.id}>
                   <CircleHelp size={15} />
                   <span>
-                    <strong>{check.title}：</strong>
+                    <strong>{check.title}:</strong>{" "}
                     {check.evidence}
                   </span>
                 </p>
@@ -239,8 +239,8 @@ export function SafetyPanel({
           </div>
         )}
         <div className="safety-section-heading">
-          <h4>社区补充检查</h4>
-          <span>提示项，不参与联网准入</span>
+          <h4>Community detection (supplementary)</h4>
+          <span>Hints only; they do not gate internet access</span>
         </div>
         <div className="diagnostic-sites">
           {diagnostics.map((site) => (
@@ -249,29 +249,29 @@ export function SafetyPanel({
               <small>{site.source}</small>
               <p>{site.description}</p>
               <button disabled={!online || busy} onClick={() => open(site.url)}>
-                在 Cage 中打开
+                Open in Cage
                 <ArrowUpRight size={14} />
               </button>
             </div>
           ))}
         </div>
         <p className="field-help">
-          点击后才访问第三方站点。站点会收到 Cage 的出口
-          IP，并可读取该页面可访问的浏览器信息。评分属于社区参考。
+          Third-party sites are accessed only after you click. The site receives Cage's exit
+          IP and can read the browser information available to that page. Scores are community references.
         </p>
         <details className="safety-scope">
-          <summary>检查范围与来源</summary>
+          <summary>Scope and sources of the checks</summary>
           <p>
-            当前版本验证 IPv4 出口，客机公网 IPv6 与 UDP 关闭。出口监测约每 30
-            秒执行；位置来自 IP
-            数据库，城市判断具有误差。代理自身按目标分流的行为仍需在代理侧约束。
+            This version verifies the IPv4 exit, and the guest's public IPv6 and UDP are off. Exit monitoring runs about every 30
+            seconds; the location comes from an IP
+            database, so city-level results can be off. How the proxy itself routes by destination still has to be constrained on the proxy side.
           </p>
           <p>
-            报告包含运行时策略和采样证据，不能代替完整虚拟化审计，也不代表平台账号资格或封禁预测。全面检查有效期为
-            24 小时；控制服务失联后，联网授权最多保留 90 秒。
+            The report contains runtime policy and sampling evidence. It cannot replace a full virtualization audit and does not indicate platform account eligibility or predict bans. A full check is valid for
+            24 hours; after the control service is lost, internet authorization is kept for at most 90 seconds.
           </p>
           <div className="safety-sources">
-            <span>方法参考</span>
+            <span>Method references</span>
             <button
               className="text-button"
               disabled={!online}

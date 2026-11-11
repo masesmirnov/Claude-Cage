@@ -128,7 +128,7 @@ func TestWindowsCLIRejectsRevokedAndSiblingWorkspace(t *testing.T) {
 func TestWindowsCLIRPCFailureCannotSignAnAccountOut(t *testing.T) {
 	s := windowsCLIRelayFixture(t)
 	t.Setenv("CAGE_WINDOWS_CLI_RELAY_FAILURE", "1")
-	if _, err := s.readWindowsClaudeAccount(context.Background(), "snapshot", "default", ""); err == nil || !strings.Contains(err.Error(), "Windows 桌面尚未登录或已锁定") {
+	if _, err := s.readWindowsClaudeAccount(context.Background(), "snapshot", "default", ""); err == nil || !strings.Contains(err.Error(), "The Windows desktop is not signed in or is locked") {
 		t.Fatalf("GUI/RPC failure lost its login explanation: %v", err)
 	}
 }
@@ -136,16 +136,16 @@ func TestWindowsCLIRPCFailureCannotSignAnAccountOut(t *testing.T) {
 func TestWindowsCLIProcessFailureExplainsStageWithoutLeakingStderr(t *testing.T) {
 	s := windowsCLIRelayFixture(t)
 	for _, test := range []struct{ stage, message string }{
-		{"profile", "无法读取 Windows 环境配置"},
-		{"pairing", "安全配对校验未完成"},
-		{"connect", "未能连接 Windows 会话服务"},
-		{"transfer", "通信未完成"},
-		{"unknown", "未能读取 Windows 会话服务的响应"},
+		{"profile", "The Windows environment configuration could not be read"},
+		{"pairing", "secure pairing verification"},
+		{"connect", "Could not connect to the Windows session service"},
+		{"transfer", "Communication with the Windows session service was not completed"},
+		{"unknown", "The response of the Windows session service could not be read"},
 	} {
 		t.Run(test.stage, func(t *testing.T) {
 			t.Setenv("CAGE_WINDOWS_CLI_RELAY_PROCESS_FAILURE", test.stage)
 			err := s.windowsCLIRequest(context.Background(), map[string]any{"action": "channel", "mode": "discover"}, new(any))
-			if err == nil || !strings.Contains(err.Error(), test.message) || strings.Contains(err.Error(), "private-token") || strings.Contains(err.Error(), "官方账号") {
+			if err == nil || !strings.Contains(err.Error(), test.message) || strings.Contains(err.Error(), "private-token") || strings.Contains(err.Error(), "official account") {
 				t.Fatalf("relay failure was misclassified or exposed stderr: %v", err)
 			}
 		})
@@ -157,7 +157,7 @@ func TestWindowsCLIRequestTimeoutExplainsDeadline(t *testing.T) {
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
 	defer cancel()
 	err := s.windowsCLIRequest(ctx, map[string]any{"action": "channel", "mode": "discover"}, new(any))
-	if err == nil || !strings.Contains(err.Error(), "响应超时") {
+	if err == nil || !strings.Contains(err.Error(), "Timed out waiting for the Windows session service to respond") {
 		t.Fatalf("request timeout lost its cause: %v", err)
 	}
 }

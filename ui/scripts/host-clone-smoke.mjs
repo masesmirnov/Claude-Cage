@@ -54,7 +54,7 @@ for (const [platform, system, version, edition] of [
     await picker.focus();
     await picker.press("ArrowDown");
     const option = page.getByRole("option", {
-      name: "自动匹配本机系统版本",
+      name: "Match this computer's system version automatically",
       exact: true,
     });
     await option.waitFor();
@@ -66,7 +66,7 @@ for (const [platform, system, version, edition] of [
     await picker.press("Enter");
     assert.equal(await picker.getAttribute("aria-expanded"), "false");
     await region
-      .getByText("本机构建号 host-build · 镜像构建号 image-build")
+      .getByText("Local build host-build · Image build image-build")
       .waitFor();
     if (system === "windows-11") await region.getByRole("checkbox").check();
     const submit = page.waitForRequest(
@@ -75,7 +75,7 @@ for (const [platform, system, version, edition] of [
     );
     await page
       .getByRole("button", {
-        name: "安装客户机",
+        name: "Install guest",
         exact: true,
       })
       .click();

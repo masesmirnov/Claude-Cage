@@ -75,7 +75,7 @@ func TestWindowsGuestClipboardWorkbench(t *testing.T) {
 			}
 		}
 	}
-	send(map[string]any{"text": "Cage workbench 中文🙂\nsecond line"}, 1)
+	send(map[string]any{"text": "Cage workbench ฐฑ🙂\nsecond line"}, 1)
 	img := image.NewRGBA(image.Rect(0, 0, 12, 9))
 	img.Set(0, 0, color.RGBA{R: 60, G: 110, B: 170, A: 255})
 	var pngData bytes.Buffer
@@ -84,12 +84,12 @@ func TestWindowsGuestClipboardWorkbench(t *testing.T) {
 	}
 	send(map[string]any{"png": base64.StdEncoding.EncodeToString(pngData.Bytes())}, 2)
 	root := t.TempDir()
-	folder := filepath.Join(root, "复制目录")
+	folder := filepath.Join(root, "ฉชฅई")
 	if err = os.Mkdir(folder, 0700); err != nil {
 		t.Fatal(err)
 	}
 	content := []byte{0, 255, 128, 1, 2, 3}
-	if err = os.WriteFile(filepath.Join(folder, "内容.bin"), content, 0600); err != nil {
+	if err = os.WriteFile(filepath.Join(folder, "ऌऍ.bin"), content, 0600); err != nil {
 		t.Fatal(err)
 	}
 	var archive bytes.Buffer
@@ -128,7 +128,7 @@ func TestWindowsGuestClipboardWorkbench(t *testing.T) {
 	}
 	defer cache.Release(selection.ID)
 	paths := selection.Paths
-	actual, err := os.ReadFile(filepath.Join(paths[0], "内容.bin"))
+	actual, err := os.ReadFile(filepath.Join(paths[0], "ऌऍ.bin"))
 	if err != nil || !bytes.Equal(actual, content) {
 		t.Fatal("public file bytes changed")
 	}

@@ -6,13 +6,13 @@ import { createWorkbench } from "./workbench-fixture.mjs";
 const downloads = [
   {
     id: "report",
-    name: "产品需求与界面验收报告.pdf",
+    name: "Product requirements and UI acceptance report.pdf",
     state: "saved",
-    path: "/Users/test/Cage/Downloads/产品需求与界面验收报告.pdf",
+    path: "/Users/test/Cage/Downloads/Product requirements and UI acceptance report.pdf",
   },
   {
     id: "video",
-    name: "很长的视频文件名称_20261107_项目演示与操作录屏.mp4",
+    name: "A_very_long_video_file_name_20261107_project_demo_and_screen_recording.mp4",
     state: "downloading",
     receivedBytes: 42,
     totalBytes: 100,
@@ -21,15 +21,15 @@ const downloads = [
     id: "failed",
     name: "assets.zip",
     state: "failed",
-    error: "保存失败，请检查连接后重试。",
+    error: "Save failed. Check the connection and try again.",
     retryable: true,
   },
   { id: "canceled", name: "installer.dmg", state: "canceled" },
   ...Array.from({ length: 10 }, (_, index) => ({
     id: `history-${index}`,
-    name: `历史文件 ${index + 1}.txt`,
+    name: `Old file ${index + 1}.txt`,
     state: "saved",
-    path: `/Users/test/Cage/Downloads/历史文件 ${index + 1}.txt`,
+    path: `/Users/test/Cage/Downloads/Old file ${index + 1}.txt`,
   })),
 ];
 let records = downloads;
@@ -68,21 +68,21 @@ for (const platform of ["darwin", "win32", "linux"]) {
     });
     state.status.ready = state.status.vm_running = true;
     await page.reload();
-    await page.getByRole("button", { name: "打开浏览器", exact: true }).click();
+    await page.getByRole("button", { name: "Open browser", exact: true }).click();
     const trigger = page.getByRole("button", {
-      name: "浏览器下载",
+      name: "Browser downloads",
       exact: true,
     });
-    const panel = page.getByRole("dialog", { name: "下载文件", exact: true });
+    const panel = page.getByRole("dialog", { name: "Downloaded files", exact: true });
     const toolbar = page.locator(".browser-chrome .navigation-row");
     assert.equal(
       await page
-        .getByRole("button", { name: "设置", exact: true })
+        .getByRole("button", { name: "Settings", exact: true })
         .locator("svg.lucide-settings")
         .count(),
       1,
     );
-    await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
+    await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
     for (const width of [1280, 375]) {
       await page.setViewportSize({ width, height: 850 });
       const before = await toolbar.boundingBox();
@@ -122,25 +122,25 @@ for (const platform of ["darwin", "win32", "linux"]) {
         "long file names and paths do not widen the panel",
       );
       const row = panel.locator("article").first();
-      await row.getByRole("button", { name: "打开文件", exact: true }).click();
+      await row.getByRole("button", { name: "Open file", exact: true }).click();
       await row
-        .getByRole("button", { name: "在文件夹中显示", exact: true })
+        .getByRole("button", { name: "Show in folder", exact: true })
         .click();
-      await row.getByRole("button", { name: "另存为…", exact: true }).click();
+      await row.getByRole("button", { name: "Save as…", exact: true }).click();
       await panel
-        .getByRole("button", { name: "重试保存", exact: true })
+        .getByRole("button", { name: "Retry save", exact: true })
         .click();
       await panel
-        .getByRole("button", { name: "重试保存", exact: true })
+        .getByRole("button", { name: "Retry save", exact: true })
         .waitFor({ state: "visible" });
-      await panel.getByRole("button", { name: "关闭面板", exact: true }).focus();
+      await panel.getByRole("button", { name: "Close panel", exact: true }).focus();
       await page.screenshot({ path: `${output}/${platform}-${width}.png` });
       if (platform === "darwin" && width === 1280) await panel.screenshot({ path: `${output}/panel.png` });
       await list.evaluate((el) => {
         el.scrollTop = el.scrollHeight;
       });
       await panel
-        .getByText("历史文件 10.txt", { exact: true })
+        .getByText("Old file 10.txt", { exact: true })
         .scrollIntoViewIfNeeded();
       await page.keyboard.press("Escape");
       await panel.waitFor({ state: "hidden" });
@@ -150,11 +150,11 @@ for (const platform of ["darwin", "win32", "linux"]) {
         "Escape restores the download button focus",
       );
       await trigger.click();
-      await page.getByRole("textbox", { name: "网页地址或搜索" }).click();
+      await page.getByRole("textbox", { name: "Web address or search" }).click();
       await panel.waitFor({ state: "hidden" });
       assert.equal(
         await page
-          .getByRole("textbox", { name: "网页地址或搜索" })
+          .getByRole("textbox", { name: "Web address or search" })
           .evaluate((el) => el === document.activeElement),
         true,
         "outside clicks keep their intended focus",
@@ -196,34 +196,34 @@ for (const platform of ["darwin", "win32", "linux"]) {
       await page.emulateMedia({ colorScheme: "light" });
       await page.setViewportSize({ width: 1280, height: 850 });
     }
-    await page.getByRole("button", { name: "浏览器菜单", exact: true }).click();
-    const menu = page.getByRole("menu", { name: "浏览器菜单", exact: true });
+    await page.getByRole("button", { name: "Browser menu", exact: true }).click();
+    const menu = page.getByRole("menu", { name: "Browser menu", exact: true });
     assert.equal(
       await menu
-        .getByRole("menuitem", { name: "设置", exact: true })
+        .getByRole("menuitem", { name: "Settings", exact: true })
         .locator("svg.lucide-settings")
         .count(),
       1,
     );
     await menu
-      .getByRole("menuitem", { name: "浏览器下载", exact: true })
+      .getByRole("menuitem", { name: "Browser downloads", exact: true })
       .click();
     await panel.waitFor();
     await page.keyboard.press("Escape");
     await panel.waitFor({ state: "hidden" });
-    await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
-    await page.getByRole("button", { name: "下载文件", exact: true }).click();
+    await page.getByRole("button", { name: "Expand sidebar", exact: true }).click();
+    await page.getByRole("button", { name: "Downloaded files", exact: true }).click();
     await panel.waitFor();
     assert.ok(
       (await panel.boundingBox()).x > 800,
       "sidebar also opens the panel at the upper right",
     );
-    await panel.getByRole("button", { name: "关闭面板", exact: true }).click();
+    await panel.getByRole("button", { name: "Close panel", exact: true }).click();
     records = [];
     await page.reload();
-    await page.getByRole("button", { name: "打开浏览器", exact: true }).click();
+    await page.getByRole("button", { name: "Open browser", exact: true }).click();
     await trigger.click();
-    await panel.getByText("暂无下载", { exact: true }).waitFor();
+    await panel.getByText("No downloads", { exact: true }).waitFor();
     await page.screenshot({ path: `${output}/${platform}-empty.png` });
     assert.ok(
       calls.some(

@@ -147,15 +147,15 @@ func TestNativeDownloadsPublishHostCopiesAndPreserveSavedLocations(t *testing.T)
 		t.Run(system, func(t *testing.T) {
 			ids := []string{uuid.NewString(), uuid.NewString()}
 			records := []browserDownloadInfo{
-				{ID: ids[0], Name: "参考.bin", State: "saved", Path: "Downloads/参考.bin"},
-				{ID: ids[1], Name: "参考.bin", State: "saved", Path: "/untrusted/guest/path"},
+				{ID: ids[0], Name: "ยร.bin", State: "saved", Path: "Downloads/ยร.bin"},
+				{ID: ids[1], Name: "ยร.bin", State: "saved", Path: "/untrusted/guest/path"},
 			}
 			payload := bytes.Repeat([]byte{0, 1, 127, 255}, 40001)
 			s, workspace, _ := nativeDownloadFixture(t, system, records, payload)
 			if err := os.Mkdir(filepath.Join(workspace, "Downloads"), 0700); err != nil {
 				t.Fatal(err)
 			}
-			existing := filepath.Join(workspace, "Downloads", "参考.bin")
+			existing := filepath.Join(workspace, "Downloads", "ยร.bin")
 			if err := os.WriteFile(existing, []byte("existing"), 0600); err != nil {
 				t.Fatal(err)
 			}

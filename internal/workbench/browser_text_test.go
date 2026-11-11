@@ -22,20 +22,20 @@ func TestBrowserTextRequiresSessionAndExplicitTarget(t *testing.T) {
 			ID   string
 			Text string
 		}
-		if err := json.NewDecoder(r.Body).Decode(&input); err != nil || input.ID != "tab-1" || input.Text != "是，大奥🙂" {
+		if err := json.NewDecoder(r.Body).Decode(&input); err != nil || input.ID != "tab-1" || input.Text != "₼₾₡₢🙂" {
 			t.Fatal("text or target changed", err)
 		}
 		return &http.Response{StatusCode: 200, Header: http.Header{}, Body: io.NopCloser(strings.NewReader(`{"ok":true}`))}, nil
 	}))
 	path := "/api/browser/insert-text"
-	valid := `{"id":"tab-1","text":"是，大奥🙂"}`
+	valid := `{"id":"tab-1","text":"₼₾₡₢🙂"}`
 	if w := request(s, "POST", path, s.origin, valid, false); w.Code != 401 {
 		t.Fatal("unauthenticated input accepted", w.Code)
 	}
 	if w := request(s, "POST", path, "https://example.com", valid, true); w.Code != 403 {
 		t.Fatal("cross-origin input accepted", w.Code)
 	}
-	for _, body := range []string{`{"text":"是"}`, `{"id":"tab-1"}`, `{"id":"tab-1","text":""}`, `{"id":"tab-1","text":"` + strings.Repeat("中", 3000) + `"}`} {
+	for _, body := range []string{`{"text":"₼"}`, `{"id":"tab-1"}`, `{"id":"tab-1","text":""}`, `{"id":"tab-1","text":"` + strings.Repeat("₣", 3000) + `"}`} {
 		if w := request(s, "POST", path, s.origin, body, true); w.Code != 400 {
 			t.Fatal("invalid input accepted", w.Code)
 		}
@@ -75,7 +75,7 @@ func TestBrowserIMERequiresSessionAndValidSelection(t *testing.T) {
 	for _, body := range []string{
 		`{"target":"desktop","id":"tab-1","mode":"status"}`,
 		`{"target":"browser","id":"tab-1","mode":"begin","session":"0123456789abcdef0123456789abcdef","context":"expired"}`,
-		`{"target":"desktop","id":"desktop","mode":"commit","session":"invalid","text":"？"}`,
+		`{"target":"desktop","id":"desktop","mode":"commit","session":"invalid","text":"₤"}`,
 		`{"target":"browser","session":"0123456789abcdef0123456789abcdef","mode":"update","text":"n"}`,
 		`{"target":"browser","session":"0123456789abcdef0123456789abcdef","id":"tab-1","mode":"unknown"}`,
 		`{"target":"browser","session":"0123456789abcdef0123456789abcdef","id":"tab-1","mode":"update","text":"nihao","selectionStart":6,"selectionEnd":6}`,
@@ -91,14 +91,14 @@ func TestBrowserIMERequiresSessionAndValidSelection(t *testing.T) {
 	}
 	for _, body := range []string{
 		valid,
-		`{"target":"browser","session":"0123456789abcdef0123456789abcdef","id":"tab-1","mode":"commit","text":"你好","selectionStart":0,"selectionEnd":0}`,
+		`{"target":"browser","session":"0123456789abcdef0123456789abcdef","id":"tab-1","mode":"commit","text":"₥₦","selectionStart":0,"selectionEnd":0}`,
 		`{"target":"browser","session":"0123456789abcdef0123456789abcdef","id":"tab-1","mode":"cancel","text":"","selectionStart":0,"selectionEnd":0}`,
 	} {
 		if w := request(s, "POST", path, s.origin, body, true); w.Code != 200 {
 			t.Fatalf("valid IME input rejected: %d %s", w.Code, w.Body.String())
 		}
 	}
-	if len(requests) != 3 || requests[0]["mode"] != "update" || requests[1]["text"] != "你好" || requests[2]["mode"] != "cancel" {
+	if len(requests) != 3 || requests[0]["mode"] != "update" || requests[1]["text"] != "₥₦" || requests[2]["mode"] != "cancel" {
 		t.Fatalf("IME update/commit/cancel order changed: %#v", requests)
 	}
 	for _, body := range []string{

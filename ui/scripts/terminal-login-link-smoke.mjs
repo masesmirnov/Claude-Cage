@@ -16,9 +16,9 @@ for (const format of ["printed", "OSC 8"]) {
       socket.send(Buffer.from(format === "printed" ? url : `\x1b]8;;${url}\x07Open Claude\x1b]8;;\x07`));
     });
     await page.reload();
-    await page.getByRole("button", { name: "启动 Cage 环境", exact: true }).click();
-    await page.getByRole("button", { name: "新建终端", exact: true }).first().click();
-    await page.getByRole("menuitem", { name: "普通终端", exact: true }).click();
+    await page.getByRole("button", { name: "Start Cage environment", exact: true }).click();
+    await page.getByRole("button", { name: "New terminal", exact: true }).first().click();
+    await page.getByRole("menuitem", { name: "Regular terminal", exact: true }).click();
     const row = page.locator(".xterm-rows > div").first();
     await row.filter({ hasText: format === "printed" ? "claude.ai" : "Open Claude" }).waitFor();
     const rect = await row.boundingBox();
@@ -27,7 +27,7 @@ for (const format of ["printed", "OSC 8"]) {
     assert.equal(opened.length, 0);
     await page.mouse.down();
     await page.mouse.up();
-    await page.getByRole("tab", { name: /账号授权/ }).waitFor();
+    await page.getByRole("tab", { name: /Account authorization/ }).waitFor();
     assert.deepEqual(opened, [{ url }]);
     assert.equal(page.context().pages().length, 1);
     assert.deepEqual(errors, []);

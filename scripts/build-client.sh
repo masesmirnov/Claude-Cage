@@ -90,10 +90,10 @@ else
   cp /etc/os-release "$app/BUILD-PLATFORM.txt"
   pkg-config --modversion gtk+-3.0 webkit2gtk-4.1 json-glib-1.0 >> "$app/BUILD-PLATFORM.txt"
   cat > "$app/README.txt" <<'LINUX_README'
-Cage 轻量远程客户端（Linux 开发构建）
-在兼容 BUILD-PLATFORM.txt 所列发行版的图形桌面中，以普通用户运行 cage-desktop。
-系统依赖见 dependencies.txt。项目、应用与网络在云端运行；本机连接配置默认位于 ~/.claude-cage/client。
-构建不安装或覆盖现有应用，不包含虚拟机、Mihomo 或 OpenSSH 程序。验收范围以项目测试报告为准。
+Cage lightweight remote client (Linux development build)
+Run cage-desktop as a regular user in a graphical desktop on a distribution listed in BUILD-PLATFORM.txt.
+See dependencies.txt for system dependencies. Projects, apps, and networking run in the cloud; the local connection config lives in ~/.claude-cage/client by default.
+The build does not install or overwrite an existing app, and does not include a virtual machine, Mihomo, or OpenSSH. Acceptance scope follows the project test report.
 LINUX_README
   "$app/cage-desktop" --self-test
   tar -C "$stage/result" -czf "$stage/result/Cage-Client-linux-$arch.tar.gz" app
@@ -101,13 +101,13 @@ fi
 cp LICENSE "$stage/result/LICENSE"
 printf '%s\n' "$version" > "$stage/result/VERSION"
 cat > "$stage/result/README.txt" <<'README'
-Cage 轻量远程客户端（开发构建）
+Cage lightweight remote client (development build)
 
-本机只提供窗口、SSH 连接、输入和文件传递；项目、浏览器、终端与网络在云端 Cage 运行。
-默认连接配置目录为 ~/.claude-cage/client；显式设置 CLAUDE_CAGE_CONFIG 时沿用指定路径。
-此目录为独立构建产物，不会安装或替换已安装的 Cage。当前构建使用手动更新。
-macOS 运行 Cage Client.app。Linux 安装 app/dependencies.txt 中的系统依赖后运行 app/cage-desktop。
-本构建未公证或发布；原生运行验收范围以项目测试报告为准。
+This computer provides only the window, the SSH connection, input, and file transfer; projects, the browser, terminals, and networking run in the cloud Cage.
+The default connection config directory is ~/.claude-cage/client; if CLAUDE_CAGE_CONFIG is set explicitly, that path is used.
+This directory is a standalone build output. It does not install or replace an installed Cage. This build updates manually.
+On macOS, run Cage Client.app. On Linux, install the system dependencies in app/dependencies.txt, then run app/cage-desktop.
+This build is not notarized or released; the scope of native run acceptance follows the project test report.
 README
 mv "$stage/result" "$destination"
 printf 'Built standalone client: %s\n' "$destination"

@@ -3,32 +3,32 @@ param([guid]$VMId,[string]$GUIUserSID,[string]$ManifestJSON)
 $ErrorActionPreference='Stop'
 if ([guid](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters').VirtualMachineId -ne $VMId -or
     $GUIUserSID -notmatch '^S-1-5-21-\d+-\d+-\d+-\d+$' -or [Text.Encoding]::UTF8.GetByteCount($ManifestJSON) -gt 4MB) {
-    throw '组件版本记录与客机身份不一致。'
+    throw 'The component version record does not match the guest identity.'
 }
 $manifest=$ManifestJSON|ConvertFrom-Json
 if ($manifest.protocol -ne 1 -or $manifest.system -cne 'windows-11' -or $manifest.revision -notmatch '^[a-f0-9]{64}$' -or
-    @($manifest.files).Count -lt 1 -or @($manifest.files).Count -gt 10000) { throw '组件版本清单无效。' }
+    @($manifest.files).Count -lt 1 -or @($manifest.files).Count -gt 10000) { throw 'The component version manifest is invalid.' }
 $roots=@{bridge=(Join-Path $env:ProgramFiles ('Cage Guest Bridge\'+$VMId));network=(Join-Path $env:ProgramFiles ('Cage Guest Network\'+$VMId))}
 $seen=@{}
 foreach ($entry in $manifest.files) {
     if (!$entry.target) { continue }
     if ($entry.target -notmatch '^(bridge|network)/[^:\\]+$' -or $entry.target -match '(^|/)\.\.?(/|$)' -or
-        $entry.installed_sha256 -notmatch '^[a-f0-9]{64}$' -or $seen.ContainsKey($entry.target)) { throw '组件文件记录无效。' }
+        $entry.installed_sha256 -notmatch '^[a-f0-9]{64}$' -or $seen.ContainsKey($entry.target)) { throw 'A component file record is invalid.' }
     $seen[$entry.target]=$true
     $parts=$entry.target -split '/',2
     $file=Join-Path $roots[$parts[0]] $parts[1]
     $item=Get-Item -LiteralPath $file -Force
-    if ($item -isnot [IO.FileInfo]) { throw '安装的组件文件缺失，请继续同步环境组件。' }
+    if ($item -isnot [IO.FileInfo]) { throw 'An installed component file is missing. Continue syncing environment components.' }
     for ($parent=$item; $parent; $parent=if($parent -is [IO.FileInfo]){$parent.Directory}else{$parent.Parent}) {
-        if ($parent.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw '组件安装目录包含文件链接。' }
+        if ($parent.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'The component install directory contains a file link.' }
     }
-    if ((Get-FileHash -LiteralPath $file).Hash -ne $entry.installed_sha256) { throw '安装的组件与当前应用版本不匹配，请继续同步环境组件。' }
+    if ((Get-FileHash -LiteralPath $file).Hash -ne $entry.installed_sha256) { throw 'The installed components do not match the current app version. Continue syncing environment components.' }
 }
-if (!$seen.Count) { throw '组件清单缺少安装文件。' }
+if (!$seen.Count) { throw 'The component manifest has no install files.' }
 $target=Join-Path $roots.bridge 'native-components.json'
 if (Test-Path -LiteralPath $target) {
     $old=Get-Item -LiteralPath $target -Force
-    if ($old -isnot [IO.FileInfo] -or $old.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw '现有组件记录无法安全更新。' }
+    if ($old -isnot [IO.FileInfo] -or $old.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'The existing component record cannot be updated safely.' }
 }
 $temporary=Join-Path $roots.bridge ('native-components.'+[guid]::NewGuid().ToString('N')+'.json')
 try {

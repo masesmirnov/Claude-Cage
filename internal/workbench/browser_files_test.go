@@ -31,7 +31,7 @@ func TestBrowserUploadStreamsOnlyToLiveChooser(t *testing.T) {
 		body := `{"uploads":[{"id":"` + testBrowserFileID + `"}]}`
 		if r.Method == "POST" {
 			posts++
-			if r.URL.Path != "/upload-file" || r.URL.Query().Get("id") != testBrowserFileID || r.URL.Query().Get("name") != "参考视频.mp4" {
+			if r.URL.Path != "/upload-file" || r.URL.Query().Get("id") != testBrowserFileID || r.URL.Query().Get("name") != "₫₭₮₱.mp4" {
 				t.Fatal("wrong upload target", r.URL)
 			}
 			got, err := io.ReadAll(r.Body)
@@ -69,7 +69,7 @@ func TestBrowserUploadStreamsOnlyToLiveChooser(t *testing.T) {
 	if posts != 0 {
 		t.Fatal("rejected stream reached guest")
 	}
-	if code := call(s.origin, true, "%E5%8F%82%E8%80%83%E8%A7%86%E9%A2%91.mp4", int64(len(data))); code != 200 || posts != 1 {
+	if code := call(s.origin, true, "%E2%82%AB%E2%82%AD%E2%82%AE%E2%82%B1.mp4", int64(len(data))); code != 200 || posts != 1 {
 		t.Fatal(code, posts)
 	}
 }
@@ -190,7 +190,7 @@ func TestNativeSaveUsesAuthenticatedControllerAndPersistsChosenPath(t *testing.T
 		t.Fatal(err)
 	}
 	source := filepath.Join(directory, "source.mp4")
-	destination := filepath.Join(directory, "另存视频.mp4")
+	destination := filepath.Join(directory, "₲₳₮₱.mp4")
 	data := bytes.Repeat([]byte{0, 255, 42, 77}, 1<<18)
 	if err = os.WriteFile(source, data, 0600); err != nil {
 		t.Fatal(err)

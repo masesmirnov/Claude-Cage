@@ -14,7 +14,7 @@ const data = path.join(homedir(), "Library", "Application Support", "Cage");
 const editors = new Map();
 
 async function openEditor(id, restart) {
-  if (!/^[a-f0-9]{24}$/.test(id)) throw new Error("项目标识无效");
+  if (!/^[a-f0-9]{24}$/.test(id)) throw new Error("Invalid project ID");
   const folder = path.join(homedir(), "Cage", "Projects", id);
   let editor = editors.get(id);
   if (restart && editor) { editor.child.kill(); editor = null; }
@@ -45,7 +45,7 @@ async function openEditor(id, restart) {
         child.off("exit", failed); child.off("error", failed);
         for (const stream of [child.stdout, child.stderr]) { stream.off("data", read); stream.resume(); }
         if (address) resolve(address);
-        else { child.kill(); reject(new Error("项目编辑器启动失败")); }
+        else { child.kill(); reject(new Error("The project editor failed to start")); }
       }
       child.stdout.on("data", read); child.stderr.on("data", read);
       child.once("error", failed); child.once("exit", failed);
@@ -54,7 +54,7 @@ async function openEditor(id, restart) {
   const client = await request.newContext();
   try {
     const login = await client.post(editor.address + "/login", { form: { password: editor.password }, maxRedirects: 0, timeout: 7000 });
-    if (![302, 303].includes(login.status())) throw new Error("客机编辑器登录失败");
+    if (![302, 303].includes(login.status())) throw new Error("Guest editor sign-in failed");
     const hostname = id + ".cage-editor.localhost";
     const url = new URL(editor.address);
     url.hostname = hostname;
@@ -76,7 +76,7 @@ async function audit(context, { timezone, network }) {
     const observed = await cdp.send("Runtime.evaluate", {contextId: executionContextId, returnByValue: true,
       expression: `({timezone:Intl.DateTimeFormat().resolvedOptions().timeZone, expected_timezone:new Intl.DateTimeFormat("en",{timeZone:${JSON.stringify(timezone)}}).resolvedOptions().timeZone,language:navigator.language,platform:navigator.platform})`});
     result = observed.result.value;
-    if (!result?.platform) throw new Error("无法读取客机浏览器设置");
+    if (!result?.platform) throw new Error("Could not read the guest browser settings");
   } finally { await cdp.detach(); }
   if (!network) return result;
   const isolated = await context.browser().newContext({ serviceWorkers: "block" });
@@ -84,7 +84,7 @@ async function audit(context, { timezone, network }) {
     const page = await isolated.newPage();
     await page.goto("http://198.18.0.254/", { waitUntil: "domcontentloaded", timeout: 12000 });
       result.network = await page.evaluate(async () => {
-        if (location.origin !== "http://198.18.0.254") throw new Error("无效的诊断地址");
+        if (location.origin !== "http://198.18.0.254") throw new Error("Invalid diagnostics address");
         try {
           const response = await fetch("/egress", { cache: "no-store", credentials: "omit", signal: AbortSignal.timeout(14000) });
           return { ...(await response.json()), status: response.status };

@@ -56,11 +56,11 @@ func linuxProcessStart(pid int) (uint64, error) {
 	// comm is parenthesized and may itself contain spaces and parentheses.
 	end := strings.LastIndexByte(string(stat), ')')
 	if end < 0 {
-		return 0, errors.New("无法读取代理进程启动时间")
+		return 0, errors.New("Could not read the proxy process start time.")
 	}
 	fields := strings.Fields(string(stat)[end+1:])
 	if len(fields) < 20 {
-		return 0, errors.New("无法读取代理进程启动时间")
+		return 0, errors.New("Could not read the proxy process start time.")
 	}
 	return strconv.ParseUint(fields[19], 10, 64) // field 22: starttime
 }
@@ -80,14 +80,14 @@ func stopLinuxProcess(record linuxCoreRecord, core string) error {
 		return err
 	}
 	if resolved != record.Executable {
-		return errors.New("Cage 代理进程不属于当前安装目录")
+		return errors.New("The Cage proxy process does not belong to the current install directory.")
 	}
 	fd, err := unix.PidfdOpen(record.PID, 0)
 	if errors.Is(err, unix.ESRCH) {
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("无法安全打开 Cage 代理进程（需要 Linux 5.3 或更新内核）: %w", err)
+		return fmt.Errorf("Could not safely open the Cage proxy process (Linux 5.3 or a newer kernel is required): %w", err)
 	}
 	defer unix.Close(fd)
 	// Check start time before exe: a reused PID may belong to another user,
@@ -129,7 +129,7 @@ func stopLinuxProcess(record linuxCoreRecord, core string) error {
 			}
 		}
 	}
-	return errors.New("Cage 代理进程未能及时停止")
+	return errors.New("The Cage proxy process did not stop in time.")
 }
 
 func stopLinuxCore(profile string) error {
@@ -145,7 +145,7 @@ func stopLinuxCore(profile string) error {
 	}
 	var record linuxCoreRecord
 	if len(b) > 4096 || json.Unmarshal(b, &record) != nil || record.PID <= 1 || record.Started == 0 || record.BootID == "" {
-		return errors.New("Cage 代理进程记录无效")
+		return errors.New("Invalid Cage proxy process record.")
 	}
 	core, err := CorePath()
 	if err != nil {
@@ -176,7 +176,7 @@ func startLinuxCore(ctx context.Context, profile string, s Store) error {
 	}
 	l, err := net.Listen("tcp4", fmt.Sprintf("127.0.0.1:%d", s.Port))
 	if err != nil {
-		return errors.New("Cage 代理端口已被占用，请更换独立端口")
+		return errors.New("The Cage proxy port is already in use. Choose a different dedicated port.")
 	}
 	l.Close()
 	core, err := CorePath()
@@ -240,10 +240,10 @@ func startLinuxCore(ctx context.Context, profile string, s Store) error {
 			return ctx.Err()
 		case <-exited:
 			_ = stopLinuxCore(profile)
-			return errors.New("代理核心启动失败，请查看私有代理日志")
+			return errors.New("The proxy core failed to start. Check the private proxy log.")
 		case <-timeout.C:
 			_ = stopLinuxCore(profile)
-			return errors.New("代理核心启动超时，请查看私有代理日志")
+			return errors.New("The proxy core timed out starting. Check the private proxy log.")
 		case <-ticker.C:
 			if Running(ctx, profile, s) {
 				if err := host.ProtectFile(Socket(profile)); err != nil {

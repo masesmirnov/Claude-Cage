@@ -13,7 +13,7 @@ func TestSessionSummaryAccountAfterRestartAndSwitch(t *testing.T) {
 	// Older records store the binding in Account without an account_id in the summary.
 	record := &mobileRecord{
 		mobileSession: mobileSession{
-			mobileSummary: mobileSummary{ID: id, Workspace: workspace, Title: "对话"},
+			mobileSummary: mobileSummary{ID: id, Workspace: workspace, Title: "Chat"},
 			Turns:         []mobileTurn{},
 		},
 		CLIID: uuid.NewString(), Account: claudeSelection{ID: "first-account"},

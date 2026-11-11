@@ -70,7 +70,7 @@ func (s *Server) restorePhone() error {
 	}
 	var r phoneRecord
 	if json.Unmarshal(b, &r) != nil || len(r.Seed) != ed25519.SeedSize || !mobilelink.ValidRelayOrigin(r.Relay) {
-		return errors.New("无法读取手机配对记录")
+		return errors.New("The phone pairing record could not be read.")
 	}
 	s.phones.mu.Lock()
 	defer s.phones.mu.Unlock()
@@ -194,20 +194,20 @@ func (s *Server) reportPhoneDevice(w http.ResponseWriter, r *http.Request) {
 	}
 	input.Model = strings.TrimSpace(input.Model)
 	if (input.Platform != "android" && input.Platform != "ios") || input.Model == "" || len(input.Model) > 160 || !utf8.ValidString(input.Model) || strings.ContainsFunc(input.Model, unicode.IsControl) {
-		http.Error(w, "手机型号无效", http.StatusBadRequest)
+		http.Error(w, "The phone model is invalid.", http.StatusBadRequest)
 		return
 	}
 	s.account.mu.Lock()
 	defer s.account.mu.Unlock()
 	if !s.mobileAuthorized(r.Context()) {
-		http.Error(w, "请先解锁 Cage", http.StatusLocked)
+		http.Error(w, "Unlock Cage first.", http.StatusLocked)
 		return
 	}
 	p := &s.phones
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if p.closed || p.record == nil || !p.pairedRequestLocked(r) {
-		http.Error(w, "请通过已配对的手机连接", http.StatusForbidden)
+		http.Error(w, "Connect through a paired phone.", http.StatusForbidden)
 		return
 	}
 	if p.record.Device == nil || *p.record.Device != input {
@@ -255,7 +255,7 @@ func (s *Server) pairPhone(w http.ResponseWriter, r *http.Request) {
 	}
 	epoch, ok := s.account.access()
 	if !ok {
-		http.Error(w, "请先解锁 Cage", 423)
+		http.Error(w, "Unlock Cage first.", 423)
 		return
 	}
 	s.mu.Lock()
@@ -265,14 +265,14 @@ func (s *Server) pairPhone(w http.ResponseWriter, r *http.Request) {
 		origin = mobilelink.OfficialRelay
 	}
 	if input.Admin != "" && (origin == mobilelink.OfficialRelay || origin != input.Relay) {
-		requestError(w, errors.New("请先保存自建中继地址"))
+		requestError(w, errors.New("Save the self-hosted relay address first."))
 		return
 	}
 	p := &s.phones
 	p.mu.Lock()
 	if p.closed || p.record != nil {
 		p.mu.Unlock()
-		http.Error(w, "请先移除已配对的手机", 409)
+		http.Error(w, "Remove the paired phone first.", 409)
 		return
 	}
 	if p.pending != nil {
@@ -280,7 +280,7 @@ func (s *Server) pairPhone(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(epoch, 2*time.Minute)
 	p.pending = cancel
-	p.status = "等待扫码"
+	p.status = "Waiting for scan"
 	p.mu.Unlock()
 	complete := false
 	defer func() {
@@ -290,7 +290,7 @@ func (s *Server) pairPhone(w http.ResponseWriter, r *http.Request) {
 	}()
 	room, err := mobilelink.CreateRoom(ctx, origin, input.Admin)
 	if err != nil {
-		requestError(w, errors.New("中继未能创建连接。请检查网络、自建地址和管理令牌。"))
+		requestError(w, errors.New("The relay could not create a connection. Check the network, the self-hosted address, and the admin token."))
 		return
 	}
 	_, key, err := ed25519.GenerateKey(rand.Reader)
@@ -310,7 +310,7 @@ func (s *Server) pairPhone(w http.ResponseWriter, r *http.Request) {
 	}
 	png, err := qrcode.Encode(raw, qrcode.Medium, 384)
 	if err != nil {
-		requestError(w, errors.New("无法生成二维码"))
+		requestError(w, errors.New("The QR code could not be generated."))
 		return
 	}
 	complete = true
@@ -325,7 +325,7 @@ func (s *Server) pairPhone(w http.ResponseWriter, r *http.Request) {
 			defer p.mu.Unlock()
 			var result mobilelink.PairedHost
 			if ctx.Err() != nil || p.record != nil || p.closed {
-				return result, errors.New("配对已结束")
+				return result, errors.New("Pairing has ended.")
 			}
 			var token [32]byte
 			if _, err := rand.Read(token[:]); err != nil {
@@ -336,13 +336,13 @@ func (s *Server) pairPhone(w http.ResponseWriter, r *http.Request) {
 				return result, err
 			}
 			s.attachPhone(record)
-			p.status = "手机已配对"
+			p.status = "Phone paired"
 			return mobilelink.PairedHost{Version: 1, Relay: origin, HostPin: host.Pin, Lookup: record.Lookup}, nil
 		})
 		p.mu.Lock()
 		defer p.mu.Unlock()
 		if err != nil && ctx.Err() == nil && p.record == nil {
-			p.status = "配对未完成，请重新生成二维码"
+			p.status = "Pairing was not completed. Generate a new QR code."
 		}
 	}()
 	w.Header().Set("Cache-Control", "no-store")

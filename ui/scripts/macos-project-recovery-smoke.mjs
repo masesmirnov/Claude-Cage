@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import { createWorkbench } from "./workbench-fixture.mjs";
 
-const project = "/Users/fixture/Cage Projects/macOS 示例";
+const project = "/Users/fixture/Cage Projects/macOS Sample";
 const calls = [];
 let loggedIn = false, maintenanceClosed = false, geometry = "maintenance-frame-a", images;
 const { page, browser, state, errors } = await createWorkbench({
@@ -12,8 +12,8 @@ const { page, browser, state, errors } = await createWorkbench({
     state.account.guest_system = state.status.guest_system = "macos";
     state.status.projects = [project];
     state.status.workspace = state.settings.workspace = project;
-    state.status.project_error = "部分项目文件夹尚未连接，环境和浏览器可继续使用。";
-    state.status.project_errors = [{ path: project, recovery: "guest-login", message: "请先登录虚拟 Mac 的客机账户。登录完成后，Cage 会自动连接项目。" }];
+    state.status.project_error = "Some project folders are not connected yet. The environment and browser can keep running.";
+    state.status.project_errors = [{ path: project, recovery: "guest-login", message: "Sign in to the virtual Mac's guest account first. Cage connects the projects automatically once you are signed in." }];
     images = await page.evaluate(() => {
       const make = (width, height, color) => {
         const canvas = document.createElement("canvas");
@@ -41,7 +41,7 @@ const { page, browser, state, errors } = await createWorkbench({
       return route.fulfill({ json: {} });
     });
     await page.route("**/api/projects/open", route => {
-      if (!loggedIn) return route.fulfill({ status: 400, contentType: "text/plain; charset=utf-8", headers: { "X-Cage-Recovery": "guest-login" }, body: "请先登录虚拟 Mac 的客机账户。" });
+      if (!loggedIn) return route.fulfill({ status: 400, contentType: "text/plain; charset=utf-8", headers: { "X-Cage-Recovery": "guest-login" }, body: "Sign in to the virtual Mac's guest account first." });
       return route.fulfill({ json: { workspace: project } });
     });
     await page.route("**/api/macos/maintenance", route => {
@@ -53,7 +53,7 @@ const { page, browser, state, errors } = await createWorkbench({
       if (request.action === "open") return route.fulfill({ json: { session: "maintenance-fixture", maintenance_version: 1, administrator: "cageprovision" } });
       if (request.action === "close") return route.fulfill({ json: { closed: true, maintenance_version: 1 } });
       if (request.action === "frame") return route.fulfill({ json: maintenanceClosed
-        ? { closed: true, maintenance_version: 1, error: "客机前台应用已变化" }
+        ? { closed: true, maintenance_version: 1, error: "The guest foreground app has changed" }
         : { image: geometry.endsWith("a") ? images.a : images.b, mime: "image/jpeg", geometry,
           region: geometry.endsWith("a") ? [120, 90, 600, 400] : [240, 150, 480, 360], maintenance_version: 1 } });
       return route.fulfill({ json: { maintenance_version: 1 } });
@@ -70,22 +70,22 @@ async function until(predicate) {
 }
 try {
   const failures = page.locator(".project-connection-errors");
-  await failures.getByRole("button", { name: "登录客机账户", exact: true }).click();
-  const login = page.getByRole("dialog", { name: "登录虚拟 Mac", exact: true });
-  await login.getByAltText("Apple 客机登录屏幕").waitFor();
-  await login.getByLabel(/^客机登录键盘/).press("Enter");
+  await failures.getByRole("button", { name: "Sign in to the guest account", exact: true }).click();
+  const login = page.getByRole("dialog", { name: "Sign in to the virtual Mac", exact: true });
+  await login.getByAltText("Apple guest sign-in screen").waitFor();
+  await login.getByLabel(/^Guest sign-in keyboard/).press("Enter");
   await until(() => calls.some(call => call.mode === "login" && call.action === "key" && call.code === 36));
   assert(await login.isVisible(), "Return closed the view before macOS reported a completed login");
   loggedIn = true;
   await login.waitFor({ state: "detached" });
   await failures.waitFor({ state: "detached" });
 
-  state.status.project_error = "部分项目文件夹尚未连接，环境和浏览器可继续使用。";
-  state.status.project_errors = [{ path: project, recovery: "filesystem-permission", message: "虚拟 Mac 的文件系统扩展尚未启用。" }];
+  state.status.project_error = "Some project folders are not connected yet. The environment and browser can keep running.";
+  state.status.project_errors = [{ path: project, recovery: "filesystem-permission", message: "The virtual Mac's file system extension is not enabled yet." }];
   await page.reload();
-  await failures.getByRole("button", { name: "打开客机授权设置", exact: true }).click();
-  const maintenance = page.getByRole("dialog", { name: "恢复客机系统权限", exact: true });
-  const image = maintenance.getByAltText("客机系统设置或授权窗口");
+  await failures.getByRole("button", { name: "Open guest authorization settings", exact: true }).click();
+  const maintenance = page.getByRole("dialog", { name: "Restore guest system permissions", exact: true });
+  const image = maintenance.getByAltText("Guest System Settings or authorization window");
   await page.waitForFunction(() => document.querySelector('[data-mode="maintenance"] img')?.naturalWidth === 600);
   const first = await image.boundingBox();
   await image.click({ position: { x: first.width / 2, y: first.height / 2 } });
@@ -93,8 +93,8 @@ try {
   const click = calls.find(call => call.mode === "maintenance" && call.action === "click");
   assert.equal(click.geometry, "maintenance-frame-a");
   assert(Math.abs(click.x - 420) <= 1 && Math.abs(click.y - 290) <= 1);
-  await maintenance.getByLabel(/^客机登录键盘/).press("Meta+a");
-  await maintenance.getByRole("button", { name: "填写管理员密码", exact: true }).click();
+  await maintenance.getByLabel(/^Guest sign-in keyboard/).press("Meta+a");
+  await maintenance.getByRole("button", { name: "Fill in administrator password", exact: true }).click();
   await until(() => calls.some(call => call.action === "select-all") && calls.some(call => call.action === "fill-password"));
   assert(calls.filter(call => call.mode === "maintenance" && ["select-all", "fill-password"].includes(call.action))
     .every(call => call.geometry === "maintenance-frame-a" && call.session === "maintenance-fixture"));
@@ -116,15 +116,15 @@ try {
   state.status.project_error = "";
   state.status.project_errors = [];
   await page.reload();
-  await page.getByRole("button", { name: "设置", exact: true }).click();
-  await page.getByRole("navigation", { name: "设置分组" }).getByRole("button", { name: "环境与恢复", exact: true }).click();
-  const permissions = page.getByRole("region", { name: "客机系统权限", exact: true });
-  for (const [label, purpose] of [["文件共享权限", "projects"], ["屏幕录制权限", "screen"], ["辅助功能权限", "input"]]) {
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByRole("navigation", { name: "Settings groups" }).getByRole("button", { name: "Environment and recovery", exact: true }).click();
+  const permissions = page.getByRole("region", { name: "Guest system permissions", exact: true });
+  for (const [label, purpose] of [["File sharing permission", "projects"], ["Screen recording permission", "screen"], ["Accessibility permission", "input"]]) {
     const start = calls.length;
     await permissions.getByRole("button", { name: label, exact: true }).click();
     await image.waitFor();
     assert(calls.slice(start).some(call => call.action === "open" && call.maintenance === purpose));
-    await maintenance.getByRole("button", { name: "返回工作台", exact: true }).click();
+    await maintenance.getByRole("button", { name: "Back to the workbench", exact: true }).click();
     await maintenance.waitFor({ state: "detached" });
     await until(() => calls.slice(start).some(call => call.action === "close" && call.maintenance === purpose));
   }

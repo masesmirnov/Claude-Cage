@@ -170,14 +170,14 @@ func TestArchivedCLIHistoryIsNotRediscovered(t *testing.T) {
 	if err := s.discoverTerminalConversations(context.Background(), []string{project}); err != nil {
 		t.Fatal(err)
 	}
-	if w := request(s, "POST", "/api/mobile/cli/sessions/"+id+"/metadata", s.origin, `{"title":"保留用户命名","pinned":true}`, true); w.Code != 200 {
+	if w := request(s, "POST", "/api/mobile/cli/sessions/"+id+"/metadata", s.origin, `{"title":"Keep user title","pinned":true}`, true); w.Code != 200 {
 		t.Fatal(w.Code, w.Body.String())
 	}
 	if err := s.discoverTerminalConversations(context.Background(), []string{project}); err != nil {
 		t.Fatal(err)
 	}
 	list, _ := s.mobileCLI.summaries(s.profile, map[string]bool{project: true}, false)
-	if len(list) != 1 || list[0].Title != "保留用户命名" || !list[0].Pinned {
+	if len(list) != 1 || list[0].Title != "Keep user title" || !list[0].Pinned {
 		t.Fatal("discovery overwrote metadata", list)
 	}
 	if err := s.setSessionArchived(id, true, nil); err != nil {

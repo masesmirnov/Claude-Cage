@@ -358,7 +358,7 @@ def shared_profile_resources(base):
     lock_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     with (lock_dir / "resources.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        conflict = "账号的技能或指令与共用资料同名冲突，请先核对 ~/.claude 中的对应文件；原文件已保留"
+        conflict = "A skill or instruction of the account has a name conflict with shared resources. Check the matching files in ~/.claude first; the original files were kept"
         def check(local, shared):
             if (local.is_symlink() or os.name == "nt" and local.is_junction()):
                 if local.resolve() != shared.resolve():
@@ -463,12 +463,12 @@ def shared_launch_arguments_locked(base, args, settings_fd):
         for source in sources:
             destination = memory / source.relative_to(own_memory)
             if destination.exists() and (not destination.is_file() or destination.read_bytes() != source.read_bytes()):
-                raise SharedResourceConflict("账号的项目记忆与共用记忆冲突，原记忆已保留，请先核对")
+                raise SharedResourceConflict("The project memory of the account conflicts with the shared memory. The original memory was kept; check it first")
         for source in sources:
             if source.is_file():
                 destination = memory / source.relative_to(own_memory)
                 if destination.exists() and destination.read_bytes() != source.read_bytes():
-                    raise SharedResourceConflict("账号的项目记忆与共用记忆冲突，原记忆已保留，请先核对")
+                    raise SharedResourceConflict("The project memory of the account conflicts with the shared memory. The original memory was kept; check it first")
                 destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
                 if not destination.exists():
                     shutil.copy2(source, destination)
@@ -620,7 +620,7 @@ def main(args, *, mobile_settings_fd=None, verify_mobile=None):
         pass_fds = () if mobile_settings_fd is None else (mobile_settings_fd,)
         reading = identity(binary, env, Path.cwd(), options, pass_fds=pass_fds) if expected else None
         if not expected or subject(reading) != expected:
-            print("此项目未使用所选 Claude 订阅。请检查项目配置和账号登录状态。", file=sys.stderr)
+            print("This project does not use the selected Claude subscription. Check the project configuration and account sign-in status.", file=sys.stderr)
             return 1
         if mobile_settings_fd is not None:
             verify_mobile(reading)
@@ -670,5 +670,5 @@ if __name__ == "__main__":
         sys.exit(1)
     except (OSError, ValueError, subprocess.SubprocessError, TypeError):
         # No raw CLI output, paths, credentials or callback URLs go to logs.
-        print("无法读取 Claude 订阅状态或启动官方 CLI，请检查环境组件与登录状态。", file=sys.stderr)
+        print("Could not read the Claude subscription status or start the official CLI. Check the environment components and sign-in status.", file=sys.stderr)
         sys.exit(1)

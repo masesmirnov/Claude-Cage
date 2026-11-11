@@ -30,7 +30,7 @@ func (requirements MacOSResourceRequirements) Limits(allocation cage.ResourceAll
 		return 0, 0, err
 	}
 	if memory < requirements.MemoryGiB || cpus < requirements.CPUs {
-		return 0, 0, fmt.Errorf("这台 macOS 客机至少需要 %d GiB 内存与 %d 个 CPU 逻辑核心，请调整资源配置", requirements.MemoryGiB, requirements.CPUs)
+		return 0, 0, fmt.Errorf("This macOS guest needs at least %d GiB of memory and %d logical CPU cores. Adjust the resource configuration.", requirements.MemoryGiB, requirements.CPUs)
 	}
 	return memory, cpus, nil
 }
@@ -41,18 +41,18 @@ func ReadMacOSResourceRequirements(instanceDir string) (MacOSResourceRequirement
 	if err == nil {
 		if json.Unmarshal(data, &requirements) != nil || requirements.Version != 1 || requirements.MemoryGiB < 1 || requirements.CPUs < 1 ||
 			(requirements.Source != "restore-image" && requirements.Source != "existing-configuration") {
-			return requirements, errors.New("macOS 最低资源要求记录无效，请检查原环境配置")
+			return requirements, errors.New("The macOS minimum resource requirement record is invalid. Check the original environment configuration.")
 		}
 		if requirements.Source == "restore-image" {
 			return requirements, nil
 		}
 	}
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return requirements, errors.New("无法读取 macOS 最低资源要求记录")
+		return requirements, errors.New("Could not read the macOS minimum resource requirement record.")
 	}
 	data, err = os.ReadFile(filepath.Join(instanceDir, "lima.yaml"))
 	if err != nil {
-		return requirements, errors.New("无法读取这台 macOS 客机的启动配置")
+		return requirements, errors.New("Could not read the startup configuration of this macOS guest.")
 	}
 	var config struct {
 		OS     string `yaml:"os"`
@@ -63,7 +63,7 @@ func ReadMacOSResourceRequirements(instanceDir string) (MacOSResourceRequirement
 		} `yaml:"images"`
 	}
 	if yaml.Unmarshal(data, &config) != nil || config.OS != "Darwin" {
-		return requirements, errors.New("macOS 客机启动配置无效")
+		return requirements, errors.New("Invalid macOS guest startup configuration.")
 	}
 	candidates := []string{filepath.Join(instanceDir, "image.ipsw")}
 	if len(config.Images) == 1 && filepath.IsAbs(config.Images[0].Location) {
@@ -81,7 +81,7 @@ func ReadMacOSResourceRequirements(instanceDir string) (MacOSResourceRequirement
 	}
 	memory, err := units.RAMInBytes(config.Memory)
 	if err != nil || memory < 1<<30 || config.CPUs < 1 {
-		return requirements, errors.New("无法确定已有 macOS 客机的可启动资源配置")
+		return requirements, errors.New("Could not determine a bootable resource configuration for the existing macOS guest.")
 	}
 	return MacOSResourceRequirements{Version: 1, MemoryGiB: int((memory-1)/(1<<30) + 1), CPUs: config.CPUs, Source: "existing-configuration"}, nil
 }

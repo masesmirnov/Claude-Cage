@@ -7,7 +7,7 @@ import { phoneError } from "./modules/browser-phone-network.mjs";
 import { lines } from "./windows-browser.mjs";
 
 export async function runMacOSPhoneBrowser(input = process.stdin, output = process.stdout, options = {}) {
-  if (process.platform !== "darwin" && options.testing !== true) throw new Error("此浏览器需要 macOS 客机");
+  if (process.platform !== "darwin" && options.testing !== true) throw new Error("This browser requires a macOS guest");
   const phone = new PhoneBrowser({
     binary: options.binary || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     directory: options.directory || path.join(homedir(), "Library", "Application Support", "Cage", "PhoneBrowser"),
@@ -26,7 +26,7 @@ export async function runMacOSPhoneBrowser(input = process.stdin, output = proce
     await phone.dispose();
   }
   async function operate(operation, input) {
-    if (opening && input?.id !== opening.id) throw phoneError(410, "手机浏览器会话已结束");
+    if (opening && input?.id !== opening.id) throw phoneError(410, "The phone browser session has ended");
     if (opening && operation === "close") {
       await cancelOpen();
       return { id: input.id };
@@ -36,7 +36,7 @@ export async function runMacOSPhoneBrowser(input = process.stdin, output = proce
       opening = entry;
       const deadline = setTimeout(() => entry.abort.abort(), 75000);
       entry.done = phone.run("open", input, entry.abort.signal).catch(error => {
-        entry.error = entry.abort.signal.aborted ? phoneError(503, "客机浏览器启动超时") : error;
+        entry.error = entry.abort.signal.aborted ? phoneError(503, "Guest browser startup timed out") : error;
       }).finally(() => {
         entry.settled = true;
         clearTimeout(deadline);
@@ -52,7 +52,7 @@ export async function runMacOSPhoneBrowser(input = process.stdin, output = proce
         opening = undefined;
         if (error) throw error;
       } else if (operation !== "open") {
-        throw phoneError(425, "正在启动虚拟 Mac 中的浏览器");
+        throw phoneError(425, "Starting the browser in the virtual Mac");
       }
       if (operation === "open") return { id: input.id };
     }
@@ -63,10 +63,10 @@ export async function runMacOSPhoneBrowser(input = process.stdin, output = proce
       let result;
       try {
         const request = JSON.parse(line);
-        if (request.method !== "POST" || !/^\/phone-browser\/(open|frame|action|close)$/.test(request.path || "")) throw new Error("手机浏览器请求无效");
+        if (request.method !== "POST" || !/^\/phone-browser\/(open|frame|action|close)$/.test(request.path || "")) throw new Error("Invalid phone browser request");
         result = await operate(request.path.split("/").at(-1), request.input);
       } catch (error) {
-        result = { error: "手机浏览器操作未完成，请核对授权和最新画面", code: "phone_browser_error", status: [403, 409, 410, 425, 503].includes(error.status) ? error.status : 400 };
+        result = { error: "The phone browser operation did not complete. Check the authorization and the latest frame.", code: "phone_browser_error", status: [403, 409, 410, 425, 503].includes(error.status) ? error.status : 400 };
       }
       await new Promise((resolve, reject) => output.write(JSON.stringify(result) + "\n", error => error ? reject(error) : resolve()));
     }

@@ -192,7 +192,7 @@ func TestWindowsPhoneDesktopProductionHandlerSharesWindowAndGuardsInput(t *testi
 	post(map[string]any{"type": "tap", "document": frame["document"], "x": 639, "y": 639}, 200)
 	post(map[string]any{"type": "scroll", "document": frame["document"], "x": 400, "y": 400, "dx": -120, "dy": 240}, 200)
 	post(map[string]any{"type": "text", "document": frame["document"], "focus": "old-focus", "text": "ignored"}, 409)
-	post(map[string]any{"type": "text", "document": frame["document"], "focus": frame["focus"], "text": strings.Repeat("中", 2730) + "ab"}, 200)
+	post(map[string]any{"type": "text", "document": frame["document"], "focus": frame["focus"], "text": strings.Repeat("ฐ", 2730) + "ab"}, 200)
 	post(map[string]any{"type": "key", "document": frame["document"], "focus": frame["focus"], "key": "Enter"}, 200)
 	post(map[string]any{"type": "resize", "width": 800, "height": 600, "pixel_ratio": 1.5}, 200)
 	resized := readFrame()
@@ -224,7 +224,7 @@ func TestWindowsPhoneDesktopReadinessAndCapabilities(t *testing.T) {
 			if got.Code != test.want {
 				t.Fatalf("%s: %d %s", test.name, got.Code, got.Body.String())
 			}
-			if test.name == "locked" && !strings.Contains(got.Body.String(), "Windows 客机账户") {
+			if test.name == "locked" && !strings.Contains(got.Body.String(), "Windows guest account") {
 				t.Fatal("locked GUI did not explain how to recover")
 			}
 			if s.phones.desktop.nativeDesktop != nil || s.phones.desktop.session != nil {

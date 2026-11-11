@@ -2,9 +2,9 @@ param([Parameter(Mandatory)][string]$Implementation)
 $ErrorActionPreference='Stop'
 $global:cageStorageVMID=[guid]'2a6f8208-3906-4e16-8233-2b9d28ecf7be'
 $old=[pscustomobject]@{configuration="C:\Cage original\config";snapshots="C:\Cage original\snapshots";paging="C:\Cage original\paging"}
-$next=[pscustomobject]@{configuration="C:\ProgramData\Cage\测试's\config";snapshots="C:\ProgramData\Cage\测试's\snapshots";paging="C:\ProgramData\Cage\测试's\paging"}
+$next=[pscustomobject]@{configuration="C:\ProgramData\Cage\$([char]0xE9)$([char]0xE8)'s\config";snapshots="C:\ProgramData\Cage\$([char]0xE9)$([char]0xE8)'s\snapshots";paging="C:\ProgramData\Cage\$([char]0xE9)$([char]0xE8)'s\paging"}
 $source="C:\Cage original\system.vhdx"
-$destination="D:\Cage 新位置's\system.vhdx"
+$destination="D:\Cage $([char]0xE9)$([char]0xE8)$([char]0xEA)'s\system.vhdx"
 function Reset-VM {
     $global:cageStorageVM=[pscustomobject]@{Id=$global:cageStorageVMID;State='Off';Generation=2;ConfigurationLocation=$old.configuration;SnapshotFileLocation=$old.snapshots;SmartPagingFilePath=$old.paging}
     $global:cageStorageDisk=[pscustomobject]@{Path=$source}

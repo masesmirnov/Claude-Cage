@@ -16,7 +16,7 @@ func (s *Server) removeProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !s.op.TryLock() {
-		http.Error(w, "另一个操作仍在进行，请稍候", http.StatusConflict)
+		http.Error(w, "Another operation is still running. Wait a moment.", http.StatusConflict)
 		return
 	}
 	defer s.op.Unlock()
@@ -24,12 +24,12 @@ func (s *Server) removeProject(w http.ResponseWriter, r *http.Request) {
 	closing, ready, preferences := s.closing, s.ready, s.preferences
 	s.mu.Unlock()
 	if closing || s.busy() {
-		http.Error(w, "环境正在处理其他操作，请稍后重试", http.StatusConflict)
+		http.Error(w, "The environment is handling another operation. Try again later.", http.StatusConflict)
 		return
 	}
 	path := input.Workspace
 	if path == "" || path == s.environmentDir() || isClientMountPath(path) {
-		http.Error(w, "请选择已添加的项目。默认工作区保留，客户端共享请使用停止共享。", http.StatusBadRequest)
+		http.Error(w, "Select a project that was added. The default workspace is kept. To stop a client share, use Stop sharing.", http.StatusBadRequest)
 		return
 	}
 	projects, err := s.projectPaths()
@@ -44,13 +44,13 @@ func (s *Server) removeProject(w http.ResponseWriter, r *http.Request) {
 	if !ready {
 		running, err := controllerVMState(s.profile)
 		if err != nil || running {
-			http.Error(w, "环境仍在运行或运行状态无法确认。请恢复连接，或保存工作并停止环境后再移除项目。", http.StatusConflict)
+			http.Error(w, "The environment is still running or its running state cannot be confirmed. Restore the connection, or save your work and stop the environment before removing the project.", http.StatusConflict)
 			return
 		}
 	}
 	for _, terminal := range s.terminals.snapshot() {
 		if terminal["workspace"] == path && terminal["closed"] != true {
-			http.Error(w, "请先关闭此项目的终端，再移除项目。会话历史会保留。", http.StatusConflict)
+			http.Error(w, "Close this project's terminals first, then remove the project. Session history is kept.", http.StatusConflict)
 			return
 		}
 	}
@@ -64,7 +64,7 @@ func (s *Server) removeProject(w http.ResponseWriter, r *http.Request) {
 			err = s.discoverTerminalConversations(r.Context(), projects)
 		}
 		if err != nil {
-			http.Error(w, "暂时无法核对运行中的会话。请恢复会话连接，或保存工作并停止环境后再移除项目。", http.StatusConflict)
+			http.Error(w, "Running sessions cannot be verified right now. Restore the session connection, or save your work and stop the environment before removing the project.", http.StatusConflict)
 			return
 		}
 	}
@@ -78,7 +78,7 @@ func (s *Server) removeProject(w http.ResponseWriter, r *http.Request) {
 	}
 	s.mobileCLI.mu.Unlock()
 	if active {
-		http.Error(w, "请先结束此项目正在运行的会话，再移除项目。会话历史会保留。", http.StatusConflict)
+		http.Error(w, "End this project's running sessions first, then remove the project. Session history is kept.", http.StatusConflict)
 		return
 	}
 	if ready {
@@ -90,12 +90,12 @@ func (s *Server) removeProject(w http.ResponseWriter, r *http.Request) {
 			} `json:"tabs"`
 		}
 		if err != nil || json.Unmarshal(body, &browser) != nil || browser.Tabs == nil {
-			http.Error(w, "暂时无法核对文件编辑器。请恢复浏览器连接，或保存工作并停止环境后再移除项目。", http.StatusConflict)
+			http.Error(w, "The file editor cannot be verified right now. Restore the browser connection, or save your work and stop the environment before removing the project.", http.StatusConflict)
 			return
 		}
 		for _, tab := range browser.Tabs {
 			if tab.Kind == "editor" && tab.Workspace == path {
-				http.Error(w, "请先保存文件并关闭此项目的编辑器，再移除项目。", http.StatusConflict)
+				http.Error(w, "Save your files and close this project's editor first, then remove the project.", http.StatusConflict)
 				return
 			}
 		}

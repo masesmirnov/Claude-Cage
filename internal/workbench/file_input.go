@@ -59,7 +59,7 @@ func (s *Server) guestFiles(ctx context.Context, target, method, path string, bo
 	if s.macosGuest != nil && target == "desktop" {
 		parsed, err := url.Parse(path)
 		if err != nil {
-			return nil, errors.New("虚拟 Mac 文件操作无效")
+			return nil, errors.New("The virtual Mac file operation is invalid.")
 		}
 		if method == "POST" && parsed.Path == "/upload" {
 			return s.macOSUploadDesktopAttachment(ctx, name, parsed.Query().Get("id"), body)
@@ -68,7 +68,7 @@ func (s *Server) guestFiles(ctx context.Context, target, method, path string, bo
 		if body != nil {
 			data, err := io.ReadAll(io.LimitReader(body, 8193))
 			if err != nil || len(data) > 8192 || json.Unmarshal(data, &input) != nil {
-				return nil, errors.New("虚拟 Mac 文件操作无效")
+				return nil, errors.New("The virtual Mac file operation is invalid.")
 			}
 		}
 		switch {
@@ -77,7 +77,7 @@ func (s *Server) guestFiles(ctx context.Context, target, method, path string, bo
 		case method == "POST" && (parsed.Path == "/start" || parsed.Path == "/finish" || parsed.Path == "/finish-image" || parsed.Path == "/cancel" || parsed.Path == "/directory" || parsed.Path == "/download-retry" || parsed.Path == "/download-ack" || parsed.Path == "/open-claim" || parsed.Path == "/open-complete"):
 			input.Action = "files-" + strings.TrimPrefix(parsed.Path, "/")
 		default:
-			return nil, errors.New("虚拟 Mac 文件操作无效")
+			return nil, errors.New("The virtual Mac file operation is invalid.")
 		}
 		input.Files = nil
 		return s.macOSDesktopFileCall(ctx, input)
@@ -88,7 +88,7 @@ func (s *Server) guestFiles(ctx context.Context, target, method, path string, bo
 	if s.windowsGuest != nil && target == "desktop" {
 		parsed, err := url.Parse(path)
 		if err != nil {
-			return nil, errors.New("Windows 文件操作无效")
+			return nil, errors.New("The Windows file operation is invalid.")
 		}
 		if method == "POST" && parsed.Path == "/upload" {
 			return s.windowsUploadAttachment(ctx, name, parsed.Query().Get("id"), body)
@@ -100,13 +100,13 @@ func (s *Server) guestFiles(ctx context.Context, target, method, path string, bo
 		case method == "POST" && (parsed.Path == "/start" || parsed.Path == "/finish" || parsed.Path == "/finish-image" || parsed.Path == "/cancel" || parsed.Path == "/directory" || parsed.Path == "/download-retry" || parsed.Path == "/download-ack" || parsed.Path == "/open-claim" || parsed.Path == "/open-complete"):
 			action = "files-" + strings.TrimPrefix(parsed.Path, "/")
 		default:
-			return nil, errors.New("Windows 原生文件选择框与桌面下载尚未接通")
+			return nil, errors.New("The Windows native file picker and desktop downloads are not connected yet.")
 		}
 		input := map[string]any{}
 		if body != nil {
 			data, readErr := io.ReadAll(io.LimitReader(body, 65537))
 			if readErr != nil || len(data) > 65536 || json.Unmarshal(data, &input) != nil {
-				return nil, errors.New("Windows 文件操作无效")
+				return nil, errors.New("The Windows file operation is invalid.")
 			}
 		}
 		var result map[string]any
@@ -150,7 +150,7 @@ func (s *Server) guestFiles(ctx context.Context, target, method, path string, bo
 			return nil, pipeErr
 		}
 		if err = cmd.Start(); err != nil {
-			return nil, usererror.Wrap("连接文件传递服务", err, "请确认 Cage 安装完整，环境已经启动；持续失败时在设置中导出诊断包。")
+			return nil, usererror.Wrap("Connecting to the file transfer service", err, "Make sure Cage is fully installed and the environment has started. If it keeps failing, export a diagnostics bundle in Settings.")
 		}
 		data, readErr = io.ReadAll(io.LimitReader(pipe, 65537+64))
 		if readErr != nil || len(data) > 65536+64 {
@@ -171,17 +171,17 @@ func (s *Server) guestFiles(ctx context.Context, target, method, path string, bo
 		_ = diagnostics.New(s.profile).Record("error", "desktop-files", fmt.Sprintf("target=%s method=%s route=%s exit=%v read=%v invalid_json=%t oversized=%t context=%v stderr=%s", target, method, route, err, readErr, decodeErr != nil || result == nil, len(data) > 65536, ctx.Err(), stderr.data))
 		switch {
 		case ctx.Err() != nil:
-			return nil, usererror.Wrap("传递文件", ctx.Err(), "请确认环境仍在运行；恢复连接后重新选择文件，并核对目标是否已收到文件。")
+			return nil, usererror.Wrap("Passing the file", ctx.Err(), "Make sure the environment is still running. After the connection is restored, select the file again and check whether the target received it.")
 		case httpStatus >= 400:
 			return nil, fileServiceFailure(httpStatus, data)
 		case err != nil:
-			return nil, executionFailure("连接文件传递服务", err, string(stderr.data))
+			return nil, executionFailure("Connecting to the file transfer service", err, string(stderr.data))
 		case readErr != nil:
-			return nil, usererror.Wrap("读取文件传递结果", readErr, "结果没有完整返回，请恢复连接后核对文件是否已收到。")
+			return nil, usererror.Wrap("Reading the file transfer result", readErr, "The result was not fully returned. Restore the connection and check whether the file was received.")
 		case len(data) > 65536:
-			return nil, errors.New("读取文件传递结果失败：服务返回的数据超过 64 KiB。请分批处理文件；持续出现时导出诊断包。")
+			return nil, errors.New("Reading the file transfer result failed: the service returned more than 64 KiB of data. Process the files in batches. If it keeps happening, export a diagnostics bundle.")
 		default:
-			return nil, errors.New("读取文件传递结果失败：服务没有返回有效的文件记录。请重新打开接收文件的应用；旧环境请先更新环境组件。")
+			return nil, errors.New("Reading the file transfer result failed: the service did not return a valid file record. Reopen the app that receives the file. For an old environment, update the environment components first.")
 		}
 	}
 	return result, nil
@@ -225,29 +225,29 @@ func (s *Server) fileInputAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !(action == "start" && (input.Target == "browser" && input.ID != "" && len(input.ID) <= 256 || input.Target == "desktop")) && !validFileTargetID(input.Target, input.ID) {
-		http.Error(w, "文件目标无效", 400)
+		http.Error(w, "The file target is invalid.", 400)
 		return
 	}
 	if !s.fileTargetReady(input.Target, input.ID) {
-		http.Error(w, "文件目标已关闭或环境尚未就绪", 409)
+		http.Error(w, "The file target was closed or the environment is not ready yet.", 409)
 		return
 	}
 	if action == "start" && input.Kind != "drop" && input.Kind != "paste" {
-		http.Error(w, "文件传递方式无效", 400)
+		http.Error(w, "The file transfer method is invalid.", 400)
 		return
 	}
 	if (action == "directory" || action == "download-retry") && input.Target != "desktop" {
-		http.Error(w, "文件夹目标无效", 400)
+		http.Error(w, "The folder target is invalid.", 400)
 		return
 	}
 	if action == "directory" {
 		if !s.op.TryLock() {
-			http.Error(w, "另一个操作仍在进行，请稍候", 409)
+			http.Error(w, "Another operation is still running. Wait a moment.", 409)
 			return
 		}
 		defer s.op.Unlock()
 		if !s.fileTargetReady("desktop", input.ID) || s.busy() {
-			http.Error(w, "环境尚未就绪或正在处理其他操作，请稍后重试", 409)
+			http.Error(w, "The environment is not ready or is handling another operation. Try again later.", 409)
 			return
 		}
 	}
@@ -266,7 +266,7 @@ func (s *Server) fileInputAction(w http.ResponseWriter, r *http.Request) {
 	body, _ := json.Marshal(input)
 	if action == "directory" {
 		if input.Workspace == "" {
-			http.Error(w, "请选择已打开的项目", 400)
+			http.Error(w, "Select an open project.", 400)
 			return
 		}
 		workspace, err := s.connectProject(input.Workspace, false)
@@ -313,7 +313,7 @@ func (s *Server) fileInputAction(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) desktopFileRequests(w http.ResponseWriter, r *http.Request) {
 	if !s.fileTargetReady("desktop", "") {
-		http.Error(w, "环境尚未就绪", 409)
+		http.Error(w, "The environment is not ready yet.", 409)
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
@@ -354,7 +354,7 @@ func (s *Server) acknowledgeDesktopDownloads(ctx context.Context, result map[str
 	// host receipt. A failed acknowledgment keeps the guest copy for the next poll.
 	body, _ := json.Marshal(map[string]any{"ids": ids})
 	if _, err := s.guestFiles(ctx, "desktop", "POST", "/download-ack", bytes.NewReader(body), ""); err != nil {
-		diagnostics.Log("warn", "desktop-files", "主机文件已保存，客机保留副本并等待下次确认："+err.Error())
+		diagnostics.Log("warn", "desktop-files", "The host file was saved. The guest kept a copy and is waiting for the next confirmation: "+err.Error())
 	}
 }
 
@@ -366,12 +366,12 @@ func (s *Server) rememberDesktopDownloads(result map[string]any) error {
 	for _, value := range items {
 		item, ok := value.(map[string]any)
 		if !ok {
-			return errors.New("Desktop 下载记录无效")
+			return errors.New("The Desktop download record is invalid.")
 		}
 		id, _ := item["id"].(string)
 		name, _ := item["name"].(string)
 		if !browserFileID.MatchString(id) || !browserFileName(name) {
-			return errors.New("Desktop 下载记录无效")
+			return errors.New("The Desktop download record is invalid.")
 		}
 		visible[id] = true
 		item["target"] = "desktop"
@@ -395,7 +395,7 @@ func (s *Server) rememberDesktopDownloads(result map[string]any) error {
 		}
 		root := s.environmentDir()
 		if item["path"] != strings.TrimRight(guestPath(root), "/")+"/Downloads/"+name {
-			return errors.New("Desktop 下载保存位置无效")
+			return errors.New("The Desktop download save location is invalid.")
 		}
 		path := filepath.Join(root, "Downloads", name)
 		if err := rememberDownload(s.profile, SavedDownload{ID: id, Name: name, Path: path}, true); err != nil {
@@ -412,11 +412,11 @@ func (s *Server) rememberDesktopDownloads(result map[string]any) error {
 func (s *Server) fileInputUpload(w http.ResponseWriter, r *http.Request) {
 	target, id, name := r.PathValue("target"), r.PathValue("id"), r.URL.Query().Get("name")
 	if !validFileTargetID(target, id) || !browserFileName(name) {
-		http.Error(w, "文件名或上传目标无效", 400)
+		http.Error(w, "The file name or upload target is invalid.", 400)
 		return
 	}
 	if !s.fileTargetReady(target, id) {
-		http.Error(w, "文件目标已关闭或环境尚未就绪", 409)
+		http.Error(w, "The file target was closed or the environment is not ready yet.", 409)
 		return
 	}
 	if target == "browser" {
@@ -424,7 +424,7 @@ func (s *Server) fileInputUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.ContentLength > browserFileLimit {
-		http.Error(w, "每个文件不能超过 2 GB", 413)
+		http.Error(w, "Each file cannot exceed 2 GB.", 413)
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Minute)
@@ -445,7 +445,7 @@ func (s *Server) fileInputUpload(w http.ResponseWriter, r *http.Request) {
 			valid = s.validMacOSAttachmentPath(path, name)
 		}
 		if !valid {
-			http.Error(w, "文件保存路径无效", 502)
+			http.Error(w, "The file save path is invalid.", 502)
 			return
 		}
 	}

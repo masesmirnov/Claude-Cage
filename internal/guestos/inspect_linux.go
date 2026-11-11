@@ -13,14 +13,14 @@ func Inspect(_ context.Context) Inspection {
 	r := Inspection{Guest: Debian13, WorkbenchSupport: "supported"}
 	if runtime.GOARCH != "amd64" {
 		r.WorkbenchSupport = "unsupported-host"
-		r.Detail = "Linux 桌面发行包面向 x86_64 主机。"
+		r.Detail = "The Linux desktop release package targets x86_64 hosts."
 		return r
 	}
 	var details bytes.Buffer
 	r.HostCheckPassed = host.LinuxPrereqs(&details)
 	r.Detail = strings.TrimSpace(details.String())
 	if r.HostCheckPassed {
-		r.Detail = "已检测到 Debian 工作台所需的 Linux 虚拟化组件。"
+		r.Detail = "The Linux virtualization components required by the Debian workbench were detected."
 	}
 	return r
 }

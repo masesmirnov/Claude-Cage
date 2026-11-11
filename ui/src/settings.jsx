@@ -35,16 +35,16 @@ import { MacOSLogin } from "./macos-login";
 import { AccountSettings } from "./account";
 import { ClaudeAccountsPanel } from "./claude-accounts";
 const sections = [
-  ["account", "账户", UserRound],
-  ["vault", "密码保险箱", KeyRound],
-  ["claude-accounts", "Claude 账号", UsersRound],
-  ["archived-sessions", "已归档会话", Archive],
-  ["keyboard", "通用", Settings],
-  ["appearance", "外观", Palette],
-  ["mobile", "远程连接", Smartphone],
-  ["network", "网络与代理", Globe2],
-  ["region", "时区与语言", Clock3],
-  ["project", "环境与恢复", RotateCcw],
+  ["account", "Account", UserRound],
+  ["vault", "Password vault", KeyRound],
+  ["claude-accounts", "Claude accounts", UsersRound],
+  ["archived-sessions", "Archived sessions", Archive],
+  ["keyboard", "General", Settings],
+  ["appearance", "Appearance", Palette],
+  ["mobile", "Remote connection", Smartphone],
+  ["network", "Network and proxy", Globe2],
+  ["region", "Time zone and language", Clock3],
+  ["project", "Environment and recovery", RotateCcw],
 ];
 export function SettingsPanel({
   current,
@@ -110,9 +110,9 @@ export function SettingsPanel({
     if (
       (!changed && !accountDirty && !proxyDirty && !resourceDirty) ||
       (await onConfirm({
-        title: "放弃尚未保存的修改？",
-        body: "当前环境不会改变。关闭后会丢弃这次表单修改。",
-        confirm: "放弃修改",
+        title: "Discard unsaved changes?",
+        body: "The current environment will not change. Closing discards this form's changes.",
+        confirm: "Discard changes",
       }))
     )
       onClose();
@@ -157,9 +157,9 @@ export function SettingsPanel({
       environmentChanged &&
       status.vm_running &&
       !(await onConfirm({
-        title: "应用设置并重启环境？",
-        body: "请先保存编辑器中的文件。当前终端会话会结束，浏览器的页面和登录状态将保留。",
-        confirm: "保存并重启",
+        title: "Apply settings and restart the environment?",
+        body: "Save the files in the editor first. The current terminal sessions will end; browser pages and sign-in state are kept.",
+        confirm: "Save and restart",
       }))
     )
       return;
@@ -212,7 +212,7 @@ export function SettingsPanel({
     };
   }, []);
   return (
-    <section className="settings-page" aria-label="设置">
+    <section className="settings-page" aria-label="Settings">
       <aside className="settings-sidebar">
         <button
           id="settings-back"
@@ -220,18 +220,18 @@ export function SettingsPanel({
           onClick={close}
         >
           <ArrowLeft size={17} />
-          返回工作台
+          Back to the workbench
         </button>
-        <h2>设置</h2>
-        <nav aria-label="设置分组">
+        <h2>Settings</h2>
+        <nav aria-label="Settings groups">
           {sections.map(([id, label, Icon]) => (
             <button
               key={id}
               className={section === id ? "selected" : ""}
               aria-current={section === id ? "page" : undefined}
               onClick={async () => {
-                if (id !== section && accountDirty && !(await onConfirm({ title: "放弃尚未保存的修改？", body: "已保存的资料和密码保持不变。", confirm: "放弃修改" }))) return;
-                if (id !== section && proxyDirty && !(await onConfirm({ title: "放弃尚未应用的代理修改？", body: "当前代理仍按已应用的链路运行。离开会丢弃这次节点选择。", confirm: "放弃修改" }))) return;
+                if (id !== section && accountDirty && !(await onConfirm({ title: "Discard unsaved changes?", body: "Saved details and password stay unchanged.", confirm: "Discard changes" }))) return;
+                if (id !== section && proxyDirty && !(await onConfirm({ title: "Discard proxy changes that have not been applied?", body: "The current proxy keeps running on the applied route. Leaving discards this node selection.", confirm: "Discard changes" }))) return;
                 setSection(id);
               }}
             >
@@ -249,14 +249,14 @@ export function SettingsPanel({
           {section === "account" && <AccountSettings busy={busy} onDirty={setAccountDirty} />}
           {section === "claude-accounts" && <ClaudeAccountsPanel store={claudeProfiles} tabs={terminalTabs} onConfirm={onConfirm}
             running={status.vm_running} environmentBusy={busy} login={async (id) => {
-              if (changed && !(await onConfirm({ title: "放弃尚未保存的设置并登录？",
-                body: "打开登录终端会离开设置页。", confirm: "打开登录终端" }))) return;
+              if (changed && !(await onConfirm({ title: "Discard unsaved settings and sign in?",
+                body: "Opening the sign-in terminal leaves the settings page.", confirm: "Open sign-in terminal" }))) return;
               await onClaudeLogin(id);
               onClose();
             }} />}
           <fieldset className="settings-fields" disabled={busy && !(section === "project" && status.storage_recovery?.required)}>
             {section === "mobile" && (isRemoteClient()
-              ? <section className="section-title"><h3>连接这台电脑</h3><p>请先切换到这台电脑的本机环境，再生成或管理手机配对码。</p></section>
+              ? <section className="section-title"><h3>Connect to this computer</h3><p>Switch to this computer's local environment first, then generate or manage phone pairing codes.</p></section>
               : <MobilePairSettings relay={draft.mobile_relay ?? ""} savedRelay={current.mobile_relay ?? ""} onChange={value => update("mobile_relay",value)} onConfirm={onConfirm} />)}
             {section === "network" && (
               <>
@@ -270,7 +270,7 @@ export function SettingsPanel({
                   }}
                 />
                 <label>
-                  加密 DNS
+                  Encrypted DNS
                   <input
                     value={draft.dns_url}
                     onChange={(e) => update("dns_url", e.target.value)}
@@ -284,9 +284,9 @@ export function SettingsPanel({
                     ) : (
                       <Globe2 size={15} />
                     )}
-                    验证出口
+                    Verify exit
                   </button>
-                  <span>通过当前节点查询 IP 和位置</span>
+                  <span>Look up the IP and location through the current node</span>
                 </div>
                 {currentLoc && (
                   <div className={`location-result ${probe ? "fresh" : ""}`}>
@@ -301,19 +301,19 @@ export function SettingsPanel({
                       <small>
                         {currentLoc.timezone} ·{" "}
                         {new Date(currentLoc.checked_at).toLocaleTimeString(
-                          "zh-CN",
+                          "en-US",
                           { hour: "2-digit", minute: "2-digit" },
                         )}{" "}
-                        {probe ? "验证通过" : "当前环境 · 最近检测"}
+                        {probe ? "Verified" : "Current environment · Last check"}
                       </small>
                     </div>
                     {probe && <Check size={18} />}
                   </div>
                 )}
                 <p className="footnote">
-                  代理不可用时，Cage 会停止对外联网。修改表单后需要重新验证。
+                  When the proxy is unavailable, Cage stops all outbound internet access. Verify again after changing the form.
                 </p>
-                <section className="network-exit-policy" aria-label="IP 变化规则">
+                <section className="network-exit-policy" aria-label="IP change rules">
                   <ExitPolicyFields
                     value={draft.exit_policy}
                     onChange={(value) => update("exit_policy", value)}
@@ -328,19 +328,19 @@ export function SettingsPanel({
             {section === "region" && (
               <>
                 <div className="section-title">
-                  <h3>时区与语言</h3>
-                  <p>这些设置作用于 Cage 内的系统、CLI 和浏览器。</p>
+                  <h3>Time zone and language</h3>
+                  <p>These settings apply to the system, CLI and browser inside Cage.</p>
                 </div>
                 {!draft.auto_timezone && !draft.auto_language && (
                   <p className="field-help">
-                    时区和语言将使用下方手动选择的值。所有出口仍须查询国家或地区，确认不属于中国大陆；静态 IP 和不限地区也不能跳过此检查。
+                    The time zone and language use the values you choose manually below. Every exit still has its country or region looked up to confirm it is not in mainland China; static IPs and any-region cannot skip this check.
                   </p>
                 )}
                 <label className="toggle-row">
                   <span>
-                    <strong>跟随出口 IP 的时区</strong>
+                    <strong>Follow the time zone of the exit IP</strong>
                     <small>
-                      在启动或应用设置时重新查询，不会静默重启正在运行的任务。
+                      Looked up again at start or when settings are applied; running tasks are not restarted silently.
                     </small>
                   </span>
                   <input
@@ -351,9 +351,9 @@ export function SettingsPanel({
                   />
                 </label>
                 <label>
-                  {draft.auto_timezone ? "将应用的时区" : "系统时区"}
+                  {draft.auto_timezone ? "Time zone to apply" : "System time zone"}
                   <InlineSelect editable
-                    aria-label={draft.auto_timezone ? "将应用的时区" : "系统时区"}
+                    aria-label={draft.auto_timezone ? "Time zone to apply" : "System time zone"}
                     value={draft.timezone}
                     disabled={draft.auto_timezone}
                     onValueChange={(next) => update("timezone", next)}
@@ -368,23 +368,23 @@ export function SettingsPanel({
                     <Clock3 size={16} />
                     <span>
                       {probe
-                        ? `出口建议时区：${probe.timezone}，保存时应用。`
-                        : "保存时经代理查询所在地；查询失败会保留原配置。"}
+                        ? `Suggested time zone for the exit: ${probe.timezone}, applied on save.`
+                        : "On save, the location is looked up through the proxy; if the lookup fails, the existing setting is kept."}
                     </span>
                     <button
                       className="text-button"
                       onClick={check}
                       disabled={busy}
                     >
-                      现在检测
+                      Check now
                     </button>
                   </div>
                 )}
                 <label className="toggle-row">
                   <span>
-                    <strong>跟随出口地区的语言建议</strong>
+                    <strong>Follow the language suggested for the exit region</strong>
                     <small>
-                      启动或应用设置时更新。多语言地区使用内置默认值；没有建议时保留已选语言。
+                      Updated at start or when settings are applied. Multilingual regions use the built-in default; with no suggestion, the selected language is kept.
                     </small>
                   </span>
                   <input
@@ -399,31 +399,31 @@ export function SettingsPanel({
                     <Globe2 size={16} />
                     <span>
                       {currentLoc?.suggested_locale
-                        ? `地区建议：${currentLoc.suggested_locale} / ${currentLoc.suggested_browser_language}`
-                        : "检测出口后获取地区建议，也可以关闭自动并手动选择。"}
+                        ? `Region suggestion: ${currentLoc.suggested_locale} / ${currentLoc.suggested_browser_language}`
+                        : "Check the exit to get a region suggestion, or turn off automatic and choose manually."}
                     </span>
                     <button
                       className="text-button"
                       onClick={check}
                       disabled={busy}
                     >
-                      现在检测
+                      Check now
                     </button>
                   </div>
                 )}
                 <label>
-                  系统语言
+                  System language
                   <InlineSelect
-                    aria-label="系统语言"
+                    aria-label="System language"
                     value={draft.locale}
                     disabled={draft.auto_language}
                     onValueChange={(next) => update("locale", next)}
                   >
                     {[
                       ["en_US.UTF-8", "English (United States)"],
-                      ["zh_CN.UTF-8", "简体中文"],
-                      ["zh_TW.UTF-8", "繁體中文"],
-                      ["ja_JP.UTF-8", "日本語"],
+                      ["zh_CN.UTF-8", "Chinese (Simplified)"],
+                      ["zh_TW.UTF-8", "Chinese (Traditional)"],
+                      ["ja_JP.UTF-8", "Japanese"],
                       ["de_DE.UTF-8", "Deutsch"],
                       ["fr_FR.UTF-8", "Français"],
                     ].map(([value, label]) => (
@@ -444,18 +444,18 @@ export function SettingsPanel({
                   </InlineSelect>
                 </label>
                 <label>
-                  网页首选语言
+                  Preferred web language
                   <InlineSelect
-                    aria-label="网页首选语言"
+                    aria-label="Preferred web language"
                     value={draft.browser_language}
                     disabled={draft.auto_language}
                     onValueChange={(next) => update("browser_language", next)}
                   >
                     {[
                       ["en-US", "English (United States)"],
-                      ["zh-CN", "简体中文"],
-                      ["zh-TW", "繁體中文"],
-                      ["ja-JP", "日本語"],
+                      ["zh-CN", "Chinese (Simplified)"],
+                      ["zh-TW", "Chinese (Traditional)"],
+                      ["ja-JP", "Japanese"],
                       ["de-DE", "Deutsch"],
                       ["fr-FR", "Français"],
                     ].map(([value, label]) => (
@@ -478,18 +478,18 @@ export function SettingsPanel({
                   </InlineSelect>
                 </label>
                 <p className="footnote">
-                  网页仍可按自己的规则选择语言。工作台界面使用中文。
+                  Web pages can still choose their language by their own rules. The workbench interface uses English.
                 </p>
               </>
             )}
             {section === "keyboard" && (
               <>
                 <div className="section-title">
-                  <h3>通用</h3>
-                  <p>管理工作台的按键习惯与日常操作。</p>
+                  <h3>General</h3>
+                  <p>Manage the workbench's key conventions and everyday actions.</p>
                 </div>
                 <label>
-                  Claude 终端启动命令
+                  Claude terminal startup command
                   <input
                     value={draft.claude_terminal_command ?? "claude"}
                     onChange={(e) => update("claude_terminal_command", e.target.value)}
@@ -500,29 +500,29 @@ export function SettingsPanel({
                   />
                 </label>
                 <p className="field-help">
-                  选择“Claude 终端”后，在所选项目中运行此命令，例如 claude --continue。
-                  留空使用 claude；保存后仅影响新建的 Claude 终端，退出 Claude 后可继续使用 shell。
+                  After choosing "Claude terminal", this command runs in the selected project, for example claude --continue.
+                  Leave blank to use claude. Saving only affects newly created Claude terminals; after you exit Claude you can keep using the shell.
                 </p>
                 {typeof current.balanced_display === "boolean" && <label className="toggle-row">
                   <span>
-                    <strong>优先流畅</strong>
-                    <small>降低浏览器和 Claude Desktop 的清晰度。下次启动环境时生效。</small>
+                    <strong>Prefer smoothness</strong>
+                    <small>Lowers the sharpness of the browser and Claude Desktop. Takes effect the next time the environment starts.</small>
                   </span>
                   <input type="checkbox" role="switch" checked={draft.balanced_display}
                     onChange={(event) => update("balanced_display", event.target.checked)} />
                 </label>}
-                <h4>键盘习惯</h4>
+                <h4>Keyboard style</h4>
                 <div className="choice-list">
                   {[
                     [
                       "mac",
-                      "Mac 快捷键",
-                      "使用 ⌘ 操作网页和编辑器。Linux、Windows 客机使用对应的 Ctrl 快捷键，macOS 客机保留 Command。",
+                      "Mac shortcuts",
+                      "Use ⌘ for web pages and the editor. Linux and Windows guests use the matching Ctrl shortcuts, and macOS guests keep Command.",
                     ],
                     [
                       "native",
-                      "客机原生快捷键",
-                      "按客机系统的习惯使用 Control、Command 和其他组合键。",
+                      "Guest-native shortcuts",
+                      "Follow the guest system's conventions for Control, Command and other key combinations.",
                     ],
                   ].map(([value, title, help]) => (
                     <label
@@ -537,7 +537,7 @@ export function SettingsPanel({
                         onChange={() => {
                           if (!isRemoteClient()) { update("keyboard", value); return; }
                           try { saveClientKeyboard(value); setLocalKeyboard(value); setError(""); }
-                          catch { setError("未能保存本机键盘习惯，请检查本地存储空间。"); }
+                          catch { setError("Could not save the local keyboard style. Check the local storage space."); }
                         }}
                       />
                       <span>
@@ -548,19 +548,19 @@ export function SettingsPanel({
                   ))}
                 </div>
                 <p className="field-help">
-                  终端使用 {usesControl ? "Ctrl+Shift+C / Ctrl+Shift+V" : "⌘C / ⌘V"} 复制粘贴；Ctrl+C 始终用于中断命令。
-                  {isRemoteClient() && "键盘习惯立即生效，仅保存在当前客户端，不修改云端设置。"}
+                  The terminal uses {usesControl ? "Ctrl+Shift+C / Ctrl+Shift+V" : "⌘C / ⌘V"} to copy and paste; Ctrl+C is always used to interrupt a command.
+                  {isRemoteClient() && "The keyboard style takes effect immediately and is saved only on this client; it does not change cloud settings."}
                 </p>
-                <h4>工作台快捷键</h4>
+                <h4>Workbench shortcuts</h4>
                 <div className="shortcut-list">
                   {[
-                    ["打开项目", "⌘O"],
-                    ["新建网页", "⌘T"],
-                    ["新建终端", "⌘⇧↵"],
-                    ["地址栏", "⌘L"],
-                    ["关闭当前标签", "⌘W"],
-                    ["切换标签", "⌘1–9"],
-                    ["设置", "⌘,"],
+                    ["Open project", "⌘O"],
+                    ["New web page", "⌘T"],
+                    ["New terminal", "⌘⇧↵"],
+                    ["Address bar", "⌘L"],
+                    ["Close current tab", "⌘W"],
+                    ["Switch tab", "⌘1–9"],
+                    ["Settings", "⌘,"],
                   ].map(([label, key]) => (
                     <div key={label}>
                       <span>{label}</span>
@@ -573,43 +573,43 @@ export function SettingsPanel({
             {section === "project" && (
               <>
                 <div className="section-title">
-                  <h3>环境与恢复</h3>
-                  <p>{isRemoteClient() ? "项目位于云端，Cage 中的改动会直接保存到云端文件。" : "本机与 Cage 中的改动会双向同步。"}</p>
+                  <h3>Environment and recovery</h3>
+                  <p>{isRemoteClient() ? "The project is in the cloud, and changes made in Cage are saved directly to cloud files." : "Changes on this computer and in Cage sync both ways."}</p>
                 </div>
                 {status.local_vm_storage && !isRemoteClient() && <EnvironmentStorage status={status} onConfirm={onConfirm} />}
                 <div className="setting-summary-row">
-                  <span>当前项目</span>
+                  <span>Current project</span>
                   <strong title={current.workspace}>
                     {status.environment_workspace
-                      ? "Cage 默认工作区"
-                      : current.workspace || "尚未选择项目"}
+                      ? "Cage default workspace"
+                      : current.workspace || "No project selected yet"}
                   </strong>
                 </div>
                 <p className="field-help">
-                  {isRemoteClient() ? "点击侧栏“项目”标题旁的加号，可浏览并选择云端文件夹。" : "点击侧栏“项目”标题旁的加号，可选择其他本地文件夹。"}
+                  {isRemoteClient() ? "Click the plus next to the Projects heading in the sidebar to browse and choose a cloud folder." : "Click the plus next to the Projects heading in the sidebar to choose another local folder."}
                 </p>
                 <div className="project-explanation">
                   <FolderOpen size={22} />
                   <div>
-                    <strong>所有项目共用一个 Cage 环境</strong>
+                    <strong>All projects share one Cage environment</strong>
                     <p>
-                      明确打开的项目文件夹会共享到同一个环境。主机的 Claude
-                      登录、SSH 密钥和个人配置不会自动导入。浏览器下载统一保存到
-                      Cage 默认工作区的 Downloads 文件夹。
+                      Project folders you explicitly open are shared into the same environment. The host's Claude
+                      sign-in, SSH keys and personal configuration are not imported automatically. Browser downloads are all saved to the
+                      Downloads folder of the Cage default workspace.
                     </p>
                   </div>
                 </div>
                 <p className="footnote">
-                  切换项目只改变新终端和文件编辑器的起始位置；已有终端、网页和登录态会保留。
+                  Switching projects only changes where new terminals and the file editor start; existing terminals, web pages and sign-in state are kept.
                 </p>
                 {!status.storage_recovery?.required && <EnvironmentVersions status={status} onConfirm={onConfirm} />}
-                {status.guest_system === "macos" && <section aria-label="客机系统权限">
-                  <h4>客机系统权限</h4>
-                  <p className="field-help">在受限的客机系统设置窗口中完成授权，Cage 会自动检查并重新连接项目。</p>
+                {status.guest_system === "macos" && <section aria-label="Guest system permissions">
+                  <h4>Guest system permissions</h4>
+                  <p className="field-help">Finish the authorization in the restricted guest System Settings window, and Cage checks automatically and reconnects the project.</p>
                   <div className="project-recovery-actions">
-                    <MacOSLogin maintenance="projects" label="文件共享权限" disabled={!status.ready || busy} />
-                    <MacOSLogin maintenance="screen" label="屏幕录制权限" disabled={!status.ready || busy} />
-                    <MacOSLogin maintenance="input" label="辅助功能权限" disabled={!status.ready || busy} />
+                    <MacOSLogin maintenance="projects" label="File sharing permission" disabled={!status.ready || busy} />
+                    <MacOSLogin maintenance="screen" label="Screen recording permission" disabled={!status.ready || busy} />
+                    <MacOSLogin maintenance="input" label="Accessibility permission" disabled={!status.ready || busy} />
                   </div>
                 </section>}
                 {!status.storage_recovery?.required && <ResourceSettings status={status} onConfirm={onConfirm} onDirtyChange={setResourceDirty} />}
@@ -621,9 +621,9 @@ export function SettingsPanel({
                     onClick={async () => {
                       if (
                         await onConfirm({
-                          title: "恢复上一份配置？",
-                          body: "会停止当前环境并恢复上次应用前的设置。已经结束的终端进程无法恢复。",
-                          confirm: "恢复并重启",
+                          title: "Restore the previous configuration?",
+                          body: "The current environment will stop and the settings from before the last apply will be restored. Terminal processes that have already ended cannot be recovered.",
+                          confirm: "Restore and restart",
                         })
                       ) {
                         try {
@@ -636,7 +636,7 @@ export function SettingsPanel({
                     }}
                   >
                     <RotateCcw size={14} />
-                    恢复上一份配置
+                    Restore the previous configuration
                   </button>
                 )}
               </>
@@ -660,7 +660,7 @@ export function SettingsPanel({
                     setSection("region");
                   }}
                 >
-                  手动设置时区和语言
+                  Set the time zone and language manually
                 </button>
               )}
             </div>
@@ -674,14 +674,14 @@ export function SettingsPanel({
                 {status.job?.running
                   ? status.job.message
                   : proxyDirty
-                    ? "代理修改待应用，请点击「应用代理」"
+                    ? "Proxy changes are waiting to be applied. Click Apply proxy"
                     : changed
                     ? environmentChanged && status.vm_running
-                      ? "网络和系统设置需要重启"
-                      : "有尚未保存的修改"
-                    : "没有未保存的修改"}
+                      ? "Network and system settings need a restart"
+                      : "You have unsaved changes"
+                    : "No unsaved changes"}
               </span>
-              <button onClick={close}>返回工作台</button>
+              <button onClick={close}>Back to the workbench</button>
               <button
                 className="primary"
                 disabled={!changed || busy}
@@ -693,8 +693,8 @@ export function SettingsPanel({
                   <Check size={15} />
                 )}{" "}
                 {environmentChanged && status.vm_running
-                  ? "保存并重启"
-                  : "保存设置"}
+                  ? "Save and restart"
+                  : "Save settings"}
               </button>
             </>
           </footer>

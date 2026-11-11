@@ -716,7 +716,7 @@ private func testAgentTransport(_ board: NSPasteboard) throws {
             try writeAll(fd, jsonData(["operation": "stream"]))
             guard let first = try reader.line(), let hello = try json(first)["hello"] as? [String: Any],
                   hello["os"] as? String == "darwin", hello["available"] as? Bool == true else { throw ClipboardFailure("test_hello_failed") }
-            try writeAll(fd, jsonData(["text": "stream text 中文", "serial": 9]))
+            try writeAll(fd, jsonData(["text": "stream text Привет", "serial": 9]))
             guard let acknowledged = try reader.line(), try json(acknowledged)["ack"] as? Int == 9 else { throw ClipboardFailure("test_ack_failed") }
             onGUI { board.clearContents(); board.setString("guest pushed text", forType: .string); agent.poll() }
             guard let pushed = try reader.line(), try json(pushed)["text"] as? String == "guest pushed text" else { throw ClipboardFailure("test_push_failed") }
@@ -724,7 +724,7 @@ private func testAgentTransport(_ board: NSPasteboard) throws {
             var bytes = Data([0, 255, 128, 10])
             var length = UInt32(bytes.count).littleEndian
             bytes = Data(bytes: &length, count: 4) + bytes + Data(repeating: 0, count: 4)
-            let saved = try rpc(["operation": "upload", "name": "中文 ' .bin"], bytes: bytes)
+            let saved = try rpc(["operation": "upload", "name": "Привет ' .bin"], bytes: bytes)
             guard let files = saved["paths"] as? [String], files.count == 1,
                   try Data(contentsOf: URL(fileURLWithPath: files[0])) == Data([0, 255, 128, 10]) else { throw ClipboardFailure("test_upload_failed") }
             let accepted = try rpc(["operation": "write", "files": files, "serial": 10])
@@ -758,7 +758,7 @@ private func testAgentTransport(_ board: NSPasteboard) throws {
 private func selfTest() throws {
     let board = NSPasteboard(name: NSPasteboard.Name("cage-clipboard-qa-" + UUID().uuidString))
     defer { board.releaseGlobally() }
-    let text = "中文🙂\nexact text"
+    let text = "Привет🙂\nexact text"
     try setBoard(board, ["text": text]); guard try boardContent(board)["text"] as? String == text else { throw ClipboardFailure("text_test_failed") }
     let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 11, pixelsHigh: 7, bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
     let value = bitmap.representation(using: .png, properties: [:])!

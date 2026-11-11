@@ -9,7 +9,7 @@ export const isRemoteClient = () => current.mode === "remote";
 
 export function assertConnection(connectionID) {
   if (current.connection_id !== connectionID) {
-    const error = new Error("工作环境已切换，请在当前环境重新操作。");
+    const error = new Error("The working environment has changed. Repeat the action in the current environment.");
     error.code = "connection_changed";
     throw error;
   }
@@ -48,7 +48,7 @@ export function clientKeyboard(serverKeyboard, context = current) {
 }
 
 export function saveClientKeyboard(value) {
-  if (!["mac", "native"].includes(value)) throw new Error("键盘习惯无效");
+  if (!["mac", "native"].includes(value)) throw new Error("The keyboard style is invalid.");
   localStorage.setItem(clientStorageKey("cage-keyboard"), value);
   window.dispatchEvent(new Event("cage-client-preferences"));
 }

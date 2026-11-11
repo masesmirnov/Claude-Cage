@@ -60,18 +60,12 @@ Page custom ShortcutOptionsPage ShortcutOptionsLeave
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "English"
-!insertmacro MUI_LANGUAGE "SimpChinese"
 
 LangString CageDirectoryHelp ${LANG_ENGLISH} "Choose where to install the Cage application. On first launch, you can choose a separate drive for the Linux image, download cache, and virtual disks before starting the environment."
-LangString CageDirectoryHelp ${LANG_SIMPCHINESE} "请选择 Cage 程序的安装目录。首次打开 Cage 后，可以在启动环境前单独选择存放 Linux 镜像、下载缓存和虚拟磁盘的磁盘。"
 LangString CageShortcutsTitle ${LANG_ENGLISH} "Shortcuts"
-LangString CageShortcutsTitle ${LANG_SIMPCHINESE} "快捷方式"
 LangString CageShortcutsHelp ${LANG_ENGLISH} "Choose where to add Cage shortcuts for your Windows account."
-LangString CageShortcutsHelp ${LANG_SIMPCHINESE} "选择为当前 Windows 用户添加的 Cage 快捷方式。"
 LangString CageDesktopShortcut ${LANG_ENGLISH} "Add a desktop shortcut"
-LangString CageDesktopShortcut ${LANG_SIMPCHINESE} "添加桌面快捷方式"
 LangString CageStartMenuShortcuts ${LANG_ENGLISH} "Add to the Start menu"
-LangString CageStartMenuShortcuts ${LANG_SIMPCHINESE} "添加到开始菜单"
 
 Var UpdateMode
 Var StageDir
@@ -172,12 +166,12 @@ FunctionEnd
   Pop $1
   ${If} $0 == 0
     SetErrorLevel 2
-    Abort "无法锁定 Cage 安装操作，请核对系统权限后重试。"
+    Abort "Could not lock the Cage installation operation. Check the system permissions and try again."
   ${EndIf}
   StrCpy $InstallationMutex $0
   ${If} $1 == 183
     SetErrorLevel 2
-    Abort "另一个 Cage 安装或卸载仍在进行，请等待完成后重试。"
+    Abort "Another Cage install or uninstall is still in progress. Wait for it to finish and try again."
   ${EndIf}
 !macroend
 
@@ -372,20 +366,20 @@ Function RestorePreservedFiles
   ${If} $0 != 0
     DetailPrint "$1"
     SetErrorLevel 2
-    Abort "安装恢复尚未完成。文件分别保留在 $BackupDir 和 $StageDir，请保留这两个目录后重试。"
+    Abort "Installation recovery is not complete. Files are kept in $BackupDir and $StageDir. Keep both directories and try again."
   ${EndIf}
   ClearErrors
   Rename "$BackupDir" "$INSTDIR"
   ${If} ${Errors}
     SetErrorLevel 2
-    Abort "原安装目录未能恢复。文件保留在 $BackupDir，新程序保留在 $StageDir。"
+    Abort "The original installation directory could not be restored. Files are kept in $BackupDir and the new program is kept in $StageDir."
   ${EndIf}
   nsExec::ExecToStack '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\installation-files.ps1" -Operation complete -Target "$INSTDIR" -Receipt "$TransactionRecord" $DiagnosticArguments'
   Pop $0
   Pop $1
   ${If} $0 != 0
     SetErrorLevel 2
-    Abort "仍有文件需要核对，安装回执保留在 $TransactionRecord。请保留相关目录后处理。"
+    Abort "Some files still need verification. The installation receipt is kept in $TransactionRecord. Keep the related directories and resolve this."
   ${EndIf}
 FunctionEnd
 
@@ -395,7 +389,7 @@ Section "Cage" Main
   StrCpy $TransactionRecord "$INSTDIR.cage-installation.json"
   ${If} ${FileExists} "$TransactionRecord"
     SetErrorLevel 2
-    Abort "存在未处理的安装事务记录：$TransactionRecord。请先按记录恢复保留的目录，再重试。"
+    Abort "An unresolved installation transaction record exists: $TransactionRecord. Restore the kept directories from the record first, then try again."
   ${EndIf}
   !insertmacro InstallPhase "checking_destination"
   Call CheckDestination
@@ -455,7 +449,7 @@ Section "Cage" Main
   SetOutPath "$PLUGINSDIR"
   File /oname=installation-files.ps1 "installation-files.ps1"
   File /oname=verified-file-deletion.cs "verified-file-deletion.cs"
-  DetailPrint "正在检查并保留已有项目和修改文件…"
+  DetailPrint "Checking and preserving existing projects and modified files…"
   !insertmacro InstallPhase "preparing_file_transaction"
   nsExec::ExecToStack '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\installation-files.ps1" -Operation prepare -Target "$StageDir" -Source "$INSTDIR" -Backup "$BackupDir" -Receipt "$TransactionRecord" $DiagnosticArguments'
   Pop $0
@@ -467,7 +461,7 @@ Section "Cage" Main
     SetOutPath "$TEMP"
     RMDir /r "$StageDir"
     SetErrorLevel 2
-    Abort "无法安全保留现有文件，安装已停止。原安装目录已保留，请检查磁盘空间、文件占用和安装日志。"
+    Abort "Could not safely preserve the existing files and the installation was stopped. The original installation directory was kept. Check disk space, file locks, and the installation log."
   ${EndIf}
   SetOutPath "$TEMP"
   ${If} $ExistingInstall == "1"
@@ -482,7 +476,7 @@ Section "Cage" Main
       SetErrorLevel 2
       Abort "Could not move the installed application. Quit Cage and retry."
     ${EndIf}
-    DetailPrint "正在迁入个人文件并保留原有链接…"
+    DetailPrint "Moving personal files in and preserving existing links…"
     !insertmacro InstallPhase "moving_personal_files"
     nsExec::ExecToStack '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\installation-files.ps1" -Operation move -Target "$StageDir" -Source "$BackupDir" -Receipt "$TransactionRecord" $DiagnosticArguments'
     Pop $0
@@ -494,7 +488,7 @@ Section "Cage" Main
       Call RestorePreservedFiles
       RMDir /r "$StageDir"
       SetErrorLevel 2
-      Abort "个人文件未能迁入新程序目录，原安装已恢复。请关闭占用文件的程序后重试。"
+      Abort "Personal files could not be moved into the new program directory, and the original installation was restored. Close any program using the files and try again."
     ${EndIf}
   ${Else}
     RMDir "$INSTDIR"
@@ -512,7 +506,7 @@ Section "Cage" Main
   ${EndIf}
   ${If} $BackupDir != ""
     !insertmacro InstallPhase "cleaning_previous_application"
-    DetailPrint "正在清理已核对的旧程序文件…"
+    DetailPrint "Cleaning up the verified old program files…"
     nsExec::ExecToStack '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\installation-files.ps1" -Operation cleanup -Target "$INSTDIR" -Source "$BackupDir" -Receipt "$TransactionRecord" $DiagnosticArguments'
     Pop $0
     Pop $1
@@ -520,9 +514,9 @@ Section "Cage" Main
     Call WriteInstallDiagnostic
     DetailPrint "$1"
     ${If} $0 != 0
-      DetailPrint "旧目录中仍有需要保留的文件：$BackupDir"
+      DetailPrint "Files that must be kept remain in the old directory: $BackupDir"
       SetErrorLevel 2
-      Abort "安装仍有待恢复的文件。请保留 $TransactionRecord 及其中记录的目录，再处理恢复。"
+      Abort "The installation still has files to restore. Keep $TransactionRecord and the directories it lists, then resolve the recovery."
     ${EndIf}
   ${Else}
     !insertmacro InstallPhase "completing_file_transaction"
@@ -533,7 +527,7 @@ Section "Cage" Main
     Call WriteInstallDiagnostic
     ${If} $0 != 0
       SetErrorLevel 2
-      Abort "安装回执未能完成，记录保留在 $TransactionRecord。"
+      Abort "The installation receipt could not be completed. The record is kept in $TransactionRecord."
     ${EndIf}
   ${EndIf}
   !insertmacro InstallPhase "registering_installation"
@@ -603,7 +597,7 @@ Section "Uninstall"
     StrCpy $HelperExit "pending_install_transaction"
     Call un.WriteInstallDiagnostic
     SetErrorLevel 2
-    Abort "存在待恢复的安装事务，请先处理 $INSTDIR.cage-installation.json 中记录的目录。"
+    Abort "An installation transaction is waiting to be recovered. First handle the directories listed in $INSTDIR.cage-installation.json."
   ${EndIf}
   InitPluginsDir
   SetOutPath "$PLUGINSDIR"
@@ -622,7 +616,7 @@ Section "Uninstall"
   DetailPrint "$1"
   ${If} $0 != 0
     SetErrorLevel 2
-    Abort "部分程序文件正在使用或无法读取，卸载未完成。个人文件已保留，请关闭占用程序后重试。"
+    Abort "Some program files are in use or cannot be read, so the uninstall did not complete. Personal files were kept. Close any program using them and try again."
   ${EndIf}
   !insertmacro UninstallPhase "removing_shortcuts_and_registration"
   Delete "$DESKTOP\Cage.lnk"

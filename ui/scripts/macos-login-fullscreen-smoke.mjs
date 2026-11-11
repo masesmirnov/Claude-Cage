@@ -41,12 +41,12 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 1920, height: 108
     assert.equal(inputs.length, count);
   }
   try {
-    if (viewport.width < 600) await page.getByRole("button",{name:"收起侧栏",exact:true}).click();
-    const trigger=page.getByRole("button",{name:"登录客机账户"});
+    if (viewport.width < 600) await page.getByRole("button",{name:"Collapse sidebar",exact:true}).click();
+    const trigger=page.getByRole("button",{name:"Sign in to the guest account"});
     await trigger.click({timeout:7000});
-    const screen=page.getByRole("dialog",{name:"登录虚拟 Mac"});
+    const screen=page.getByRole("dialog",{name:"Sign in to the virtual Mac"});
     const img=screen.getByRole("img");
-    const input=screen.getByLabel(/^客机登录键盘/);
+    const input=screen.getByLabel(/^Guest sign-in keyboard/);
     await img.waitFor();
     await page.waitForFunction(() => document.activeElement?.classList.contains("mac-login-keyboard") &&
       document.querySelector(".mac-login-canvas img")?.naturalWidth === 1920);
@@ -56,7 +56,7 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 1920, height: 108
     assert.ok(panel.width < viewport.width && panel.height < viewport.height, "login should use a compact panel");
     const stage=screen.locator(".mac-login-stage");
     const area=await stage.boundingBox();
-    const focus=screen.getByRole("button",{name:"登录区域", exact:true});
+    const focus=screen.getByRole("button",{name:"Sign-in area", exact:true});
     assert.equal(await focus.getAttribute("aria-pressed"),"true");
     const initial=await img.boundingBox();
     // Avatar, password and the lower login message must all remain in the crop.
@@ -71,7 +71,7 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 1920, height: 108
     inputs.length=0;
     if (process.env.CAGE_LOGIN_SCREENSHOTS) await page.screenshot({path:`${process.env.CAGE_LOGIN_SCREENSHOTS}/login-${viewport.width}.png`});
     assert.equal(await page.evaluate(() => window.cageEditAction("paste")),false);
-    await screen.getByRole("button",{name:"完整画面"}).click();
+    await screen.getByRole("button",{name:"Full view"}).click();
     const fit=await img.boundingBox();
     assert.ok(Math.abs(fit.width/fit.height - 1.6)<.005);
     if (fit.x > area.x+1) await page.mouse.click((area.x+fit.x)/2,area.y+area.height/2);
@@ -103,11 +103,11 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 1920, height: 108
     await waitInput(5);
     assert.deepEqual(inputs.slice(-2).map(({code,shift})=>[code,shift]),[[6,true],[26,false]]);
     assert.equal(await input.inputValue(),"");
-    await screen.getByRole("button",{name:"完整画面"}).click();
+    await screen.getByRole("button",{name:"Full view"}).click();
     assert.deepEqual(await img.boundingBox(),fit);
     await page.evaluate(() => window.cageNativeAction("closeTab"));
     await screen.waitFor({state:"detached"});
-    await page.waitForFunction(() => document.activeElement?.textContent === "登录客机账户");
+    await page.waitForFunction(() => document.activeElement?.textContent === "Sign in to the guest account");
     assert.ok(!await page.locator("#root").evaluate((el)=>el.inert));
     frameMime="image/png";
     await trigger.click();
@@ -126,7 +126,7 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 1920, height: 108
 // Exercise the first-setup password button through the normal page entry.
 // Frame polling must preserve an operation error until a user action succeeds.
 {
-  let operationError = "请先点选系统授权窗口的密码框，再点击填写授权密码";
+  let operationError = "Click the password field in the system authorization window first, then click Fill in authorization password.";
   let frameError = "", frames = 0, latestFrame = "";
   const fixture = await createWorkbench({
     async beforeNavigate(page, state) {
@@ -161,8 +161,8 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 1920, height: 108
   });
   const {page, browser, errors} = fixture;
   try {
-    const screen = page.getByRole("dialog", {name:"首次设置虚拟 Mac"});
-    const fill = screen.getByRole("button", {name:"填写授权密码", exact:true});
+    const screen = page.getByRole("dialog", {name:"First-run setup of the virtual Mac"});
+    const fill = screen.getByRole("button", {name:"Fill in authorization password", exact:true});
     await screen.getByRole("img").waitFor();
     await fill.click();
     await screen.getByRole("alert").filter({hasText:operationError}).waitFor();
@@ -174,7 +174,7 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 1920, height: 108
     assert.equal(await screen.getByRole("alert").isVisible(), true, "a successful frame erased the password error");
     assert.equal(await screen.getByRole("alert").innerText(), operationError);
 
-    frameError = "授权画面暂时无法读取";
+    frameError = "The authorization view cannot be read right now.";
     await page.waitForResponse(async response => response.url().endsWith("/api/macos/first-setup") &&
       response.request().postDataJSON()?.action === "frame" && (await response.json()).error === frameError);
     operationError = "";
@@ -183,12 +183,12 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 1920, height: 108
     frameError = "";
     await screen.getByRole("alert").waitFor({state:"hidden"});
 
-    operationError = "系统授权窗口或密码框已变化，填写已停止，请重新选择";
+    operationError = "The system authorization window or password field has changed. Filling stopped; select it again.";
     await fill.click();
     await screen.getByRole("alert").filter({hasText:operationError}).waitFor();
-    await screen.getByRole("button", {name:"返回设置指引"}).click();
+    await screen.getByRole("button", {name:"Back to setup guide"}).click();
     await screen.waitFor({state:"detached"});
-    await page.getByRole("button", {name:"打开客机系统设置", exact:true}).click();
+    await page.getByRole("button", {name:"Open guest system settings", exact:true}).click();
     await screen.getByRole("img").waitFor();
     assert.equal(await screen.getByRole("alert").count(), 0, "reopening retained an old operation error");
     assert.deepEqual(errors, []);

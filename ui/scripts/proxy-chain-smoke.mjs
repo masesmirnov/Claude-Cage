@@ -56,38 +56,38 @@ try{
  const page=await browser.newPage({viewport:{width:1280,height:1000}});
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto(launch.url);
- await page.getByLabel('用户名',{exact:true}).fill('Proxy Chain QA');
- await page.getByLabel('设置密码',{exact:true}).fill('isolated-chain-test-password');
- await page.getByLabel('确认密码',{exact:true}).fill('isolated-chain-test-password');
- await page.getByRole('button',{name:'创建本地账户',exact:true}).click();
+ await page.getByLabel('Username',{exact:true}).fill('Proxy Chain QA');
+ await page.getByLabel('Set password',{exact:true}).fill('isolated-chain-test-password');
+ await page.getByLabel('Confirm password',{exact:true}).fill('isolated-chain-test-password');
+ await page.getByRole('button',{name:'Create local account',exact:true}).click();
  const enter=async()=>{
-  await page.getByRole('button',{name:/^设置/}).click();
-  await page.getByRole('button',{name:'网络与代理',exact:true}).click();
-  await page.getByRole('heading',{name:'内置代理',exact:true}).waitFor();
+  await page.getByRole('button',{name:/^Settings/}).click();
+  await page.getByRole('button',{name:'Network and proxy',exact:true}).click();
+  await page.getByRole('heading',{name:'Built-in proxy',exact:true}).waitFor();
  };
  await enter();
  const idle=()=>page.waitForFunction(()=>!document.querySelector('.proxy-progress'));
- for(const [name,node,upstreamPort] of [['中转来源','本地中转',entry.port],['住宅来源','住宅出口',exit.port]]){
-  await page.getByRole('tab',{name:'订阅',exact:true}).click();
-  await page.getByRole('button',{name:'添加来源',exact:true}).click();
-  await page.getByRole('button',{name:'本地 YAML',exact:true}).click();
-  await page.getByLabel('来源名称',{exact:true}).fill(name);
-  await page.getByLabel('节点 YAML',{exact:true}).fill(`proxies:\n - {name: ${node}, type: http, server: 127.0.0.1, port: ${upstreamPort}}\n`);
-  await page.getByRole('button',{name:'导入并验证',exact:true}).click();await idle();
+ for(const [name,node,upstreamPort] of [['Relay source','Local relay',entry.port],['Residential source','Residential exit',exit.port]]){
+  await page.getByRole('tab',{name:'Subscriptions',exact:true}).click();
+  await page.getByRole('button',{name:'Add source',exact:true}).click();
+  await page.getByRole('button',{name:'Local YAML',exact:true}).click();
+  await page.getByLabel('Source name',{exact:true}).fill(name);
+  await page.getByLabel('Node YAML',{exact:true}).fill(`proxies:\n - {name: ${node}, type: http, server: 127.0.0.1, port: ${upstreamPort}}\n`);
+  await page.getByRole('button',{name:'Import and verify',exact:true}).click();await idle();
   await page.getByText(name,{exact:true}).waitFor();
  }
- await page.getByRole('tab',{name:'诊断',exact:true}).click();
- await page.getByLabel('独立代理端口',{exact:true}).fill(String(port));
- await page.getByRole('tab',{name:'节点',exact:true}).click();
- await page.getByRole('button',{name:'链式代理',exact:true}).click();
+ await page.getByRole('tab',{name:'Diagnostics',exact:true}).click();
+ await page.getByLabel('Dedicated proxy port',{exact:true}).fill(String(port));
+ await page.getByRole('tab',{name:'Nodes',exact:true}).click();
+ await page.getByRole('button',{name:'Chained proxy',exact:true}).click();
  const choose=async(label,name)=>{
   await page.getByRole('combobox',{name:label,exact:true}).click();
   await page.getByRole('option',{name,exact:true}).click();
  };
- await choose('最终出口','住宅出口');
- await choose('中转节点','本地中转');
- await page.getByRole('button',{name:'应用代理',exact:true}).click();await idle();
- await page.getByText('当前配置已应用',{exact:true}).waitFor();
+ await choose('Final exit','Residential exit');
+ await choose('Relay node','Local relay');
+ await page.getByRole('button',{name:'Apply proxy',exact:true}).click();await idle();
+ await page.getByText('The current configuration is applied',{exact:true}).waitFor();
  const state=()=>page.evaluate(()=>fetch('/api/proxy').then(r=>r.json()));
  const applied=await state();assert.equal(applied.active,true);assert.equal(applied.running,true);assert.equal(applied.route.length,2);
  const stored=JSON.parse(await fs.readFile(path.join(profile,'proxy/sources.json')));
@@ -99,21 +99,21 @@ try{
  assert.deepEqual(exit.destinations,[`127.0.0.1:${target.address().port}`]);
  await page.reload();await enter();
  assert.equal((await state()).route.join(','),applied.route.join(','));
- assert.match(await page.getByRole('combobox',{name:'中转节点',exact:true}).innerText(),/本地中转/);
+ assert.match(await page.getByRole('combobox',{name:'Relay node',exact:true}).innerText(),/Local relay/);
  await page.locator('.settings-content').evaluate(el=>el.scrollTop=0);
  await page.waitForFunction(()=>[...document.querySelectorAll('.proxy-route-hop')].every(el=>getComputedStyle(el).opacity==='1'));
  await page.screenshot({path:path.join(output,'real-chain.png')});
  // Single-node explicitly bypasses the intermediate, without editing its source.
  const entryCount=entry.destinations.length;
- await page.getByRole('button',{name:'单节点',exact:true}).click();
- await page.getByRole('button',{name:'应用代理',exact:true}).click();await idle();
- await page.getByText('当前配置已应用',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Single node',exact:true}).click();
+ await page.getByRole('button',{name:'Apply proxy',exact:true}).click();await idle();
+ await page.getByText('The current configuration is applied',{exact:true}).waitFor();
  assert.equal((await through()).stdout,'residential-exit-verified');
  assert.equal(entry.destinations.length,entryCount);
  // Re-enable the chain, then break its exit: no direct target request may occur.
- await page.getByRole('button',{name:'链式代理',exact:true}).click();await choose('中转节点','本地中转');
- await page.getByRole('button',{name:'应用代理',exact:true}).click();await idle();
- await page.getByText('当前配置已应用',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Chained proxy',exact:true}).click();await choose('Relay node','Local relay');
+ await page.getByRole('button',{name:'Apply proxy',exact:true}).click();await idle();
+ await page.getByText('The current configuration is applied',{exact:true}).waitFor();
  for(const socket of sockets)socket.destroy();
  await new Promise(resolve=>exit.server.close(resolve));
  const beforeFailure=targetRequests;

@@ -15,7 +15,7 @@ func TestPasswordKeysKeepPrintableKeysSeparateFromSubmit(t *testing.T) {
 			t.Fatal("password emitted a submit or navigation key")
 		}
 	}
-	for _, value := range []string{"password\nreturn", "password\x00", "密码password"} {
+	for _, value := range []string{"password\nreturn", "password\x00", "Парольpassword"} {
 		if _, ok := passwordKeys(value); ok {
 			t.Fatal("accepted control or unsupported character")
 		}

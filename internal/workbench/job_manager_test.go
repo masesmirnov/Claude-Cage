@@ -76,7 +76,7 @@ func TestJobManagerStopPreemptsAndFencesOldExecution(t *testing.T) {
 	awaitJobSignal(t, canceled)
 	awaitJobSignal(t, stopped)
 	state := awaitJobIdle(t, &manager)
-	if state.ID != stop.ID || state.Error != "" || state.Log != "" || state.Message != "已完成" {
+	if state.ID != stop.ID || state.Error != "" || state.Log != "" || state.Message != "Done" {
 		t.Fatalf("old execution changed stop result: %+v", state)
 	}
 
@@ -96,7 +96,7 @@ func TestJobManagerStopPreemptsAndFencesOldExecution(t *testing.T) {
 	_, _ = old.Write([]byte("late output"))
 	state = manager.snapshot()
 	close(release)
-	if state.Log != "" || state.Message != "正在准备…" {
+	if state.Log != "" || state.Message != "Preparing…" {
 		t.Fatalf("late output reached another job: %+v", state)
 	}
 }
@@ -118,7 +118,7 @@ func TestJobManagerCancellationWhileWaitingFinishesState(t *testing.T) {
 	operation.Unlock()
 	defer manager.close()
 	state := awaitJobIdle(t, &manager)
-	if ran.Load() || state.Message != "已取消" || state.Error != "" {
+	if ran.Load() || state.Message != "Canceled" || state.Error != "" {
 		t.Fatalf("cancelled waiting job executed or stayed running: %+v", state)
 	}
 }
@@ -135,7 +135,7 @@ func TestJobManagerRepeatedStopCanRequestLogout(t *testing.T) {
 				close(started)
 				<-release
 				if stopFails {
-					return errors.New("测试模拟：环境停止失败")
+					return errors.New("Test simulation: environment stop failed")
 				}
 				return nil
 			})
@@ -162,7 +162,7 @@ func TestJobManagerRepeatedStopCanRequestLogout(t *testing.T) {
 			}
 			state := awaitJobIdle(t, &manager)
 			if stopFails {
-				if locked.Load() != 0 || state.Error != "测试模拟：环境停止失败" {
+				if locked.Load() != 0 || state.Error != "Test simulation: environment stop failed" {
 					t.Fatalf("failed stop locked account: %+v count=%d", state, locked.Load())
 				}
 			} else if locked.Load() != 1 || state.Error != "" {
@@ -233,7 +233,7 @@ func TestJobManagerCloseWaitsForCanceledAndSupersededWork(t *testing.T) {
 	awaitJobSignal(t, closed)
 	awaitJobSignal(t, closedAgain)
 	state := manager.snapshot()
-	if stopRan.Load() || state.Running || state.Message != "已取消" {
+	if stopRan.Load() || state.Running || state.Message != "Canceled" {
 		t.Fatalf("queued stop ran after shutdown: %+v", state)
 	}
 }
@@ -249,7 +249,7 @@ func TestJobManagerFinalizationAndOutput(t *testing.T) {
 		t.Fatal("output without an execution changed state")
 	}
 	_, err := manager.submit(&operation, "stop", 0, nil, func() error {
-		return errors.New("无法写入账户锁定状态")
+		return errors.New("The account lock state could not be written")
 	}, func() error {
 		_, _ = manager.execution().Write([]byte(strings.Repeat("a\n", 12500) + "tail"))
 		return nil
@@ -258,7 +258,7 @@ func TestJobManagerFinalizationAndOutput(t *testing.T) {
 		t.Fatal(err)
 	}
 	state := awaitJobIdle(t, &manager)
-	if state.Error != "无法写入账户锁定状态" || len(state.Log) > 24000 || !strings.Contains(state.Log, "12499 additional times") || !strings.HasSuffix(state.Log, "tail\n") {
+	if state.Error != "The account lock state could not be written" || len(state.Log) > 24000 || !strings.Contains(state.Log, "12499 additional times") || !strings.HasSuffix(state.Log, "tail\n") {
 		t.Fatalf("finalization error or bounded log lost: %+v", state)
 	}
 	_, err = manager.submit(&operation, "stop", 0, nil, nil, func() error {
@@ -298,13 +298,13 @@ func TestJobManagerPreservesProjectRecovery(t *testing.T) {
 	var operation sync.Mutex
 	defer manager.close()
 	_, err := manager.submit(&operation, "safety", 0, nil, nil, func() error {
-		return fmt.Errorf("network prerequisite: %w", &projectShareError{Path: "/shared/workspace", Recovery: "project-approval", Message: "请允许工作区访问"})
+		return fmt.Errorf("Network prerequisite: %w", &projectShareError{Path: "/shared/workspace", Recovery: "project-approval", Message: "Allow workspace access"})
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	job := awaitJobIdle(t, &manager)
-	if job.Recovery != "project-approval" || job.Workspace != "/shared/workspace" || !strings.Contains(job.Error, "请允许工作区访问") {
+	if job.Recovery != "project-approval" || job.Workspace != "/shared/workspace" || !strings.Contains(job.Error, "Allow workspace access") {
 		t.Fatalf("lost actionable failure: %+v", job)
 	}
 	_, err = manager.submit(&operation, "safety", 0, nil, nil, func() error { return nil })

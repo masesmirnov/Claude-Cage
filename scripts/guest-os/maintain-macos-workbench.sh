@@ -9,7 +9,7 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 lock=/var/run/cage-component-update.lock
 [[ ! -L $lock && ( ! -e $lock || ( -f $lock && $(stat -f %u "$lock") == 0 ) ) ]]
 exec 9>"$lock"
-/usr/bin/lockf -s -t 0 9 || { echo '另一项组件更新仍在运行，请稍后重试。' >&2; exit 1; }
+/usr/bin/lockf -s -t 0 9 || { echo 'Another component update is still running. Try again later.' >&2; exit 1; }
 umask 022
 kit=$(cd -P "$1" && pwd)
 # Helpers run as the ordinary guest user and need a traversable working directory.
@@ -66,7 +66,7 @@ finish() {
     if (( status == 0 )); then
         rm -rf "$backup"
     else
-        printf '组件更新未完成。已恢复可恢复的原文件，备份位于 %s。可以在 Cage 重试。\n' "$backup" >&2
+        printf 'Component update did not complete. Recoverable original files were restored; the backup is at %s. You can retry in Cage.\n' "$backup" >&2
     fi
     exit "$status"
 }
@@ -183,4 +183,4 @@ for ((index=0; index<${#loaded[@]}; index++)); do
     sudo -Hu "$user" /bin/launchctl bootstrap "gui/$uid" "/Users/$user/Library/LaunchAgents/$label.plist"
 done
 /usr/bin/perl "$kit/native-component-manifest.pl" publish "$manifest" "$kit"
-printf '%s\n' '原生客机组件已更新并通过文件核验。'
+printf '%s\n' 'Native guest components were updated and passed file verification.'

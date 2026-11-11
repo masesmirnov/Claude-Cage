@@ -70,7 +70,7 @@ final class MacDesktopDownloads {
             records = saved.filter { UUID(uuidString: $0.id) != nil && Self.validName($0.name) }
             for index in records.indices where records[index].state == "downloading" {
                 records[index].state = "failed"
-                records[index].error = "保存过程被中断，请从 Claude Desktop 重新下载。"
+                records[index].error = "Saving was interrupted. Download the file again from Claude Desktop."
             }
         }
         self.root = root
@@ -168,7 +168,7 @@ final class MacDesktopDownloads {
                 metadataBound.insert(records[index].id)
                 records[index].openError = nil
             } catch {
-                records[index].openError = "文件打开关联未能完成，请在 Cage 下载列表中打开文件。"
+                records[index].openError = "The file open association did not complete. Open the file from the Cage download list."
             }
             changed = changed || previous != records[index].openError
         }
@@ -193,16 +193,16 @@ final class MacDesktopDownloads {
         let watcher = try MacDownloadWatch(directory: path.deletingLastPathComponent().path, file: path.path) { [weak self] valid in
             Task { @MainActor in
                 if valid { await self?.complete(record.id, pid: pid) }
-                else { self?.fail(record.id, message: "保存通知已中断，请从 Claude Desktop 重新下载。") }
+                else { self?.fail(record.id, message: "The save notification was interrupted. Download the file again from Claude Desktop.") }
             }
         }
         records.append(record); watches[record.id] = watcher
         do { try persist(); try await submit(path.path) }
-        catch { fail(record.id, message: "客机保存窗口未接收文件位置，请重新下载。"); throw error }
+        catch { fail(record.id, message: "The guest save dialog did not accept the file location. Download the file again."); throw error }
         watcher.expiry = Task { @MainActor [weak self] in
             try? await Task.sleep(nanoseconds: 1800 * 1_000_000_000)
             if self?.records.first(where: { $0.id == record.id })?.state == "downloading" {
-                self?.fail(record.id, message: "未能确认文件保存完成，请从 Claude Desktop 重新下载。")
+                self?.fail(record.id, message: "Could not confirm that the file was saved. Download the file again from Claude Desktop.")
             }
         }
     }
@@ -232,14 +232,14 @@ final class MacDesktopDownloads {
                     if let metadata = MacNativeOpen.shared.openWithMetadata {
                         if openMetadata != metadata { openMetadata = metadata; metadataBound.removeAll() }
                         do { try bindOpenMetadata(metadata, fd: fd, info: info); metadataBound.insert(id) }
-                        catch { records[index].openError = "文件打开关联未能完成，请在 Cage 下载列表中打开文件。" }
+                        catch { records[index].openError = "The file open association did not complete. Open the file from the Cage download list." }
                     }
                     try persist(); watches.removeValue(forKey: id)?.stop(); return
                 }
             } catch { }
             try? await Task.sleep(nanoseconds: 250_000_000)
         }
-        fail(id, message: "未能确认文件保存完成，请从 Claude Desktop 重新下载。")
+        fail(id, message: "Could not confirm that the file was saved. Download the file again from Claude Desktop.")
     }
     func snapshot() throws -> [[String: Any]] {
         _ = try directory()

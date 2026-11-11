@@ -123,11 +123,11 @@ func (s *Server) loadClaudeAccounts() (claudeAccountList, error) {
 		return list, nil
 	}
 	if err != nil || json.Unmarshal(data, &list) != nil || list.Accounts == nil {
-		return list, errors.New("Claude 账号文件无法读取，请检查配置目录或恢复备份")
+		return list, errors.New("The Claude account file could not be read. Check the configuration directory or restore a backup.")
 	}
 	list.Scheduling = list.Scheduling.defaults()
 	if !list.Scheduling.valid() {
-		return list, errors.New("Claude 调度设置无效，请检查配置文件")
+		return list, errors.New("The Claude scheduling settings are invalid. Check the configuration file.")
 	}
 	ids := make(map[string]bool)
 	profiles := make(map[string]bool)
@@ -137,25 +137,25 @@ func (s *Server) loadClaudeAccounts() (claudeAccountList, error) {
 			a.Source = "managed"
 		}
 		if !validClaudeID(a.ID) || ids[a.ID] || a.Source != "managed" && a.Source != "default" || a.Source == "default" && (a.Email == "" || a.ProfileID != "") || a.ProfileID != "" && !validClaudeID(a.ProfileID) || len(a.HandoffGroup) > 64 {
-			return list, errors.New("Claude 账号文件含无效或重复的记录，请从备份恢复")
+			return list, errors.New("The Claude account file contains invalid or duplicate records. Restore it from a backup.")
 		}
 		ids[a.ID] = true
 		if a.Source == "managed" {
 			if profiles[a.guestID()] {
-				return list, errors.New("多个账号引用了同一个独立登录目录，请从备份恢复")
+				return list, errors.New("Multiple accounts reference the same separate sign-in directory. Restore from a backup.")
 			}
 			profiles[a.guestID()] = true
 		}
 	}
 	if list.PendingLogin != "" && (!validClaudeID(list.PendingLogin) || ids[list.PendingLogin] || profiles[list.PendingLogin]) {
-		return list, errors.New("Claude 登录记录损坏，请恢复备份")
+		return list, errors.New("The Claude sign-in record is corrupted. Restore a backup.")
 	}
 	return list, nil
 }
 
 func (s *Server) saveClaudeAccounts(list claudeAccountList) error {
 	if err := writePrivate(filepath.Join(s.profile, "claude-accounts.json"), list); err != nil {
-		return errors.New("Claude 账号设置未保存，请检查配置目录权限和磁盘空间")
+		return errors.New("The Claude account settings were not saved. Check the configuration directory permissions and disk space.")
 	}
 	return nil
 }
@@ -186,15 +186,15 @@ func validClaudeLabel(label string) bool {
 func (list *claudeAccountList) change(input claudeAccountInput) error {
 	label := strings.TrimSpace(input.Label)
 	if input.Action != "update" {
-		return errors.New("未知 Claude 账号操作")
+		return errors.New("Unknown Claude account operation.")
 	}
 	a := list.find(input.ID)
 	if a == nil {
-		return errors.New("未找到 Claude 账号，请刷新面板")
+		return errors.New("The Claude account was not found. Refresh the panel.")
 	}
 	if input.Label != "" {
 		if !validClaudeLabel(label) && (label == "" || label != a.Email) {
-			return errors.New("备注最多 64 个字符，不能含控制字符")
+			return errors.New("The note can be at most 64 characters and cannot contain control characters.")
 		}
 		a.Label = label
 	}
@@ -204,7 +204,7 @@ func (list *claudeAccountList) change(input claudeAccountInput) error {
 	if input.HandoffGroup != nil {
 		group := strings.TrimSpace(*input.HandoffGroup)
 		if len(group) > 64 || strings.IndexFunc(group, unicode.IsControl) >= 0 {
-			return errors.New("接续分组最多 64 字节，不能含控制字符")
+			return errors.New("The handoff group can be at most 64 bytes and cannot contain control characters.")
 		}
 		a.HandoffGroup = group
 	}
@@ -236,7 +236,7 @@ func validClaudeWindow(w *claudeWindow) bool {
 func (list claudeAccountList) observe(id string, observed claudeGuestSnapshot, now time.Time) error {
 	a := list.find(id)
 	if a == nil {
-		return errors.New("未找到 Claude 账号")
+		return errors.New("The Claude account was not found.")
 	}
 	a.CheckedAt = now.Unix()
 	email := observed.email()
@@ -331,7 +331,7 @@ type claudeSelection struct{ ID, GuestID, Subject string }
 func (s *Server) selectClaudeAccount(requestedID string, login bool, workspace string) (claudeSelection, error) {
 	var empty claudeSelection
 	if !login && requestedID != "" && requestedID != "auto" {
-		return empty, errors.New("Claude 终端会自动分配账号")
+		return empty, errors.New("Claude terminals are assigned an account automatically.")
 	}
 	m := &s.claudeAccounts
 	m.mu.Lock()
@@ -357,7 +357,7 @@ func (s *Server) selectClaudeAccount(requestedID string, login bool, workspace s
 			}
 			requestedID = list.PendingLogin
 		} else if a := list.find(requestedID); a == nil || a.Source != "managed" {
-			err = errors.New("请在普通终端管理环境的默认登录")
+			err = errors.New("Manage the environment's default sign-in in a regular terminal.")
 		}
 	}
 	m.mu.Unlock()
@@ -385,7 +385,7 @@ type claudeGuestQuota struct {
 func (s *Server) readClaudeGuestQuotas(ctx context.Context, ids []string) (map[string]claudeGuestQuota, error) {
 	for _, id := range ids {
 		if !validClaudeID(id) {
-			return nil, errors.New("Claude 账号 ID 无效")
+			return nil, errors.New("The Claude account ID is invalid.")
 		}
 	}
 	// s.guest bounds its output to 64 KiB. Even a large pool uses one
@@ -416,7 +416,7 @@ func (s *Server) allocateClaudeAccount(previous claudeAccountList, workspace str
 	var empty claudeSelection
 	epoch, unlocked := s.account.access()
 	if !unlocked {
-		return empty, errors.New("Cage 已锁定，请先解锁")
+		return empty, errors.New("Cage is locked. Unlock it first.")
 	}
 	var ids []string
 	checkDefault := false
@@ -443,7 +443,7 @@ func (s *Server) allocateClaudeAccount(previous claudeAccountList, workspace str
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if epoch.Err() != nil {
-		return empty, errors.New("Cage 已锁定，请先解锁")
+		return empty, errors.New("Cage is locked. Unlock it first.")
 	}
 	list, err := s.loadClaudeAccounts()
 	if err != nil {
@@ -492,7 +492,7 @@ func (s *Server) allocateClaudeAccount(previous claudeAccountList, workspace str
 	}
 	selected := pickClaudeAccount(list, active, logins, m.lastPick, preferred, now)
 	if selected == "" {
-		return empty, errors.New("暂无可分配的 Claude 账号。请在账号面板检查登录、参与状态和额度重置时间")
+		return empty, errors.New("No Claude account is available for assignment. Check sign-in, participation status, and usage limit reset time in the accounts panel.")
 	}
 	a := list.find(selected)
 	return claudeSelection{ID: selected, GuestID: a.guestID(), Subject: claudeIdentityHash(a.Email, a.Organization)}, nil

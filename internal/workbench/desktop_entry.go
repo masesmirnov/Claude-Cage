@@ -61,7 +61,7 @@ func DesktopEntry(fullConfig string, opts DesktopOptions) (DesktopResult, error)
 	if value := os.Getenv("CAGE_DESKTOP_OWNER_PID"); value != "" {
 		var err error
 		if owner, err = strconv.Atoi(value); err != nil || owner < 2 {
-			return DesktopResult{}, errors.New("桌面窗口进程标识无效")
+			return DesktopResult{}, errors.New("The desktop window process ID is invalid.")
 		}
 	}
 	result, err := desktopLaunch(profile, true, opts, func() error {
@@ -90,11 +90,11 @@ func DesktopEntry(fullConfig string, opts DesktopOptions) (DesktopResult, error)
 	}
 	defer c.close()
 	if !c.launch.DesktopGateway || c.launch.Controller.PID != result.Controller.PID {
-		return DesktopResult{}, errors.New("桌面连接服务身份不匹配")
+		return DesktopResult{}, errors.New("The desktop connection service identity does not match.")
 	}
 	code, err := c.call("POST", "/api/desktop-owner", map[string]any{"token": c.record.Token, "pid": owner}, nil)
 	if err != nil || code != http.StatusOK {
-		return DesktopResult{}, errors.New("无法关联桌面窗口和连接服务")
+		return DesktopResult{}, errors.New("Could not associate the desktop window with the connection service.")
 	}
 	return result, nil
 }
@@ -108,13 +108,13 @@ func (s *Server) registerDesktopOwner(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !equalSecret(input.Token, s.token) || input.PID < 2 || !processExists(input.PID) {
-		http.Error(w, "桌面窗口身份无效", http.StatusForbidden)
+		http.Error(w, "The desktop window identity is invalid.", http.StatusForbidden)
 		return
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.closing {
-		http.Error(w, "桌面入口正在退出", http.StatusConflict)
+		http.Error(w, "The desktop entry is exiting.", http.StatusConflict)
 		return
 	}
 	if s.windowOwners == nil {
@@ -174,11 +174,11 @@ func (s *Server) handoffEntry(w http.ResponseWriter, r *http.Request) {
 
 func (c *controllerClient) releaseDesktopEntry() error {
 	if !c.launch.DesktopGateway {
-		return errors.New("无法核对桌面连接服务身份")
+		return errors.New("Could not verify the desktop connection service identity.")
 	}
 	status, err := c.call("POST", "/api/handoff", map[string]string{"token": c.record.Token}, nil)
 	if err != nil || status != http.StatusOK {
-		return errors.New("桌面连接服务未能退出")
+		return errors.New("The desktop connection service did not exit.")
 	}
 	return c.waitForExit()
 }

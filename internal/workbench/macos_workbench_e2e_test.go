@@ -371,7 +371,7 @@ func TestMacOSGuestIPv6LinkDrop(t *testing.T) {
 	defer func() {
 		closeCtx, stop := context.WithTimeout(context.Background(), 3*time.Second)
 		defer stop()
-		closed, err := client.Close(closeCtx, "链路验证结束，外网关闭")
+		closed, err := client.Close(closeCtx, "Link verification finished. Internet access off")
 		if err != nil || closed.Mode != "closed" {
 			t.Error("gate closure could not be verified")
 		}

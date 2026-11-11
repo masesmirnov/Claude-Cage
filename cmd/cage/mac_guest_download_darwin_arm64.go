@@ -32,7 +32,7 @@ func prepareMacRestoreMediaWithTransport(ctx context.Context, media, url, digest
 	partial := media + ".partial"
 	client := &http.Client{Transport: transport, Timeout: 2 * time.Hour, CheckRedirect: func(req *http.Request, previous []*http.Request) error {
 		if req.URL.Scheme != "https" || len(previous) >= 5 {
-			return errors.New("Apple 镜像重定向无效")
+			return errors.New("Invalid Apple image redirect.")
 		}
 		return nil
 	}}
@@ -86,7 +86,7 @@ func downloadMacRestore(ctx context.Context, client *http.Client, address, parti
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	if !strings.HasPrefix(address, "https://") {
-		return errors.New("Apple 镜像必须通过 HTTPS 下载")
+		return errors.New("The Apple image must be downloaded over HTTPS.")
 	}
 	file, err := os.OpenFile(partial, os.O_CREATE|os.O_RDWR, 0600)
 	if err != nil {
@@ -129,10 +129,10 @@ func downloadMacRestore(ctx context.Context, client *http.Client, address, parti
 	case http.StatusPartialContent:
 		var start, end, size int64
 		if _, err := fmt.Sscanf(resp.Header.Get("Content-Range"), "bytes %d-%d/%d", &start, &end, &size); err != nil || start != offset || end < start || total > 0 && size != total {
-			return errors.New("Apple 镜像续传范围不匹配")
+			return errors.New("The Apple image resume range does not match.")
 		}
 	default:
-		return fmt.Errorf("Apple 镜像下载返回 HTTP %d", resp.StatusCode)
+		return fmt.Errorf("The Apple image download returned HTTP %d.", resp.StatusCode)
 	}
 	if _, err := file.Seek(offset, io.SeekStart); err != nil {
 		return err
@@ -149,7 +149,7 @@ func downloadMacRestore(ctx context.Context, client *http.Client, address, parti
 		return err
 	}
 	if count+offset > limit || total > 0 && count+offset != total {
-		return errors.New("Apple 镜像下载大小不匹配")
+		return errors.New("The Apple image download size does not match.")
 	}
 	return nil
 }
@@ -202,7 +202,7 @@ func verifyMacRestoreMedia(ctx context.Context, media, digest string, out io.Wri
 		}
 	}
 	if hex.EncodeToString(hash.Sum(nil)) != digest {
-		return errors.New("Apple 下载校验失败，请重试。")
+		return errors.New("Apple download verification failed. Try again.")
 	}
 	return nil
 }

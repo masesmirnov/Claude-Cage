@@ -272,7 +272,7 @@ func TestClaudeIndependentLoginKeepsDefaultIdentityAndMakesBothAccountsAvailable
 	}
 	list, _ := s.loadClaudeAccounts()
 	stable := list.bySubject(a.subject()).ID
-	list.Accounts[0].Label, list.Accounts[0].Enabled = "个人空间", false
+	list.Accounts[0].Label, list.Accounts[0].Enabled = "Personal space", false
 	if err := s.saveClaudeAccounts(list); err != nil {
 		t.Fatal(err)
 	}
@@ -293,7 +293,7 @@ func TestClaudeIndependentLoginKeepsDefaultIdentityAndMakesBothAccountsAvailable
 	}
 	list, err = s.loadClaudeAccounts()
 	old := list.find(stable)
-	if err != nil || len(list.Accounts) != 2 || old == nil || old.Source != "managed" || old.ProfileID != independent || old.Enabled || old.Label != "个人空间" || old.Status != "ready" {
+	if err != nil || len(list.Accounts) != 2 || old == nil || old.Source != "managed" || old.ProfileID != independent || old.Enabled || old.Label != "Personal space" || old.Status != "ready" {
 		t.Fatal(list, err)
 	}
 	// Re-enabling A must allow new work on both subscriptions simultaneously.

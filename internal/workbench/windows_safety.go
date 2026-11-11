@@ -35,7 +35,7 @@ func (s *Server) windowsGuestObservation(ctx context.Context, input map[string]a
 	var output bytes.Buffer
 	cmd.Stdout = &boundedWindowsStatusWriter{buffer: &output, remaining: 64 << 10}
 	if err = cmd.Run(); err != nil {
-		return observation, errors.New("Windows 客机检测未返回完整结果")
+		return observation, errors.New("The Windows guest check did not return a complete result.")
 	}
 	var failure struct {
 		Error      string `json:"error"`
@@ -60,21 +60,21 @@ func decodeWindowsObservation(data []byte) (guestObservation, error) {
 		Stage string `json:"stage"`
 	}
 	if json.Unmarshal(data, &status) != nil {
-		return observation, errors.New("Windows 客机检查没有完成，外网保持关闭；请查看具体检查阶段后重试")
+		return observation, errors.New("The Windows guest check was not completed. Internet access stays off. See the specific check stage and try again.")
 	}
 	if status.Error != "" {
-		stage := map[string]string{"request": "请求校验", "environment": "系统读回", "network": "代理与 DNS", "public-tcp": "公网连接约束", "udp": "UDP 约束", "dns": "公共 DNS 约束", "project-grant": "项目授权", "shared-read": "共享文件读取", "shared-write": "共享文件写回", "private-scope": "私有目录约束"}[status.Stage]
+		stage := map[string]string{"request": "request validation", "environment": "system readback", "network": "proxy and DNS", "public-tcp": "public connection restriction", "udp": "UDP restriction", "dns": "public DNS restriction", "project-grant": "project authorization", "shared-read": "shared file read", "shared-write": "shared file write-back", "private-scope": "private directory restriction"}[status.Stage]
 		if stage == "" {
-			stage = "客机"
+			stage = "guest"
 		}
-		return observation, errors.New("Windows " + stage + "检查没有完成，外网保持关闭")
+		return observation, errors.New("The Windows " + stage + " check was not completed. Internet access stays off.")
 	}
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	if decoder.Decode(&observation) != nil || decoder.Decode(new(any)) != io.EOF {
-		return observation, errors.New("Windows 客机检测返回无效结果")
+		return observation, errors.New("The Windows guest check returned an invalid result.")
 	}
 	if observation.TZ == "" || observation.SystemTimezone == "" || observation.ProcessLocale == "" || observation.SystemLocale == "" || !observation.LocaleValid {
-		return observation, errors.New("Windows 客机检查缺少系统读回结果，外网保持关闭")
+		return observation, errors.New("The Windows guest check is missing the system readback result. Internet access stays off.")
 	}
 	return observation, nil
 }
@@ -129,7 +129,7 @@ func effectiveWindowsZone(zone string) string {
 func (s *Server) windowsBoundaryInput(root, private, shared, challenge string, input map[string]any) error {
 	project, err := s.windowsProjectForHost(root)
 	if err != nil || project == nil {
-		return errors.New("Windows 环境目录尚未连接")
+		return errors.New("The Windows environment directory is not connected yet.")
 	}
 	input["project_id"] = project.ID
 	input["grant"] = project.Grant
@@ -155,13 +155,13 @@ func (s *Server) applyWindowsGuestSettings(ctx context.Context, cfg cage.Config)
 	var output bytes.Buffer
 	cmd.Stdout = &boundedWindowsStatusWriter{buffer: &output, remaining: 4096}
 	if err = cmd.Run(); err != nil {
-		return errors.New("Windows 客机系统设置未能完成确认，外网保持关闭；请重试应用并核对实际设置")
+		return errors.New("The Windows guest system settings could not be confirmed as complete. Internet access stays off. Try applying again and check the actual settings.")
 	}
 	var result struct {
 		OK bool `json:"ok"`
 	}
 	if json.Unmarshal(output.Bytes(), &result) != nil || !result.OK {
-		return errors.New("Windows 客机系统设置未得到完成确认")
+		return errors.New("The Windows guest system settings were not confirmed as complete.")
 	}
 	return nil
 }

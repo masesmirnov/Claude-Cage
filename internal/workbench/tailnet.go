@@ -42,11 +42,11 @@ func (s *Server) tailnet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(input.Key) > 8192 {
-		http.Error(w, "SSH 公钥过长", 400)
+		http.Error(w, "The SSH public key is too long.", 400)
 		return
 	}
 	if action == "open-service" && (len(input.Host) == 0 || len(input.Host) > 253 || input.Port < 1 || input.Port > 65535) {
-		http.Error(w, "请选择私网设备并填写 1–65535 之间的端口", 400)
+		http.Error(w, "Select a private network device and enter a port between 1 and 65535.", 400)
 		return
 	}
 	s.mu.Lock()
@@ -54,7 +54,7 @@ func (s *Server) tailnet(w http.ResponseWriter, r *http.Request) {
 	busy := s.jobs.snapshot().Running
 	s.mu.Unlock()
 	if !ready || busy {
-		http.Error(w, "请先启动 Cage 环境，并等待当前操作完成", 409)
+		http.Error(w, "Start the Cage environment first and wait for the current operation to finish.", 409)
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
@@ -67,12 +67,12 @@ func (s *Server) tailnet(w http.ResponseWriter, r *http.Request) {
 	}{action, input.Key, input.Host, input.Port})
 	data, err := s.guestAPI(ctx, token, http.MethodPost, "/tailnet", body)
 	if err != nil {
-		http.Error(w, "Tailscale 操作未完成。请更新环境组件后重试；原设备身份和 SSH 公钥会保留。", 502)
+		http.Error(w, "The Tailscale operation was not completed. Update the environment components and try again. The original device identity and SSH public key are kept.", 502)
 		return
 	}
 	var result map[string]json.RawMessage
 	if json.Unmarshal(data, &result) != nil {
-		http.Error(w, "Tailscale 组件返回了无效状态", 502)
+		http.Error(w, "The Tailscale component returned an invalid state.", 502)
 		return
 	}
 	if b := result["tailnet_error"]; len(b) > 0 {
@@ -84,11 +84,11 @@ func (s *Server) tailnet(w http.ResponseWriter, r *http.Request) {
 	var authURL string
 	_ = json.Unmarshal(result["auth_url"], &authURL)
 	if authURL != "" && !validTailnetAuthURL(authURL) {
-		http.Error(w, "Tailscale 登录地址无效，请重新发起登录", 502)
+		http.Error(w, "The Tailscale sign-in address is invalid. Start the sign-in again.", 502)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	_, _ = w.Write(data)
 }
 
-var errTailnetNativeInstall = errors.New("请在设置中更新环境组件，Tailscale 随客机组件一同安装")
+var errTailnetNativeInstall = errors.New("Update the environment components in Settings. Tailscale is installed together with the guest components.")

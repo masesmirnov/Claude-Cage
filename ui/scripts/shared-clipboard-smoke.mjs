@@ -27,11 +27,11 @@ try {
   state.status.ready = state.status.vm_running = true;
   await page.reload();
   await page.getByRole("button",{ name:"Claude Desktop", exact:true }).click();
-  await page.getByText("正在连接画面",{ exact:true }).waitFor({ state:"hidden" });
+  await page.getByText("Connecting the view",{ exact:true }).waitFor({ state:"hidden" });
   await page.waitForFunction(() => window.cageSharedClipboardActive === true);
   assert.equal(display.stats.clipboardUpdates.at(-1).text,"initial host text");
 
-  for (const content of [{ text:"Claude 消息🙂\n保留换行" },{ png:"fixture-png" },{ files:"10000000-2222-4333-8444-123456789abc" }]) {
+  for (const content of [{ text:"Claude message🙂\nKeep line breaks" },{ png:"fixture-png" },{ files:"10000000-2222-4333-8444-123456789abc" }]) {
     display.sharedClipboard(content);
     await waitFor(() => JSON.stringify(writes.at(-1)) === JSON.stringify(content));
     const count = display.stats.clipboardUpdates.length;
@@ -47,17 +47,17 @@ try {
   assert.equal(display.stats.clipboardUpdates.at(-1).text,"new host copy");
   assert.equal(state.requests.some(request => request.path === "/input/image"),false,"synchronized paste uses the actual guest clipboard");
 
-  await page.getByRole("button",{ name:"工作台", exact:true }).click();
+  await page.getByRole("button",{ name:"Workbench", exact:true }).click();
   await page.getByRole("region",{ name:"Claude Desktop", exact:true }).waitFor({ state:"hidden" });
   display.sharedClipboard({ text:"guest background copy" });
   await waitFor(() => clipboard.text === "guest background copy");
   assert.equal(display.stats.clipboardConnections,1,"hiding a canvas retains the shared clipboard");
 
-  await page.getByRole("button", { name: "新建终端", exact: true }).first().click();
-  await page.getByRole("menuitem", { name: "普通终端", exact: true }).click();
+  await page.getByRole("button", { name: "New terminal", exact: true }).first().click();
+  await page.getByRole("menuitem", { name: "Regular terminal", exact: true }).click();
   await page.waitForFunction(() => document.querySelector(".xterm-rows")?.textContent.includes("Terminal"));
   await page.locator(".xterm-helper-textarea").focus();
-  const terminalCopy = "Claude 终端复制 → 共享剪贴板";
+  const terminalCopy = "Claude terminal copy → shared clipboard";
   display.terminalOutput(`\x1b]52;c;${Buffer.from(terminalCopy).toString("base64")}\x07`);
   await waitFor(() => clipboard.text === terminalCopy && display.stats.clipboardUpdates.at(-1).text === terminalCopy);
 

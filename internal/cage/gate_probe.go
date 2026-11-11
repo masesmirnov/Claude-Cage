@@ -39,8 +39,8 @@ func probeExitIP(ctx context.Context, e *Egress) (string, error) {
 	allTimedOut := true
 	var failures []string
 	for _, service := range []struct{ id, name, endpoint string }{
-		{"icanhazip", "主检测服务", "https://ipv4.icanhazip.com/"},
-		{"ipify", "备用检测服务", "https://api.ipify.org/"},
+		{"icanhazip", "Primary detection service", "https://ipv4.icanhazip.com/"},
+		{"ipify", "Backup detection service", "https://api.ipify.org/"},
 	} {
 		started := time.Now()
 		ip, err := queryExitIP(ctx, client, service.endpoint)
@@ -49,7 +49,7 @@ func probeExitIP(ctx context.Context, e *Egress) (string, error) {
 		}
 		// Fixed service IDs survive URL redaction in exported diagnostics.
 		diagnostics.Log("warn", "exit-probe", fmt.Sprintf("service=%s duration_ms=%d error=%v cause=%v", service.id, time.Since(started).Milliseconds(), err, errors.Unwrap(err)))
-		failures = append(failures, service.name+"："+err.Error())
+		failures = append(failures, service.name+": "+err.Error())
 		var networkError net.Error
 		if !errors.Is(err, context.DeadlineExceeded) && !(errors.As(err, &networkError) && networkError.Timeout()) {
 			allTimedOut = false
@@ -59,12 +59,12 @@ func probeExitIP(ctx context.Context, e *Egress) (string, error) {
 		}
 	}
 	if errors.Is(ctx.Err(), context.Canceled) {
-		return "", usererror.Wrap("通过所选代理查询出口 IP", ctx.Err(), "外网保持关闭。")
+		return "", usererror.Wrap("Querying the exit IP through the selected proxy", ctx.Err(), "Internet access stays off.")
 	}
 	if allTimedOut {
-		return "", usererror.New("通过所选代理查询出口 IP", strings.Join(failures, "；"), "出口检测超时，请稍后重试。", context.DeadlineExceeded)
+		return "", usererror.New("Querying the exit IP through the selected proxy", strings.Join(failures, "; "), "The exit check timed out. Try again later.", context.DeadlineExceeded)
 	}
-	return "", errors.New("通过所选代理查询出口 IP 失败：" + strings.Join(failures, "；") + "。未能确认出口时，外网保持关闭。")
+	return "", errors.New("Querying the exit IP through the selected proxy failed: " + strings.Join(failures, "; ") + ". Internet access stays off when the exit cannot be confirmed.")
 }
 
 func queryExitIP(ctx context.Context, client *http.Client, endpoint string) (string, error) {
@@ -76,22 +76,22 @@ func queryExitIP(ctx context.Context, client *http.Client, endpoint string) (str
 		if errors.As(err, &requestError) {
 			err = requestError.Err
 		}
-		return "", usererror.Display("通过所选代理查询出口 IP", err, "请检查网络与代理，再重新检测。")
+		return "", usererror.Display("Querying the exit IP through the selected proxy", err, "Check the network and proxy, then check again.")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("查询出口 IP 失败：检测服务返回 HTTP %d。请检查所选代理，稍后重新检测；外网保持关闭。", resp.StatusCode)
+		return "", fmt.Errorf("Querying the exit IP failed: the detection service returned HTTP %d. Check the selected proxy and check again later; internet access stays off.", resp.StatusCode)
 	}
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 4097))
 	if err != nil {
-		return "", usererror.Wrap("读取出口检测响应", err, "请稍后重新检测。")
+		return "", usererror.Wrap("Reading the exit check response", err, "Check again later.")
 	}
 	if len(body) > 4096 {
-		return "", errors.New("查询出口 IP 失败：检测服务没有返回有效的 IP 记录。请更换可用节点或稍后重新检测；外网保持关闭。")
+		return "", errors.New("Querying the exit IP failed: the detection service did not return a valid IP record. Switch to a working node or check again later; internet access stays off.")
 	}
 	ip, err := netip.ParseAddr(strings.TrimSpace(string(body)))
 	if err != nil || !ip.Is4() || !ip.IsGlobalUnicast() || ip.IsPrivate() {
-		return "", errors.New("出口检测结果不是有效公网 IPv4 地址")
+		return "", errors.New("The exit check result is not a valid public IPv4 address.")
 	}
 	return ip.String(), nil
 }

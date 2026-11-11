@@ -31,7 +31,7 @@ download() {
         cp "$cache/$name" "$stage/$name"
         if [[ $(shasum -a 256 "$stage/$name" | cut -d' ' -f1) == "$digest" ]]; then return; fi
     fi
-    printf '下载 macos-cli-%s\n' "$name"
+    printf 'Downloading macos-cli-%s\n' "$name"
     if ! fetch "$url" "$stage/$name" "$name" "" "$digest"; then
         [[ -n $api ]] || return 1
         fetch "$api" "$stage/$name" "$name" application/octet-stream "$digest"

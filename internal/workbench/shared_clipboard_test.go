@@ -28,18 +28,18 @@ func TestLinuxClipboardCommandFitsWindowsProcessLimit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// 给 SSH 路径、选项和 Windows 参数转义留足空间，防止脚本增长后重现启动失败。
+	// Leave enough room for SSH paths, options, and Windows argument escaping so a growing script does not bring back startup failures.
 	if len(strings.Join(command.Args, " ")) > 24<<10 {
-		t.Fatal("Linux 客机剪贴板命令过长，可能超过 Windows 进程限制")
+		t.Fatal("The Linux guest clipboard command is too long and may exceed the Windows process limit")
 	}
 
-	// 校验实际命令里的载荷，确保运行的是随当前后端发布的完整脚本。
+	// Check the payload in the actual command to make sure the full script shipped with the current backend is what runs.
 	if len(command.Args) < 2 {
-		t.Fatal("剪贴板启动命令缺少载荷")
+		t.Fatal("The clipboard start command is missing its payload")
 	}
 	fields := strings.Fields(command.Args[len(command.Args)-1])
 	if len(fields) == 0 {
-		t.Fatal("剪贴板启动命令缺少载荷")
+		t.Fatal("The clipboard start command is missing its payload")
 	}
 	compressed, err := base64.StdEncoding.DecodeString(fields[len(fields)-1])
 	if err != nil {
@@ -55,7 +55,7 @@ func TestLinuxClipboardCommandFitsWindowsProcessLimit(t *testing.T) {
 		t.Fatal(err)
 	}
 	if string(script) != cage.SharedClipboardHelper {
-		t.Fatal("剪贴板脚本在压缩传输中发生变化")
+		t.Fatal("The clipboard script changed during compressed transfer")
 	}
 }
 
@@ -168,12 +168,12 @@ func TestClipboardReceiveRequiresProducerCompletion(t *testing.T) {
 
 func TestSharedClipboardArchivePreservesFilesFoldersAndBytes(t *testing.T) {
 	root := t.TempDir()
-	folder := filepath.Join(root, "资料")
+	folder := filepath.Join(root, "หฬ")
 	if err := os.MkdirAll(filepath.Join(folder, "empty"), 0700); err != nil {
 		t.Fatal(err)
 	}
 	data := []byte{0, 0xff, 0x80, '\n'}
-	if err := os.WriteFile(filepath.Join(folder, "中文.bin"), data, 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(folder, "ฐฑ.bin"), data, 0600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(root, "blank.txt"), nil, 0600); err != nil {
@@ -188,7 +188,7 @@ func TestSharedClipboardArchivePreservesFilesFoldersAndBytes(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(filepath.Dir(paths[0]))
-	actual, err := os.ReadFile(filepath.Join(paths[0], "中文.bin"))
+	actual, err := os.ReadFile(filepath.Join(paths[0], "ฐฑ.bin"))
 	if err != nil || !bytes.Equal(actual, data) {
 		t.Fatalf("binary changed: %v", err)
 	}
@@ -255,7 +255,7 @@ func TestSharedClipboardGuestWebSocketAndFileStream(t *testing.T) {
 	}
 	defer ws.Close()
 	_ = ws.SetReadDeadline(time.Now().Add(12 * time.Second))
-	if err := ws.WriteJSON(map[string]any{"text": "production wire 中文🙂", "serial": 1}); err != nil {
+	if err := ws.WriteJSON(map[string]any{"text": "production wire ฐฑ🙂", "serial": 1}); err != nil {
 		t.Fatal(err)
 	}
 	for {
@@ -268,7 +268,7 @@ func TestSharedClipboardGuestWebSocketAndFileStream(t *testing.T) {
 		}
 	}
 	root := t.TempDir()
-	folder := filepath.Join(root, "复制目录")
+	folder := filepath.Join(root, "ฉชฅई")
 	if err := os.Mkdir(folder, 0700); err != nil {
 		t.Fatal(err)
 	}

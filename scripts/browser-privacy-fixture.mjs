@@ -110,7 +110,7 @@ export async function createPrivacyController({ preferences, headless = true } =
     const uploadExtension = async bytes => {
       const response = await fetch(control + '/extensions-upload', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: bytes });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || '扩展包读取失败');
+      if (!response.ok) throw new Error(result.error || 'The extension package could not be read.');
       return result;
     };
     const states = signal => fetch(control + '/events', { headers: { Authorization: `Bearer ${token}` }, signal });

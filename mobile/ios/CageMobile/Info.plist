@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>zh_CN</string>
+	<string>en</string>
 	<key>CFBundleDisplayName</key>
 	<string>Cage</string>
 	<key>CFBundleExecutable</key>
@@ -34,9 +34,9 @@
 		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>扫描电脑上的 Cage 配对二维码。</string>
+	<string>Scan the Cage pairing QR code on your computer.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>连接您配置的局域网 Cage 中继。</string>
+	<string>Connect to the LAN Cage relay you configured.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

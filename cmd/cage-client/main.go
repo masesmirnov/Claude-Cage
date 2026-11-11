@@ -162,9 +162,9 @@ func run(args []string) error {
 		}
 		return printJSON(workbench.BrowserFileForConnection(config, connection, args[2], args[3], destination))
 	case "app-update":
-		return printJSON(map[string]any{"phase": "manual", "currentVersion": version.Version, "message": "轻量客户端使用独立安装包更新；连接配置会保留，云端任务不受影响。"}, nil)
+		return printJSON(map[string]any{"phase": "manual", "currentVersion": version.Version, "message": "The light client updates through its own installer. Connection settings are kept and cloud tasks are not affected."}, nil)
 	default:
-		return errors.New("轻量客户端只负责连接；请在远程工作台管理运行环境")
+		return errors.New("The light client only handles connections. Manage the runtime environment in the remote workbench.")
 	}
 }
 

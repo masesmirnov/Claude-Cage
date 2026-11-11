@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	errBrowserNotReady = errors.New("环境尚未就绪")
-	errBrowserBusy     = errors.New("环境正在执行其他操作")
+	errBrowserNotReady = errors.New("The environment is not ready yet.")
+	errBrowserBusy     = errors.New("The environment is busy with another operation.")
 )
 
 type browserInputError struct{ error }
@@ -111,16 +111,16 @@ func (s *Server) browserAction(ctx context.Context, action string, input *browse
 			(input.Mode != "list" && input.Mode != "details" && input.Mode != "delete" && input.Mode != "clear") ||
 			(input.Scope != "site" && input.Scope != "all") || len(input.Query) > 800 || input.Page < 0 ||
 			((input.Mode == "delete" || input.Mode == "details") && len(input.CookieKey) != 64)) {
-			return nil, browserInputError{errors.New("Cookie 操作或目标标签无效")}
+			return nil, browserInputError{errors.New("The cookie operation or target tab is invalid.")}
 		}
 		if (action == "copy-context" || action == "copy" || action == "cut") && (input.ID == "" || !validInputToken(input.Context)) {
-			return nil, browserInputError{errors.New("复制操作或目标标签无效")}
+			return nil, browserInputError{errors.New("The copy operation or target tab is invalid.")}
 		}
 		if action == "resize" && !validDisplayDensity(input.Scale) {
-			return nil, browserInputError{errors.New("画面像素密度无效")}
+			return nil, browserInputError{errors.New("The display pixel density is invalid.")}
 		}
 		if action == "insert-text" && (input.ID == "" || input.Text == "" || len(input.Text) > 8192) {
-			return nil, browserInputError{errors.New("输入文字或目标标签无效")}
+			return nil, browserInputError{errors.New("The input text or target tab is invalid.")}
 		}
 		if action == "ime" {
 			selectionLimit := 0
@@ -134,7 +134,7 @@ func (s *Server) browserAction(ctx context.Context, action string, input *browse
 			validTarget := input.Target == "browser" && input.ID != "" || input.Target == "desktop" && input.ID == "desktop"
 			validSession := input.Mode == "status" || validInputToken(input.Session)
 			if !validTarget || !validMode || !validSession || input.Mode == "begin" && !validInputToken(input.Context) || input.Sequence < 0 || len(input.Text) > 8192 || input.SelectionStart < 0 || input.SelectionEnd < input.SelectionStart || input.SelectionEnd > selectionLimit {
-				return nil, browserInputError{errors.New("输入法组合状态无效")}
+				return nil, browserInputError{errors.New("The input method composition state is invalid.")}
 			}
 		}
 		if action == "new" && input.URL == "" {
@@ -160,7 +160,7 @@ func (s *Server) browserAction(ctx context.Context, action string, input *browse
 			input.Workspace = guestPath(workspace)
 			if s.macosGuest != nil {
 				if isClientMountPath(workspace) {
-					return nil, browserInputError{errors.New("请先打开并授权本机项目")}
+					return nil, browserInputError{errors.New("Open and authorize a local project first.")}
 				}
 				input.Workspace = filepath.Base(macOSProjectPath(s.macosGuest.User, workspace))
 			} else if s.windowsGuest != nil {
@@ -183,7 +183,7 @@ func (s *Server) browserAction(ctx context.Context, action string, input *browse
 		data, err = s.browserStateForHost(data)
 	}
 	if len(data) > browserResponseLimit {
-		return nil, errors.New("浏览器响应超出大小限制")
+		return nil, errors.New("The browser response exceeds the size limit.")
 	}
 	return data, err
 }

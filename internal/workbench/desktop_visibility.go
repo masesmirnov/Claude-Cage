@@ -89,7 +89,7 @@ func (s *Server) updateDesktopVisibility(show bool) error {
 	script := "/usr/bin/python3 - " + strconv.FormatBool(show) + " <<'CAGE_DESKTOP_VISIBILITY'\n" + linuxDesktopVisibility + "\nCAGE_DESKTOP_VISIBILITY\n"
 	_, err := s.guestQuick(ctx, script)
 	if err != nil && ctx.Err() == nil {
-		_ = diagnostics.New(s.profile).Record("warn", "desktop-visibility", "应用窗口显示状态未能同步："+err.Error())
+		_ = diagnostics.New(s.profile).Record("warn", "desktop-visibility", "The app window visibility state could not be synced: "+err.Error())
 	}
 	return err
 }

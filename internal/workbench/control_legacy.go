@@ -22,7 +22,7 @@ type legacyProcessIdentity struct {
 // runs only after an explicit stop-and-update request, never during startup.
 // The private PID record alone is not authority to signal a process.
 func identifyLegacyController(profile string, record controlFile) (legacyProcessIdentity, error) {
-	refused := errors.New("无法确认旧后台进程身份，未停止任何进程。请保留现有环境并重试更新。")
+	refused := errors.New("Could not verify the identity of the old backend process. No process was stopped. Keep the existing environment and retry the update.")
 	if runtime.GOOS != "darwin" || record.PID <= 1 || record.PID == os.Getpid() {
 		return legacyProcessIdentity{}, refused
 	}

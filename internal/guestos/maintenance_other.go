@@ -9,5 +9,5 @@ import (
 )
 
 func WindowsMaintenanceCommand(context.Context, string, string, string, bool) (*exec.Cmd, error) {
-	return nil, errors.New("Windows 客机维护需要其 Windows Hyper-V 主机")
+	return nil, errors.New("Windows guest maintenance needs its Windows Hyper-V host.")
 }

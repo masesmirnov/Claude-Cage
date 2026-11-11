@@ -42,7 +42,7 @@ func (p *approvalStream) expireInitialization() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if !p.ready && p.ctx.Err() == nil {
-		p.writeErr = errors.New("客机 Claude Code 未在一分钟内确认逐次审批，请检查 CLI 版本")
+		p.writeErr = errors.New("Claude Code in the guest did not confirm per-action approval within a minute. Check the CLI version.")
 		p.cancel()
 	}
 }
@@ -58,7 +58,7 @@ func (p *approvalStream) begin() error {
 	defer p.mu.Unlock()
 	if p.supervised {
 		if err := json.NewEncoder(p.input).Encode(map[string]bool{"stream": true}); err != nil {
-			return errors.New("无法开始客机审批通道")
+			return errors.New("Could not start the guest approval channel.")
 		}
 	}
 	return p.sendLocked(map[string]any{"type": "control_request", "request_id": initRequestID,
@@ -70,7 +70,7 @@ func (p *approvalStream) sendLocked(frame any) error {
 		frame = map[string]any{"input": frame}
 	}
 	if err := json.NewEncoder(p.input).Encode(frame); err != nil {
-		p.writeErr = errors.New("Claude Code 审批通道已断开")
+		p.writeErr = errors.New("The Claude Code approval channel was disconnected.")
 		p.cancel()
 		return p.writeErr
 	}
@@ -93,7 +93,7 @@ type controlFrame struct {
 func (p *approvalStream) control(kind string, line []byte) error {
 	var frame controlFrame
 	if err := json.Unmarshal(line, &frame); err != nil {
-		return errors.New("Claude Code 审批消息格式无效")
+		return errors.New("Invalid Claude Code approval message format.")
 	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -102,7 +102,7 @@ func (p *approvalStream) control(kind string, line []byte) error {
 	}
 	if kind == "control_response" {
 		if p.ready || frame.Response.RequestID != initRequestID || frame.Response.Subtype != "success" {
-			return errors.New("客机 Claude Code 无法初始化逐次审批，请检查 CLI 版本")
+			return errors.New("Claude Code in the guest could not initialize per-action approval. Check the CLI version.")
 		}
 		p.ready = true
 		return p.sendLocked(map[string]any{"type": "user", "session_id": p.turn.SessionID, "parent_tool_use_id": nil,
@@ -110,7 +110,7 @@ func (p *approvalStream) control(kind string, line []byte) error {
 	}
 	id := frame.RequestID
 	if id == "" || len(id) > 256 {
-		return errors.New("Claude Code 审批请求标识无效")
+		return errors.New("Invalid Claude Code approval request ID.")
 	}
 	if kind == "control_cancel_request" {
 		if cancel := p.pending[id]; cancel != nil {
@@ -120,10 +120,10 @@ func (p *approvalStream) control(kind string, line []byte) error {
 		return nil
 	}
 	if !p.ready || p.seen[id] {
-		return errors.New("Claude Code 审批请求重复或未初始化")
+		return errors.New("The Claude Code approval request is duplicated or not initialized.")
 	}
 	if len(p.seen) >= 1024 || len(p.pending) >= 16 {
-		return errors.New("本轮工具请求超出容量，已停止执行")
+		return errors.New("The tool requests in this turn exceed the capacity. Execution was stopped.")
 	}
 	p.seen[id] = true
 	if frame.Request.Subtype != "can_use_tool" {
@@ -171,19 +171,19 @@ func (p *approvalStream) finish() error {
 		cancel()
 	}
 	if !p.ready {
-		return errors.New("客机 Claude Code 未确认逐次审批协议")
+		return errors.New("Claude Code in the guest did not confirm the per-action approval protocol.")
 	}
 	if p.writeErr != nil {
 		return p.writeErr
 	}
 	if p.supervised {
 		if err := json.NewEncoder(p.input).Encode(map[string]bool{"finish": true}); err != nil {
-			return errors.New("无法结束 Claude Code 客机输入")
+			return errors.New("Could not end the Claude Code guest input.")
 		}
 		return nil
 	}
 	if err := p.input.Close(); err != nil {
-		return errors.New("无法结束 Claude Code 输入")
+		return errors.New("Could not end the Claude Code input.")
 	}
 	return nil
 }

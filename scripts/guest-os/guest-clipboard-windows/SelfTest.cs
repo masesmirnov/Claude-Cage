@@ -39,7 +39,7 @@ internal static class SelfTest
         Assert(!Protocol.EqualProof(proof, Protocol.Proof(secret, "client", "nonce", vm, sid, "session", "", null)));
         Assert(!Protocol.EqualProof(proof, Protocol.Proof(secret, "server", "nonce", Guid.NewGuid(), sid, "session", "", null)));
         Assert(!Protocol.EqualProof(proof, Protocol.Proof(secret, "server", "nonce", vm, sid + "2", "session", "", null)));
-        var selection = new JsonArray(@"C:\test\中文😀.txt");
+        var selection = new JsonArray("C:\\test\\Привет😀.txt");
         var first = Protocol.Proof(secret, "client", "nonce", vm, sid, "session", "export", selection);
         Assert(!Protocol.EqualProof(first, Protocol.Proof(secret, "client", "nonce", vm, sid, "session", "import", selection)));
         Assert(!Protocol.EqualProof(first, Protocol.Proof(secret, "client", "nonce", vm, sid, "session", "export", new JsonArray(@"C:\other.txt"))));
@@ -52,12 +52,12 @@ internal static class SelfTest
         Protocol.SendFrames(new MemoryStream(data), encoded, default).GetAwaiter().GetResult();
         encoded.Position = 0; using var decoded = new MemoryStream(); Protocol.ReceiveFrames(encoded, decoded, default).GetAwaiter().GetResult(); Assert(data.SequenceEqual(decoded.ToArray()));
         Reject(() => Protocol.ReceiveFrames(new MemoryStream(encoded.ToArray()[..^1]), Stream.Null, default).GetAwaiter().GetResult());
-        Assert(AttachmentsRpc.NameValid("中文 O'Brien.txt"));
+        Assert(AttachmentsRpc.NameValid("Привет O'Brien.txt"));
         foreach (var name in new[] { "../outside.txt", "CON.txt", "file.txt:stream", "trailing.", "C:\\private.txt", "bad\nname" }) Assert(!AttachmentsRpc.NameValid(name));
         using (var limited = new AttachmentsRpc.LimitedWriteStream(Stream.Null, 3))
         { limited.Write([1, 2, 3], 0, 3); Reject(() => limited.Write([4], 0, 1)); }
-        using var json = new ReadAheadStream(new MemoryStream("{\"text\":\"中文😀\\nsecond\"}\n{\"ack\":2}\n"u8.ToArray()));
-        Assert(Protocol.Read(json, 1024, default).GetAwaiter().GetResult()!["text"]!.GetValue<string>() == "中文😀\nsecond");
+        using var json = new ReadAheadStream(new MemoryStream("{\"text\":\"Привет😀\\nsecond\"}\n{\"ack\":2}\n"u8.ToArray()));
+        Assert(Protocol.Read(json, 1024, default).GetAwaiter().GetResult()!["text"]!.GetValue<string>() == "Привет😀\nsecond");
         Assert(Protocol.Read(json, 1024, default).GetAwaiter().GetResult()!["ack"]!.GetValue<int>() == 2);
         using var blank=new Bitmap(240,240);
         using(var paint=Graphics.FromImage(blank)){paint.Clear(Color.White);paint.FillRectangle(Brushes.Black,210,0,25,16);}

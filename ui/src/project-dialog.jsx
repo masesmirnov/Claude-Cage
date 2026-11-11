@@ -98,7 +98,7 @@ export function ProjectDialog({
         setError("");
       }
     } catch {
-      setError("未能选择文件夹，请直接填写路径。");
+      setError("Could not choose a folder. Enter the path directly.");
     }
   };
   const add = () => {
@@ -139,17 +139,17 @@ export function ProjectDialog({
   }} />;
   return (
     <Modal
-      title={activate ? "打开项目" : "选择工作项目"}
+      title={activate ? "Open project" : "Choose a working project"}
       onClose={busy ? undefined : onClose}
       footer={
         <>
           <span className="save-note">
             {busy
-              ? submitting ? removeTarget ? "正在移除项目…" : "正在连接项目…" : status.job?.message
-              : adding ? "添加到 Cage 项目列表" : "使用已授权的 Cage 项目"}
+              ? submitting ? removeTarget ? "Removing the project…" : "Connecting to the project…" : status.job?.message
+              : adding ? "Add to the Cage project list" : "Use an authorized Cage project"}
           </span>
           <button disabled={busy} onClick={onClose}>
-            取消
+            Cancel
           </button>
           <button
             className="primary"
@@ -162,7 +162,7 @@ export function ProjectDialog({
             ) : (
               <FolderOpen size={15} />
             )}
-            {activate ? "打开项目" : "使用此项目"}
+            {activate ? "Open project" : "Use this project"}
           </button>
         </>
       }
@@ -172,44 +172,44 @@ export function ProjectDialog({
         className="modal-body project-form"
         onSubmit={open}
       >
-        <p>{activate ? remote ? "选择已有项目，或添加一个云端项目文件夹。" : "选择已有项目，或添加一个本机项目文件夹。" : "从 Cage 项目列表选择工作目录。新项目由 Cage 授权并共享。"}</p>
+        <p>{activate ? remote ? "Choose an existing project, or add a cloud project folder." : "Choose an existing project, or add a local project folder." : "Choose a working directory from the Cage project list. New projects are authorized and shared by Cage."}</p>
         {canShare && <>
           <button type="button" className="quiet-button project-picker-add" onClick={() => { setSharing(!sharing); setWriteAccess(false); }} disabled={busy} aria-expanded={sharing}>
-            <FolderOpen size={16} />共享本机项目…
+            <FolderOpen size={16} />Share a local project…
           </button>
           {sharing && <fieldset className="project-picker-list project-permissions" disabled={busy}>
-            <legend>共享给{context.name || "当前云端 Cage"}</legend>
-            <p className="field-help">云端按需读取项目。凭据、Git 元数据和链接受限。断开连接后共享结束。</p>
-            <label><input type="checkbox" checked={writeAccess} onChange={(e) => setWriteAccess(e.target.checked)} />允许云端修改和删除本机项目文件</label>
-            <button type="button" onClick={share}>选择本机文件夹…</button>
+            <legend>Share with {context.name || "the current cloud Cage"}</legend>
+            <p className="field-help">The cloud reads the project on demand. Credentials, Git metadata and links are restricted. Sharing ends when the connection is closed.</p>
+            <label><input type="checkbox" checked={writeAccess} onChange={(e) => setWriteAccess(e.target.checked)} />Allow the cloud to modify and delete local project files</label>
+            <button type="button" onClick={share}>Choose a local folder…</button>
           </fieldset>}
         </>}
         {!sharing && !adding && <>
           <fieldset className="project-picker-list" disabled={busy || Boolean(removeTarget)}>
-            <legend>Cage 项目</legend>
+            <legend>Cage projects</legend>
             {projectList.map((project) => <label className={`project-picker-item ${path === project ? "selected" : ""}`} key={project}>
               <input type="radio" name="project" value={project} checked={path === project} onChange={() => { setPath(project); setError(""); }} />
               <FolderOpen size={18} aria-hidden="true" />
               <span>
-                <strong>{project === status.environment_directory ? "默认工作区" : projectName(project)}</strong>
+                <strong>{project === status.environment_directory ? "Default workspace" : projectName(project)}</strong>
                 <small>{shares.find((s) => s.guest_path === project)?.path || project}</small>
-                {status.project_errors?.some((item) => item.path === project) && <small>需要重新连接，选择后重试</small>}
+                {status.project_errors?.some((item) => item.path === project) && <small>Needs to reconnect. Select it and try again.</small>}
               </span>
             </label>)}
           </fieldset>
-          {selectedShare && <button type="button" disabled={submitting} onClick={() => revoke(selectedShare)}>停止共享本机项目（{selectedShare.readonly ? "只读" : "读写"}）</button>}
-          {activate && !selectedShare && path && path !== status.environment_directory && !removeTarget && <button type="button" className="quiet-button" disabled={busy} onClick={() => { setRemoveTarget(path); setError(""); setRecovery(""); }}>从 Cage 移除此项目</button>}
-          {removeTarget && <section className="project-picker-list" aria-label="确认移除项目">
-            <p>移除“{projectName(removeTarget)}”将解除目录共享。原文件和会话历史保留，重新添加相同目录后可继续使用历史。</p>
-            <p className="field-help">请先保存文件，并关闭此项目的终端、运行中会话和编辑器。移除当前项目后会选中默认工作区。</p>
-            <button type="button" disabled={busy} onClick={() => { setRemoveTarget(""); setError(""); }}>取消移除</button>
-            <button type="button" disabled={busy} onClick={remove}>确认移除项目</button>
+          {selectedShare && <button type="button" disabled={submitting} onClick={() => revoke(selectedShare)}>Stop sharing the local project ({selectedShare.readonly ? "read-only" : "read-write"})</button>}
+          {activate && !selectedShare && path && path !== status.environment_directory && !removeTarget && <button type="button" className="quiet-button" disabled={busy} onClick={() => { setRemoveTarget(path); setError(""); setRecovery(""); }}>Remove this project from Cage</button>}
+          {removeTarget && <section className="project-picker-list" aria-label="Confirm project removal">
+            <p>Removing "{projectName(removeTarget)}" stops sharing the directory. The original files and session history are kept, and the history is available again if you add the same directory later.</p>
+            <p className="field-help">Save your files first, and close this project's terminals, running sessions and editor. Removing the current project selects the default workspace.</p>
+            <button type="button" disabled={busy} onClick={() => { setRemoveTarget(""); setError(""); }}>Cancel removal</button>
+            <button type="button" disabled={busy} onClick={remove}>Confirm project removal</button>
           </section>}
-          <button type="button" className="quiet-button project-picker-add" onClick={add} disabled={busy || Boolean(removeTarget) || !status.ready}><Plus size={16} />{remote ? "添加云端项目…" : "添加本机项目…"}</button>
+          <button type="button" className="quiet-button project-picker-add" onClick={add} disabled={busy || Boolean(removeTarget) || !status.ready}><Plus size={16} />{remote ? "Add a cloud project…" : "Add a local project…"}</button>
         </>}
         {!sharing && adding && <>
-          {projects.length > 0 && <button type="button" className="quiet-button project-picker-add" disabled={busy} onClick={() => { setAdding(false); setPath(status.workspace || projects[0]); setError(""); }}>返回已有项目</button>}
-          <label htmlFor="project-path">新项目文件夹</label>
+          {projects.length > 0 && <button type="button" className="quiet-button project-picker-add" disabled={busy} onClick={() => { setAdding(false); setPath(status.workspace || projects[0]); setError(""); }}>Back to existing projects</button>}
+          <label htmlFor="project-path">New project folder</label>
           <div className="folder-input">
           <input
             id="project-path"
@@ -219,31 +219,31 @@ export function ProjectDialog({
               setPath(event.target.value);
               setError("");
             }}
-            placeholder={remote ? "/home/cage/Projects/my-project" : isWindows ? "C:/Users/你的名字/Projects/my-project" : isMac ? "/Users/你的名字/Projects/my-project" : "/home/你的名字/Projects/my-project"}
+            placeholder={remote ? "/home/cage/Projects/my-project" : isWindows ? "C:/Users/your-name/Projects/my-project" : isMac ? "/Users/your-name/Projects/my-project" : "/home/your-name/Projects/my-project"}
             disabled={busy}
             spellCheck="false"
             autoComplete="off"
           />
           {(remote || nativeAvailable()) && (
             <button type="button" onClick={choose} disabled={busy || browsing}>
-              {browsing ? "正在读取…" : remote ? "浏览云端文件夹…" : "选择文件夹…"}
+              {browsing ? "Reading…" : remote ? "Browse cloud folders…" : "Choose a folder…"}
             </button>
           )}
           </div>
-          {remote && directories && <section className="remote-directory-picker" aria-label="云端文件夹">
-            <div className="remote-directory-heading"><strong>{directories.path}</strong><button type="button" disabled={browsing} onClick={() => setDirectories(null)}>收起</button></div>
+          {remote && directories && <section className="remote-directory-picker" aria-label="Cloud folders">
+            <div className="remote-directory-heading"><strong>{directories.path}</strong><button type="button" disabled={browsing} onClick={() => setDirectories(null)}>Collapse</button></div>
             <div className="remote-directory-list">
-              {directories.parent && <button type="button" disabled={browsing} onClick={() => browse(directories.parent)}>返回上级文件夹</button>}
+              {directories.parent && <button type="button" disabled={browsing} onClick={() => browse(directories.parent)}>Back to the parent folder</button>}
               {directories.directories?.map((directory) => <button type="button" key={directory.path} disabled={browsing} onClick={() => browse(directory.path)}><FolderOpen size={16} />{directory.name}</button>)}
-              {directories.directories?.length === 0 && <p className="field-help">这个目录下没有可浏览的文件夹。</p>}
+              {directories.directories?.length === 0 && <p className="field-help">This directory has no folders to browse.</p>}
             </div>
-            <button type="button" disabled={browsing || !directories.selectable} onClick={() => { setPath(directories.path); setDirectories(null); }}>选择此云端文件夹</button>
+            <button type="button" disabled={browsing || !directories.selectable} onClick={() => { setPath(directories.path); setDirectories(null); }}>Choose this cloud folder</button>
           </section>}
         </>}
         <p className="field-help">
-          {remote ? "云端项目保存在服务器上。" : "这个文件夹中的改动会同步到本机。"}所有项目共用 Cage 环境，已有终端和网页会保持运行。
+          {remote ? "Cloud projects are stored on the server." : "Changes in this folder sync to this computer."} All projects share the Cage environment, and existing terminals and web pages keep running.
         </p>
-        {!status.ready && <p className="field-help">环境就绪后可添加或打开项目。已有项目仍可从列表移除。</p>}
+        {!status.ready && <p className="field-help">Projects can be added or opened once the environment is ready. Existing projects can still be removed from the list.</p>}
         {error && (
           <div className="error-message" role="alert">
             <SafetyMessage message={error} />

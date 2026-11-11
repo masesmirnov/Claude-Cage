@@ -26,7 +26,7 @@ export async function seed(home, manifest) {
   for (const name of entries) {
     const path = join(home, name);
     await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-    const bytes = Buffer.from(`Cage package test: preserve ${name}\n历史、收藏与登录数据\n\0\xff`, 'utf8');
+    const bytes = Buffer.from(`Cage package test: preserve ${name}\nИстория, избранное и данные входа\n\0\xff`, 'utf8');
     await writeFile(path, bytes, { flag: 'wx', mode: 0o600 });
     records[name] = digest(bytes);
   }

@@ -18,7 +18,7 @@ try {
   state.account.require_authentication = true;
   Object.assign(state.status, {
     local_vm_storage: true, guest_system: "windows-11", ready: false, vm_running: false,
-    storage_recovery: { required: true, error: "系统管理服务尚未完成旧磁盘恢复", repair_allowed: true },
+    storage_recovery: { required: true, error: "The system management service has not finished recovering the old disk", repair_allowed: true },
   });
   await page.route("**/api/environment/storage", route => {
     assert.equal(route.request().method(), "GET", "pending recovery admitted a migration");
@@ -28,25 +28,25 @@ try {
     attempts.push(route.request().postDataJSON());
     state.status.job = {
       id: `storage-recovery-${attempts.length}`, kind: "storage-recovery", running: true,
-      message: attempts.at(-1).repair ? "正在修复 Windows 系统助手，请完成系统授权…" : "正在恢复环境存储并检查数据位置…",
+      message: attempts.at(-1).repair ? "Repairing the Windows system management helper. Complete the system authorization…" : "Recovering the environment storage and checking the data location…",
     };
     return route.fulfill({ json: state.status.job });
   });
   await page.route("**/api/diagnostics", route => route.fulfill({ json: { bytes: 2048, files: 2 } }));
   await page.reload();
-  await page.getByRole("region", { name: "解锁 Cage", exact: true }).waitFor();
-  await page.getByLabel("账户密码", { exact: true }).fill("fixture-password");
-  await page.getByRole("button", { name: "解锁 Cage", exact: true }).click();
-  await page.getByRole("heading", { name: "环境存储需要恢复", exact: true }).waitFor();
-  assert.equal(await page.getByRole("button", { name: "启动 Cage 环境", exact: true }).count(), 0);
-  await page.getByRole("button", { name: "恢复环境存储", exact: true }).click();
-  const panel = page.getByRole("region", { name: "本机环境存储", exact: true });
-  const retry = panel.getByRole("button", { name: "重试恢复", exact: true });
-  const repair = panel.getByRole("button", { name: "修复系统助手并恢复", exact: true });
+  await page.getByRole("region", { name: "Unlock Cage", exact: true }).waitFor();
+  await page.getByLabel("Account password", { exact: true }).fill("fixture-password");
+  await page.getByRole("button", { name: "Unlock Cage", exact: true }).click();
+  await page.getByRole("heading", { name: "The environment storage needs recovery", exact: true }).waitFor();
+  assert.equal(await page.getByRole("button", { name: "Start Cage environment", exact: true }).count(), 0);
+  await page.getByRole("button", { name: "Recover environment storage", exact: true }).click();
+  const panel = page.getByRole("region", { name: "Local environment storage", exact: true });
+  const retry = panel.getByRole("button", { name: "Retry recovery", exact: true });
+  const repair = panel.getByRole("button", { name: "Repair system management helper and recover", exact: true });
   await retry.waitFor();
   await panel.getByText(state.status.storage_recovery.error, { exact: true }).waitFor();
-  assert.equal(await panel.getByLabel("新存储位置").count(), 0);
-  assert.equal(await page.getByRole("region", { name: "环境版本", exact: true }).count(), 0);
+  assert.equal(await panel.getByLabel("New storage location").count(), 0);
+  assert.equal(await page.getByRole("region", { name: "Environment versions", exact: true }).count(), 0);
 
   await retry.click();
   await panel.getByRole("status").waitFor();
@@ -55,11 +55,11 @@ try {
   assert.equal(await repair.isDisabled(), true);
   await retry.evaluate(button => { button.click(); button.click(); });
   assert.equal(attempts.length, 1, "disabled recovery button submitted the same operation twice");
-  await page.getByRole("button", { name: "导出诊断包", exact: true }).click();
-  await page.getByText("诊断包已保存。分享前请检查其中内容。", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Export diagnostics bundle", exact: true }).click();
+  await page.getByText("Diagnostics bundle saved. Review its contents before sharing.", { exact: true }).waitFor();
   assert.equal(exports, 1, "recovery blocked diagnostic export");
 
-  state.status.storage_recovery.error = "系统管理服务协议需要更新，旧磁盘仍待恢复";
+  state.status.storage_recovery.error = "The system management service protocol needs an update. The old disk is still waiting for recovery.";
   state.status.job = { ...state.status.job, running: false, error: state.status.storage_recovery.error };
   await panel.getByText(state.status.storage_recovery.error, { exact: true }).waitFor();
   await page.waitForFunction(() => [...document.querySelectorAll(".environment-storage button")].every(button => !button.disabled));
@@ -82,15 +82,15 @@ try {
   }
   assert.equal(state.requests.filter(request => request.path === "/start").length, 0);
 
-  location = { directory: "D:\\Cage 环境", has_environment: true, custom: true, backup: "C:\\Users\\demo\\.claude-cage\\state" };
+  location = { directory: "D:\\Cage environment", has_environment: true, custom: true, backup: "C:\\Users\\demo\\.claude-cage\\state" };
   state.status.storage_recovery = { required: false, repair_allowed: false };
-  state.status.job = { ...state.status.job, running: false, error: "", message: "环境存储已恢复，可以启动环境" };
+  state.status.job = { ...state.status.job, running: false, error: "", message: "The environment storage was recovered. You can start the environment." };
   await panel.getByText(location.directory, { exact: true }).waitFor();
   await page.waitForFunction(() => !document.querySelector(".environment-storage input")?.disabled);
   assert.equal(await retry.count(), 0);
-  await page.getByRole("button", { name: "返回工作台", exact: true }).first().click();
-  await page.getByRole("button", { name: "启动 Cage 环境", exact: true }).click();
-  await page.waitForFunction(() => document.querySelector(".welcome h1")?.textContent === "Cage 环境已就绪");
+  await page.getByRole("button", { name: "Back to the workbench", exact: true }).first().click();
+  await page.getByRole("button", { name: "Start Cage environment", exact: true }).click();
+  await page.waitForFunction(() => document.querySelector(".welcome h1")?.textContent === "The Cage environment is ready");
   assert.equal(state.requests.filter(request => request.path === "/start").length, 1);
   assert.deepEqual(errors, []);
   console.log(`Storage recovery login, settings, failure cause, duplicate rejection, diagnostics, repair, preparation and normal start passed (${page.viewportSize().width}px)`);

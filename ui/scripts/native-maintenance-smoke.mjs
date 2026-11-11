@@ -17,30 +17,30 @@ for (const system of ["macos", "windows-11", "debian"]) {
     for (const operation of ["update", "tools"]) {
       await page.route(`**/api/environment/${operation}`, route => {
         calls.push(operation);
-        return route.fulfill({ status: 409, contentType: "text/plain; charset=utf-8", body: "请先保存工作，结束正在运行的终端和 Claude Code 轮次，再重试更新。" });
+        return route.fulfill({ status: 409, contentType: "text/plain; charset=utf-8", body: "Save your work, end any running terminals and Claude Code turns, then retry the update." });
       });
     }
   } });
   const { page, browser, errors } = fixture;
   try {
-    await page.getByRole("button", { name: "设置", exact: true }).click();
-    await page.getByRole("navigation", { name: "设置分组" }).getByRole("button", { name: "环境与恢复", exact: true }).click();
-    const panel = page.getByRole("region", { name: "环境版本", exact: true });
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    await page.getByRole("navigation", { name: "Settings groups" }).getByRole("button", { name: "Environment and recovery", exact: true }).click();
+    const panel = page.getByRole("region", { name: "Environment versions", exact: true });
     await panel.getByText("2.1.300", { exact: true }).waitFor();
     await panel.getByText("2.1.311", { exact: true }).waitFor();
-    for (const operation of ["组件", "工具"]) {
-      await panel.getByRole("button", { name: `更新环境${operation}`, exact: true }).click();
-      const dialog = page.getByRole("dialog", { name: `更新环境${operation}？`, exact: true });
+    for (const operation of ["components", "tools"]) {
+      await panel.getByRole("button", { name: `Update environment ${operation}`, exact: true }).click();
+      const dialog = page.getByRole("dialog", { name: `Update environment ${operation}?`, exact: true });
       const text = await dialog.innerText();
       if (native) {
-        assert.ok(text.includes("结束正在运行的终端和 Claude Code 轮次"));
-        assert.ok(text.includes("聊天历史、项目文件与登录资料会保留"));
-        assert.equal(text.includes("验证已绑定客机的管理员账户"), system === "windows-11");
+        assert.ok(text.includes("end any running terminals and Claude Code turns"));
+        assert.ok(text.includes("chat history, project files and sign-in data are kept"));
+        assert.equal(text.includes("verify the administrator account bound to the guest"), system === "windows-11");
       } else {
-        assert.ok(text.includes("工作台终端、项目文件和登录状态会保留"));
+        assert.ok(text.includes("workbench terminals, project files and sign-in state are kept"));
       }
-      await dialog.getByRole("button", { name: `更新${operation}`, exact: true }).click();
-      await panel.getByRole("alert").filter({ hasText: "结束正在运行的终端" }).waitFor();
+      await dialog.getByRole("button", { name: `Update ${operation}`, exact: true }).click();
+      await panel.getByRole("alert").filter({ hasText: "end any running terminals" }).waitFor();
     }
     assert.deepEqual(calls, ["update", "tools"]);
     assert.deepEqual(errors, []);

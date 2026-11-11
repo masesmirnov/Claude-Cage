@@ -60,15 +60,15 @@ func (s *Server) macOSSSHCommand(ctx context.Context, args ...string) *exec.Cmd 
 
 func (s *Server) checkMacOSGuest(ctx context.Context) error {
 	if !s.vmRunning() {
-		return errors.New("macOS 客机尚未启动")
+		return errors.New("The macOS guest has not started.")
 	}
 	client, err := s.gateClient()
 	if err != nil {
-		return errors.New("无法验证 macOS 客机的网络隔离状态")
+		return errors.New("Could not verify the network isolation state of the macOS guest.")
 	}
 	state, err := client.Status(ctx)
 	if err != nil {
-		return errors.New("无法验证 macOS 客机的网络门槛")
+		return errors.New("Could not verify the network gate of the macOS guest.")
 	}
 	if state.Mode != cage.GateClosed {
 		s.mu.Lock()
@@ -77,21 +77,21 @@ func (s *Server) checkMacOSGuest(ctx context.Context) error {
 		reason := ""
 		switch {
 		case s.macSetupPending():
-			reason = "首次系统设置期间外网关闭"
+			reason = "Internet access is off during first-time system setup"
 		case paused:
-			reason = "网络保持暂停，请手动恢复后再联网"
+			reason = "The network stays paused. Resume it manually before going online"
 		case !ready:
-			reason = "客机重新连接，外网等待重新检查"
+			reason = "The guest reconnected. Internet access is waiting for a new check"
 		default:
 			cfg, cfgErr := loadConfig(s.configPath)
 			if state.Mode != cage.GateOpen || cfgErr != nil || state.Report == nil || !time.Now().Before(state.Until) || state.Report.Authorizes(state.RunID, cfg.Fingerprint(), time.Now()) != nil {
-				reason = "网络授权未通过当前配置的完整检查"
+				reason = "The network authorization did not pass the full check for the current configuration"
 			}
 		}
 		if reason != "" {
 			state, err = client.Close(ctx, reason)
 			if err != nil || state.Mode != cage.GateClosed {
-				return errors.New("macOS 客机网络状态不能确认")
+				return errors.New("The network state of the macOS guest cannot be confirmed.")
 			}
 		}
 	}
@@ -99,7 +99,7 @@ func (s *Server) checkMacOSGuest(ctx context.Context) error {
 	probe := `test "$(uname -s)" = Darwin && [[ $(sysctl -n hw.model) == VirtualMac* ]] && test "$(id -un)" = ` +
 		shellescape.Quote(s.macosGuest.User) + ` && [[ " $(id -Gn) " != *" admin "* ]]`
 	if _, err := s.guest(ctx, probe); err != nil {
-		return errors.New("无法以已绑定的普通用户连接到这台虚拟 Mac，请检查客机身份和 SSH 登录")
+		return errors.New("Could not connect to this virtual Mac as the bound regular user. Check the guest identity and SSH sign-in.")
 	}
 	return nil
 }
@@ -136,7 +136,7 @@ func (s *Server) macOSLifecycleCommand(action string) error {
 	job := s.jobs.execution()
 	cmd.Stdout, cmd.Stderr = job, job
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("macOS 客机操作失败（%s）：%w", action, err)
+		return fmt.Errorf("The macOS guest operation failed (%s): %w", action, err)
 	}
 	return nil
 }
@@ -162,13 +162,13 @@ var macOSLocaleScript string
 func (s *Server) syncMacOSRegion(ctx context.Context, cfg cage.Config) error {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	s.setMessage("正在应用 macOS 客机账户的地区与语言…")
+	s.setMessage("Applying the region and language of the macOS guest account…")
 	locale := strings.TrimSuffix(cfg.Locale, ".UTF-8")
 	cmd := shellescape.QuoteCommand([]string{"/bin/bash", "-c", macOSLocaleScript, "cage-locale", "NSGlobalDomain", locale})
 	if _, err := s.guest(ctx, "exec "+cmd); err != nil {
-		return fmt.Errorf("macOS 客机已启动，未能写入客机账户的地区与语言：%w", err)
+		return fmt.Errorf("The macOS guest started, but the region and language could not be written to the guest account: %w", err)
 	}
-	s.setMessage("正在等候 macOS 客机读回已保存的时区与语言…")
+	s.setMessage("Waiting for the macOS guest to read back the saved time zone and language…")
 	var last guestObservation
 	for {
 		got, err := s.macOSGuestObservation(ctx, map[string]any{"stage": "environment"})
@@ -183,7 +183,7 @@ func (s *Server) syncMacOSRegion(ctx context.Context, cfg cage.Config) error {
 			if errors.Is(ctx.Err(), context.Canceled) {
 				return ctx.Err()
 			}
-			return fmt.Errorf("macOS 客机的时区和语言尚未全部生效。期望 %s、%s，系统读回时区 %q、地区 %q、首选语言 %q，进程读回 %q、%q。外网保持关闭。可稍后重检，时区持续不符时请停止并重新启动客机。", cfg.Timezone, cfg.Locale, last.SystemTimezone, last.SystemLocale, last.SystemLanguage, last.TZ, last.ProcessLocale)
+			return fmt.Errorf("The time zone and language of the macOS guest have not all taken effect. Expected %s and %s. The system reports time zone %q, region %q, and preferred language %q; the process reports %q and %q. Internet access stays off. Check again later. If the time zone keeps mismatching, stop and restart the guest.", cfg.Timezone, cfg.Locale, last.SystemTimezone, last.SystemLocale, last.SystemLanguage, last.TZ, last.ProcessLocale)
 		case <-time.After(time.Second):
 		}
 	}

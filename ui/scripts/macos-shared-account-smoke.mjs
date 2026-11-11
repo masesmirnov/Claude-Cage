@@ -32,22 +32,22 @@ for (const platform of ["darwin", "windows", "linux"]) {
   const {page,state,browser,errors} = fixture;
   try {
     page.setDefaultTimeout(10000);
-    await page.getByRole("heading",{name:"注册 Cage 账户",exact:true}).waitFor();
-    assert.equal(await page.getByRole("combobox",{name:"客户机系统"}).count(),0);
-    assert.equal(await page.getByRole("button",{name:"信任此电脑并进入",exact:true}).count(),0);
-    await page.getByLabel("用户名",{exact:true}).fill("shared_qa");
-    await page.getByLabel("设置密码",{exact:true}).fill("Shared test-'\"\\$! 2026");
-    await page.getByLabel("确认密码",{exact:true}).fill("different-password");
-    await page.getByRole("button",{name:"创建本地账户",exact:true}).click();
-    await page.getByRole("alert").filter({hasText:"两次密码不一致"}).waitFor();
+    await page.getByRole("heading",{name:"Register a Cage account",exact:true}).waitFor();
+    assert.equal(await page.getByRole("combobox",{name:"Guest system"}).count(),0);
+    assert.equal(await page.getByRole("button",{name:"Trust this computer",exact:true}).count(),0);
+    await page.getByLabel("Username",{exact:true}).fill("shared_qa");
+    await page.getByLabel("Set password",{exact:true}).fill("Shared test-'\"\\$! 2026");
+    await page.getByLabel("Confirm password",{exact:true}).fill("different-password");
+    await page.getByRole("button",{name:"Create local account",exact:true}).click();
+    await page.getByRole("alert").filter({hasText:"The passwords do not match"}).waitFor();
     assert.equal(creates,0); assert.equal(installs,0);
-    await page.getByLabel("确认密码",{exact:true}).fill("Shared test-'\"\\$! 2026");
+    await page.getByLabel("Confirm password",{exact:true}).fill("Shared test-'\"\\$! 2026");
     if (evidence) await page.screenshot({path:`${evidence}/${platform}-register.png`});
-    await page.getByRole("button",{name:"创建本地账户",exact:true}).click();
-    await page.getByRole("heading",{name:"为 Cage 准备独立环境",exact:true}).waitFor();
+    await page.getByRole("button",{name:"Create local account",exact:true}).click();
+    await page.getByRole("heading",{name:"Prepare a separate environment for Cage",exact:true}).waitFor();
     assert.equal(creates,1); assert.equal(installs,0);
     await page.reload();
-    await page.getByRole("heading",{name:"为 Cage 准备独立环境",exact:true}).waitFor();
+    await page.getByRole("heading",{name:"Prepare a separate environment for Cage",exact:true}).waitFor();
     assert.equal(state.account.username,"shared_qa"); assert.equal(creates,1);
     assert.deepEqual(errors,[]);
     console.log(`${platform}: registration precedes initialization; confirmation and reload passed`);
@@ -59,7 +59,7 @@ for (const platform of ["darwin", "windows", "linux"]) {
 const legacy = await createWorkbench({
   waitForReady:false,
   async beforeNavigate(page,state) {
-    Object.assign(state.account,{exists:true,unlocked:true,trusted_local:true,username:"本机用户",guest_system:"macos",initial_mac_setup:true,macos_guest_user:"cage",macos_account_host:true});
+    Object.assign(state.account,{exists:true,unlocked:true,trusted_local:true,username:"Local user",guest_system:"macos",initial_mac_setup:true,macos_guest_user:"cage",macos_account_host:true});
     await page.route("**/api/account/prepare-macos",route => {
       const input = route.request().postDataJSON();
       assert.equal(input.username,"cage"); assert.equal(input.password,input.confirm_password);
@@ -70,13 +70,13 @@ const legacy = await createWorkbench({
 });
 try {
   const {page,errors} = legacy; page.setDefaultTimeout(10000);
-  await page.getByRole("heading",{name:"设置 Cage 与 macOS 共用账密",exact:true}).waitFor();
-  assert.equal(await page.getByLabel("用户名",{exact:true}).inputValue(),"cage");
-  assert.equal(await page.getByLabel("用户名",{exact:true}).getAttribute("readonly"),"");
-  await page.getByLabel("设置密码",{exact:true}).fill("Shared-test-2026");
-  await page.getByLabel("确认密码",{exact:true}).fill("Shared-test-2026");
-  await page.getByRole("button",{name:"保存账密并继续",exact:true}).click();
-  await page.getByRole("button",{name:/^账户菜单，cage/}).waitFor();
+  await page.getByRole("heading",{name:"Set up the shared Cage and macOS credentials",exact:true}).waitFor();
+  assert.equal(await page.getByLabel("Username",{exact:true}).inputValue(),"cage");
+  assert.equal(await page.getByLabel("Username",{exact:true}).getAttribute("readonly"),"");
+  await page.getByLabel("Set password",{exact:true}).fill("Shared-test-2026");
+  await page.getByLabel("Confirm password",{exact:true}).fill("Shared-test-2026");
+  await page.getByRole("button",{name:"Save credentials and continue",exact:true}).click();
+  await page.getByRole("button",{name:/^Account menu, cage/}).waitFor();
   assert.deepEqual(errors,[]);
   console.log("legacy: shared credentials preserve the existing guest username and resume the workspace");
 } finally { await legacy.browser.close(); }

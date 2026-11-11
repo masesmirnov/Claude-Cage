@@ -20,7 +20,7 @@ createRoot(document.getElementById("root")).render(
       <Suspense
         fallback={
           <div className="client-loading" role="status">
-            正在打开工作台…
+            Opening the workbench…
           </div>
         }
       >

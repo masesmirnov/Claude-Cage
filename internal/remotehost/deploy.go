@@ -40,28 +40,28 @@ func deploymentError(err error) error {
 	var exit *ssh.ExitError
 	if errors.As(err, &exit) {
 		messages := map[int]string{
-			61: "需要 Linux x86_64 服务器，请使用普通 SSH 用户登录",
-			62: "服务器缺少 rootless 容器所需的用户映射、工具、FUSE、TUN 或 cgroup v2",
-			63: "SSH 用户的 systemd 用户服务不可用",
-			64: "自动部署需要由字母、数字、点、短横线、下划线和斜杠组成的绝对配置路径",
-			65: "目标目录或服务已属于其他配置。请选择空的配置目录，或填写已安装的 Cage 程序路径",
-			66: "找不到指定的 Cage 程序。首次自动部署请将程序路径设为 cage",
-			67: "此服务器正在部署 Cage，请稍后重新连接",
-			68: "配置目录所在磁盘需要至少 7 GiB 可用空间",
-			69: "部署包传输校验失败，请重新部署",
-			70: "服务器的独立容器引擎启动失败，请检查用户服务日志和 cgroup 委派",
-			71: "服务器无法加载或校验工作环境镜像，请检查磁盘空间",
-			72: "服务器准备工作环境失败，可查看配置目录中的 cloud-host/setup.log 后重试",
-			74: "下载容器引擎失败，请检查服务器的网络后重试",
-			75: "服务器无法获取固定版本的 Debian 基础镜像，请检查云端网络后重试",
-			76: "服务器安装工具失败。详细日志位于配置目录的 cloud-host/build 下",
-			73: "云端 Cage 用户服务启动失败，请检查服务器用户服务日志",
+			61: "A Linux x86_64 server is required. Sign in with an ordinary SSH user.",
+			62: "The server is missing the user mapping, tools, FUSE, TUN or cgroup v2 required by rootless containers.",
+			63: "The systemd user service of the SSH user is unavailable.",
+			64: "Automatic deployment needs an absolute configuration path made of letters, digits, dots, hyphens, underscores and slashes.",
+			65: "The target directory or service already belongs to another configuration. Choose an empty configuration directory, or enter the path of an installed Cage program.",
+			66: "The specified Cage program was not found. For the first automatic deployment, set the program path to cage.",
+			67: "Cage is being deployed on this server. Reconnect later.",
+			68: "The disk holding the configuration directory needs at least 7 GiB of free space.",
+			69: "The deployment package transfer verification failed. Deploy again.",
+			70: "The separate container engine on the server failed to start. Check the user service log and cgroup delegation.",
+			71: "The server could not load or verify the work environment image. Check the disk space.",
+			72: "The server failed to prepare the work environment. Check cloud-host/setup.log in the configuration directory and try again.",
+			74: "Downloading the container engine failed. Check the server network and try again.",
+			75: "The server could not get the pinned Debian base image. Check the cloud network and try again.",
+			76: "The server failed to install tools. Detailed logs are under cloud-host/build in the configuration directory.",
+			73: "The cloud Cage user service failed to start. Check the server user service log.",
 		}
 		if message := messages[exit.ExitStatus()]; message != "" {
 			return failure("cloud_setup_failed", message)
 		}
 	}
-	return failure("server_entry_failed", "云端 Cage 未就绪，请检查服务器上的 Cage 程序、配置路径和用户服务")
+	return failure("server_entry_failed", "Cage in the cloud is not ready. Check the Cage program, configuration path and user service on the server.")
 }
 
 // SSH reads the archive as a stream. Report whole percentages without loading it into memory.
@@ -101,7 +101,7 @@ func cloudEntry(ctx context.Context, client *ssh.Client, p HostProfile, deploy b
 	switch string(out) {
 	case "missing":
 		if !deploy {
-			return nil, failure("deployment_required", "此主机尚未部署 Cage。部署将在 SSH 用户的目录中安装 Cage 和独立容器环境。")
+			return nil, failure("deployment_required", "Cage has not been deployed on this host yet. Deployment installs Cage and a separate container environment in the SSH user's directory.")
 		}
 		binary, err := os.Executable()
 		if err != nil {
@@ -111,16 +111,16 @@ func cloudEntry(ctx context.Context, client *ssh.Client, p HostProfile, deploy b
 		sum, err := os.ReadFile(payload + ".sha256")
 		digest := strings.TrimSpace(string(sum))
 		if err != nil || !regexp.MustCompile("^[a-f0-9]{64}$").MatchString(digest) {
-			return nil, failure("payload_missing", "此客户端缺少云端部署包，请安装包含部署包的 Cage")
+			return nil, failure("payload_missing", "This client is missing the cloud deployment package. Install a Cage that includes the deployment package.")
 		}
 		file, err := os.Open(payload)
 		if err != nil {
-			return nil, failure("payload_missing", "无法读取云端部署包，请检查 Cage 安装")
+			return nil, failure("payload_missing", "Could not read the cloud deployment package. Check the Cage installation.")
 		}
 		defer file.Close()
 		info, err := file.Stat()
 		if err != nil || !info.Mode().IsRegular() || info.Size() == 0 {
-			return nil, failure("payload_missing", "云端部署包无效，请检查 Cage 安装")
+			return nil, failure("payload_missing", "The cloud deployment package is invalid. Check the Cage installation.")
 		}
 		input := io.TeeReader(file, &uploadProgress{size: info.Size(), phase: phase})
 		phase("cloud_upload_0")
@@ -149,5 +149,5 @@ func cloudEntry(ctx context.Context, client *ssh.Client, p HostProfile, deploy b
 		case <-time.After(500 * time.Millisecond):
 		}
 	}
-	return nil, failure("server_start_timeout", "云端服务已请求启动，但连接入口尚未就绪，请检查用户服务日志后重连")
+	return nil, failure("server_start_timeout", "The cloud service was asked to start, but its connection entry is not ready yet. Check the user service log and reconnect.")
 }

@@ -20,21 +20,21 @@ try {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(entry);
-  await page.getByRole("button", { name: "宣传片制作", exact: true }).click();
-  await page.getByRole("heading", { name: "交付文件" }).waitFor();
+  await page.getByRole("button", { name: "Promo video production", exact: true }).click();
+  await page.getByRole("heading", { name: "Deliverables" }).waitFor();
   assert.equal(
     await page.locator(".markdown strong").first().innerText(),
-    "以后维护",
+    "Maintenance later",
   );
   assert.equal(await page.getByRole("table").count(), 1);
   assert.equal(await page.getByRole("checkbox", { checked: true }).count(), 1);
-  const transcript = page.getByRole("region", { name: "会话消息" });
+  const transcript = page.getByRole("region", { name: "Session messages" });
   assert(await transcript.evaluate((el) => el.scrollWidth <= el.clientWidth));
-  const call = page.locator("summary").filter({ hasText: "2 次工具调用" });
+  const call = page.locator("summary").filter({ hasText: "2 tool calls" });
   await call.click();
-  await page.getByText("检查帧率", { exact: true }).waitFor();
+  await page.getByText("Check frame rate", { exact: true }).waitFor();
   await call.click();
-  const task = page.locator("summary").filter({ hasText: "后台任务" });
+  const task = page.locator("summary").filter({ hasText: "Background task" });
   assert.equal(await task.count(), 1);
   await task.focus();
   await page.keyboard.press("Enter");
@@ -47,11 +47,11 @@ try {
       path: path.join(capture, engine + "-transcript.png"),
     });
   }
-  await page.getByRole("button", { name: /封面.*查看图片/ }).click();
+  await page.getByRole("button", { name: /Cover.*View image/ }).click();
   await page.waitForFunction(
     () => document.querySelector(".project-media img")?.naturalWidth > 0,
   );
-  await page.getByRole("button", { name: /成片.*加载视频/ }).click();
+  await page.getByRole("button", { name: /Final cut.*Load video/ }).click();
   await page.waitForFunction(
     () => document.querySelector("video")?.videoWidth > 0,
   );
@@ -66,19 +66,19 @@ try {
   await video.evaluate((el) => el.pause());
   if (capture)
     await page.screenshot({ path: path.join(capture, engine + "-media.png") });
-  await page.getByRole("button", { name: /成片.*收起/ }).click();
+  await page.getByRole("button", { name: /Final cut.*Collapse/ }).click();
   assert.equal(await video.count(), 0);
-  await page.getByRole("button", { name: /缺失.*查看图片/ }).click();
-  await page.getByText(/未找到媒体文件/).waitFor();
+  await page.getByRole("button", { name: /Missing.*View image/ }).click();
+  await page.getByText(/The media file was not found/).waitFor();
   await page.reload();
-  await page.getByRole("heading", { name: "交付文件" }).waitFor();
+  await page.getByRole("heading", { name: "Deliverables" }).waitFor();
   assert.equal(await page.locator("video").count(), 0);
   const opened = page.waitForRequest(
     (r) =>
       r.method() === "POST" &&
       new URL(r.url()).pathname === "/api/mobile/browser/open",
   );
-  await page.getByRole("link", { name: "查看网页" }).click();
+  await page.getByRole("link", { name: "View page" }).click();
   assert.equal((await opened).postDataJSON().url, "https://example.org/demo");
   assert.deepEqual(errors, []);
   console.log(

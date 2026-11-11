@@ -15,14 +15,14 @@ import (
 // discovers, force-powers-off, removes, or changes a guest's network adapters.
 func WindowsVMAction(ctx context.Context, root, action string) error {
 	if action != "start" && action != "stop" {
-		return errors.New("Windows 客机操作无效")
+		return errors.New("Invalid Windows guest operation.")
 	}
 	binding, err := LoadWindowsProfile(root)
 	if err != nil {
 		return err
 	}
 	if binding == nil {
-		return errors.New("此配置尚未绑定 Windows 客机")
+		return errors.New("This configuration is not bound to a Windows guest yet.")
 	}
 	operation := action
 	if operation == "stop" {
@@ -33,14 +33,14 @@ func WindowsVMAction(ctx context.Context, root, action string) error {
 		return err
 	}
 	if action == "start" && result.State != "Running" || action == "stop" && result.State != "Off" {
-		return errors.New("Windows 客机未到达预期状态")
+		return errors.New("The Windows guest did not reach the expected state.")
 	}
 	return nil
 }
 
 func windowsVMActionNative(ctx context.Context, id uuid.UUID, action string) error {
 	if id == uuid.Nil || action != "start" && action != "stop" {
-		return errors.New("Windows 客机操作无效")
+		return errors.New("Invalid Windows guest operation.")
 	}
 	script := fmt.Sprintf("$targetId = [guid]'%s'\n$action = '%s'\n", id.String(), action) + windowsVMLifecycleScript
 	cmd, err := systemPowerShellQuery(ctx, script)
@@ -52,13 +52,13 @@ func windowsVMActionNative(ctx context.Context, id uuid.UUID, action string) err
 		return ctx.Err()
 	}
 	if err != nil {
-		return errors.New("Windows 客机操作未完成，请检查绑定虚拟机的状态与管理权限")
+		return errors.New("The Windows guest operation was not completed. Check the state and management permissions of the bound virtual machine.")
 	}
 	var result struct {
 		State string `json:"state"`
 	}
 	if json.Unmarshal(data, &result) != nil || (action == "start" && result.State != "Running") || (action == "stop" && result.State != "Off") {
-		return errors.New("Windows 客机未到达预期状态")
+		return errors.New("The Windows guest did not reach the expected state.")
 	}
 	return nil
 }

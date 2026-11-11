@@ -33,7 +33,7 @@ func run(ctx context.Context, report func(State), acquire func(context.Context, 
 		if ctx.Err() != nil {
 			return
 		}
-		message := "主机防休眠请求已结束"
+		message := "The host keep-awake request has ended"
 		if err != nil {
 			message = err.Error()
 		}

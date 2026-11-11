@@ -53,7 +53,7 @@ func TestGuestFileSaveRequiresCompleteFrames(t *testing.T) {
 	truncated := append([]byte(nil), wire.Bytes()...)
 	binary.Write(&wire, binary.LittleEndian, uint32(0))
 	var output bytes.Buffer
-	if err := run([]string{"save", "图片 ' .bin"}, &wire, &output); err != nil {
+	if err := run([]string{"save", "Фото ' .bin"}, &wire, &output); err != nil {
 		t.Fatal(err)
 	}
 	var result struct {
@@ -107,7 +107,7 @@ func TestGuestFileSaveRequiresCompleteFrames(t *testing.T) {
 func TestGuestFileOperationsUseStdinAndPreserveContent(t *testing.T) {
 	isolateClipboardCache(t)
 	root := t.TempDir()
-	path := filepath.Join(root, "资料.bin")
+	path := filepath.Join(root, "Данные.bin")
 	content := []byte{0, 255, 128, '\n'}
 	if err := os.WriteFile(path, content, 0600); err != nil {
 		t.Fatal(err)

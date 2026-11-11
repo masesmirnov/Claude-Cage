@@ -35,7 +35,7 @@ func (r *Runtime) inspectMounts(container *engineContainer) (MountPropagation, e
 		}
 	}
 	if !owned {
-		return MountPropagation{}, errors.New("无法匹配容器全局进程身份，未读取其他进程的挂载")
+		return MountPropagation{}, errors.New("Could not match the global process identity of the container. Mounts of other processes were not read.")
 	}
 	for _, namespace := range []string{"mnt", "user"} {
 		host, err := os.Readlink(filepath.Join("/proc/self/ns", namespace))
@@ -47,7 +47,7 @@ func (r *Runtime) inspectMounts(container *engineContainer) (MountPropagation, e
 			return MountPropagation{}, err
 		}
 		if host == guest {
-			return MountPropagation{}, errors.New("容器必须使用独立用户与挂载命名空间")
+			return MountPropagation{}, errors.New("The container must use its own user and mount namespaces.")
 		}
 	}
 	mounts, err := os.ReadFile(filepath.Join(process, "mountinfo"))
@@ -75,7 +75,7 @@ func (r *Runtime) initializeMounts(ctx context.Context, containerID string) erro
 		return err
 	}
 	if container == nil || container.ID != containerID || !container.State.Running {
-		return errors.New("容器启动身份已变化")
+		return errors.New("The container start identity has changed.")
 	}
 	if _, err := r.inspectMounts(container); err != nil {
 		return err
@@ -88,7 +88,7 @@ func (r *Runtime) initializeMounts(ctx context.Context, containerID string) erro
 		return err
 	}
 	if !state.Ready() {
-		return errors.New("容器项目挂载传播未能初始化")
+		return errors.New("The container project mount propagation could not be initialized.")
 	}
 	return nil
 }

@@ -34,7 +34,7 @@ func (s *Server) installTailnet() error {
 		return errTailnetNativeInstall
 	}
 	if !s.vmRunning() {
-		return errors.New("请先启动 Cage 环境")
+		return errors.New("Start the Cage environment first.")
 	}
 	ctx, cancel := context.WithTimeout(s.operationContext(), 2*time.Minute)
 	defer cancel()
@@ -46,11 +46,11 @@ func (s *Server) installTailnet() error {
 	if string(bytes.TrimSpace(arch)) == "aarch64" {
 		name = "arm64"
 	} else if string(bytes.TrimSpace(arch)) != "x86_64" {
-		return errors.New("当前客机架构尚不支持 Tailscale")
+		return errors.New("The current guest architecture does not support Tailscale yet.")
 	}
 	payload, err := tailnetassets.Linux(name)
 	if err != nil {
-		return errors.New("此构建缺少 Tailscale 客机组件，请安装完整的 Cage 构建")
+		return errors.New("This build is missing the Tailscale guest component. Install the full Cage build.")
 	}
 	defer payload.Close()
 	reader, err := gzip.NewReader(payload)
@@ -62,9 +62,9 @@ func (s *Server) installTailnet() error {
 	cmd.Stdin = reader
 	cmd.Stdout = io.Discard
 	cmd.Stderr = io.Discard
-	s.setMessage("正在安装 Tailscale，已有终端和浏览器保持运行…")
+	s.setMessage("Installing Tailscale. Existing terminals and the browser keep running…")
 	if err := cmd.Run(); err != nil {
-		return errors.New("Tailscale 安装未完成，请检查客机连接后重试")
+		return errors.New("The Tailscale installation was not completed. Check the guest connection and try again.")
 	}
 	return nil
 }

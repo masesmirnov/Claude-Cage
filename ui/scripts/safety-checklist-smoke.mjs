@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { createWorkbench } from "./workbench-fixture.mjs";
 
-const failure = "联网检查未通过：浏览器语言未通过。语言与已保存的设置不一致。请核对语言设置后重新检测。外网保持关闭。";
+const failure = "Network check failed: the browser language did not pass. The language does not match the saved settings. Check the language settings and run the checks again. Internet access stays off.";
 const output = process.env.CAGE_SAFETY_SCREENSHOTS || "/tmp/cage-safety-checklist";
 await mkdir(output, { recursive: true });
 const platforms = process.env.CAGE_TEST_BROWSER === "webkit" ? ["darwin"] : ["darwin", "windows", "linux"];
@@ -19,19 +19,19 @@ for (const platform of platforms) {
         : fetch(input, ...args);
     }),
   });
-  const checklist = page.getByRole("dialog", { name: "网络与隔离检查", exact: true });
-  const link = parent => parent.getByRole("button", { name: "查看检查清单", exact: true });
+  const checklist = page.getByRole("dialog", { name: "Network and isolation checks", exact: true });
+  const link = parent => parent.getByRole("button", { name: "View checklist", exact: true });
   const showChecklist = async (button, keyboard = false) => {
     if (keyboard) { await button.focus(); await button.press("Enter"); }
     else await button.click();
     await checklist.waitFor();
-    assert.equal(await page.getByRole("dialog").evaluateAll(nodes => nodes.at(-1).getAttribute("aria-label")), "网络与隔离检查");
-    await checklist.getByRole("heading", { name: "关键检查", exact: true }).waitFor();
-    await checklist.getByText("1 / 2 通过", { exact: true }).waitFor();
-    const failed = checklist.locator("details").filter({ hasText: "浏览器语言" });
+    assert.equal(await page.getByRole("dialog").evaluateAll(nodes => nodes.at(-1).getAttribute("aria-label")), "Network and isolation checks");
+    await checklist.getByRole("heading", { name: "Critical checks", exact: true }).waitFor();
+    await checklist.getByText("1 / 2 passed", { exact: true }).waitFor();
+    const failed = checklist.locator("details").filter({ hasText: "Browser language" });
     await failed.locator("summary").click();
-    await failed.getByText("语言与已保存的设置不一致", { exact: true }).waitFor();
-    await failed.getByText("请核对语言设置后重新检测", { exact: true }).waitFor();
+    await failed.getByText("The language does not match the saved settings", { exact: true }).waitFor();
+    await failed.getByText("Check the language settings and run the checks again", { exact: true }).waitFor();
   };
   const closeChecklist = async () => {
     await page.keyboard.press("Escape");
@@ -40,12 +40,12 @@ for (const platform of platforms) {
   try {
     Object.assign(state.status, {
       ready: true, vm_running: true,
-      job: { id: "failed-check", kind: "safety", running: false, error: failure, message: "环境检查未完成", log: "fixture check log" },
+      job: { id: "failed-check", kind: "safety", running: false, error: failure, message: "Environment check not completed", log: "fixture check log" },
       safety: {
         gate: { mode: "closed", reason: failure }, error: failure,
         report: { created_at: new Date().toISOString(), checks: [
-          { id: "dns", title: "加密 DNS", critical: true, state: "passed", evidence: "DNS 通过指定代理" },
-          { id: "browser", title: "浏览器语言", critical: true, state: "failed", evidence: "语言与已保存的设置不一致", remedy: "请核对语言设置后重新检测" },
+          { id: "dns", title: "Encrypted DNS", critical: true, state: "passed", evidence: "DNS goes through the specified proxy" },
+          { id: "browser", title: "Browser language", critical: true, state: "failed", evidence: "The language does not match the saved settings", remedy: "Check the language settings and run the checks again" },
         ] },
       },
     });
@@ -67,28 +67,28 @@ for (const platform of platforms) {
     await showChecklist(link(feedback));
     await closeChecklist();
 
-    await page.getByRole("button", { name: "查看操作详情", exact: true }).click();
-    const details = page.getByRole("dialog", { name: "操作详情", exact: true });
+    await page.getByRole("button", { name: "View operation details", exact: true }).click();
+    const details = page.getByRole("dialog", { name: "Operation details", exact: true });
     await showChecklist(link(details));
     await closeChecklist();
     assert.equal(await details.isVisible(), true, "closing the checklist must preserve operation details");
-    await details.getByRole("button", { name: "关闭面板", exact: true }).click();
+    await details.getByRole("button", { name: "Close panel", exact: true }).click();
 
-    state.status.job.setup_progress = { phase: "services", label: "环境服务" };
+    state.status.job.setup_progress = { phase: "services", label: "Environment services" };
     await page.reload();
-    const setup = page.getByRole("region", { name: "环境安装进度", exact: true });
+    const setup = page.getByRole("region", { name: "Environment installation progress", exact: true });
     await showChecklist(link(setup));
     await closeChecklist();
     delete state.status.job.setup_progress;
     await page.reload();
 
     await page.route("**/api/settings/probe", route => route.fulfill({ status: 409, contentType: "text/plain; charset=utf-8", body: failure }));
-    await page.getByRole("button", { name: "设置", exact: true }).click();
-    await page.getByRole("navigation", { name: "设置分组" }).getByRole("button", { name: "网络与代理", exact: true }).click();
-    const settings = page.getByRole("region", { name: "设置", exact: true });
-    const dns = settings.getByLabel("加密 DNS", { exact: true });
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    await page.getByRole("navigation", { name: "Settings groups" }).getByRole("button", { name: "Network and proxy", exact: true }).click();
+    const settings = page.getByRole("region", { name: "Settings", exact: true });
+    const dns = settings.getByLabel("Encrypted DNS", { exact: true });
     await dns.fill("https://example.com/dns-query");
-    await settings.getByRole("button", { name: "验证出口", exact: true }).click();
+    await settings.getByRole("button", { name: "Verify exit", exact: true }).click();
     const settingsError = settings.getByRole("alert").filter({ hasText: failure });
     await showChecklist(link(settingsError), true);
     await closeChecklist();
@@ -96,34 +96,34 @@ for (const platform of platforms) {
     assert.equal(await settings.isVisible(), true);
     await dns.fill(state.settings.dns_url);
 
-    await page.route("**/api/proxy/route", route => route.fulfill({ status: 409, contentType: "text/plain; charset=utf-8", body: "关键检测证据不完整，外网保持关闭" }));
-    await settings.getByRole("button", { name: "重新应用", exact: true }).click();
-    const proxyError = settings.getByRole("alert").filter({ hasText: "关键检测证据不完整" });
+    await page.route("**/api/proxy/route", route => route.fulfill({ status: 409, contentType: "text/plain; charset=utf-8", body: "Critical check evidence is incomplete. Internet access stays off." }));
+    await settings.getByRole("button", { name: "Apply again", exact: true }).click();
+    const proxyError = settings.getByRole("alert").filter({ hasText: "Critical check evidence is incomplete" });
     await showChecklist(link(proxyError));
     await closeChecklist();
-    await settings.getByRole("button", { name: "返回工作台", exact: true }).first().click();
+    await settings.getByRole("button", { name: "Back to the workbench", exact: true }).first().click();
 
     await page.route("**/api/projects/open", route => route.fulfill({ status: 409, contentType: "text/plain; charset=utf-8", body: failure }));
-    await page.getByRole("button", { name: "打开项目", exact: true }).click();
-    const projects = page.getByRole("dialog", { name: "打开项目", exact: true });
-    await projects.getByRole("button", { name: "打开项目", exact: true }).click();
+    await page.getByRole("button", { name: "Open project", exact: true }).click();
+    const projects = page.getByRole("dialog", { name: "Open project", exact: true });
+    await projects.getByRole("button", { name: "Open project", exact: true }).click();
     await showChecklist(link(projects));
     await closeChecklist();
     assert.equal(await projects.isVisible(), true);
-    await projects.getByRole("button", { name: "取消", exact: true }).click();
+    await projects.getByRole("button", { name: "Cancel", exact: true }).click();
 
     for (const viewport of [{ width: 820, height: 558 }, { width: 560, height: 812 }]) {
       await page.setViewportSize(viewport);
-      if (viewport.width === 560) await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
+      if (viewport.width === 560) await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
       await showChecklist(link(homeError));
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
       await closeChecklist();
       await page.screenshot({ path: `${output}/${platform}-${viewport.width}.png` });
     }
 
-    state.status.job = { ...state.status.job, id: "unrelated-error", error: "项目文件夹连接失败" };
+    state.status.job = { ...state.status.job, id: "unrelated-error", error: "Failed to connect to the project folder" };
     await page.reload();
-    const unrelated = page.getByRole("alert").filter({ hasText: "项目文件夹连接失败" });
+    const unrelated = page.getByRole("alert").filter({ hasText: "Failed to connect to the project folder" });
     await unrelated.waitFor();
     assert.equal(await link(unrelated).count(), 0);
     assert.equal(state.status.safety.gate.mode, "closed");

@@ -94,9 +94,9 @@ internal static class WindowsDesktopFiles
         }
         if (accept is null || field is null) return null;
         var label = ButtonLabel(accept.Current.Name);
-        bool directory = label is "Select Folder" or "Choose Folder" or "选择文件夹" or "選擇資料夾";
-        bool save = label is "Save" or "保存" or "儲存" or "Enregistrer" or "Speichern" or "Guardar" or "Salvar" or "Salva" or "Сохранить" or "저장";
-        if (!directory && !save && label is not ("Open" or "打开" or "開啟" or "Ouvrir" or "Öffnen" or "Abrir" or "Apri" or "Openen" or "開く" or "Открыть" or "열기")) return null;
+        bool directory = label is "Select Folder" or "Choose Folder";
+        bool save = label is "Save" or "Enregistrer" or "Speichern" or "Guardar" or "Salvar" or "Salva" or "Сохранить" or "저장";
+        if (!directory && !save && label is not ("Open" or "Ouvrir" or "Öffnen" or "Abrir" or "Apri" or "Openen" or "Открыть" or "열기")) return null;
         var saveName = save ? ((ValuePattern)field.GetCurrentPattern(ValuePattern.Pattern)).Current.Value : "";
         if (save && !AttachmentsRpc.NameValid(saveName)) return null;
         var agent = ClipboardAgent.Current;

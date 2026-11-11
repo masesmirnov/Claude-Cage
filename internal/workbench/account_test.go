@@ -24,7 +24,7 @@ func newTestAccount(t *testing.T) *localAccount {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = a.create("林间工作室", "initial-test-password", ""); err != nil {
+	if err = a.create("€₽₩₹₺", "initial-test-password", ""); err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(a.lock)
@@ -91,7 +91,7 @@ func TestLocalAccountProfileAndAvatarPersistWithoutRekey(t *testing.T) {
 	var b bytes.Buffer
 	_ = png.Encode(&b, img)
 	avatar := "data:image/png;base64," + base64.StdEncoding.EncodeToString(b.Bytes())
-	if err := a.updateProfile("  山雀  ", avatar); err != nil {
+	if err := a.updateProfile("  ₴₪  ", avatar); err != nil {
 		t.Fatal(err)
 	}
 	data, _ := base64.StdEncoding.DecodeString(strings.SplitN(a.view().Avatar, ",", 2)[1])
@@ -103,7 +103,7 @@ func TestLocalAccountProfileAndAvatarPersistWithoutRekey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if loaded.view().Username != "山雀" || loaded.view().Avatar != a.view().Avatar {
+	if loaded.view().Username != "₴₪" || loaded.view().Avatar != a.view().Avatar {
 		t.Fatal("profile did not persist")
 	}
 	after, _ := a.desktopKey()
@@ -111,7 +111,7 @@ func TestLocalAccountProfileAndAvatarPersistWithoutRekey(t *testing.T) {
 	if !bytes.Equal(before, after) {
 		t.Fatal("profile edit changed credential key")
 	}
-	if err := a.updateProfile("山雀", "data:image/svg+xml;base64,PHN2Zy8+"); err == nil {
+	if err := a.updateProfile("₴₪", "data:image/svg+xml;base64,PHN2Zy8+"); err == nil {
 		t.Fatal("active content accepted as avatar")
 	}
 }

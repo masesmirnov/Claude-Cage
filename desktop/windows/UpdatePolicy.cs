@@ -14,7 +14,7 @@ internal static partial class UpdatePolicy
     {
         if (!Uri.TryCreate(raw, UriKind.Absolute, out var url) ||
             !IsWorkbench(raw, url.Port) || url.Port <= 0 || url.Fragment.Length < 2)
-            throw new InvalidDataException("后台返回了无效的工作台地址");
+            throw new InvalidDataException("The backend returned an invalid workbench address");
         return url;
     }
 
@@ -58,7 +58,7 @@ internal static partial class UpdatePolicy
         if (!string.Equals(Path.GetDirectoryName(directory), Path.GetFullPath(updateRoot).TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase) ||
             !Path.GetFileName(directory).StartsWith("download-", StringComparison.Ordinal) ||
             !string.Equals(Path.GetFileName(path), "Cage-setup.exe", StringComparison.Ordinal))
-            throw new InvalidDataException("更新安装包不属于 Cage 的私有下载目录");
+            throw new InvalidDataException("The update installer is not in Cage's private download directory");
         return path;
     }
 
@@ -68,7 +68,7 @@ internal static partial class UpdatePolicy
         while (!string.IsNullOrEmpty(entry))
         {
             if ((File.Exists(entry) || Directory.Exists(entry)) && (File.GetAttributes(entry) & FileAttributes.ReparsePoint) != 0)
-                throw new InvalidDataException("更新路径包含符号链接或目录联接");
+                throw new InvalidDataException("The update path contains a symlink or directory junction");
             entry = Path.GetDirectoryName(entry);
         }
     }

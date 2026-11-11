@@ -23,17 +23,17 @@ func inspectHostGit(ctx context.Context) hostGitState {
 	switch state {
 	case gitguard.BareOK:
 		view.Ready = true
-		view.Message = "本机 Git 安全保护已启用。"
+		view.Message = "Git safety protection is enabled on this computer."
 	case gitguard.BareNoGit:
 		view.Ready = true
-		view.Message = "本机未安装可用的 Git，无需修改；以后启动环境时会重新检查。"
+		view.Message = "No usable Git is installed on this computer, so nothing needs to change. It will be checked again the next time the environment starts."
 	case gitguard.BareUnset:
 		view.CanEnable = true
-		view.Message = "启动前需要启用本机 Git 安全保护。"
+		view.Message = "Git safety protection on this computer must be enabled before starting."
 	case gitguard.BareOld:
-		view.Message = "本机 Git 版本过旧，请升级到 2.38 或更新版本后重新检查。"
+		view.Message = "Git on this computer is too old. Upgrade to version 2.38 or later and check again."
 	default:
-		view.Message = "暂时无法检查本机 Git。请确认 Git 安装完整，再重新检查；Cage 不会自动打开安装器。"
+		view.Message = "Git on this computer cannot be checked right now. Make sure Git is fully installed, then check again. Cage will not open the installer automatically."
 	}
 	return view
 }
@@ -50,11 +50,11 @@ func (s *Server) enableHostGit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !input.Confirm {
-		http.Error(w, "请先确认启用本机 Git 安全保护。", http.StatusBadRequest)
+		http.Error(w, "Confirm enabling Git safety protection on this computer first.", http.StatusBadRequest)
 		return
 	}
 	if !s.op.TryLock() {
-		http.Error(w, "正在处理环境操作，请完成后重试。", http.StatusConflict)
+		http.Error(w, "An environment operation is in progress. Try again after it finishes.", http.StatusConflict)
 		return
 	}
 	defer s.op.Unlock()
@@ -72,12 +72,12 @@ func (s *Server) enableHostGit(w http.ResponseWriter, r *http.Request) {
 	cmd := gitx.Untrusted(ctx, "config", "--global", "--replace-all", "safe.bareRepository", "explicit")
 	cmd.Dir = s.profile
 	if err := cmd.Run(); err != nil {
-		http.Error(w, "未能保存 Git 安全设置。请检查全局 Git 配置的写入权限，关闭其他 Git 设置操作后重试。", http.StatusInternalServerError)
+		http.Error(w, "The Git safety settings could not be saved. Check the write permissions of the global Git configuration, close other Git settings operations, and try again.", http.StatusInternalServerError)
 		return
 	}
 	after := inspectHostGit(ctx)
 	if !after.Ready {
-		http.Error(w, "Git 设置已写入，但检查尚未通过。请检查全局 Git 配置后重新检测。", http.StatusConflict)
+		http.Error(w, "The Git settings were written, but the check has not passed. Check the global Git configuration and run the check again.", http.StatusConflict)
 		return
 	}
 	jsonReply(w, after)
@@ -86,7 +86,7 @@ func (s *Server) enableHostGit(w http.ResponseWriter, r *http.Request) {
 func requireHostGit(ctx context.Context) error {
 	state := inspectHostGit(ctx)
 	if !state.Ready {
-		return errors.New(state.Message + " 请从工作台点击启动，按提示完成检查。")
+		return errors.New(state.Message + " Click Start in the workbench and follow the prompts to finish the check.")
 	}
 	return nil
 }

@@ -16,8 +16,8 @@ import (
 func TestNetworkStatusImmediatelyAfterManualGrant(t *testing.T) {
 	for _, tc := range []struct{ failure, locationError string }{
 		{"exit probe", ""},
-		{"exit probe", "出口位置服务暂时不可用"},
-		{"proxy core", "出口位置服务暂时不可用"},
+		{"exit probe", "The exit location service is temporarily unavailable"},
+		{"proxy core", "The exit location service is temporarily unavailable"},
 	} {
 		t.Run(tc.failure+"/location-error="+tc.locationError, func(t *testing.T) {
 			s, gate := grantedToolUpdateServer(t)
@@ -25,7 +25,7 @@ func TestNetworkStatusImmediatelyAfterManualGrant(t *testing.T) {
 			if tc.locationError != "" {
 				s.recordLocationProbeLocked(Location{IP: "192.0.2.1"}, errors.New(tc.locationError))
 			}
-			s.recordLocationProbeLocked(Location{}, errors.New("出口 IP 暂时不可用"))
+			s.recordLocationProbeLocked(Location{}, errors.New("The exit IP is temporarily unavailable"))
 			openBeforeFailure := gate.Status()
 			client, err := s.gateClient()
 			if err != nil {
@@ -44,7 +44,7 @@ func TestNetworkStatusImmediatelyAfterManualGrant(t *testing.T) {
 				}
 				errorMatches := status.NetworkError == wantError
 				if wantMode == cage.GateClosed && tc.failure == "exit probe" {
-					errorMatches = strings.HasPrefix(status.NetworkError, wantError+"；") && strings.Contains(status.NetworkError, "自动重检")
+					errorMatches = strings.HasPrefix(status.NetworkError, wantError+"; ") && strings.Contains(status.NetworkError, "automatic recheck")
 				}
 				if status.Safety.Gate == nil || status.Safety.Gate.Mode != wantMode || !errorMatches {
 					t.Fatalf("expected %s and %q, got %+v", wantMode, wantError, status)
@@ -54,10 +54,10 @@ func TestNetworkStatusImmediatelyAfterManualGrant(t *testing.T) {
 				}
 			}
 
-			issue := "代理出口探测超时"
+			issue := "The proxy exit probe timed out"
 			if tc.failure == "proxy core" {
 				s.checkProxyHealth() // The isolated profile has no running proxy core.
-				issue = "内置代理未就绪；外网保持关闭"
+				issue = "The built-in proxy is not ready. Internet access stays off"
 			} else {
 				s.finishSafetyObservation(t.Context(), client, openBeforeFailure, "", issue, true)
 			}
@@ -94,7 +94,7 @@ func TestNetworkIntentDiagnosticLastsUntilDurableRepair(t *testing.T) {
 	if err := s.restoreNetworkIntent(); err == nil {
 		t.Fatal("corrupt intent was accepted")
 	}
-	const locationFailure = "出口位置服务暂时不可用"
+	const locationFailure = "The exit location service is temporarily unavailable"
 	s.recordLocationProbeLocked(Location{IP: "192.0.2.1"}, errors.New(locationFailure))
 	s.publishGate(gate.Status())
 	if !s.networkPaused || s.currentNetworkErrorLocked() != s.networkIntentError || s.networkIntentError == "" {

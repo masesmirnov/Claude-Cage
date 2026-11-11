@@ -47,10 +47,10 @@ func TestMobileTranscriptInBrowser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rec.Title = "宣传片制作"
+	rec.Title = "Promo video production"
 	rec.Turns = []mobileTurn{
-		{ID: uuid.NewString(), Prompt: "检查宣传片并预览成片", Status: "completed", Text: "## 交付文件\n\n**以后维护**：运行 `npm run plates`。\n\n- [x] 横版与竖版均已导出\n\n| 版本 | 比例 |\n| --- | --- |\n| 竖版 | 9:16 |\n\n![封面](cover.png)\n\n[成片](demo.mp4)\n\n![缺失](missing.png)\n\n[查看网页](https://example.org/demo)\n\n```xml\n<task-notification>示例</task-notification>\n```", Tools: []cliconversation.ToolActivity{{ID: "a", Name: "Bash", Detail: "检查帧率", Status: "completed"}, {ID: "b", Name: "Read", Status: "failed"}}},
-		{ID: uuid.NewString(), Prompt: "<task-notification>\n<task-id>fixture-id</task-id>\n<status>completed</status>\n<summary>竖版视频已导出</summary>\n</task-notification>", Status: "completed"},
+		{ID: uuid.NewString(), Prompt: "Check the promo video and preview the final cut", Status: "completed", Text: "## Deliverables\n\n**Maintenance later**: run `npm run plates`.\n\n- [x] Landscape and portrait both exported\n\n| Version | Ratio |\n| --- | --- |\n| Portrait | 9:16 |\n\n![Cover](cover.png)\n\n[Final cut](demo.mp4)\n\n![Missing](missing.png)\n\n[View page](https://example.org/demo)\n\n```xml\n<task-notification>Example</task-notification>\n```", Tools: []cliconversation.ToolActivity{{ID: "a", Name: "Bash", Detail: "Check frame rate", Status: "completed"}, {ID: "b", Name: "Read", Status: "failed"}}},
+		{ID: uuid.NewString(), Prompt: "<task-notification>\n<task-id>fixture-id</task-id>\n<status>completed</status>\n<summary>Portrait video exported</summary>\n</task-notification>", Status: "completed"},
 	}
 	if err = writePrivate(mobileRecordPath(s.profile, id), rec); err != nil {
 		t.Fatal(err)

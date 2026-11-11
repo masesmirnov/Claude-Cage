@@ -113,7 +113,7 @@ func TestMacOSProjectRejectsSiblingProfileAndCredentials(t *testing.T) {
 	}
 	s := &Server{profile: profile, macosGuest: &guestos.MacOSProfile{User: "guestdev"}}
 	for _, dir := range []string{dailyState, credentials} {
-		if err := s.ensureProjectShare(dir); err == nil || !strings.Contains(err.Error(), "共享") {
+		if err := s.ensureProjectShare(dir); err == nil || !strings.Contains(err.Error(), "share") {
 			t.Fatalf("%s was not rejected before contacting the guest: %v", dir, err)
 		}
 	}

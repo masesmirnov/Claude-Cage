@@ -18,12 +18,12 @@ try {
   let creations = 0;
   await page.route("**/api/**", route => {
     const request = route.request(), path = new URL(request.url()).pathname;
-    if (path.endsWith("/projects")) return route.fulfill({ json: { host: "隔离主机", ready: true, projects, shared_sessions: true } });
+    if (path.endsWith("/projects")) return route.fulfill({ json: { host: "Isolated host", ready: true, projects, shared_sessions: true } });
     if (path.endsWith("/sessions")) {
       if (request.method() === "POST") {
         creations++;
         const input = request.postDataJSON();
-        const session = { ...input, title: "测试会话", revision: 1, generation: input.id, turns: [] };
+        const session = { ...input, title: "Test session", revision: 1, generation: input.id, turns: [] };
         sessions.push(session);
         return route.fulfill({ json: session });
       }
@@ -33,9 +33,9 @@ try {
     return route.fulfill({ json: sessions[0] || {} });
   });
   await page.goto(origin + "/mobile.html");
-  const picker = page.getByRole("combobox", { name: "选择项目", exact: true });
+  const picker = page.getByRole("combobox", { name: "Choose project", exact: true });
   await picker.waitFor();
-  const create = page.getByRole("button", { name: "新建会话", exact: true });
+  const create = page.getByRole("button", { name: "New session", exact: true });
   const collapsed = await create.boundingBox();
   await picker.press("Enter");
   assert.ok(Math.abs((await create.boundingBox()).y-collapsed.y)<1);
@@ -51,7 +51,7 @@ try {
   await picker.tap();
   await picker.tap();
   await create.tap();
-  await page.getByRole("textbox", { name: "消息", exact: true }).waitFor();
+  await page.getByRole("textbox", { name: "Message", exact: true }).waitFor();
   assert.equal(creations, 1, "one tap after closing the project selector must create exactly one session");
   assert.equal(sessions[0].workspace, "/work/gamma");
   await page.screenshot({ path: join(output, `${engine}-new-session.png`) });
@@ -65,31 +65,31 @@ try {
     return canvas.toDataURL("image/jpeg").split(",")[1];
   });
   let frame, writes = 0;
-  const favorites = { folders: [{ id: "work", title: "工作" }, { id: "reference", title: "资料" }], items: [] };
+  const favorites = { folders: [{ id: "work", title: "Work" }, { id: "reference", title: "Reference" }], items: [] };
   await phone.route("**/api/**", route => {
     const request = route.request(), path = new URL(request.url()).pathname, body = request.postDataJSON();
-    if (path.endsWith("/projects")) return route.fulfill({ json: { host: "隔离测试电脑", ready: true, projects: [] } });
+    if (path.endsWith("/projects")) return route.fulfill({ json: { host: "Isolated test computer", ready: true, projects: [] } });
     if (path.endsWith("/sessions")) return route.fulfill({ json: { sessions: [] } });
     if (path.endsWith("/favorites")) {
       if (body) { writes++; favorites.items.push({ id: "saved", ...body }); }
       return route.fulfill({ json: favorites });
     }
     if (path.endsWith("/open")) {
-      frame = { ...body, image, document: "fixture-document", url: "https://example.com/", title: "测试网页" };
+      frame = { ...body, image, document: "fixture-document", url: "https://example.com/", title: "Test page" };
       return route.fulfill({ json: { id: frame.id } });
     }
     if (path.endsWith("/frame")) return route.fulfill({ json: frame });
     return route.fulfill({ json: { id: frame?.id } });
   });
   await phone.goto(origin + "/mobile.html");
-  await phone.getByRole("dialog", { name: "工作区侧栏" }).getByRole("button", { name: "浏览器", exact: true }).click();
-  await phone.getByRole("img", { name: "远程浏览器画面" }).waitFor();
-  await phone.getByRole("button", { name: "收藏夹", exact: true }).tap();
-  await phone.getByRole("button", { name: "收藏此页", exact: true }).tap();
-  await phone.getByRole("combobox", { name: "保存到", exact: true }).tap();
-  await phone.getByRole("combobox", { name: "保存到", exact: true }).tap();
-  await phone.getByRole("button", { name: "保存收藏", exact: true }).tap();
-  await phone.getByRole("button", { name: "取消此页收藏", exact: true }).waitFor();
+  await phone.getByRole("dialog", { name: "Workspace sidebar" }).getByRole("button", { name: "Browser", exact: true }).click();
+  await phone.getByRole("img", { name: "Remote browser view" }).waitFor();
+  await phone.getByRole("button", { name: "Favorites", exact: true }).tap();
+  await phone.getByRole("button", { name: "Favorite this page", exact: true }).tap();
+  await phone.getByRole("combobox", { name: "Save to", exact: true }).tap();
+  await phone.getByRole("combobox", { name: "Save to", exact: true }).tap();
+  await phone.getByRole("button", { name: "Save favorite", exact: true }).tap();
+  await phone.getByRole("button", { name: "Remove this page from favorites", exact: true }).waitFor();
   assert.equal(writes, 1, "one tap after closing the folder selector must save exactly once");
   await phone.screenshot({ path: join(output, `${engine}-saved-favorite.png`) });
   assert.deepEqual(errors, []);

@@ -174,7 +174,7 @@ func TestNativeRequestsAcrossRealRelay(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		t.Fatal("revision read did not reach host")
 	}
-	message := []byte(`{"text":"在项目 B 运行测试"}`)
+	message := []byte(`{"text":"Run the tests in project B"}`)
 	p, err = c.Request("POST", session+"/messages", message)
 	close(f.finishGet)
 	if err != nil || p.Status != 201 || !bytes.Equal(p.Body, message) {

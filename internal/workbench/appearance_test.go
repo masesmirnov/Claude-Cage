@@ -97,7 +97,7 @@ func TestAppearanceCustomThemesPersistAndInvalidUpdatesKeepFile(t *testing.T) {
 	a := defaultAppearance()
 	a.Light.Colors = map[string]string{"chrome": "#123456", "buttonInk": "#abcdef"}
 	a.Dark.Terminal = map[string]string{"background": "#112233", "brightRed": "#aabbcc"}
-	a.CustomThemes = []SavedAppearanceTheme{{ID: "my-theme", Name: "我的配色", Light: a.Light, Dark: a.Dark}}
+	a.CustomThemes = []SavedAppearanceTheme{{ID: "my-theme", Name: "My theme", Light: a.Light, Dark: a.Dark}}
 	save := func(a Appearance) *httptest.ResponseRecorder {
 		b, _ := json.Marshal(a)
 		req := httptest.NewRequest("POST", "/api/appearance", bytes.NewReader(b))
@@ -142,7 +142,7 @@ func TestAppearanceCustomThemesPersistAndInvalidUpdatesKeepFile(t *testing.T) {
 	}
 	// The library can exceed the old 64 KB appearance request limit.
 	for i := 1; i < 50; i++ {
-		item := SavedAppearanceTheme{ID: fmt.Sprintf("theme-%d", i), Name: "配色", Light: a.Light, Dark: a.Dark}
+		item := SavedAppearanceTheme{ID: fmt.Sprintf("theme-%d", i), Name: "Theme", Light: a.Light, Dark: a.Dark}
 		item.Light.Fonts.UI = strings.Repeat("a", 200)
 		item.Light.Fonts.Code = strings.Repeat("b", 200)
 		item.Dark.Fonts = item.Light.Fonts
@@ -165,7 +165,7 @@ func TestAppearanceCustomThemesPersistAndInvalidUpdatesKeepFile(t *testing.T) {
 	if w := save(a); w.Code != 200 {
 		t.Fatal(w.Body.String())
 	}
-	a.CustomThemes = append(a.CustomThemes, SavedAppearanceTheme{ID: "overflow", Name: "超限", Light: a.Light, Dark: a.Dark})
+	a.CustomThemes = append(a.CustomThemes, SavedAppearanceTheme{ID: "overflow", Name: "Over limit", Light: a.Light, Dark: a.Dark})
 	if w := save(a); w.Code == 200 {
 		t.Fatal("library limit not enforced")
 	}

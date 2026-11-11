@@ -221,7 +221,7 @@ func nativeDesktopDownloadFixture(t *testing.T, system string) (*Server, browser
 	}
 	s.windowsBrowserControl, s.ready = client, true
 	t.Cleanup(func() { s.beginClose(); client.close(); s.activities.Wait() })
-	record := browserDownloadInfo{ID: uuid.NewString(), Name: "生成文件.bin", State: "saved", Path: "private-guest-cache"}
+	record := browserDownloadInfo{ID: uuid.NewString(), Name: "ฒณฑล.bin", State: "saved", Path: "private-guest-cache"}
 	payload := bytes.Repeat([]byte{0, 255, 17, 42}, 32773)
 	if err := writePrivate(filepath.Join(directory, "record.json"), record); err != nil {
 		t.Fatal(err)

@@ -65,7 +65,7 @@ function Run-Script([string]$Path,[hashtable]$Parameters) {
 }
 
 try {
-    $profile=Join-Path $temporary "profile's 中文"
+    $profile=Join-Path $temporary "profile's $([char]0xE9)$([char]0xE8)"
     $null=New-Item -ItemType Directory -Path $profile
     $binding=Join-Path $profile 'windows-guest.json'
     $manifest=Join-Path $temporary 'manifest.json'
@@ -109,7 +109,7 @@ function Start-Process($FilePath,$ArgumentList,$Verb,[switch]$PassThru) {
         @{Name='unknown-exit';Code=1;Phase='FAILED';HostOnly=$false;Unknown=$true}
     )
     foreach ($case in $cases) {
-        $child=Join-Path $temporary ($case.Name+"-child's 中文.ps1")
+        $child=Join-Path $temporary ($case.Name+"-child's $([char]0xE9)$([char]0xE8).ps1")
         $expectedHost=([bool]$case.HostOnly).ToString().ToLowerInvariant()
         $expectedTools=([bool]$case.Tools).ToString().ToLowerInvariant()
         $childBody="`nif ([bool]`$HostOnly -ne `$$expectedHost -or [bool]`$Tools -ne `$$expectedTools -or `$GuestAdministrator -or `$BindingSHA256 -ne ('c'*64)) { exit 92 }`n"

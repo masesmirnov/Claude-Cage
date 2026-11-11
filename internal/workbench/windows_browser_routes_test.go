@@ -71,7 +71,7 @@ func TestNativeBrowserTextHTTPPreservesTwoMiBAndRequiresPreparation(t *testing.T
 	if prepared.Code != http.StatusOK || json.Unmarshal(prepared.Body.Bytes(), &binding) != nil || !validInputToken(binding.Transfer) {
 		t.Fatalf("clipboard preparation failed: %d %s", prepared.Code, prepared.Body.String())
 	}
-	text := strings.Repeat("中", (2<<20)/3) + "ab"
+	text := strings.Repeat("ฐ", (2<<20)/3) + "ab"
 	if len(text) != 2<<20 {
 		t.Fatal("fixture is not at the UTF-8 byte limit")
 	}
@@ -106,7 +106,7 @@ func TestNativeBrowserClipboardHTTPReadsBoundPNGAndLargeText(t *testing.T) {
 			if result["png"] != testPNG(t) {
 				t.Fatal("PNG reference changed its bytes")
 			}
-		} else if result["text"] != strings.Repeat("中", (2<<20)/3)+"ab" {
+		} else if result["text"] != strings.Repeat("ฐ", (2<<20)/3)+"ab" {
 			t.Fatal("large UTF-8 clipboard text changed")
 		}
 		input.Context = strings.Repeat("d", 32)

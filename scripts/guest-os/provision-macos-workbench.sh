@@ -33,7 +33,7 @@ if ! id $ordinary >/dev/null 2>&1; then
 fi
 [[ $(dscl . -read /Users/$ordinary NFSHomeDirectory) == "NFSHomeDirectory: /Users/$ordinary" && " $(id -Gn $ordinary) " != *' admin '* ]]
 if ! printf '%s\n' "$login_password" | dscl /Local/Default -authonly $ordinary >/dev/null; then
-    echo '保存的客机凭据与安装账户不匹配，请核对加密保险箱。' >&2
+    echo 'The saved guest credentials do not match the installation account. Check the encrypted vault.' >&2
     exit 1
 fi
 install -d -m 755 /usr/local/libexec

@@ -33,7 +33,7 @@ func importDesktopConnections(full, entry string) error {
 			return err
 		}
 		if !info.IsDir() {
-			return errors.New("旧入口下载记录目录无效")
+			return errors.New("The legacy entry's download record directory is invalid.")
 		}
 		instances, err := os.ReadDir(root)
 		if err != nil {

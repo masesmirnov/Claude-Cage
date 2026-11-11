@@ -43,9 +43,9 @@ async function until(predicate) {
 }
 try {
   await page.getByRole("button", { name: "Claude Desktop", exact: true }).click();
-  const surface = page.getByAltText("Claude Desktop 客机窗口");
+  const surface = page.getByAltText("Claude Desktop guest window");
   await surface.waitFor();
-  await page.getByLabel("向 Claude Desktop 输入").waitFor({ state: "attached" });
+  await page.getByLabel("Type into Claude Desktop").waitFor({ state: "attached" });
   const bounds = await surface.boundingBox();
   await page.mouse.move(bounds.x + 80, bounds.y + 100);
   await page.mouse.down();
@@ -68,17 +68,17 @@ try {
   assert(inputs.some(input => input.code === "KeyF" && input.command));
   assert(inputs.some(input => input.code === "KeyA" && input.command));
   await until(() => inputs.some(input => input.action === "ime" && input.mode === "status"));
-  await page.getByLabel("向 Claude Desktop 输入").evaluate(element => {
+  await page.getByLabel("Type into Claude Desktop").evaluate(element => {
     element.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true }));
     element.value = "nihao";
     element.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertCompositionText", isComposing: true, data: "nihao" }));
-    element.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, data: "你好🙂" }));
+    element.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, data: "Привет🙂" }));
   });
   await page.keyboard.press("Enter");
   await until(() => inputs.some(input => input.action === "ime" && input.mode === "commit"));
   const composition = inputs.filter(input => input.action === "ime" && input.mode !== "status");
   assert.deepEqual(composition.map(input => input.mode), ["begin", "update", "commit"]);
-  assert.equal(composition[2].text, "你好🙂");
+  assert.equal(composition[2].text, "Привет🙂");
   assert(composition.every(input => input.session === composition[0].session && input.geometry === geometry));
   assert.deepEqual(composition.map(input => input.sequence), [0, 1, 2]);
   await until(() => inputs.some(input => input.code === "Enter" && !input.down));

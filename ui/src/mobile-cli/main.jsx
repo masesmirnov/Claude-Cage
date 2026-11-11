@@ -14,14 +14,14 @@ import "./mobile.css";
 import { MessageBody, ToolActivity, TranscriptContext } from "./transcript";
 
 const labels = {
-	queued: "消息已送达",
-  running: "正在运行", stopping: "正在停止", completed: "已完成",
-  failed: "运行失败", stopped: "已停止", interrupted: "运行中断",
+	queued: "Message delivered",
+  running: "Running", stopping: "Stopping", completed: "Completed",
+  failed: "Failed", stopped: "Stopped", interrupted: "Interrupted",
 };
 const active = (status) => status === "running" || status === "stopping" || status === "queued";
 const nativePhone = navigator.userAgent.includes("CageMobile/1");
 const phoneWorkspace = nativePhone || location.pathname === "/";
-const dateFormat = new Intl.DateTimeFormat("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+const dateFormat = new Intl.DateTimeFormat("en-US", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
 function displayTime(value) {
   if (!value) return "";
   const date = new Date(value);
@@ -40,9 +40,9 @@ function saveRoute(next, push) {
 
 function Status({ value, awaitingApproval }) {
   const tone = active(value) ? "live" : value === "failed" || value === "interrupted" ? "bad" : "";
-  return <span className={"status-label " + tone} role="status"><i className="status-dot" />{awaitingApproval ? "等待审批" : labels[value] || "就绪"}</span>;
+  return <span className={"status-label " + tone} role="status"><i className="status-dot" />{awaitingApproval ? "Awaiting approval" : labels[value] || "Ready"}</span>;
 }
-function Notice({ children, onRetry, label = "重新读取" }) {
+function Notice({ children, onRetry, label = "Reload" }) {
   return <div className="notice" role="alert">{children}
     {onRetry && <button type="button" className="action secondary" onClick={onRetry}><RefreshCw size={15} />{label}</button>}
   </div>;
@@ -257,22 +257,22 @@ function App() {
   return <main className={["mobile-app", phoneWorkspace && "phone-workspace", nativePhone && "native-phone"].filter(Boolean).join(" ")}>
     <header className="topbar workspace-topbar">
       {phoneWorkspace
-        ? <button type="button" className="icon-button" aria-haspopup="dialog" aria-expanded={drawer} aria-label="展开侧栏"
+        ? <button type="button" className="icon-button" aria-haspopup="dialog" aria-expanded={drawer} aria-label="Expand sidebar"
           onClick={() => setDrawer(true)}><img className="brand-mark" src={cageLogo} alt="Cage" /></button>
-        : <a className="icon-button" href="/" aria-label="返回工作台"><img className="brand-mark" src={cageLogo} alt="Cage" /></a>}
+        : <a className="icon-button" href="/" aria-label="Back to the workbench"><img className="brand-mark" src={cageLogo} alt="Cage" /></a>}
       {phoneWorkspace && (current.tool === "browser" || current.tool === "claude") && <div className="workspace-address-slot" ref={setAddressSlot} />}
       <div className="top-actions">{phoneWorkspace
         ? <span className="workspace-tool-icon" role="img" aria-label={activeTool?.name || "Claude Code"}><ActiveToolIcon size={19} aria-hidden="true" /></span>
-        : <div className="connection-host"><Monitor size={16} /><span>{catalog?.host || "连接电脑"}</span></div>}</div>
+        : <div className="connection-host"><Monitor size={16} /><span>{catalog?.host || "Connect to computer"}</span></div>}</div>
     </header>
     {gate ? <Notice onRetry={refreshAll}>{gate}</Notice> : !catalog
-      ? <section className="page-scroll">{error ? <Notice onRetry={refreshAll}>{error}</Notice> : <Empty icon={LoaderCircle} title="正在读取项目…" />}</section>
+      ? <section className="page-scroll">{error ? <Notice onRetry={refreshAll}>{error}</Notice> : <Empty icon={LoaderCircle} title="Reading projects…" />}</section>
       : current.tool === "settings" || current.tool === "archived"
-        ? <section className="page-scroll mobile-session-settings" aria-label="会话设置">
-          <button className="action" onClick={leaveSettings}><ArrowLeft size={17} />{current.tool === "archived" ? "返回设置" : "返回会话"}</button>
+        ? <section className="page-scroll mobile-session-settings" aria-label="Session settings">
+          <button className="action" onClick={leaveSettings}><ArrowLeft size={17} />{current.tool === "archived" ? "Back to settings" : "Back to session"}</button>
           {current.tool === "archived" ? <ArchivedSessions request={request} ready={catalog.ready}
             onRestored={id => {archivedSessions.current.delete(id); refreshAll();}} />
-            : <><h1>设置</h1><button className="action secondary" onClick={() => settingsPage("archived")}><Archive size={18} />已归档会话</button></>}
+            : <><h1>Settings</h1><button className="action secondary" onClick={() => settingsPage("archived")}><Archive size={18} />Archived sessions</button></>}
         </section>
       : current.displayID
         ? <RemoteDisplay controls={browserControls} key={current.displayID} id={current.displayID} tool={current.tool} addressSlot={addressSlot}
@@ -282,7 +282,7 @@ function App() {
         ? <Chat key={session} id={session} drafts={drafts.current} ready={catalog.ready} visible={visible} refresh={refresh}
           onOpenWeb={url => selectTool("browser", true, url)} onDenied={restricted} onMissing={missingSession} onSnapshot={updateSession} onBack={phoneWorkspace ? undefined : () => open(current.project)} />
       : phoneWorkspace
-        ? <div className="workspace-placeholder"><Terminal size={28} /><p>{project ? "在侧栏选择或新建会话" : "请选择远程工具"}</p></div>
+        ? <div className="workspace-placeholder"><Terminal size={28} /><p>{project ? "Choose or create a session in the sidebar" : "Choose a remote tool"}</p></div>
         : <section className="page-scroll">{error && <Notice onRetry={refreshAll}>{error}</Notice>}{codeNavigation}</section>}
     {phoneWorkspace && <WorkspaceDrawer open={drawer} active={current.tool} name={catalog?.host || devices.devices.find(d => d.id === devices.current)?.name}
       onClose={() => setDrawer(false)} onTool={selectTool} onSettings={() => settingsPage("settings")} nativePhone={nativePhone} onExit={exitWorkspace}>
@@ -351,7 +351,7 @@ function Chat({ id, drafts, ready, visible, refresh, onOpenWeb, onDenied, onMiss
       if (snapshot) accept(snapshot, generation);
       if (snapshot && checking && checkApproval.current === checking && latest.current?.turns?.at(-1)?.approval?.id === checking.id) {
         checkApproval.current = null;
-        setApprovalFeedback({ id: checking.id, message: "主机仍在等待这次审批。请核对参数后再次选择。" });
+        setApprovalFeedback({ id: checking.id, message: "The host is still waiting for this approval. Check the parameters and choose again." });
       }
       setReadError("");
       readFailures.current = 0; setReadProgress("");
@@ -360,11 +360,11 @@ function Chat({ id, drafts, ready, visible, refresh, onOpenWeb, onDenied, onMiss
       if (signal.aborted || !live.current) return;
       if (accessDenied(error)) onDenied(error); else if (error.status === 404 || error.status === 410) onMissing();
       else if (retryableSessionError(error) && ++readFailures.current <= sessionRetryLimit) {
-        setReadError(""); setReadProgress(`${sessionFailureMessage(error)} 正在自动重连（${readFailures.current}/${sessionRetryLimit}）…`);
+        setReadError(""); setReadProgress(`${sessionFailureMessage(error)} Reconnecting automatically (${readFailures.current}/${sessionRetryLimit})…`);
         return sessionRetryDelay(readFailures.current);
       } else {
         setReadProgress("");
-        setReadError(sessionFailureMessage(error) + (retryableSessionError(error) ? " 已自动重连5次，仍未恢复。可以稍后再次连接。" : ""));
+        setReadError(sessionFailureMessage(error) + (retryableSessionError(error) ? " Reconnected automatically 5 times without recovery. You can connect again later." : ""));
       }
       return null;
     }
@@ -387,7 +387,7 @@ function Chat({ id, drafts, ready, visible, refresh, onOpenWeb, onDenied, onMiss
     setConfirming(true); setActionError(""); setReadError(""); setReadProgress("");
     const recovering = recoverPendingMessage({
       signal:controller.signal, pending:() => submission.current,
-      progress:attempt => setSendProgress(`正在重连并确认消息是否送达（${attempt}/${sessionRetryLimit}）…`),
+      progress:attempt => setSendProgress(`Reconnecting and confirming whether the message was delivered (${attempt}/${sessionRetryLimit})…`),
       read:async () => {
         const generation = latest.current?.generation;
         const snapshot = await request(sessionPath(id), {signal:controller.signal});
@@ -401,7 +401,7 @@ function Chat({ id, drafts, ready, visible, refresh, onOpenWeb, onDenied, onMiss
       },
     });
     void recovering.then(confirmed => {
-      if (!controller.signal.aborted && !confirmed) setActionError("消息是否送达仍未确认。已自动重连5次，原消息已保留。再次连接后会继续确认，避免重复执行。");
+      if (!controller.signal.aborted && !confirmed) setActionError("It is still unconfirmed whether the message was delivered. Reconnected automatically 5 times and the original message is kept. Connecting again continues the confirmation, so it is not run twice.");
     }).catch(error => {
       if (controller.signal.aborted) return;
       if (accessDenied(error)) onDenied(error); else if ([404,410].includes(error.status)) onMissing(); else setActionError(sessionFailureMessage(error));
@@ -427,18 +427,18 @@ function Chat({ id, drafts, ready, visible, refresh, onOpenWeb, onDenied, onMiss
         if (snapshot?.can_send) return;
         if (snapshot?.connection_waiting) started = Date.now();
         if (!snapshot?.connection_waiting && Date.now() - started > 60000) {
-          setConnectionError("会话连接暂未就绪，请重试。");
+          setConnectionError("The session connection is not ready. Try again.");
           return;
         }
       } catch (error) {
         if (controller.signal.aborted) return;
         if (accessDenied(error)) { onDenied(error); return; }
         if (retryableSessionError(error) && ++failures <= sessionRetryLimit) {
-          setConnectionProgress(`正在恢复会话连接（${failures}/${sessionRetryLimit}）…`);
+          setConnectionProgress(`Restoring the session connection (${failures}/${sessionRetryLimit})…`);
           delay = sessionRetryDelay(failures);
         } else if (error.status !== 409 || Date.now() - started > 60000) {
           setConnectionProgress("");
-          setConnectionError(sessionFailureMessage(error) + (retryableSessionError(error) ? " 已自动重连5次，可以稍后再次连接。" : "")); return;
+          setConnectionError(sessionFailureMessage(error) + (retryableSessionError(error) ? " Reconnected automatically 5 times. You can connect again later." : "")); return;
         }
       }
       timer = setTimeout(connect, delay);
@@ -459,7 +459,7 @@ function Chat({ id, drafts, ready, visible, refresh, onOpenWeb, onDenied, onMiss
     event?.preventDefault();
     if (actionBusy.current || confirming || readProgress || readError || running || !ready || !session || session.single_turn || session.can_send === false || !draft.trim()) return;
     actionBusy.current = true; setBusy(true); setActionError("");
-    setSendProgress("正在发送消息…");
+    setSendProgress("Sending the message…");
     try {
       follow.current = true;
       const generation = latest.current?.generation;
@@ -502,48 +502,48 @@ function Chat({ id, drafts, ready, visible, refresh, onOpenWeb, onDenied, onMiss
       if (!live.current) return;
       if (accessDenied(error)) onDenied(error);
       else if (latest.current?.turns?.at(-1)?.approval?.id === approvalId) {
-        const checking = { id: approvalId, checking: true, message: error.status === 409 ? "这次请求的状态已变化，正在重新读取。" : "审批结果尚未确认，正在重新读取主机状态。" };
+        const checking = { id: approvalId, checking: true, message: error.status === 409 ? "The state of this request has changed. Reading it again." : "The approval result is unconfirmed. Reading the host status again." };
         checkApproval.current = checking; setApprovalFeedback(checking); retry();
       }
     } finally { actionBusy.current = false; if (live.current) setBusy(false); }
   };
   return <>
     <section className="chat-header">
-      <div className="title-line">{onBack && <button type="button" className="icon-button" aria-label="返回会话列表" onClick={onBack}><ArrowLeft size={18} /></button>}<h1>{session?.title || "Claude Code 会话"}</h1>{session && <Status value={last?.status} awaitingApproval={last?.status === "running" && last.approval} />}</div>
+      <div className="title-line">{onBack && <button type="button" className="icon-button" aria-label="Back to the session list" onClick={onBack}><ArrowLeft size={18} /></button>}<h1>{session?.title || "Claude Code session"}</h1>{session && <Status value={last?.status} awaitingApproval={last?.status === "running" && last.approval} />}</div>
       {session && <p className="note">{session.workspace}</p>}
     </section>
-    {!uncertain && (readError || connectionError) && <Notice onRetry={retry} label="再次连接">{readError || connectionError}</Notice>}
+    {!uncertain && (readError || connectionError) && <Notice onRetry={retry} label="Connect again">{readError || connectionError}</Notice>}
     {session && <SessionAccount id={id} request={request} onChanged={()=>setReload(n=>n+1)} compact />}
     {(sendProgress || connectionProgress || readProgress) && <p className="note" role="status">{sendProgress || connectionProgress || readProgress}</p>}
     {session?.connection_notice && <Notice>{session.connection_notice}</Notice>}
-    {session?.history_truncated && <p className="note">手机显示的历史已截断，完整内容保存在电脑 Claude Code 中。</p>}
-    <section className="transcript" ref={transcript} aria-label="会话消息" onScroll={(e) => {
+    {session?.history_truncated && <p className="note">The history shown on the phone is truncated. The full content is kept in Claude Code on the computer.</p>}
+    <section className="transcript" ref={transcript} aria-label="Session messages" onScroll={(e) => {
       const box = e.currentTarget; follow.current = box.scrollHeight - box.scrollTop - box.clientHeight < 64;
     }}>
-      {!session && !readError && <Empty icon={LoaderCircle} title="正在读取会话…" />}
-      {session && !session.turns?.length && <Empty icon={Terminal} title="发送第一条消息">Claude Code 会在所选项目中处理你的请求。</Empty>}
+      {!session && !readError && <Empty icon={LoaderCircle} title="Reading the session…" />}
+      {session && !session.turns?.length && <Empty icon={Terminal} title="Send the first message">Claude Code handles your request in the selected project.</Empty>}
       <TranscriptContext.Provider value={transcriptContext}>{session?.turns?.map((turn) => <React.Fragment key={turn.id}>
-        <article className="message user" aria-label="你的消息"><MessageBody text={turn.prompt} /></article>
-        <article className="message" aria-label="回复">
+        <article className="message user" aria-label="Your message"><MessageBody text={turn.prompt} /></article>
+        <article className="message" aria-label="Reply">
           <ToolActivity tools={turn.tools} />
           {turn.text && <MessageBody text={turn.text} />}
-          {turn.truncated && <p className="note">本轮输出超过记录上限，仅显示已保存的部分。</p>}
-          {!turn.text && !turn.approval && active(turn.status) && <p className="note">等待输出…</p>}
+          {turn.truncated && <p className="note">This turn's output exceeds the record limit, so only the saved part is shown.</p>}
+          {!turn.text && !turn.approval && active(turn.status) && <p className="note">Waiting for output…</p>}
           {turn.id === last.id && turn.status === "running" && turn.approval?.id && <Approval
             key={turn.approval.id} approval={turn.approval} busy={busy} feedback={approvalFeedback?.id === turn.approval.id ? approvalFeedback : null}
             onDecide={(allow) => decide(turn.id, turn.approval.id, allow)} />}
           {turn.error && <div className="turn-error">{turn.error}</div>}
-          {turn.denied_tools?.length > 0 && <div className="turn-tools">以下工具需要授权，本次调用已拒绝。<span>{turn.denied_tools.join("、")}</span></div>}
+          {turn.denied_tools?.length > 0 && <div className="turn-tools">The following tools need authorization, and this call was denied. <span>{turn.denied_tools.join(", ")}</span></div>}
           {["failed", "interrupted", "stopped"].includes(turn.status) && <p className="note">{labels[turn.status]}</p>}
         </article>
       </React.Fragment>)}</TranscriptContext.Provider>
     </section>
     <form className="compose" onSubmit={send}>
-      {actionError && <Notice onRetry={uncertain ? retry : undefined} label="再次连接">{actionError}</Notice>}
-      {session?.single_turn && <p className="note">当前凭据或路由只能验证本轮。请返回会话列表，新建会话后继续。</p>}
-      {!ready && <p className="note">请在电脑上启动 Cage 环境。</p>}
+      {actionError && <Notice onRetry={uncertain ? retry : undefined} label="Connect again">{actionError}</Notice>}
+      {session?.single_turn && <p className="note">The current credentials or route can only verify this turn. Go back to the session list and create a new session to continue.</p>}
+      {!ready && <p className="note">Start the Cage environment on the computer.</p>}
       <div className="composer-field">
-        <textarea ref={composerInput} aria-label="消息" rows="1" placeholder="给 Claude Code 发消息" value={draft} disabled={!session || session.single_turn || !ready || uncertain || busy}
+        <textarea ref={composerInput} aria-label="Message" rows="1" placeholder="Message Claude Code" value={draft} disabled={!session || session.single_turn || !ready || uncertain || busy}
           onChange={(e) => {
             const value = e.target.value;
             if (value) drafts.set(id, {text:value}); else drafts.delete(id);
@@ -551,8 +551,8 @@ function Chat({ id, drafts, ready, visible, refresh, onOpenWeb, onDenied, onMiss
           }} onKeyDown={(e) => {
             if (e.key === "Enter" && !e.nativeEvent.isComposing && (e.ctrlKey || e.metaKey)) { e.preventDefault(); void send(); }
           }} />
-        {running ? <button type="button" className="composer-action" aria-label={last.status === "stopping" ? "正在停止" : "停止运行"} title={last.status === "stopping" ? "正在停止" : "停止运行"} disabled={busy || last.status !== "running"} onClick={stop}><Square size={17} /></button>
-          : <button type="submit" className="composer-action" aria-label={uncertain ? "再次尝试发送" : "发送"} title={uncertain ? "再次尝试发送" : "发送"} disabled={busy || confirming || !!readProgress || !!readError || !ready || !session || session.single_turn || session.can_send === false || !draft.trim()}><ArrowUp size={21} /></button>}
+        {running ? <button type="button" className="composer-action" aria-label={last.status === "stopping" ? "Stopping" : "Stop run"} title={last.status === "stopping" ? "Stopping" : "Stop run"} disabled={busy || last.status !== "running"} onClick={stop}><Square size={17} /></button>
+          : <button type="submit" className="composer-action" aria-label={uncertain ? "Try sending again" : "Send"} title={uncertain ? "Try sending again" : "Send"} disabled={busy || confirming || !!readProgress || !!readError || !ready || !session || session.single_turn || session.can_send === false || !draft.trim()}><ArrowUp size={21} /></button>}
       </div>
     </form>
   </>;
@@ -566,15 +566,15 @@ function Approval({ approval, busy, feedback, onDecide }) {
       input = JSON.stringify(approval.input, null, 2).replace(/[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, c => "\\u" + c.charCodeAt(0).toString(16).padStart(4, "0"));
     } catch { /* An unreadable argument object cannot be approved. */ }
   }
-  return <section className="approval" aria-label="工具审批">
-    <h2>允许使用 {approval.tool}？</h2>
-    {input === null ? <p className="note">无法显示完整参数，请拒绝或重新读取。</p>
-      : <pre tabIndex={0} aria-label={approval.preview ? "工具参数预览" : "完整工具参数"}>{input}</pre>}
-    {approval.preview && <p className="note">参数预览由 Claude Code 提供。若显示省略内容，请在电脑查看完整参数后处理。</p>}
+  return <section className="approval" aria-label="Tool approval">
+    <h2>Allow {approval.tool}?</h2>
+    {input === null ? <p className="note">The full parameters cannot be shown. Deny, or read again.</p>
+      : <pre tabIndex={0} aria-label={approval.preview ? "Tool parameter preview" : "Full tool parameters"}>{input}</pre>}
+    {approval.preview && <p className="note">The parameter preview is provided by Claude Code. If content is elided, view the full parameters on the computer before deciding.</p>}
     {feedback && <p className="note" role="status">{feedback.message}</p>}
     <div className="approval-actions">
-      <button type="button" className="action secondary" disabled={busy || feedback?.checking} onClick={() => onDecide(false)}>拒绝</button>
-      <button type="button" className="action primary" disabled={busy || feedback?.checking || input === null} onClick={() => onDecide(true)}>允许一次</button>
+      <button type="button" className="action secondary" disabled={busy || feedback?.checking} onClick={() => onDecide(false)}>Deny</button>
+      <button type="button" className="action primary" disabled={busy || feedback?.checking || input === null} onClick={() => onDecide(true)}>Allow once</button>
     </div>
   </section>;
 }

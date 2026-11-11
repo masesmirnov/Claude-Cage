@@ -7,10 +7,10 @@ globalThis.manageCageExtensions = async function (input) {
   if (input.mode === 'list') return { items: items.map(({ id, name, description, version, enabled, mayDisable, optionsUrl, permissions, hostPermissions, installType }) =>
     ({ id, name, description, version, enabled, mayDisable, optionsUrl, permissions, hostPermissions, installType })) };
   const entry = items.find(item => item.id === input.id);
-  if (!entry) throw new Error('扩展不存在');
+  if (!entry) throw new Error('The extension does not exist');
   if (input.mode === 'options') return { url: entry.optionsUrl || '' };
-  if (!entry.mayDisable) throw new Error('此扩展由浏览器管理');
-  if (!['enable', 'disable'].includes(input.mode)) throw new Error('扩展操作无效');
+  if (!entry.mayDisable) throw new Error('This extension is managed by the browser');
+  if (!['enable', 'disable'].includes(input.mode)) throw new Error('Invalid extension operation');
   await chrome.management.setEnabled(input.id, input.mode === 'enable');
   return { ok: true };
 };

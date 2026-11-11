@@ -26,7 +26,7 @@ final class CageUpdateInstaller: NSObject, NSApplicationDelegate {
                     else {
                         NSWorkspace.shared.requestAuthorization(to: .replaceFile) { authorization, _ in
                             DispatchQueue.main.async {
-                                guard let authorization else { self.finishBeforeCommit("未获得安装权限，原应用已保留"); return }
+                                guard let authorization else { self.finishBeforeCommit("Installation permission was not granted; the original app was kept"); return }
                                 self.manager = FileManager(authorization: authorization)
                                 self.prepare()
                             }
@@ -37,17 +37,17 @@ final class CageUpdateInstaller: NSObject, NSApplicationDelegate {
         }
     }
     private func readPlan() throws {
-        guard CommandLine.arguments.count == 2 else { throw CageUpdateError("安装任务无效") }
+        guard CommandLine.arguments.count == 2 else { throw CageUpdateError("Invalid install task") }
         let location = URL(fileURLWithPath: CommandLine.arguments[1]).resolvingSymlinksInPath()
         let directory = location.deletingLastPathComponent()
         let attributes = try FileManager.default.attributesOfItem(atPath: directory.path)
         guard (attributes[.ownerAccountID] as? NSNumber)?.uint32Value == getuid(),
-              ((attributes[.posixPermissions] as? NSNumber)?.intValue ?? 0) & 0o077 == 0 else { throw CageUpdateError("安装任务目录权限无效") }
+              ((attributes[.posixPermissions] as? NSNumber)?.intValue ?? 0) & 0o077 == 0 else { throw CageUpdateError("Invalid install task directory permissions") }
         let data = try Data(contentsOf: location)
-        guard data.count <= 16384 else { throw CageUpdateError("安装任务过大") }
+        guard data.count <= 16384 else { throw CageUpdateError("The install task is too large") }
         plan = try JSONDecoder().decode(CageUpdatePlan.self, from: data)
         guard plan.parentPID == getppid(), let running = NSRunningApplication(processIdentifier: plan.parentPID),
-              running.bundleURL?.resolvingSymlinksInPath().path == plan.target else { throw CageUpdateError("安装任务不属于当前 Cage 应用") }
+              running.bundleURL?.resolvingSymlinksInPath().path == plan.target else { throw CageUpdateError("The install task does not belong to this Cage app") }
         parent = running
         let selfURL = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath()
         let ownTeam = try CageUpdateFiles.signingInfo(selfURL, bundle: false)
@@ -55,13 +55,13 @@ final class CageUpdateInstaller: NSObject, NSApplicationDelegate {
               URL(fileURLWithPath: plan.candidate).resolvingSymlinksInPath().path == directory.appendingPathComponent("Cage.app").path,
               plan.backup == directory.appendingPathComponent("previous.app").path,
               plan.resultPath == directory.deletingLastPathComponent().appendingPathComponent("last-result.json").path,
-              selfURL.deletingLastPathComponent() == directory else { throw CageUpdateError("安装任务路径或签名不匹配") }
+              selfURL.deletingLastPathComponent() == directory else { throw CageUpdateError("The install task path or signature does not match") }
         let target = URL(fileURLWithPath: plan.target)
-        guard target == target.resolvingSymlinksInPath(), target.pathExtension == "app", !target.path.hasPrefix("/Volumes/") else { throw CageUpdateError("安装位置不支持自动更新") }
+        guard target == target.resolvingSymlinksInPath(), target.pathExtension == "app", !target.path.hasPrefix("/Volumes/") else { throw CageUpdateError("Automatic updates are not supported at this install location") }
         _ = try CageUpdateFiles.signingInfo(target, bundle: true, expectedTeam: ownTeam)
         try CageUpdateFiles.verifyApp(URL(fileURLWithPath: plan.candidate), version: plan.version, team: ownTeam)
         let info = try PropertyListSerialization.propertyList(from: Data(contentsOf: target.appendingPathComponent("Contents/Info.plist")), format: nil) as? [String: Any]
-        guard let current = info?["CageVersion"] as? String, CageUpdateVersion.isNewer(plan.version, than: current) else { throw CageUpdateError("更新版本必须高于当前安装版本") }
+        guard let current = info?["CageVersion"] as? String, CageUpdateVersion.isNewer(plan.version, than: current) else { throw CageUpdateError("The update version must be newer than the installed version") }
         originalVersion = current
     }
     private func prepare() {
@@ -76,7 +76,7 @@ final class CageUpdateInstaller: NSObject, NSApplicationDelegate {
                 guard command == Data("COMMIT\n".utf8) else { self.exitHelper(); return }
                 let deadline = Date().addingTimeInterval(90)
                 while !self.parent.isTerminated && Date() < deadline { Thread.sleep(forTimeInterval: 0.1) }
-                guard self.parent.isTerminated else { throw CageUpdateError("Cage 尚未退出，更新未安装") }
+                guard self.parent.isTerminated else { throw CageUpdateError("Cage has not quit; the update was not installed") }
                 try self.replace()
                 DispatchQueue.main.async { self.openInstalled() }
             } catch {
@@ -102,7 +102,7 @@ final class CageUpdateInstaller: NSObject, NSApplicationDelegate {
         var environment = inheritedProfile(); environment["CAGE_UPDATE_CONFIRMATION"] = token
         configuration.environment = environment
         NSWorkspace.shared.openApplication(at: URL(fileURLWithPath: plan.target), configuration: configuration) { app, error in
-            guard error == nil, let app else { self.recover("新版本未能启动，正在恢复原应用"); return }
+            guard error == nil, let app else { self.recover("The new version failed to start; restoring the original app"); return }
             let acknowledgement = URL(fileURLWithPath: self.plan.resultPath).deletingLastPathComponent().appendingPathComponent("launch-\(token).json")
             DispatchQueue.global(qos: .utility).async {
                 let deadline = Date().addingTimeInterval(45)
@@ -110,7 +110,7 @@ final class CageUpdateInstaller: NSObject, NSApplicationDelegate {
                     if let data = try? Data(contentsOf: acknowledgement), data.count < 1024,
                        let value = try? JSONSerialization.jsonObject(with: data) as? [String: String], value["version"] == self.plan.version {
                         try? FileManager.default.removeItem(at: acknowledgement)
-                        self.record(success: true, message: "Cage 已更新至 \(self.plan.version)")
+                        self.record(success: true, message: "Cage updated to \(self.plan.version)")
                         self.cleanSuccessfulTask(); self.exitHelper(); return
                     }
                     Thread.sleep(forTimeInterval: 0.2)
@@ -118,9 +118,9 @@ final class CageUpdateInstaller: NSObject, NSApplicationDelegate {
                 DispatchQueue.main.async { _ = app.terminate() }
                 let terminationDeadline = Date().addingTimeInterval(10)
                 while !app.isTerminated && Date() < terminationDeadline { Thread.sleep(forTimeInterval: 0.1) }
-                if app.isTerminated { self.recover("新版本工作台未能就绪，正在恢复原应用") }
+                if app.isTerminated { self.recover("The new version's workbench was not ready; restoring the original app") }
                 else {
-                    self.record(success: false, message: "新版本未确认就绪，请退出 Cage 后重试；原应用备份已保留")
+                    self.record(success: false, message: "The new version was not confirmed ready. Quit Cage and try again; the original app backup was kept.")
                     self.exitHelper()
                 }
             }
@@ -144,24 +144,24 @@ final class CageUpdateInstaller: NSObject, NSApplicationDelegate {
                     let control = backup.appendingPathComponent("Contents/Resources/cage")
                     let handoffData = try CageUpdateFiles.run(control.path, ["prepare-update", "--json"], timeout: 90)
                     guard let handoff = try JSONSerialization.jsonObject(with: handoffData) as? [String: Any], handoff["status"] as? String == "prepared" else {
-                        throw CageUpdateError("新版本后台尚未安全退出，原应用备份已保留")
+                        throw CageUpdateError("The new version's backend has not exited safely; the original app backup was kept")
                     }
                     if !originalIntact { try CageUpdateFiles.restore(backup: backup, target: target, manager: self.manager) }
                     try CageUpdateFiles.verifyApp(target, version: self.originalVersion, team: self.plan.team, gatekeeper: false)
-                    message += "。已恢复原应用，可稍后重试"
-                } else { message += "。原应用已保留" }
+                    message += ". The original app was restored. You can try again later"
+                } else { message += ". The original app was kept" }
                 canOpen = true
-            } catch { message += "。自动恢复未完成，未启动未经验证的应用。备份位置：\(backup.path)" }
+            } catch { message += ". Automatic recovery did not complete and no unverified app was launched. Backup location: \(backup.path)" }
             self.record(success: false, message: message)
             DispatchQueue.main.async {
                 guard canOpen else {
-                    let alert = NSAlert(); alert.messageText = "Cage 更新与自动恢复未完成"; alert.informativeText = message; alert.runModal()
+                    let alert = NSAlert(); alert.messageText = "Cage update and automatic recovery did not complete"; alert.informativeText = message; alert.runModal()
                     self.exitHelper(); return
                 }
                 let configuration = NSWorkspace.OpenConfiguration(); configuration.activates = true; configuration.createsNewApplicationInstance = true; configuration.environment = self.inheritedProfile()
                 NSWorkspace.shared.openApplication(at: URL(fileURLWithPath: self.plan.target), configuration: configuration) { app, _ in
                     if app == nil {
-                        let alert = NSAlert(); alert.messageText = "Cage 更新未完成"; alert.informativeText = message; alert.runModal()
+                        let alert = NSAlert(); alert.messageText = "Cage update did not complete"; alert.informativeText = message; alert.runModal()
                     }
                     self.exitHelper()
                 }

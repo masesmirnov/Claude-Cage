@@ -1,62 +1,62 @@
 export function operationName(path = "", method = "GET") {
   const reading = method === "GET";
-  if (path.startsWith("/api/mobile/cli")) return reading ? "读取会话消息" : "提交会话操作";
-  if (path.startsWith("/api/mobile/browser")) return "连接电脑上的浏览器";
-  if (path.startsWith("/api/mobile/desktop")) return "连接电脑上的 Claude Desktop";
-  if (path.startsWith("/environment/resources")) return reading ? "读取资源配置" : "应用资源配置";
-  if (path === "/environment/initialization") return reading ? "读取初始化进度" : "保存初始化状态";
-  if (path.startsWith("/environment/versions")) return "读取环境组件版本";
-  if (path.startsWith("/environment/")) return "更新环境";
-  if (path.startsWith("/input/files") || path.startsWith("/browser/files")) return "传递文件";
-  if (path.startsWith("/tailscale")) return reading ? "读取 Tailscale 状态" : "操作 Tailscale";
-  if (path.startsWith("/browser")) return "操作浏览器";
-  if (path.startsWith("/proxy")) return reading ? "读取代理设置" : "应用代理设置";
-  if (path.startsWith("/safety")) return "检查联网条件";
-  if (path.startsWith("/settings/probe")) return "验证代理出口";
-  if (path.startsWith("/settings")) return reading ? "读取设置" : "保存设置";
-  if (path.startsWith("/diagnostics/export")) return "导出诊断日志";
-  if (path.startsWith("/diagnostics")) return "读取诊断日志";
-  if (path.startsWith("/projects")) return "连接项目目录";
-  if (path.startsWith("/account")) return "处理账户操作";
-  if (path.startsWith("/claude-desktop")) return "操作 Claude Desktop";
-  if (path.startsWith("/terminals")) return "连接终端";
-  if (path === "/start") return "启动环境";
-  if (path === "/stop") return "停止环境";
-  return "连接 Cage 工作台";
+  if (path.startsWith("/api/mobile/cli")) return reading ? "Reading session messages" : "Submitting a session action";
+  if (path.startsWith("/api/mobile/browser")) return "Connecting to the browser on your computer";
+  if (path.startsWith("/api/mobile/desktop")) return "Connecting to Claude Desktop on your computer";
+  if (path.startsWith("/environment/resources")) return reading ? "Reading resource settings" : "Applying resource settings";
+  if (path === "/environment/initialization") return reading ? "Reading setup progress" : "Saving setup state";
+  if (path.startsWith("/environment/versions")) return "Reading environment component versions";
+  if (path.startsWith("/environment/")) return "Updating the environment";
+  if (path.startsWith("/input/files") || path.startsWith("/browser/files")) return "Transferring files";
+  if (path.startsWith("/tailscale")) return reading ? "Reading Tailscale status" : "Running a Tailscale action";
+  if (path.startsWith("/browser")) return "Using the browser";
+  if (path.startsWith("/proxy")) return reading ? "Reading proxy settings" : "Applying proxy settings";
+  if (path.startsWith("/safety")) return "Checking network conditions";
+  if (path.startsWith("/settings/probe")) return "Verifying the proxy exit";
+  if (path.startsWith("/settings")) return reading ? "Reading settings" : "Saving settings";
+  if (path.startsWith("/diagnostics/export")) return "Exporting diagnostic logs";
+  if (path.startsWith("/diagnostics")) return "Reading diagnostic logs";
+  if (path.startsWith("/projects")) return "Connecting to the project directory";
+  if (path.startsWith("/account")) return "Handling an account action";
+  if (path.startsWith("/claude-desktop")) return "Using Claude Desktop";
+  if (path.startsWith("/terminals")) return "Connecting to the terminal";
+  if (path === "/start") return "Starting the environment";
+  if (path === "/stop") return "Stopping the environment";
+  return "Connecting to the Cage workbench";
 }
 
 export function httpErrorMessage(path, status, text = "", contentType = "", method = "GET") {
   // Proxy HTML pages, stack traces and untranslated runtime errors are not UI
-  // explanations. Preserve short Chinese messages supplied by Cage itself.
+  // explanations. Preserve short messages supplied by Cage itself.
   const message = text.trim();
-  if (contentType.startsWith("text/plain") && message.length <= 2000 && /\p{Script=Han}/u.test(message) && !/<(?:html|body|script|!doctype)\b/i.test(message)) return message;
+  if (contentType.startsWith("text/plain") && message.length <= 2000 && /^\p{Lu}/u.test(message) && !/<(?:html|body|script|!doctype)\b/i.test(message)) return message;
   if (path === "/settings" && method === "POST" && status === 503) {
-    return "暂时无法确认设置是否已保存（HTTP 503）。请在连接恢复后核对设置和操作详情，再决定是否重新保存。";
+    return "Could not confirm whether settings were saved (HTTP 503). Once the connection is back, check the settings and the operation details before deciding whether to save again.";
   }
   const action = operationName(path, method);
   const reasons = {
-    400: "后台没有接受这次请求。请核对填写的内容；仍失败时在设置中导出诊断包。",
-    401: "工作台登录会话已失效。请重新连接 Cage，再发起这次操作。",
-    403: "后台拒绝了这次访问。请从 Cage 应用重新打开工作台。",
-    404: "当前后台没有提供所需功能。请确认应用与后台已完成更新。",
-    409: "环境状态已变化或另一个操作尚未结束。请刷新状态并等待当前操作完成。",
-    413: "文件或请求内容超过允许大小。请缩小文件或分批处理。",
-    423: "Cage 已锁定。请先解锁账户，再发起这次操作。",
-    429: "请求过于频繁。请等待片刻，避免连续点击。",
-    500: "后台处理请求时出错。请在设置中导出诊断包，并附上刚才执行的操作。",
-    502: "后台未能连接环境内的服务。请确认环境已启动，再检查环境组件状态。",
-    503: "后台服务尚未就绪或正在重启。请等待连接恢复后再操作。",
-    504: "等待后台响应超时。请检查环境负载，恢复连接后核对操作是否已生效。",
+    400: "The backend did not accept this request. Check what you entered; if it still fails, export a diagnostics bundle in Settings.",
+    401: "The workbench sign-in session has expired. Reconnect to Cage, then try again.",
+    403: "The backend denied this access. Reopen the workbench from the Cage app.",
+    404: "The backend does not provide the required feature. Make sure the app and the backend are both up to date.",
+    409: "The environment state has changed or another operation is still running. Refresh the status and wait for it to finish.",
+    413: "The file or request is larger than allowed. Use a smaller file or split the work into batches.",
+    423: "Cage is locked. Unlock your account first, then try again.",
+    429: "Too many requests. Wait a moment and avoid clicking repeatedly.",
+    500: "The backend hit an error while handling the request. Export a diagnostics bundle in Settings and include the action you just took.",
+    502: "The backend could not reach the service inside the environment. Make sure the environment is running, then check the environment components.",
+    503: "The backend service is not ready or is restarting. Wait for the connection to recover, then try again.",
+    504: "Timed out waiting for the backend to respond. Check the environment load, and once the connection is back, verify whether the action took effect.",
   };
-  return `${action}失败（HTTP ${status}）：${reasons[status] || "尚未取得可识别的原因。请在设置中导出诊断包。"}`;
+  return `${action} failed (HTTP ${status}): ${reasons[status] || "No recognizable cause was returned. Export a diagnostics bundle in Settings."}`;
 }
 
 export function connectionErrorMessage(path, method = "GET") {
-  return `${operationName(path, method)}失败：工作台与 Cage 后台的连接已中断。请点击重新连接；若刚才正在保存或上传，恢复后先核对结果再重试。`;
+  return `${operationName(path, method)} failed: the connection between the workbench and the Cage backend was interrupted. Click reconnect; if you were saving or uploading, check the result after recovery before retrying.`;
 }
 
 export function nativeFailureMessage(action, message = "") {
-  if (/\p{Script=Han}/u.test(message) && !["文件操作失败", "原生操作超时，请重试", "操作失败"].includes(message)) return message;
-  const names = { chooseFolder: "选择本机文件夹", chooseUploadFiles: "选择上传文件", uploadHostFiles: "上传本机文件", openHostPath: "打开本机文件", exportDiagnostics: "导出诊断包", appUpdate: "检查或安装应用更新", clipboardRead: "读取剪贴板", clipboardWrite: "写入剪贴板", refreshSession: "恢复工作台登录会话" };
-  return `${names[action] || "执行本机操作"}失败：${/timeout|超时/i.test(message) ? "等待本机组件响应超时" : "本机组件没有返回可识别的原因"}。请重新连接 Cage；仍失败时在设置中导出诊断包。`;
+  if (/^\p{Lu}/u.test(message) && !["File operation failed", "Native operation timed out. Try again.", "Operation failed"].includes(message)) return message;
+  const names = { chooseFolder: "Choosing a local folder", chooseUploadFiles: "Choosing files to upload", uploadHostFiles: "Uploading local files", openHostPath: "Opening a local file", exportDiagnostics: "Exporting the diagnostics bundle", appUpdate: "Checking for or installing app updates", clipboardRead: "Reading the clipboard", clipboardWrite: "Writing to the clipboard", refreshSession: "Restoring the workbench sign-in session" };
+  return `${names[action] || "Running a local action"} failed: ${/timeout|timed out/i.test(message) ? "timed out waiting for the local component to respond" : "the local component returned no recognizable cause"}. Reconnect to Cage; if it still fails, export a diagnostics bundle in Settings.`;
 }

@@ -54,7 +54,7 @@ func readStorageRecord(profile string) (storageRecord, error) {
 		return r, err
 	}
 	if err = json.Unmarshal(b, &r); err != nil || !filepath.IsAbs(r.Directory) || !validStorageID(r.ID) {
-		return storageRecord{}, errors.New("Cage 环境存储配置损坏，请先恢复配置")
+		return storageRecord{}, errors.New("The Cage environment storage configuration is damaged. Restore the configuration first.")
 	}
 	return r, nil
 }
@@ -95,7 +95,7 @@ func sameStoragePath(a, b string) bool {
 // project grant can have a final component which does not exist yet.
 func StoragePhysicalPath(path string) (string, error) {
 	if !filepath.IsAbs(path) {
-		return "", errors.New("请选择绝对路径")
+		return "", errors.New("Choose an absolute path.")
 	}
 	path = filepath.Clean(path)
 	real, err := paths.Resolve(path)
@@ -106,7 +106,7 @@ func StoragePhysicalPath(path string) (string, error) {
 		return "", err
 	}
 	if _, err = os.Lstat(path); err == nil || !os.IsNotExist(err) {
-		return "", errors.New("目录包含无法解析的链接")
+		return "", errors.New("The directory contains a link that cannot be resolved.")
 	}
 	parent, err := StoragePhysicalPath(filepath.Dir(path))
 	if err != nil {
@@ -193,7 +193,7 @@ func getStorageLocation(profile string) (StorageLocation, error) {
 		target, te := paths.Resolve(filepath.Join(r.Directory, "state"))
 		marker, me := os.ReadFile(filepath.Join(r.Directory, storageMarker))
 		if err != nil || te != nil || me != nil || string(marker) != r.ID || !sameStoragePath(real, target) {
-			return loc, fmt.Errorf("环境存储不可用，请重新连接原磁盘：%s", r.Directory)
+			return loc, fmt.Errorf("Environment storage is unavailable. Reconnect the original disk: %s", r.Directory)
 		}
 		if err = localStorageVolume(target); err != nil {
 			return loc, err
@@ -207,14 +207,14 @@ func getStorageLocation(profile string) (StorageLocation, error) {
 		}
 		fi, e := os.Stat(real)
 		if e != nil || !fi.IsDir() {
-			return loc, fmt.Errorf("环境目录不可用：%s", anchor)
+			return loc, fmt.Errorf("The environment directory is unavailable: %s", anchor)
 		}
 		if _, e = os.Stat(filepath.Join(filepath.Dir(real), storageMarker)); !errors.Is(e, os.ErrNotExist) {
-			return loc, errors.New("环境存储配置缺失，请恢复原有配置")
+			return loc, errors.New("The environment storage configuration is missing. Restore the original configuration.")
 		}
 		loc.Directory = real
 	} else if info, err := os.Lstat(anchor); err == nil && !info.IsDir() {
-		return loc, fmt.Errorf("环境目录类型异常：%s", anchor)
+		return loc, fmt.Errorf("The environment directory has an unexpected type: %s", anchor)
 	} else if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return loc, err
 	}
@@ -276,7 +276,7 @@ func openStorageLockWithRuntime(ctx context.Context, profile string, exclusive b
 	if err != nil || !ok {
 		f.Close()
 		if err == nil {
-			err = errors.New("环境正在运行或迁移中，请停止环境并等待当前操作完成")
+			err = errors.New("The environment is running or migrating. Stop the environment and wait for the current operation to finish.")
 		}
 		return nil, err
 	}
@@ -320,11 +320,11 @@ func validateStorageTarget(profile, directory, app, platform string) error {
 			return err
 		}
 		if r.Directory == "" {
-			return errors.New("当前环境使用手动配置的目录链接。请先恢复原目录，再使用 Cage 迁移")
+			return errors.New("The current environment uses a manually configured directory link. Restore the original directory first, then migrate with Cage.")
 		}
 	}
 	if !filepath.IsAbs(directory) || filepath.Clean(directory) == filepath.VolumeName(directory)+string(os.PathSeparator) {
-		return errors.New("请选择本地磁盘上的专用绝对路径，不能使用磁盘根目录")
+		return errors.New("Choose a dedicated absolute path on a local disk; the disk root cannot be used.")
 	}
 	target, err := StoragePhysicalPath(directory)
 	if err != nil {
@@ -347,7 +347,7 @@ func validateStorageTarget(profile, directory, app, platform string) error {
 			return e
 		}
 		if root {
-			return errors.New("请在磁盘内新建专用文件夹，不能使用卷根目录")
+			return errors.New("Create a dedicated folder inside the disk; the volume root cannot be used.")
 		}
 	}
 	if err = localStorageVolume(existing); err != nil {
@@ -370,11 +370,11 @@ func validateStorageTarget(profile, directory, app, platform string) error {
 			return e
 		}
 		if StoragePathsOverlap(directory, p) || (real != "" && StoragePathsOverlap(target, real)) {
-			return errors.New("请选择独立空目录，不能与程序、配置、工作区、现有存储或备份重叠")
+			return errors.New("Choose a separate empty directory that does not overlap the program, configuration, workspace, existing storage or backups.")
 		}
 	}
 	if info, e := os.Lstat(directory); e == nil && (!info.IsDir() || info.Mode()&(os.ModeSymlink|os.ModeIrregular) != 0) {
-		return errors.New("目标必须是本地真实目录")
+		return errors.New("The target must be a real local directory.")
 	} else if e != nil && !errors.Is(e, os.ErrNotExist) {
 		return e
 	}
@@ -386,7 +386,7 @@ func validateStorageTarget(profile, directory, app, platform string) error {
 		return err
 	}
 	if len(entries) > 0 {
-		return errors.New("环境存储需要专用空目录，请新建文件夹")
+		return errors.New("Environment storage needs a dedicated empty directory. Create a new folder.")
 	}
 	return nil
 }
@@ -428,10 +428,10 @@ func stoppedStorage(source string) error {
 				pid, err = strconv.Atoi(strings.TrimSpace(string(data)))
 			}
 			if err != nil || pid < 1 {
-				return fmt.Errorf("无法核验虚拟机进程记录 %s", name)
+				return fmt.Errorf("Could not verify the virtual machine process record %s", name)
 			}
 			if profileProcessAlive(pid) && ProcessStartMatches(pid, started) {
-				return fmt.Errorf("请先停止虚拟机 %s，再迁移环境", inst.Name())
+				return fmt.Errorf("Stop the virtual machine %s before migrating the environment", inst.Name())
 			}
 		}
 	}
@@ -449,7 +449,7 @@ func MoveStorageWithRuntime(ctx context.Context, profile, directory string, expe
 	}
 	defer lock.Close()
 	if _, bindingErr := os.Stat(filepath.Join(profile, "windows-guest.json")); bindingErr == nil && runtime == nil {
-		return loc, errors.New("Windows 客机迁移需要同步更新系统管理助手的磁盘绑定")
+		return loc, errors.New("Migrating a Windows guest requires updating the disk binding of the system management helper at the same time.")
 	} else if bindingErr != nil && !errors.Is(bindingErr, os.ErrNotExist) {
 		return loc, bindingErr
 	}
@@ -458,7 +458,7 @@ func MoveStorageWithRuntime(ctx context.Context, profile, directory string, expe
 		return loc, err
 	}
 	if !sameStoragePath(expected.Directory, loc.Directory) || expected.HasEnvironment != loc.HasEnvironment {
-		return loc, errors.New("环境或存储位置已改变，请重新选择")
+		return loc, errors.New("The environment or storage location has changed. Choose again.")
 	}
 	if err = ValidateStorageTarget(profile, directory); err != nil {
 		return loc, err
@@ -509,25 +509,25 @@ func MoveStorageWithRuntime(ctx context.Context, profile, directory string, expe
 		move.Runtime = runtime.Name()
 		move.Transition = StorageTransition{ID: id, Source: src, Destination: filepath.Join(directory, "state"), Backup: backup, State: snapshot.State}
 		if move.Runtime == "" || !json.Valid(snapshot.State) {
-			return loc, errors.New("客机存储事务缺少有效的恢复信息")
+			return loc, errors.New("The guest storage transaction is missing valid recovery information.")
 		}
 		for _, retained := range snapshot.Backups {
 			if !filepath.IsAbs(retained) || StoragePathsOverlap(retained, directory) {
-				return loc, errors.New("客机备份路径与迁移目标冲突")
+				return loc, errors.New("The guest backup path conflicts with the migration target.")
 			}
 			move.Next.Backups = append(move.Next.Backups, retained)
 		}
 		next = move.Next
 		for _, path := range snapshot.Excluded {
 			if !filepath.IsAbs(path) || sameStoragePath(path, src) || !StorageContains(src, path) {
-				return loc, errors.New("客机管理文件超出当前存储目录")
+				return loc, errors.New("The guest management files are outside the current storage directory.")
 			}
 		}
 		excluded = snapshot.Excluded
 	}
 	if err = host.EnsurePrivateDir(directory); err != nil {
 		if errors.Is(err, os.ErrPermission) {
-			return loc, fmt.Errorf("无法将目标目录设为仅当前用户可访问。请选择自己新建且可以修改权限的空文件夹：%w", err)
+			return loc, fmt.Errorf("Could not make the target directory accessible only to the current user. Choose an empty folder you created yourself and can change permissions on: %w", err)
 		}
 		return loc, err
 	}
@@ -544,7 +544,7 @@ func MoveStorageWithRuntime(ctx context.Context, profile, directory string, expe
 		recovery, cancel := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Minute)
 		defer cancel()
 		if recErr := recoverStorageWithRuntime(recovery, profile, runtime); recErr != nil {
-			err = errors.Join(err, fmt.Errorf("恢复迁移：%w", recErr))
+			err = errors.Join(err, fmt.Errorf("Recovering the migration: %w", recErr))
 		}
 	}()
 	if err = claimStorageTarget(directory, id); err != nil {
@@ -630,13 +630,13 @@ func recoverStorageWithRuntime(ctx context.Context, profile string, runtime Stor
 	}
 	next := p.Next
 	if !validStorageID(next.ID) || !filepath.IsAbs(next.Directory) {
-		return errors.New("存储迁移记录损坏")
+		return errors.New("The storage migration record is damaged.")
 	}
 	if p.Runtime != "" && (runtime == nil || runtime.Name() != p.Runtime) {
 		return ErrStorageRuntimeRecovery
 	}
 	if p.Runtime != "" && (p.Transition.ID != next.ID || !sameStoragePath(p.Transition.Destination, filepath.Join(next.Directory, "state")) || !filepath.IsAbs(p.Transition.Source) || !filepath.IsAbs(p.Transition.Backup) || !json.Valid(p.Transition.State)) {
-		return errors.New("客机存储恢复记录损坏")
+		return errors.New("The guest storage recovery record is damaged.")
 	}
 	r, err := readStorageRecord(profile)
 	if err != nil {
@@ -670,7 +670,7 @@ func recoverStorageWithRuntime(ctx context.Context, profile string, runtime Stor
 		}
 		if _, e := os.Lstat(old); e == nil {
 			if _, e = os.Lstat(anchor); !errors.Is(e, os.ErrNotExist) {
-				return fmt.Errorf("请保留旧环境并检查迁移目录：%s", old)
+				return fmt.Errorf("Keep the old environment and check the migration directory: %s", old)
 			}
 			if err = renameStorage(old, anchor); err != nil {
 				return err

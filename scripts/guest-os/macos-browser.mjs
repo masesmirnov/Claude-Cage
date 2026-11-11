@@ -75,7 +75,7 @@ async function openEditor(folder) {
       !/^[0-9a-f]{24}$/.test(project) ||
       folder !== path.join(homedir(), "Cage", "Projects", project)
     )
-      throw new Error("请选择已授权的客机项目");
+      throw new Error("Select an authorized guest project");
     await mkdir(editorSessions, { recursive: true, mode: 0o700 });
     if (editorConfig) await rm(editorConfig, { force: true });
     editorConfig = path.join(editorSessions, project + ".yaml");
@@ -98,7 +98,7 @@ async function openEditor(folder) {
     editorAddress = await new Promise((resolve, reject) => {
       let recent = "";
       const timer = setTimeout(
-        () => finish(new Error("客机编辑器未能启动，请检查项目授权")),
+        () => finish(new Error("The guest editor could not start. Check the project authorization.")),
         12000,
       );
       const read = (data) => {
@@ -109,7 +109,7 @@ async function openEditor(folder) {
         if (address) finish(null, address[1]);
       };
       const failed = () =>
-        finish(new Error("请先在 Cage 授权此项目，再打开编辑器"));
+        finish(new Error("Authorize this project in Cage first, then open the editor"));
       function finish(error, address) {
         clearTimeout(timer);
         child.stdout.off("data", read);
@@ -144,7 +144,7 @@ async function openEditor(folder) {
     timeout: 7000,
   });
   if (![302, 303].includes(login.status()))
-    throw new Error("客机编辑器登录失败");
+    throw new Error("Guest editor sign-in failed");
   await login.dispose();
   await p.goto(editorAddress + "/?folder=" + encodeURIComponent(folder), {
     waitUntil: "commit",
@@ -196,7 +196,7 @@ async function audit(timezone, network) {
   }
   if (!network) return settings;
   const owner = browser.browser();
-  if (!owner) throw new Error("无法创建独立的浏览器诊断会话");
+  if (!owner) throw new Error("Could not create a separate browser diagnostics session");
   const isolated = await owner.newContext({ serviceWorkers: "block" });
   try {
     const test = await isolated.newPage();
@@ -206,7 +206,7 @@ async function audit(timezone, network) {
     });
     settings.network = await test.evaluate(async () => {
       if (location.origin !== "http://198.18.0.254")
-        throw new Error("无效的诊断地址");
+        throw new Error("Invalid diagnostics address");
       try {
         const r = await fetch("/egress", {
           cache: "no-store",
@@ -248,7 +248,7 @@ async function handle(a) {
     case "navigate": {
       const u = new URL(a.url);
       if (!["http:", "https:"].includes(u.protocol) || u.username || u.password)
-        throw new Error("请输入 HTTP 或 HTTPS 地址");
+        throw new Error("Enter an HTTP or HTTPS address");
       await p.goto(u.href, { waitUntil: "commit", timeout: 8000 });
       break;
     }
@@ -261,12 +261,12 @@ async function handle(a) {
       break;
     case "text":
       if (typeof a.text !== "string" || a.text.length > 4096)
-        throw new Error("输入过长");
+        throw new Error("The input is too long");
       await p.keyboard.insertText(a.text);
       break;
     case "key": {
       if (!(keys.has(a.key) || /^[a-z0-9]$/i.test(a.key)))
-        throw new Error("不支持此键");
+        throw new Error("This key is not supported");
       await p.keyboard.press(
         [
           a.meta && "Meta",
@@ -290,7 +290,7 @@ async function handle(a) {
       await p.goForward({ waitUntil: "commit" });
       break;
     default:
-      throw new Error("未知的客机浏览器操作");
+      throw new Error("Unknown guest browser operation");
   }
   return { ok: true };
 }

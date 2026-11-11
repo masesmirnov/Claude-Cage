@@ -29,7 +29,7 @@ func parseSetupProgress(line string) *SetupProgress {
 		if label == "" {
 			return nil
 		}
-		return &SetupProgress{Phase: "image", Label: label + "（准备第 " + fields[2] + "/3 次尝试）", System: "macos", Operation: "download"}
+		return &SetupProgress{Phase: "image", Label: label + " (preparing attempt " + fields[2] + "/3)", System: "macos", Operation: "download"}
 	}
 	if strings.HasPrefix(line, "CAGE_HOST_BYTES ") {
 		fields := strings.Fields(line)
@@ -44,8 +44,8 @@ func parseSetupProgress(line string) *SetupProgress {
 		}
 		return &SetupProgress{Phase: "image", Label: label, System: "macos", Operation: "download", Received: &received, Total: total}
 	}
-	if strings.HasPrefix(line, "下载 ") {
-		if label := macOSDownloadLabel(strings.TrimPrefix(line, "下载 ")); label != "" {
+	if strings.HasPrefix(line, "Downloading ") {
+		if label := macOSDownloadLabel(strings.TrimPrefix(line, "Downloading ")); label != "" {
 			return &SetupProgress{Phase: "image", Label: label, System: "macos"}
 		}
 	}
@@ -60,11 +60,11 @@ func parseSetupProgress(line string) *SetupProgress {
 		if name == "" || err != nil || te != nil || received < 0 || total < 0 || (total > 0 && received > total) {
 			return nil
 		}
-		label := "正在下载 " + name + " 系统镜像"
+		label := "Downloading the " + name + " system image"
 		switch fields[2] {
 		case "download":
 		case "verify":
-			label = "正在校验 " + name + " 系统镜像"
+			label = "Verifying the " + name + " system image"
 		default:
 			return nil
 		}
@@ -81,23 +81,23 @@ func parseSetupProgress(line string) *SetupProgress {
 		}
 		switch fields[2] {
 		case "restore":
-			p.Phase, p.Label = "packages", "正在安装 "+guestProgressName(fields[1])+" 系统"
+			p.Phase, p.Label = "packages", "Installing "+guestProgressName(fields[1])
 		case "account", "oobe", "credentials":
 			if fields[1] != "windows-11" {
 				return nil
 			}
 			p.Phase = "packages"
 			p.Label = map[string]string{
-				"account":     "请在安装窗口设置客机本地管理员",
-				"oobe":        "请在虚拟机连接窗口完成 Windows 首次设置",
-				"credentials": "请在安装窗口输入客机管理员账户",
+				"account":     "Set up the guest local administrator in the installer window",
+				"oobe":        "Finish Windows first-time setup in the virtual machine connection window",
+				"credentials": "Enter the guest administrator account in the installer window",
 			}[fields[2]]
 		case "media":
-			p.Phase, p.Label = "image", "正在下载并校验客机开发组件"
+			p.Phase, p.Label = "image", "Downloading and verifying the guest developer components"
 		case "tools":
-			p.Phase, p.Label = "tools", "正在安装客机应用和开发工具"
+			p.Phase, p.Label = "tools", "Installing the guest apps and developer tools"
 		case "services":
-			p.Phase, p.Label = "services", "正在完成客机配置"
+			p.Phase, p.Label = "services", "Finishing the guest configuration"
 		default:
 			return nil
 		}
@@ -113,7 +113,7 @@ func parseSetupProgress(line string) *SetupProgress {
 		if err != nil || te != nil || received < 0 || total < -1 || (total > 0 && received > total) {
 			return nil
 		}
-		return &SetupProgress{Phase: "image", Label: "正在下载 Debian 13 镜像", Received: &received, Total: max(total, 0)}
+		return &SetupProgress{Phase: "image", Label: "Downloading the Debian 13 image", Received: &received, Total: max(total, 0)}
 	}
 	if strings.HasPrefix(line, "CAGE_TOOL_BYTES ") {
 		fields := strings.Fields(line)
@@ -134,15 +134,15 @@ func parseSetupProgress(line string) *SetupProgress {
 		}
 		switch fields[1] {
 		case "mise.tar.gz":
-			p.Phase, p.Label = "packages", "正在下载 mise"
+			p.Phase, p.Label = "packages", "Downloading mise"
 		case "code-server.deb":
-			p.Label = "正在下载网页编辑器 code-server"
+			p.Label = "Downloading the web editor code-server"
 		case "chromium.deb":
-			p.Phase, p.Label = "packages", "正在下载 Chromium 浏览器"
+			p.Phase, p.Label = "packages", "Downloading the Chromium browser"
 		case "chromium-common.deb":
-			p.Phase, p.Label = "packages", "正在下载 Chromium 公共资源"
+			p.Phase, p.Label = "packages", "Downloading Chromium shared resources"
 		case "claude-code-linux-x64.tgz", "claude-code-linux-arm64.tgz":
-			p.Label = "正在下载 Claude Code"
+			p.Label = "Downloading Claude Code"
 		default:
 			return nil
 		}
@@ -150,41 +150,41 @@ func parseSetupProgress(line string) *SetupProgress {
 	}
 	switch line {
 	case "CAGE_IMAGE_READY":
-		return &SetupProgress{Phase: "image", Label: "正在启动 Linux 基础环境"}
+		return &SetupProgress{Phase: "image", Label: "Starting the Linux base environment"}
 	case "CAGE_IMAGE_VERIFY":
-		return &SetupProgress{Phase: "image", Label: "正在校验 Debian 镜像"}
+		return &SetupProgress{Phase: "image", Label: "Verifying the Debian image"}
 	case "Installing packages inside VM...", "Installing base packages...":
-		return &SetupProgress{Phase: "packages", Label: "正在安装 Linux 基础软件包"}
+		return &SetupProgress{Phase: "packages", Label: "Installing the Linux base packages"}
 	case "Installing Python 3...":
-		return &SetupProgress{Phase: "packages", Label: "正在安装 Python"}
+		return &SetupProgress{Phase: "packages", Label: "Installing Python"}
 	case "Installing Chromium...":
-		return &SetupProgress{Phase: "packages", Label: "正在安装 Chromium 浏览器"}
+		return &SetupProgress{Phase: "packages", Label: "Installing the Chromium browser"}
 	case "Installing Node.js 24...":
-		return &SetupProgress{Phase: "packages", Label: "正在安装 Node.js 24"}
+		return &SetupProgress{Phase: "packages", Label: "Installing Node.js 24"}
 	case "Installing mise...":
-		return &SetupProgress{Phase: "packages", Label: "正在安装 mise"}
+		return &SetupProgress{Phase: "packages", Label: "Installing mise"}
 	case "Installing Claude Code...":
-		return &SetupProgress{Phase: "tools", Label: "正在安装 Claude Code"}
+		return &SetupProgress{Phase: "tools", Label: "Installing Claude Code"}
 	case "Installing code-server...":
-		return &SetupProgress{Phase: "tools", Label: "正在安装网页编辑器 code-server"}
+		return &SetupProgress{Phase: "tools", Label: "Installing the web editor code-server"}
 	}
 	if strings.HasPrefix(line, "Running custom setup from ") {
-		return &SetupProgress{Phase: "services", Label: "正在配置桌面服务"}
+		return &SetupProgress{Phase: "services", Label: "Configuring the desktop services"}
 	}
 	return nil
 }
 
 func macOSDownloadLabel(name string) string {
 	component := map[string]string{
-		"editor.tgz": "macOS 网页编辑器", "playwright.tgz": "浏览器控制组件", "node.tgz": "Node.js",
-		"macfuse.dmg": "macFUSE 文件共享组件", "claude.dmg": "Claude Desktop", "chrome.dmg": "Chrome 浏览器",
-		"macos-cli-claude": "Claude Code", "macos-cli-uv.tar.gz": "uv 开发工具",
+		"editor.tgz": "macOS web editor", "playwright.tgz": "Browser control component", "node.tgz": "Node.js",
+		"macfuse.dmg": "macFUSE file sharing component", "claude.dmg": "Claude Desktop", "chrome.dmg": "Chrome browser",
+		"macos-cli-claude": "Claude Code", "macos-cli-uv.tar.gz": "uv developer tool",
 		"macos-cli-python.tar.gz": "Python", "macos-cli-git.tar.gz": "Git",
 	}[name]
 	if component == "" {
 		return ""
 	}
-	return "正在下载 " + component
+	return "Downloading " + component
 }
 
 func guestProgressName(system string) string {

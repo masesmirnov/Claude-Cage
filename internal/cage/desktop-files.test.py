@@ -23,12 +23,12 @@ class FileBrokerTests(unittest.TestCase):
 
     def test_original_bytes_names_and_lazy_reads(self):
         key = self.broker.start('chooser', multiple=True)['id']
-        for name, data in [('视频 #+%.mp4', bytes(range(256)) * 32768), ('空文档.txt', b'')]:
+        for name, data in [('Видео #+%.mp4', bytes(range(256)) * 32768), ('Пустой документ.txt', b'')]:
             self.broker.receive(key, name, iter(lambda: stream.read(65536), b'') if (stream := io.BytesIO(data)) else [])
         self.assertEqual(self.broker.snapshot()['uploads'][0]['target'], 'desktop')
         self.broker.finish(key)
         paths = self.delivered[0][1]
-        self.assertEqual(Path(paths[0]).name, '视频 #+%.mp4')
+        self.assertEqual(Path(paths[0]).name, 'Видео #+%.mp4')
         self.assertEqual(Path(paths[0]).read_bytes(), bytes(range(256)) * 32768)
         self.assertEqual(Path(paths[1]).read_bytes(), b'')
         self.assertEqual(self.broker.snapshot()['uploads'], [])
@@ -74,13 +74,13 @@ class FileBrokerTests(unittest.TestCase):
             key = self.broker.start('image')['id']
             self.broker.receive(key, 'image.png', [b'old image'])
             context = 'b' * 32
-            with self.assertRaisesRegex(ValueError, '接收位置已变化'):
+            with self.assertRaisesRegex(ValueError, 'destination has changed'):
                 self.broker.finish_image(key)
             self.assertEqual(len(received), 1)
             self.assertFalse((Path(self.temp.name) / key).exists())
 
     def test_directory_selection_returns_live_directory_without_copying(self):
-        project = Path(self.temp.name) / '项目 #+%'
+        project = Path(self.temp.name) / 'Проект #+%'
         project.mkdir()
         (project / 'keep.txt').write_text('project data')
         key = self.broker.start('chooser', multiple=False, directory=True)['id']
@@ -100,7 +100,7 @@ class FileBrokerTests(unittest.TestCase):
         with self.assertRaises(ValueError): self.broker.choose_directory(key, str(project))
 
     def test_local_file_uri_and_relative_folder_become_single_use_requests(self):
-        document = Path(self.temp.name) / '报告 #+%.docx'
+        document = Path(self.temp.name) / 'Отчет #+%.docx'
         document.write_bytes(b'document')
         key = self.broker.open_path(document.as_uri(), 'reveal')['id']
         self.assertEqual(self.broker.snapshot()['opens'], [{'id': key}])
@@ -143,7 +143,7 @@ class DesktopFileDBusTests(unittest.TestCase):
         from gi.repository import Gio, GLib
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            document = root / 'Word 报告 #+%.docx'
+            document = root / 'Word Отчет #+%.docx'
             document.write_bytes(b'generated document')
             broker = files.Broker(root / 'uploads')
             portal = files.Portal(broker)

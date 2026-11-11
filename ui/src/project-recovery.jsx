@@ -7,9 +7,9 @@ export function ProjectRecovery({ recovery, disabled, onRetry, onSettings, onSes
     {recovery === "filesystem-permission" && <MacOSLogin disabled={disabled} maintenance="projects"
       onSessionClosed={onSessionClosed} onSettings={onSettings} />}
     {["environment-update", "environment-restart"].includes(recovery) && onSettings &&
-      <button type="button" disabled={disabled} onClick={onSettings}>{recovery === "environment-update" ? "查看环境组件" : "打开环境设置"}</button>}
+      <button type="button" disabled={disabled} onClick={onSettings}>{recovery === "environment-update" ? "View environment components" : "Open environment settings"}</button>}
     {recovery === "project-directory" && onSettings &&
-      <button type="button" disabled={disabled} onClick={onSettings}>查看诊断记录</button>}
-    <button type="button" disabled={disabled} onClick={onRetry}>{recovery === "project-approval" ? "完成项目授权" : "重新连接项目"}</button>
+      <button type="button" disabled={disabled} onClick={onSettings}>View diagnostic records</button>}
+    <button type="button" disabled={disabled} onClick={onRetry}>{recovery === "project-approval" ? "Finish project authorization" : "Reconnect project"}</button>
   </div>;
 }

@@ -37,7 +37,7 @@ function usageLabel(raw) {
   return [
     values.total ? `${bytes(used)} / ${bytes(values.total)}` : "",
     Number(values.expire) > 0
-      ? `到期 ${new Date(Number(values.expire) * 1000).toLocaleDateString()}`
+      ? `Expires ${new Date(Number(values.expire) * 1000).toLocaleDateString()}`
       : "",
   ]
     .filter(Boolean)
@@ -164,7 +164,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
         await new Promise((resolve) => setTimeout(resolve, 500));
         current = (await api("/status")).job;
         if (current.id !== job.id)
-          throw new Error("操作已被其他任务替代，请查看当前状态");
+          throw new Error("The operation was replaced by another task. Check the current status.");
       } while (current.running);
       portDirty.current = false;
       const updated = await reload();
@@ -181,8 +181,8 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
               : null;
         setNotice(
           importedSource
-            ? `已导入 ${importedSource.nodes.length} 个节点，跳过 ${importedSource.skipped?.length || 0} 个${importedSource.skipped?.length ? "；可在来源下查看跳过原因" : ""}`
-            : current.message || "已完成",
+            ? `Imported ${importedSource.nodes.length} ${importedSource.nodes.length === 1 ? "node" : "nodes"}, skipped ${importedSource.skipped?.length || 0}${importedSource.skipped?.length ? "; see the reasons under the source" : ""}`
+            : current.message || "Done",
         );
         setDelays({});
       }
@@ -197,9 +197,9 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
       !proxy.active &&
       status.vm_running &&
       !(await onConfirm({
-        title: "启用内置代理并重启环境？",
-        body: "首次启用或修改代理端口需要重启，当前终端会结束。后续只切换节点会保留终端进程，但网络连接会重新建立。",
-        confirm: "启用并重启",
+        title: "Enable the built-in proxy and restart the environment?",
+        body: "Enabling it for the first time or changing the proxy port needs a restart, and the current terminals will end. Later node switches keep terminal processes, but network connections are re-established.",
+        confirm: "Enable and restart",
       }))
     )
       return;
@@ -223,7 +223,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                 setDelays((old) => ({ ...old, [id]: `${result.delay} ms` }));
             } catch {
               if (alive.current)
-                setDelays((old) => ({ ...old, [id]: "不可用 / 未载入" }));
+                setDelays((old) => ({ ...old, [id]: "Unavailable / not loaded" }));
             }
           }
         }),
@@ -266,7 +266,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
     return () => onDirty?.(false);
   }, [onDirty, routeChanged, initializing, Boolean(form)]);
   if (!proxy)
-    return <div className="proxy-loading" role={error ? "alert" : "status"}>{error || "正在读取代理配置…"}</div>;
+    return <div className="proxy-loading" role={error ? "alert" : "status"}>{error || "Reading the proxy configuration…"}</div>;
   const allNodes = proxy.sources.flatMap((s) =>
     s.nodes.map((n) => ({ ...n, source: s.name, sourceID: s.id })),
   );
@@ -274,7 +274,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
   const routeValid =
     route.every((id) => allNodes.some((n) => n.id === id)) &&
     new Set(route).size === route.length;
-  const routeName = (id) => allNodes.find((n) => n.id === id)?.name || "待选择";
+  const routeName = (id) => allNodes.find((n) => n.id === id)?.name || "To be selected";
   const updateHop = (index, id) =>
     setRouteDraft(route.map((current, i) => (i === index ? id : current)));
   const nodes = allNodes.filter(
@@ -288,12 +288,12 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
     <div className="proxy-manager">
       <div className="section-title">
         <div className="proxy-heading">
-          <h3>内置代理</h3>
+          <h3>Built-in proxy</h3>
           <button
             type="button"
             className="icon-button proxy-help-toggle"
-            aria-label="代理使用说明"
-            title={helpOpen ? "收起代理使用说明" : "查看代理使用说明"}
+            aria-label="Proxy usage guide"
+            title={helpOpen ? "Hide the proxy usage guide" : "Show the proxy usage guide"}
             aria-expanded={helpOpen}
             aria-controls="proxy-help"
             onClick={() => setHelpOpen((open) => !open)}
@@ -301,7 +301,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
             <CircleHelp size={17} aria-hidden="true" />
           </button>
         </div>
-        <p>选择最终出口，按需添加中转，供 Cage 内所有程序共用。</p>
+        <p>Choose the final exit and add relays as needed, shared by everything inside Cage.</p>
       </div>
       {helpOpen && (
         <section
@@ -309,56 +309,56 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
           className="proxy-help"
           aria-labelledby="proxy-help-title"
         >
-          <h4 id="proxy-help-title">代理使用说明</h4>
+          <h4 id="proxy-help-title">Proxy usage guide</h4>
           <p className="proxy-help-intro">
-            Cage 自带代理核心，无需另外安装
-            Clash。请先准备你已有的代理订阅或节点信息，Cage 不提供代理节点。
+            Cage ships with its own proxy core, so there is nothing else to install, such as
+            Clash. Have your existing proxy subscription or node details ready; Cage does not provide proxy nodes.
           </p>
           <ol className="proxy-help-steps">
             <li>
-              <strong>导入你的代理</strong>
-              <p>打开「订阅」→「添加来源」，填写来源名称，再选择一种方式：</p>
+              <strong>Import your proxy</strong>
+              <p>Open Subscriptions → Add source, enter a source name, then choose one method:</p>
               <ul>
                 <li>
-                  <strong>订阅链接：</strong>从代理服务商处复制 Clash/Mihomo
-                  格式的 HTTPS
-                  订阅地址，粘贴后点击「导入并验证」。首次还没有可用节点时，勾选「通过主机网络下载这份订阅」；主机需要能访问该地址。
+                  <strong>Subscription link:</strong> Copy the Clash/Mihomo-format
+                  HTTPS
+                  subscription URL from your proxy provider, paste it, then click Import and verify. If there are no usable nodes yet, tick "Download this subscription over the host network"; the host must be able to reach that address.
                 </li>
                 <li>
-                  <strong>本地 YAML：</strong>拖入或选择配置文件，或粘贴含节点的
-                  YAML 配置，再点击「导入并验证」。可从已有代理客户端导出配置。
+                  <strong>Local YAML:</strong> Drag in or choose a config file, or paste a YAML config containing nodes,
+                  then click Import and verify. You can export the config from an existing proxy client.
                 </li>
                 <li>
-                  <strong>手动节点：</strong>适用于 HTTP CONNECT 或
-                  SOCKS5。填写节点名称、服务器地址、端口，以及服务商提供的用户名和密码（如有），再点击「导入并验证」。
+                  <strong>Manual node:</strong> For HTTP CONNECT or
+                  SOCKS5. Enter the node name, server address, port, and the username and password from your provider (if any), then click Import and verify.
                 </li>
               </ul>
             </li>
             <li>
-              <strong>选择节点并启用</strong>
+              <strong>Choose a node and enable it</strong>
               <p>
-                导入完成后切到「节点」，选择最终出口，再点击「应用代理」。住宅代理无法从国内连接时，选择「链式代理」，在它前面添加可连接的中转节点；节点可以来自不同订阅。首次启用时若环境正在运行，需要重启；后续切换只重建网络连接。
+                After importing, switch to Nodes, choose the final exit, then click Apply proxy. If a residential proxy cannot be reached from your network, choose Chained proxy and add a reachable relay node in front of it; the nodes can come from different subscriptions. If the environment is running when you enable it for the first time, it needs a restart; later switches only rebuild network connections.
               </p>
             </li>
             <li>
-              <strong>确认可以联网</strong>
+              <strong>Confirm you can get online</strong>
               <p>
-                {initializing ? "点击“开始安装”，等待客机安装和网络检查完成。以初始化界面的检查结果为准；" : "回到工作台启动环境，等待网络检查通过。以工作台的联网状态为准；"}「测速」只检测节点延迟。Cage
-                内的浏览器、终端和开发工具会共用所选节点，无需分别配置代理。
+                {initializing ? "Click Start installation and wait for the guest installation and network checks to finish. The check results on the setup screen are authoritative. " : "Go back to the workbench, start the environment and wait for the network checks to pass. The internet status on the workbench is authoritative. "}Speed test only measures node latency. The browser, terminals and developer tools in Cage
+                share the selected node, so there is no need to configure a proxy for each.
               </p>
             </li>
           </ol>
           <div className="proxy-help-notes">
-            <strong>导入失败或无法联网？</strong>
+            <strong>Import failed or cannot get online?</strong>
             <p>
-              确认复制的是订阅地址，而非服务商登录页或管理页。暂不支持单条分享链接、Base64
-              节点列表，以及只引用远程节点列表的配置；请向服务商获取含节点的
-              Clash/Mihomo YAML。
+              Make sure you copied the subscription URL, not your provider's sign-in or admin page. Single share links, Base64
+              node lists, and configs that only reference a remote node list are not supported yet; ask your provider for a
+              Clash/Mihomo YAML that contains nodes.
             </p>
             <p>
-              订阅下载失败时，可检查主机是否能访问订阅地址，或改用本地
-              YAML。节点不可用时，换一个节点并查看「诊断」；更换节点后仍需通过出口
-              IP 和地区检查。
+              If the subscription download fails, check whether the host can reach the subscription address, or use a local
+              YAML instead. If a node is unavailable, pick another one and check Diagnostics; after changing nodes you still need to pass the exit
+              IP and region checks.
             </p>
           </div>
         </section>
@@ -367,20 +367,20 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
         <Server size={22} />
         <div>
           <strong>
-            {selected ? `最终出口 · ${selected.name}` : "尚未配置代理节点"}
+            {selected ? `Final exit · ${selected.name}` : "No proxy node configured yet"}
           </strong>
           {savedRoute.length > 1 && (
             <span className="proxy-current-route">
-              当前链路：{savedRoute.map(routeName).join(" → ")}
+              Current route: {savedRoute.map(routeName).join(" → ")}
             </span>
           )}
           <span>
             {proxy.active
               ? proxy.running
-                ? "Cage 自带核心运行中"
-                : "核心未就绪"
-              : "请选择节点后应用，未配置时无法联网"}{" "}
-            · 独立端口 {proxy.port}
+                ? "Cage's built-in core is running"
+                : "Core not ready"
+              : "Choose a node and apply it; without one, there is no internet access"}{" "}
+            · Dedicated port {proxy.port}
           </span>
         </div>
         <span className={`proxy-badge ${proxy.network_open ? "online" : ""}`}>
@@ -389,25 +389,25 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
       </div>
       {proxy.active && status.location && (
         <p className="field-help">
-          最近检测出口：{status.location.ip} · {status.location.country}{" "}
-          {status.location.city}。联网是否放行以工作台检查状态为准。
+          Last detected exit: {status.location.ip} · {status.location.country}{" "}
+          {status.location.city}. Whether internet access is allowed follows the workbench check status.
         </p>
       )}
       {!proxy.core_available && (
         <div role="alert" className="error-message">
-          安装包缺少随附代理核心，请重新构建或安装完整 Cage 应用。
+          The installer is missing the bundled proxy core. Rebuild, or install the full Cage app.
         </div>
       )}
       <p className="field-help">
-        仅允许经节点转发的 IPv4 TCP 和 DNS；公网 UDP、IPv6、ICMP
-        持续阻断。切换会关闭旧网络连接并重新检查出口。
+        Only IPv4 TCP and DNS forwarded through a node are allowed; public UDP, IPv6 and ICMP
+        stay blocked. Switching closes the old network connections and checks the exit again.
       </p>
-      <div role="tablist" aria-label="代理管理" className="proxy-tabs">
+      <div role="tablist" aria-label="Proxy management" className="proxy-tabs">
         {[
-          ["nodes", "节点"],
-          ["sources", "订阅"],
-          ["connections", "连接"],
-          ["diagnostics", "诊断"],
+          ["nodes", "Nodes"],
+          ["sources", "Subscriptions"],
+          ["connections", "Connections"],
+          ["diagnostics", "Diagnostics"],
         ].map(([id, label]) => (
           <button
             key={id}
@@ -428,13 +428,13 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
             >
               <div className="proxy-route-heading">
                 <div>
-                  <h4 id="proxy-route-title">配置连接方式</h4>
-                  <p>直接使用一个出口，或经中转连接住宅代理。</p>
+                  <h4 id="proxy-route-title">Configure the connection method</h4>
+                  <p>Use a single exit directly, or reach a residential proxy through a relay.</p>
                 </div>
                 <div
                   className="proxy-route-mode"
                   role="group"
-                  aria-label="连接方式"
+                  aria-label="Connection method"
                 >
                   <button
                     type="button"
@@ -442,7 +442,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                     disabled={busy}
                     onClick={() => setRouteDraft([route.at(-1)])}
                   >
-                    单节点
+                    Single node
                   </button>
                   <button
                     type="button"
@@ -452,7 +452,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                       if (route.length === 1) setRouteDraft(["", route[0]]);
                     }}
                   >
-                    链式代理
+                    Chained proxy
                   </button>
                 </div>
               </div>
@@ -460,8 +460,8 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                 {route.map((id, index) => {
                   const final = index === route.length - 1;
                   const label = final
-                    ? "最终出口"
-                    : `中转节点${route.length > 2 ? ` ${index + 1}` : ""}`;
+                    ? "Final exit"
+                    : `Relay node${route.length > 2 ? ` ${index + 1}` : ""}`;
                   return (
                     <li
                       key={index}
@@ -480,12 +480,12 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                           onValueChange={(next) => updateHop(index, next)}
                         >
                           <option value="" disabled>
-                            请选择{label}
+                            Choose the {label.toLowerCase()}
                           </option>
                           {Boolean(id) &&
                             !allNodes.some((n) => n.id === id) && (
                               <option value={id} disabled>
-                                节点已被移除，请重新选择
+                                The node was removed. Choose again.
                               </option>
                             )}
                           {proxy.sources.map((src) => (
@@ -504,15 +504,15 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                             </optgroup>
                           ))}
                         </InlineSelect>
-                        {final && <small>目标网站看到此节点的出口 IP</small>}
+                        {final && <small>Target sites see this node's exit IP</small>}
                       </div>
                       {!final && (
                         <button
                           className="icon-button proxy-hop-remove"
                           type="button"
                           disabled={busy}
-                          aria-label={`移除${label}`}
-                          title={`移除${label}`}
+                          aria-label={`Remove ${label.toLowerCase()}`}
+                          title={`Remove ${label.toLowerCase()}`}
                           onClick={() =>
                             setRouteDraft(route.filter((_, i) => i !== index))
                           }
@@ -534,10 +534,10 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                   }
                 >
                   <Plus size={14} />
-                  添加中转
+                  Add relay
                 </button>
               )}
-              <div className="proxy-route-preview" aria-label="待应用链路">
+              <div className="proxy-route-preview" aria-label="Route to be applied">
                 <Route size={16} aria-hidden="true" />
                 <span>Cage</span>
                 {route.map((id, index) => (
@@ -547,15 +547,15 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                   </React.Fragment>
                 ))}
                 <ArrowRight size={13} aria-hidden="true" />
-                <span>目标网站</span>
+                <span>Target site</span>
               </div>
               <div className="proxy-route-actions">
                 <span aria-live="polite">
                   {routeChanged
-                    ? "有未应用的代理修改"
+                    ? "There are proxy changes that have not been applied"
                     : proxy.active
-                      ? "当前配置已应用"
-                      : "选择完成后应用代理"}
+                      ? "The current configuration is applied"
+                      : "Apply the proxy once your selection is done"}
                 </span>
                 <div>
                   {routeDraft !== null && (
@@ -564,7 +564,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                       disabled={busy}
                       onClick={() => setRouteDraft(null)}
                     >
-                      撤销修改
+                      Undo changes
                     </button>
                   )}
                   <button
@@ -580,7 +580,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                     ) : (
                       <Check size={14} />
                     )}
-                    {routeChanged || !proxy.active ? "应用代理" : "重新应用"}
+                    {routeChanged || !proxy.active ? "Apply proxy" : "Apply again"}
                   </button>
                 </div>
               </div>
@@ -598,7 +598,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
           )}
           {allNodes.length > 0 && (
             <div className="proxy-node-heading">
-              <h4>可用节点</h4>
+              <h4>Available nodes</h4>
               <button
                 type="button"
                 disabled={busy}
@@ -609,7 +609,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                 }}
               >
                 <Plus size={14} />
-                添加来源
+                Add source
               </button>
             </div>
           )}
@@ -617,18 +617,18 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
             <label className="proxy-search">
               <Search size={15} />
               <input
-                aria-label="搜索节点"
+                aria-label="Search nodes"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="搜索节点、来源或协议"
+                placeholder="Search nodes, sources or protocols"
               />
             </label>
             <InlineSelect
-              aria-label="节点来源"
+              aria-label="Node source"
               value={source}
               onValueChange={(next) => setSource(next)}
             >
-              <option value="">全部来源</option>
+              <option value="">All sources</option>
               {proxy.sources.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -637,18 +637,18 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
             </InlineSelect>
             <button
               disabled={busy || !proxy.running || !nodes.length}
-              title="检测 HTTP 往返延迟，通常不含建连开销，不代表网页首开耗时"
+              title="Measures HTTP round-trip latency. It usually excludes connection setup and does not reflect how long a page takes to first load."
               onClick={() => measure(nodes.map((n) => n.id))}
             >
               <Activity size={14} />
-              测速
+              Speed test
             </button>
           </div>
           {!allNodes.length ? (
             <div className="proxy-empty">
               <Download size={26} />
-              <strong>添加第一份节点来源</strong>
-              <p>支持 Clash/Mihomo YAML 订阅、本地配置或手动节点。</p>
+              <strong>Add your first node source</strong>
+              <p>Clash/Mihomo YAML subscriptions, local configs and manual nodes are supported.</p>
               <button
                 onClick={() => {
                   setTab("sources");
@@ -657,7 +657,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                 }}
               >
                 <Plus size={15} />
-                添加来源
+                Add source
               </button>
             </div>
           ) : (
@@ -676,12 +676,12 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                     }
                     title={
                       route.slice(0, -1).includes(n.id)
-                        ? "此节点已用作中转"
-                        : "选为最终出口，点击应用代理后生效"
+                        ? "This node is already used as a relay"
+                        : "Select as the final exit; it takes effect after you click Apply proxy"
                     }
                     onClick={() => updateHop(route.length - 1, n.id)}
                     aria-pressed={n.id === route.at(-1)}
-                    aria-label={`选择节点 ${n.name}`}
+                    aria-label={`Select node ${n.name}`}
                   >
                     <span className="proxy-radio">
                       {n.id === route.at(-1) && <Check size={12} />}
@@ -695,15 +695,15 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                   </button>
                   {savedRoute.includes(n.id) && (
                     <span className="proxy-node-role">
-                      {n.id === proxy.selected ? "当前出口" : "当前中转"}
+                      {n.id === proxy.selected ? "Current exit" : "Current relay"}
                     </span>
                   )}
                   <span className="proxy-delay">
-                    {delays[n.id] || "未测速"}
+                    {delays[n.id] || "Not tested"}
                   </span>
                   <button
-                    aria-label={`测速 ${n.name}`}
-                    title="检测此节点到 www.gstatic.com 的 HTTP 往返延迟，通常不含建连开销，不代表网页首开耗时"
+                    aria-label={`Test speed of ${n.name}`}
+                    title="Measures HTTP round-trip latency from this node to www.gstatic.com. It usually excludes connection setup and does not reflect how long a page takes to first load."
                     disabled={busy || !proxy.running}
                     onClick={() => measure([n.id])}
                   >
@@ -712,7 +712,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                 </div>
               ))}
               {!nodes.length && (
-                <p className="field-help">没有符合搜索条件的节点。</p>
+                <p className="field-help">No nodes match the search.</p>
               )}
             </div>
           )}
@@ -726,14 +726,14 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
               checked={hostRefresh}
               onChange={(e) => setHostRefresh(e.target.checked)}
             />
-            手动更新订阅时通过主机网络下载
+            Download subscriptions over the host network when updating manually
           </label>
           <p className="field-help">
-            自动更新始终使用当前配置的代理，不会切换到主机下载。
+            Automatic updates always use the currently configured proxy and never switch to a host download.
           </p>
           <div className="proxy-toolbar">
             <span>
-              {proxy.sources.length} 个来源 · {allNodes.length} 个节点
+              {proxy.sources.length} {proxy.sources.length === 1 ? "source" : "sources"} · {allNodes.length} {allNodes.length === 1 ? "node" : "nodes"}
             </span>
             <button
               disabled={busy}
@@ -743,7 +743,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
               }}
             >
               <Plus size={14} />
-              添加来源
+              Add source
             </button>
           </div>
           {proxy.sources.map((s) => (
@@ -751,13 +751,13 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
               <div>
                 <strong>{s.name}</strong>
                 <small>
-                  {s.remote ? s.host : "本地导入"} · {s.nodes.length} 个节点 ·{" "}
+                  {s.remote ? s.host : "Local import"} · {s.nodes.length} {s.nodes.length === 1 ? "node" : "nodes"} ·{" "}
                   {s.interval_hours && s.remote
-                    ? `每 ${s.interval_hours} 小时更新`
-                    : "手动更新"}
+                    ? `Updates every ${s.interval_hours} h`
+                    : "Manual updates"}
                 </small>
                 <small>
-                  更新于 {new Date(s.updated_at).toLocaleString()}
+                  Updated {new Date(s.updated_at).toLocaleString()}
                   {usageLabel(s.usage) && ` · ${usageLabel(s.usage)}`}
                 </small>
                 {s.error && (
@@ -766,15 +766,15 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                 {s.skipped?.length > 0 && (
                   <details className="proxy-source-skipped">
                     <summary>
-                      已导入 {s.nodes.length} 个节点，跳过 {s.skipped.length} 个
-                      · 查看原因
+                      Imported {s.nodes.length} {s.nodes.length === 1 ? "node" : "nodes"}, skipped {s.skipped.length}
+                      · See reasons
                     </summary>
                     <ul>
                       {s.skipped.map((issue) => (
                         <li key={issue.index}>
-                          第 {issue.index} 个节点
-                          {issue.name && `「${issue.name}」`}
-                          {issue.type && `（${issue.type}）`}：{issue.reason}
+                          Node {issue.index}
+                          {issue.name && ` "${issue.name}"`}
+                          {issue.type && ` (${issue.type})`}: {issue.reason}
                         </li>
                       ))}
                     </ul>
@@ -785,7 +785,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                 {s.remote && (
                   <button
                     disabled={busy}
-                    aria-label={`更新 ${s.name}`}
+                    aria-label={`Update ${s.name}`}
                     onClick={() =>
                       mutate("refresh", {
                         id: s.id,
@@ -798,7 +798,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                 )}
                 <button
                   disabled={busy}
-                  aria-label={`编辑 ${s.name}`}
+                  aria-label={`Edit ${s.name}`}
                   onClick={() => {
                     setForm({
                       ...emptyForm,
@@ -814,15 +814,15 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                 </button>
                 <button
                   disabled={busy}
-                  aria-label={`删除 ${s.name}`}
+                  aria-label={`Delete ${s.name}`}
                   onClick={async () => {
                     if (
                       await onConfirm({
-                        title: `删除来源“${s.name}”？`,
+                        title: `Delete the source "${s.name}"?`,
                         body: s.nodes.some((n) => n.id === proxy.selected)
-                          ? "当前节点来自此来源。删除后 Cage 会保持离线，直到你选择其他节点。"
-                          : "将移除此来源及其节点，本地项目文件不受影响。",
-                        confirm: "删除来源",
+                          ? "The current node comes from this source. After deleting it, Cage stays offline until you choose another node."
+                          : "This source and its nodes will be removed. Local project files are not affected.",
+                        confirm: "Delete source",
                       })
                     )
                       mutate("delete", { id: s.id });
@@ -835,13 +835,13 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
           ))}
           {form && (
             <div className="proxy-import">
-              <h4>{form.id ? "编辑来源" : "添加节点来源"}</h4>
+              <h4>{form.id ? "Edit source" : "Add a node source"}</h4>
               {!form.id && (
                 <div className="proxy-tabs">
                   {[
-                    ["url", "订阅链接"],
-                    ["file", "本地 YAML"],
-                    ["manual", "手动节点"],
+                    ["url", "Subscription link"],
+                    ["file", "Local YAML"],
+                    ["manual", "Manual node"],
                   ].map(([id, label]) => (
                     <button
                       key={id}
@@ -857,18 +857,18 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                 </div>
               )}
               <label>
-                来源名称
+                Source name
                 <input
                   value={form.name}
                   maxLength={100}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="例如：日常代理"
+                  placeholder="For example: Daily proxy"
                 />
               </label>
               {mode === "url" && (!form.id || form.remote) && (
                 <>
                   <label>
-                    {form.id ? "新订阅链接（留空保留）" : "订阅链接"}
+                    {form.id ? "New subscription link (leave blank to keep)" : "Subscription link"}
                     <input
                       value={form.url}
                       type="url"
@@ -880,9 +880,9 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                     />
                   </label>
                   <label>
-                    自动更新间隔
+                    Auto-update interval
                     <InlineSelect
-                      aria-label="自动更新间隔"
+                      aria-label="Auto-update interval"
                       value={form.interval_hours}
                       onValueChange={(next) =>
                         setForm({
@@ -892,11 +892,11 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                       }
                     >
                       {[
-                        [0, "仅手动更新"],
-                        [1, "每小时"],
-                        [6, "每 6 小时"],
-                        [24, "每天"],
-                        [168, "每周"],
+                        [0, "Manual updates only"],
+                        [1, "Hourly"],
+                        [6, "Every 6 hours"],
+                        [24, "Daily"],
+                        [168, "Weekly"],
                       ].map(([v, label]) => (
                         <option value={v} key={v}>
                           {label}
@@ -913,11 +913,11 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                           setForm({ ...form, host_download: e.target.checked })
                         }
                       />
-                      通过主机网络下载这份订阅
+                      Download this subscription over the host network
                     </label>
                   )}
                   <p className="field-help">
-                    默认经当前配置的代理下载。首次没有可用节点时，可勾选主机下载或导入本地文件；失败不会自动改用其他路径。
+                    Downloads go through the currently configured proxy by default. When there is no usable node yet, you can tick host download or import a local file; a failure never switches to another path automatically.
                   </p>
                 </>
               )}
@@ -945,7 +945,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                 <>
                   <div className="field-row">
                     <label>
-                      节点名称
+                      Node name
                       <input
                         value={manual.name}
                         onChange={(e) =>
@@ -954,9 +954,9 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                       />
                     </label>
                     <label>
-                      协议
+                      Protocol
                       <InlineSelect
-                        aria-label="协议"
+                        aria-label="Protocol"
                         value={manual.type}
                         onValueChange={(next) =>
                           setManual({ ...manual, type: next })
@@ -969,17 +969,17 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                   </div>
                   <div className="field-row">
                     <label>
-                      服务器
+                      Server
                       <input
                         value={manual.server}
                         onChange={(e) =>
                           setManual({ ...manual, server: e.target.value })
                         }
-                        placeholder="域名或 IP"
+                        placeholder="Domain or IP"
                       />
                     </label>
                     <label>
-                      端口
+                      Port
                       <input
                         type="number"
                         min="1"
@@ -993,7 +993,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                   </div>
                   <div className="field-row">
                     <label>
-                      用户名
+                      Username
                       <input
                         value={manual.username}
                         autoComplete="off"
@@ -1003,7 +1003,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                       />
                     </label>
                     <label>
-                      密码
+                      Password
                       <input
                         type="password"
                         value={manual.password}
@@ -1018,7 +1018,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
               )}
               <div className="proxy-form-actions">
                 <button disabled={busy} onClick={() => setForm(null)}>
-                  取消
+                  Cancel
                 </button>
                 <button
                   className="primary"
@@ -1034,7 +1034,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                   }
                   onClick={submit}
                 >
-                  {form.id ? "保存来源" : "导入并验证"}
+                  {form.id ? "Save source" : "Import and verify"}
                 </button>
               </div>
             </div>
@@ -1045,17 +1045,17 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
         <>
           <div className="proxy-metrics">
             <span>
-              上传 <strong>{bytes(rates.up)}/s</strong>
-              <small>累计 {bytes(connections.uploadTotal)}</small>
+              Upload <strong>{bytes(rates.up)}/s</strong>
+              <small>Total {bytes(connections.uploadTotal)}</small>
             </span>
             <span>
-              下载 <strong>{bytes(rates.down)}/s</strong>
-              <small>累计 {bytes(connections.downloadTotal)}</small>
+              Download <strong>{bytes(rates.down)}/s</strong>
+              <small>Total {bytes(connections.downloadTotal)}</small>
             </span>
           </div>
           <p className="field-help">
-            显示当前核心的连接与流量，包含 Cage
-            自身检测请求；重启核心后累计值重置。
+            Shows the current core's connections and traffic, including Cage's
+            own check requests; totals reset when the core restarts.
           </p>
           <div className="proxy-node-list">
             {connections.connections.map((c) => (
@@ -1070,7 +1070,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
               </div>
             ))}
             {!connections.connections.length && (
-              <p className="proxy-empty">暂无活动连接</p>
+              <p className="proxy-empty">No active connections</p>
             )}
           </div>
         </>
@@ -1078,8 +1078,8 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
       {tab === "diagnostics" && (
         <>
           <p className="field-help">
-            随附核心 {proxy.version || "未运行"}。以下为 Cage
-            状态摘要；含凭据风险的核心原始日志不向页面公开。
+            Bundled core {proxy.version || "not running"}. Below is a summary of Cage
+            status; raw core logs that risk exposing credentials are not shown on the page.
           </p>
           <div className="proxy-diagnostics" role="log">
             {logs.map((line, i) => (
@@ -1087,7 +1087,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
             ))}
           </div>
           <label>
-            独立代理端口
+            Dedicated proxy port
             <input
               type="number"
               min="1024"
@@ -1107,9 +1107,9 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                   Number(port) !== proxy.port &&
                   status.vm_running &&
                   !(await onConfirm({
-                    title: "更换代理端口并重启环境？",
-                    body: "端口变化需要重启环境，当前终端会结束。",
-                    confirm: "更换并重启",
+                    title: "Change the proxy port and restart the environment?",
+                    body: "A port change needs an environment restart, and the current terminals will end.",
+                    confirm: "Change and restart",
                   }))
                 )
                   return;
@@ -1117,19 +1117,19 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
               }}
             >
               <RefreshCw size={14} />
-              应用端口并重启核心
+              Apply port and restart core
             </button>
             <button
               disabled={busy || !proxy.running}
               onClick={() => mutate("stop")}
             >
               <Square size={14} />
-              停止核心
+              Stop core
             </button>
           </div>
           <p className="field-help">
-            Cage 不设置系统代理或主机 TUN。本机其他代理的 TUN
-            仍可能影响核心出站，需要结合实际路由验证。
+            Cage does not set a system proxy or host TUN. TUN from another proxy on this computer
+            may still affect the core's outbound traffic, so verify it against the actual routing.
           </p>
         </>
       )}
@@ -1137,8 +1137,8 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
         <p className="proxy-progress" role="status">
           <LoaderCircle size={14} className="spin" />
           {pending === "delay"
-            ? "正在检测节点延迟…"
-            : status.job?.message || "正在处理…"}
+            ? "Testing node latency…"
+            : status.job?.message || "Working…"}
         </p>
       )}
       {error && !(tab === "nodes" && allNodes.length > 0) && (

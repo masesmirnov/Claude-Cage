@@ -52,7 +52,7 @@ func (s *Server) nativeBrowserAPI(ctx context.Context, method, path string, body
 			Transfer string `json:"transfer"`
 		}
 		if json.Unmarshal(body, &input) != nil {
-			return nil, browserInputError{errors.New("图片粘贴请求无效")}
+			return nil, browserInputError{errors.New("The image paste request is invalid.")}
 		}
 		data, err := decodeInputImage(input.PNG)
 		if err != nil {
@@ -62,7 +62,7 @@ func (s *Server) nativeBrowserAPI(ctx context.Context, method, path string, body
 	}
 	var input any
 	if len(body) != 0 && json.Unmarshal(body, &input) != nil {
-		return nil, browserInputError{errors.New("浏览器请求无效")}
+		return nil, browserInputError{errors.New("The browser request is invalid.")}
 	}
 	return s.nativeBrowserClient().request(ctx, method, path, input)
 }
@@ -80,18 +80,18 @@ func (s *Server) browserClipboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !browserFileID.MatchString(input.ID) || !validInputToken(input.Tab) || !validInputToken(input.Context) || !validInputToken(input.Document) {
-		http.Error(w, "复制内容或网页上下文无效", http.StatusBadRequest)
+		http.Error(w, "The copied content or page context is invalid.", http.StatusBadRequest)
 		return
 	}
 	s.mu.Lock()
 	ready := s.ready
 	s.mu.Unlock()
 	if !ready {
-		http.Error(w, "环境尚未就绪", http.StatusConflict)
+		http.Error(w, "The environment is not ready yet.", http.StatusConflict)
 		return
 	}
 	if s.macosGuest == nil {
-		http.Error(w, "当前客机使用系统共享剪贴板", http.StatusNotImplemented)
+		http.Error(w, "The current guest uses the system shared clipboard.", http.StatusNotImplemented)
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
@@ -107,17 +107,17 @@ func (s *Server) browserClipboard(w http.ResponseWriter, r *http.Request) {
 		limit = 2 << 20
 	}
 	if (mime != "image/png" && mime != "text/plain") || size > limit {
-		http.Error(w, "客机复制内容的类型或大小无效", http.StatusBadGateway)
+		http.Error(w, "The type or size of the content copied in the guest is invalid.", http.StatusBadGateway)
 		return
 	}
 	data, err := io.ReadAll(io.LimitReader(reader, limit+1))
 	if err != nil || int64(len(data)) != size {
-		http.Error(w, "复制内容未完整收到，请重新复制", http.StatusBadGateway)
+		http.Error(w, "The copied content was not fully received. Copy it again.", http.StatusBadGateway)
 		return
 	}
 	if mime == "text/plain" {
 		if !utf8.Valid(data) {
-			http.Error(w, "复制文字的编码无效", http.StatusBadGateway)
+			http.Error(w, "The encoding of the copied text is invalid.", http.StatusBadGateway)
 			return
 		}
 		jsonReply(w, map[string]string{"text": string(data)})
@@ -217,7 +217,7 @@ func (s *windowsBrowserEventStream) Close() error { s.cancel(); return s.ReadClo
 func (s *Server) nativeBrowserFile(w http.ResponseWriter, r *http.Request, method, path string, body io.Reader) {
 	request, err := url.Parse(path)
 	if err != nil {
-		http.Error(w, "浏览器文件操作无效", 400)
+		http.Error(w, "The browser file operation is invalid.", 400)
 		return
 	}
 	query := request.Query()
@@ -240,14 +240,14 @@ func (s *Server) nativeBrowserFile(w http.ResponseWriter, r *http.Request, metho
 		defer reader.Close()
 		w.Header().Set("Content-Type", "application/octet-stream")
 		if size < 0 {
-			http.Error(w, "文件大小无效", 502)
+			http.Error(w, "The file size is invalid.", 502)
 			return
 		}
 		w.Header().Set("Content-Length", fmt.Sprint(size))
 		_, _ = io.Copy(w, reader)
 		return
 	}
-	http.Error(w, "Windows 浏览器文件操作尚未接通", 501)
+	http.Error(w, "The Windows browser file operation is not connected yet.", 501)
 }
 
 func (s *Server) nativeBrowserVNC(w http.ResponseWriter, r *http.Request) {
@@ -318,7 +318,7 @@ func (s *Server) nativeBrowserVNC(w http.ResponseWriter, r *http.Request) {
 			}
 			data, err = client.request(ctx, "POST", "/insert-text", map[string]any{"id": current.ID, "document": current.Document, "text": input["text"]})
 		default:
-			return errors.New("浏览器画面操作无效")
+			return errors.New("The browser display operation is invalid.")
 		}
 		if err != nil {
 			return err

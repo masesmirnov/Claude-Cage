@@ -30,7 +30,7 @@ for (const platform of ["MacIntel", "Win32", "Linux x86_64"]) {
     await page.route("**/api/input/image", async route => {
       images.push(route.request().postDataJSON());
       await new Promise(resolve => { release = resolve; });
-      await route.fulfill(fail ? { status: 502, contentType: "text/plain", body: "测试：图片传递失败" }
+      await route.fulfill(fail ? { status: 502, contentType: "text/plain", body: "Test: image delivery failed" }
         : { json: { path: "/guest/attachments/image-test.png" } });
     });
     await page.routeWebSocket("**/api/**", socket => {
@@ -39,8 +39,8 @@ for (const platform of ["MacIntel", "Win32", "Linux x86_64"]) {
       socket.send(Buffer.from("\x1b[?2004hClaude image paste\r\n> "));
     });
     await page.reload();
-    await page.getByRole("button", { name: "启动 Cage 环境", exact: true }).click();
-    await page.getByRole("button", { name: "新建终端", exact: true }).first().click();
+    await page.getByRole("button", { name: "Start Cage environment", exact: true }).click();
+    await page.getByRole("button", { name: "New terminal", exact: true }).first().click();
     await page.getByRole("menuitem", { name: /Claude/ }).first().click();
     await page.waitForFunction(() => document.querySelector(".xterm-rows")?.textContent.includes("Claude"));
     await page.locator(".xterm-helper-textarea").focus();
@@ -76,7 +76,7 @@ for (const platform of ["MacIntel", "Win32", "Linux x86_64"]) {
     await wait(() => images.length === 4);
     await page.keyboard.press("Enter");
     release();
-    await page.getByText("测试：图片传递失败", { exact: true }).waitFor();
+    await page.getByText("Test: image delivery failed", { exact: true }).waitFor();
     assert.equal(inputs.length, 4, "a failed image must cancel its queued Enter");
     fail = false;
     clipboard = { text: "paste after failure" };

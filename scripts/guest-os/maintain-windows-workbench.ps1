@@ -15,15 +15,15 @@ $ProgressPreference='SilentlyContinue'
 # Fixed process exits carry the failed stage across RunAs without a writable
 # result file. The ordinary parent reports the same stage to the workbench.
 $maintenanceFailures=@{
-    1=@('FAILED','Windows 维护未完成。请从 Cage 重新发起原操作，仍失败时导出诊断包。')
-    41=@('VALIDATION','Windows 环境绑定或组件清单未通过校验。请重新发起原操作，组件包仍无法核验时重新安装完整 Cage 应用。')
-    42=@('HOST_MANAGER','Windows 系统管理助手安装未完成。请重试修复系统助手，仍失败时检查系统服务或安全软件记录并导出诊断包。')
-    43=@('GUEST_CONNECTION','Windows 客机连接未完成。请启动并登录已绑定客机，使用该客机的管理员账户重试。')
-    44=@('GUEST_COMPONENTS','Windows 客机组件安装未完成。请保持原客机运行，重试同步环境组件，仍失败时导出诊断包。')
-    45=@('HOST_RELAY','Windows 主机连接组件更新未完成。请关闭占用连接组件的程序，再重试同步环境组件。')
-    46=@('PACKAGE_PREPARATION','Windows 组件包准备未完成。请检查应用目录和系统盘空间后重试，更新工具时同时检查已选代理。')
-    47=@('AUTHORIZATION','Windows 管理员授权窗口未能打开。请从本机 Cage 重新发起操作，并使用可完成管理员授权的 Windows 账户。')
-    48=@('AUTHORIZATION_CANCELED','已取消 Windows 管理员授权。请重新发起原操作，并在 Windows 系统授权窗口中确认。')
+    1=@('FAILED','Windows maintenance did not complete. Start the original action again from Cage; if it still fails, export a diagnostics bundle.')
+    41=@('VALIDATION','The Windows environment binding or component manifest failed validation. Start the original action again; if the component package still cannot be verified, reinstall the full Cage app.')
+    42=@('HOST_MANAGER','Windows system management helper installation did not complete. Retry repairing the system helper; if it still fails, check the system services or security software logs and export a diagnostics bundle.')
+    43=@('GUEST_CONNECTION','Windows guest connection did not complete. Start and sign in to the bound guest, then retry with that guest administrator account.')
+    44=@('GUEST_COMPONENTS','Windows guest component installation did not complete. Keep the original guest running and retry syncing environment components; if it still fails, export a diagnostics bundle.')
+    45=@('HOST_RELAY','Windows host connection component update did not complete. Close any program using the connection components, then retry syncing environment components.')
+    46=@('PACKAGE_PREPARATION','Windows component package preparation did not complete. Check the app directory and system drive space and try again; when updating tools, also check the selected proxy.')
+    47=@('AUTHORIZATION','The Windows administrator authorization window could not be opened. Start the action again from Cage on this computer, using a Windows account that can complete administrator authorization.')
+    48=@('AUTHORIZATION_CANCELED','Windows administrator authorization was canceled. Start the original action again and confirm in the Windows system authorization window.')
 }
 $maintenanceExitCode=41
 trap {
@@ -50,32 +50,32 @@ function Invoke-CageMaintenanceElevation([string]$ScriptPath,[hashtable]$Paramet
         # otherwise return a null ExitCode after a successful child exit.
         $null=$process.Handle
         $process.WaitForExit()
-        if ($null -eq $process.ExitCode) { throw '无法读取系统授权进程的退出状态，请重新发起操作。' }
+        if ($null -eq $process.ExitCode) { throw 'Could not read the exit status of the system authorization process. Start the action again.' }
         return [int]$process.ExitCode
     } finally { $process.Dispose() }
 }
 
 $bindingPath=Join-Path $Profile 'windows-guest.json'
 $item=Get-Item -LiteralPath $bindingPath -Force
-if ($item -isnot [IO.FileInfo] -or $item.Length -gt 16384 -or $item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw '已绑定的 Windows 环境记录无法核验。' }
+if ($item -isnot [IO.FileInfo] -or $item.Length -gt 16384 -or $item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'The bound Windows environment record could not be verified.' }
 $bindingHash=(Get-FileHash -LiteralPath $bindingPath -Algorithm SHA256).Hash
-if ($BindingSHA256 -and $BindingSHA256 -ne $bindingHash) { throw 'Windows 环境绑定已变化，请重新发起更新。' }
-if ((Get-FileHash -LiteralPath $ManifestPath -Algorithm SHA256).Hash -ne $ManifestSHA256) { throw '组件清单已变化，请重新发起更新。' }
+if ($BindingSHA256 -and $BindingSHA256 -ne $bindingHash) { throw 'The Windows environment binding has changed. Start the update again.' }
+if ((Get-FileHash -LiteralPath $ManifestPath -Algorithm SHA256).Hash -ne $ManifestSHA256) { throw 'The component manifest has changed. Start the update again.' }
 $maintenanceExitCode=47
 $identity=[Security.Principal.WindowsIdentity]::GetCurrent()
 if (![Security.Principal.WindowsPrincipal]::new($identity).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     $parameters=@{Profile=$Profile;ManifestPath=$ManifestPath;ManifestSHA256=$ManifestSHA256;BindingSHA256=$bindingHash;Tools=[bool]$Tools;HostOnly=[bool]$HostOnly}
     $maintenanceExitCode=Invoke-CageMaintenanceElevation -ScriptPath $PSCommandPath -Parameters $parameters
-    if ($maintenanceExitCode -ne 0) { throw '提升权限后的 Windows 维护进程未完成。' }
+    if ($maintenanceExitCode -ne 0) { throw 'The elevated Windows maintenance process did not complete.' }
     exit 0
 }
 $maintenanceExitCode=41
 $binding=Get-Content -LiteralPath $bindingPath -Raw | ConvertFrom-Json
-if ($binding.version -ne 1 -or [guid]$binding.vm_id -eq [guid]::Empty) { throw 'Windows 客机绑定无法核验。' }
+if ($binding.version -ne 1 -or [guid]$binding.vm_id -eq [guid]::Empty) { throw 'The Windows guest binding could not be verified.' }
 if (!$HostOnly) {
 $maintenanceExitCode=43
 $vm=Hyper-V\Get-VM -Id ([guid]$binding.vm_id)
-if ($vm.State -ne 'Running') { throw '请先启动并登录已绑定的 Windows 客机。' }
+if ($vm.State -ne 'Running') { throw 'Start and sign in to the bound Windows guest first.' }
 $maintenanceExitCode=41
 $disks=@($vm | Hyper-V\Get-VMHardDiskDrive)
 $pairDirectory=[IO.Path]::GetDirectoryName($binding.relay_executable)
@@ -86,41 +86,41 @@ if ($binding.version -ne 1 -or $vm.Id -eq [guid]::Empty -or
     ($pairDirectory -ine $stagedPairDirectory -and $pairDirectory -ine $item.Directory.FullName) -or
     $binding.relay_executable -ine (Join-Path $pairDirectory 'Cage.GuestClipboard.exe') -or
     $binding.pairing_file -ine (Join-Path $pairDirectory 'pairing.dpapi')) {
-    throw '当前运行的 Windows 客机与保留的绑定不一致。'
+    throw 'The running Windows guest does not match the saved binding.'
 }
 for ($entry=Get-Item -LiteralPath $binding.relay_executable -Force; $entry; $entry=if ($entry -is [IO.FileInfo]) {$entry.Directory} else {$entry.Parent}) {
-    if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw '主机连接组件路径包含文件链接。' }
+    if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'The host connection component path contains a file link.' }
 }
 } else {
     $vm=[pscustomobject]@{Id=[guid]$binding.vm_id}
 }
 $manifest=Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
-if ($manifest.protocol -ne 1 -or $manifest.system -cne 'windows-11' -or $manifest.revision -notmatch '^[a-f0-9]{64}$' -or @($manifest.files).Count -notin 1..10000) { throw '原生组件清单无效。' }
+if ($manifest.protocol -ne 1 -or $manifest.system -cne 'windows-11' -or $manifest.revision -notmatch '^[a-f0-9]{64}$' -or @($manifest.files).Count -notin 1..10000) { throw 'The native component manifest is invalid.' }
 $kit=[IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\')+'\'
 foreach ($entry in $manifest.files) {
     $source=[IO.Path]::GetFullPath((Join-Path $kit $entry.source))
     if (!$source.StartsWith($kit,[StringComparison]::OrdinalIgnoreCase) -or (Get-Item -LiteralPath $source -Force).Attributes -band [IO.FileAttributes]::ReparsePoint -or
-        (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash -ne $entry.sha256) { throw '应用组件包已变化，请重新安装完整 Cage 应用。' }
+        (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash -ne $entry.sha256) { throw 'The app component package has changed. Reinstall the full Cage app.' }
 }
 # The native host helper is part of the same checked component package. Update
 # its fixed-VM service during the existing administrator-authorized maintenance.
 # The protected registration supplies the original host user across UAC.
 $managerBindingPath=Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) ('Cage\HyperVManager\'+$vm.Id.ToString('D')+'\binding.json')
 $managerBindingFile=Get-Item -LiteralPath $managerBindingPath -Force
-if ($managerBindingFile.Attributes -band [IO.FileAttributes]::ReparsePoint -or $managerBindingFile.Length -gt 65536) { throw 'Windows 管理助手的登记文件无法核验。' }
+if ($managerBindingFile.Attributes -band [IO.FileAttributes]::ReparsePoint -or $managerBindingFile.Length -gt 65536) { throw 'The Windows management helper registration file could not be verified.' }
 $managerBinding=Get-Content -LiteralPath $managerBindingPath -Raw | ConvertFrom-Json
-if ([guid]$managerBinding.vm_id -ne $vm.Id -or $managerBinding.host_sid -notmatch '^S-1-(5-21|12-1)-(\d+-){3}\d+$') { throw 'Windows 管理助手的用户或客机身份不匹配。' }
+if ([guid]$managerBinding.vm_id -ne $vm.Id -or $managerBinding.host_sid -notmatch '^S-1-(5-21|12-1)-(\d+-){3}\d+$') { throw 'The Windows management helper user or guest identity does not match.' }
 $managerPayload=Join-Path $kit 'payload/Cage.HyperVManager.exe'
 $maintenanceExitCode=42
 & (Join-Path $kit 'install-windows-host-manager.ps1') -VMId $vm.Id -HostSID $managerBinding.host_sid -PayloadExecutable $managerPayload -PayloadSHA256 (Get-FileHash -LiteralPath $managerPayload -Algorithm SHA256).Hash -Confirm:$false | Out-Null
 if ($HostOnly) {
-    Write-Output 'Windows 系统管理助手已恢复，可以继续恢复存储迁移。'
+    Write-Output 'The Windows system management helper was restored. You can continue restoring the storage migration.'
     exit 0
 }
 $maintenanceExitCode=46
 $work=Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) ('Cage\ComponentMaintenance\'+$vm.Id.ToString('D'))
 for ($parent=$work; $parent; $parent=[IO.Path]::GetDirectoryName($parent)) {
-    if ((Test-Path -LiteralPath $parent) -and (Get-Item -LiteralPath $parent -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw '组件维护目录包含文件链接。' }
+    if ((Test-Path -LiteralPath $parent) -and (Get-Item -LiteralPath $parent -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'The component maintenance directory contains a file link.' }
 }
 $null=New-Item -ItemType Directory -Path $work -Force
 $acl=[Security.AccessControl.DirectorySecurity]::new()
@@ -139,11 +139,11 @@ try {
     $null=New-Item -ItemType Directory -Path $files
     foreach ($entry in $manifest.files) {
         if (!$entry.target) { continue }
-        if ($entry.target -notmatch '^(bridge|network)/[^:]+$' -or $entry.target -match '(^|/)\.\.?(/|$)|\\') { throw '组件安装位置无效。' }
+        if ($entry.target -notmatch '^(bridge|network)/[^:]+$' -or $entry.target -match '(^|/)\.\.?(/|$)|\\') { throw 'The component install location is invalid.' }
         $target=Join-Path $files $entry.target
         $null=New-Item -ItemType Directory -Path ([IO.Path]::GetDirectoryName($target)) -Force
         Copy-Item -LiteralPath (Join-Path $kit $entry.source) -Destination $target
-        if ((Get-FileHash -LiteralPath $target).Hash -ne $entry.installed_sha256) { throw '复制后的组件摘要不匹配。' }
+        if ((Get-FileHash -LiteralPath $target).Hash -ne $entry.installed_sha256) { throw 'The component digest after copying does not match.' }
     }
     [IO.File]::WriteAllText((Join-Path $stage 'native-components.json'),($manifest | ConvertTo-Json -Depth 8),[Text.UTF8Encoding]::new($false))
     $packages=Get-Content -LiteralPath (Join-Path $kit 'payload/windows-workbench-packages.json') -Raw | ConvertFrom-Json
@@ -168,11 +168,11 @@ try {
         $null=New-Item -ItemType Directory -Path $toolStage
         foreach ($name in @('desktop','winfsp','sshfs','uv','python','claude','git')) { Copy-Item -LiteralPath $downloads[$name] -Destination $toolStage }
         & (Join-Path $env:SystemRoot 'System32/tar.exe') -a -cf (Join-Path $toolStage 'extras.zip') -C $bridge .
-        if ($LASTEXITCODE) { throw '无法准备经过校验的环境工具包。' }
+        if ($LASTEXITCODE) { throw 'Could not prepare the verified environment tool package.' }
     }
     $maintenanceExitCode=43
-    if (!$GuestAdministrator) { $GuestAdministrator=Get-Credential -Message 'Cage：请输入当前 Windows 客机的管理员账户以更新组件。' }
-    if (!$GuestAdministrator) { throw '已取消 Windows 组件更新。' }
+    if (!$GuestAdministrator) { $GuestAdministrator=Get-Credential -Message 'Cage: enter the administrator account of the current Windows guest to update components.' }
+    if (!$GuestAdministrator) { throw 'The Windows component update was canceled.' }
     $session=New-PSSession -VMId $vm.Id -Credential $GuestAdministrator
     $remote=Invoke-Command -Session $session -ArgumentList $vm.Id -ScriptBlock {
         param($expected)
@@ -190,7 +190,7 @@ try {
         $entries=@('files','native-components.json')
         if ($Tools) { $entries+='tools' }
         & (Join-Path $env:SystemRoot 'System32/tar.exe') -a -cf $archive -C $stage @entries
-        if ($LASTEXITCODE) { throw '无法打包客机组件。' }
+        if ($LASTEXITCODE) { throw 'Could not package the guest components.' }
         Copy-Item -LiteralPath $archive -Destination (Join-Path $remote 'update.zip') -ToSession $session
         $hash=(Get-FileHash -LiteralPath $archive).Hash
     } finally { if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive } }
@@ -205,17 +205,17 @@ try {
         [IO.File]::Replace($relayStage,$binding.relay_executable,[Management.Automation.Language.NullString]::Value)
     } finally { if (Test-Path -LiteralPath $relayStage) { Remove-Item -LiteralPath $relayStage } }
     $maintenanceExitCode=41
-    if (@(Hyper-V\Get-VMNetworkAdapter -VM (Hyper-V\Get-VM -Id $vm.Id)).Count -ne 0) { throw '更新期间客机网络配置发生变化。' }
+    if (@(Hyper-V\Get-VMNetworkAdapter -VM (Hyper-V\Get-VM -Id $vm.Id)).Count -ne 0) { throw 'The guest network configuration changed during the update.' }
     $maintenanceExitCode=44
     $completed=$true
 } finally {
     if ($session) {
         if ($remote -and $completed) { Invoke-Command -Session $session -ArgumentList $remote -ScriptBlock { param($path) Remove-Item -LiteralPath $path -Recurse -Force } -ErrorAction Continue }
-        elseif ($remote) { Write-Warning ('组件恢复材料保留在客机 '+$remote+'，重试会继续使用原环境。') }
+        elseif ($remote) { Write-Warning ('Component recovery files are kept on the guest at '+$remote+'. Retrying continues with the original environment.') }
         Remove-PSSession $session
     }
     if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
     $lock.Dispose()
 }
-Write-Output 'Windows 客机组件已完成文件核验，已保留账户、项目和配对资料。'
+Write-Output 'Windows guest components passed file verification. The account, projects, and pairing data were kept.'
 exit 0

@@ -46,8 +46,8 @@ test('native file replies remain pending beyond four minutes and through the bac
 test('file failure reaches the caller and the following request can succeed', async () => {
   const fixture = bridge();
   const first = fixture.call({ action: 'saveBrowserDownload' });
-  fixture.reply({ error: '磁盘空间不足' });
-  await assert.rejects(first, /磁盘空间不足/);
+  fixture.reply({ error: 'Not enough disk space' });
+  await assert.rejects(first, /Not enough disk space/);
   const second = fixture.call({ action: 'clipboardSyncRead' });
   fixture.reply({ result: { text: 'next copy' } });
   assert.equal((await second).text, 'next copy');
@@ -60,6 +60,6 @@ test('ordinary native commands retain their bounded timeout', async () => {
   const timer = [...fixture.timers.values()][0];
   assert.equal(timer.delay, 240_000);
   timer.callback();
-  await assert.rejects(pending, /原生操作超时/);
+  await assert.rejects(pending, /Native operation timed out/);
   fixture.reply({ result: true });
 });

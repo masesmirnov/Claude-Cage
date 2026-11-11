@@ -167,7 +167,7 @@ internal static class ClaudeWindowRpc
             var current=element.Current;
             if(current.ProcessId!=w.Process.Id || !current.IsEnabled || current.IsOffscreen ||
                 !current.BoundingRectangle.Contains(point.X,point.Y)) continue;
-            if(selected!=null || current.Name is not ("Get started" or "开始使用" or "開始使用")) return null;
+            if(selected!=null || current.Name is not "Get started") return null;
             if(!element.TryGetCurrentPattern(InvokePattern.Pattern,out _)) return null;
             selected=element;
         }

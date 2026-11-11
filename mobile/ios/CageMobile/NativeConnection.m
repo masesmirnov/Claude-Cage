@@ -36,7 +36,7 @@ static void setError(NSError **error, NSString *text) {
         CFTypeRef found = NULL;
         OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, &found);
         if (status == errSecSuccess) { _key = (SecKeyRef)found; return self; }
-        if (status != errSecItemNotFound) { setError(error, @"无法读取设备密钥。请先解锁 iPhone。"); return nil; }
+        if (status != errSecItemNotFound) { setError(error, @"Could not read the device key. Unlock your iPhone first."); return nil; }
         CFErrorRef failure = NULL;
         NSMutableDictionary *privateAttrs = [@{(__bridge id)kSecAttrIsPermanent:@YES,
             (__bridge id)kSecAttrApplicationTag:tag} mutableCopy];
@@ -49,26 +49,26 @@ static void setError(NSError **error, NSString *text) {
                 kSecAccessControlPrivateKeyUsage, &failure);
             if (!access) {
                 if (failure) CFRelease(failure);
-                setError(error, @"无法设置设备密钥访问权限。"); return nil;
+                setError(error, @"Could not set device key access permissions."); return nil;
             }
             attrs[(__bridge id)kSecAttrTokenID] = (__bridge id)kSecAttrTokenIDSecureEnclave;
             privateAttrs[(__bridge id)kSecAttrAccessControl] = CFBridgingRelease(access);
         }
         _key = SecKeyCreateRandomKey((__bridge CFDictionaryRef)attrs, &failure);
         if (failure) CFRelease(failure);
-        if (!_key) { setError(error, @"设备安全芯片无法创建设备密钥。请使用已解锁的 iPhone。"); return nil; }
+        if (!_key) { setError(error, @"The secure chip could not create a device key. Use an unlocked iPhone."); return nil; }
     }
     return self;
 }
 - (NSData *)publicKeyDER:(NSError **)error {
     SecKeyRef publicKey = SecKeyCopyPublicKey(_key);
-    if (!publicKey) { setError(error, @"无法取得设备公钥。"); return nil; }
+    if (!publicKey) { setError(error, @"Could not get the device public key."); return nil; }
     CFErrorRef failure = NULL;
     NSData *point = CFBridgingRelease(SecKeyCopyExternalRepresentation(publicKey, &failure));
     CFRelease(publicKey);
     if (failure) CFRelease(failure);
     if (point.length != 65 || ((const uint8_t *)point.bytes)[0] != 4) {
-        setError(error, @"设备公钥格式无效。"); return nil;
+        setError(error, @"The device public key format is invalid."); return nil;
     }
     // RFC 5480 SubjectPublicKeyInfo header for an uncompressed P-256 point.
     static const uint8_t header[] = {0x30,0x59,0x30,0x13,0x06,0x07,0x2a,0x86,0x48,0xce,0x3d,0x02,0x01,
@@ -78,12 +78,12 @@ static void setError(NSError **error, NSString *text) {
     return der;
 }
 - (NSData *)signSHA256:(NSData *)digest error:(NSError **)error {
-    if (digest.length != 32) { setError(error, @"签名摘要长度无效。"); return nil; }
+    if (digest.length != 32) { setError(error, @"The signature digest length is invalid."); return nil; }
     CFErrorRef failure = NULL;
     NSData *signature = CFBridgingRelease(SecKeyCreateSignature(_key, kSecKeyAlgorithmECDSASignatureDigestX962SHA256,
         (__bridge CFDataRef)digest, &failure));
     if (failure) CFRelease(failure);
-    if (!signature) setError(error, @"设备密钥签名失败。");
+    if (!signature) setError(error, @"Device key signing failed.");
     return signature;
 }
 - (void)dealloc { if (_key) CFRelease(_key); }
@@ -98,7 +98,7 @@ static void setError(NSError **error, NSString *text) {
     NSURLComponents *url = [NSURLComponents componentsWithString:entry];
     if (failure || ![url.scheme isEqualToString:@"http"] || ![url.host isEqualToString:@"127.0.0.1"] ||
         url.port.integerValue < 1 || url.port.integerValue > 65535 || url.user || url.password || !url.URL) {
-        [client close:nil]; setError(error, @"无法打开手机工作台。"); return nil;
+        [client close:nil]; setError(error, @"Could not open the phone workbench."); return nil;
     }
     CMConnection *result = [[CMConnection alloc] init];
     result->_client = client; result->_launchURL = url.URL;
@@ -109,7 +109,7 @@ static void setError(NSError **error, NSString *text) {
     if (!device) return nil;
     NSError *failure = nil;
     NSString *result = CagemobilePair(code, relay, device, &failure);
-    if (failure || !result.length) {setError(error, @"配对未完成。请确认两端使用同一中继，再扫描新二维码。"); return nil;}
+    if (failure || !result.length) {setError(error, @"Pairing was not completed. Make sure both sides use the same relay, then scan a new QR code."); return nil;}
     return result;
 }
 + (BOOL)usesSimulatorIdentity { return simulatorIdentity; }
@@ -120,7 +120,7 @@ static void setError(NSError **error, NSString *text) {
     if (!device) return nil;
     NSError *failure = nil;
     NSString *pin = CagemobileFingerprint(device,&failure);
-    if (failure || !pin.length) { setError(error, @"无法读取设备指纹。"); return nil; }
+    if (failure || !pin.length) { setError(error, @"Could not read the device fingerprint."); return nil; }
     return pin;
 }
 + (instancetype)connectToRelay:(NSString *)relay room:(NSString *)room token:(NSString *)token
@@ -129,7 +129,7 @@ static void setError(NSError **error, NSString *text) {
     if (!device) return nil;
     NSError *failure = nil;
     CagemobileClient *client = CagemobileOpen(relay, room, token, pin, device, &failure);
-    if (!client || failure) { setError(error, @"连接未完成。请核对中继、双方指纹，并使用新邀请。"); return nil; }
+    if (!client || failure) { setError(error, @"The connection was not completed. Check the relay and both fingerprints, and use a new invitation."); return nil; }
     return [self workspaceWithClient:client assets:assets error:error];
 }
 + (instancetype)connectSavedRelay:(NSString *)relay lookup:(NSString *)lookup pin:(NSString *)pin
@@ -138,7 +138,7 @@ static void setError(NSError **error, NSString *text) {
     if (!device) return nil;
     NSError *failure = nil;
     CagemobileClient *client = CagemobileOpenSaved(relay, lookup, pin, device, &failure);
-    if (!client || failure) { setError(error, @"连接未完成。请确认电脑上的连接服务正在运行，再点重新连接。若已更换凭据，请导入新的连接文件。"); return nil; }
+    if (!client || failure) { setError(error, @"The connection was not completed. Make sure the connection service is running on the computer, then tap Reconnect. If the credentials changed, import a new connection file."); return nil; }
     struct utsname hardware;
     NSString *model = uname(&hardware) == 0 ? [NSString stringWithUTF8String:hardware.machine] : nil;
 #if TARGET_OS_SIMULATOR

@@ -8,5 +8,5 @@ import (
 )
 
 func WindowsVMAction(context.Context, string, string) error {
-	return errors.New("Windows 客机生命周期需要 Windows Hyper-V 主机")
+	return errors.New("Windows guest lifecycle needs a Windows Hyper-V host.")
 }

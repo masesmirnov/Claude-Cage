@@ -225,7 +225,7 @@ func TestMacGuestLegacyCredentialAndAccountAdoption(t *testing.T) {
 }
 
 func TestMacAccountRegistrationAndTrustedAdoption(t *testing.T) {
-	for _, name := range []string{"root", "cagesetup", "cageprovision", "Guest", "测试", "name with spaces"} {
+	for _, name := range []string{"root", "cagesetup", "cageprovision", "Guest", "ตถ", "name with spaces"} {
 		if validMacAccount(name, "fixture-password") == nil {
 			t.Fatalf("accepted unsupported username %q", name)
 		}
@@ -253,7 +253,7 @@ func TestMacAccountRegistrationAndTrustedAdoption(t *testing.T) {
 	if err = a.unlock("new-test-password"); err != nil {
 		t.Fatal(err)
 	}
-	if validMacAccount("shihao", "密码不可用于macOS") == nil {
+	if validMacAccount("shihao", "ฦวศษขสmacOS") == nil {
 		t.Fatal("accepted unenterable guest password")
 	}
 }

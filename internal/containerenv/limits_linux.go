@@ -38,7 +38,7 @@ func userSystemd(ctx context.Context) (*systemd.Conn, error) {
 func (r *Runtime) ensureResourceSlice(ctx context.Context) error {
 	connection, err := userSystemd(ctx)
 	if err != nil {
-		return fmt.Errorf("无法连接宿主用户 systemd 以设置容器资源上限: %w", err)
+		return fmt.Errorf("Could not connect to the host user systemd to set the container resource limits: %w", err)
 	}
 	defer connection.Close()
 	properties := []systemd.Property{
@@ -62,7 +62,7 @@ func (r *Runtime) ensureResourceSlice(ctx context.Context) error {
 			return err
 		}
 		if current["Description"] != "Cage container "+r.identity {
-			return errors.New("容器资源 slice 名称已被其他单元占用")
+			return errors.New("The container resource slice name is already used by another unit.")
 		}
 		if err := connection.SetUnitPropertiesContext(ctx, r.resourceSlice(), true, properties[1:]...); err != nil {
 			return err
@@ -74,7 +74,7 @@ func (r *Runtime) ensureResourceSlice(ctx context.Context) error {
 	select {
 	case state := <-result:
 		if state != "done" {
-			return fmt.Errorf("容器资源 slice 启动失败: %s", state)
+			return fmt.Errorf("The container resource slice failed to start: %s", state)
 		}
 	case <-ctx.Done():
 		return ctx.Err()
@@ -89,11 +89,11 @@ func (r *Runtime) readParentLimits(ctx context.Context, connection *systemd.Conn
 		return resourceEvidence{}, err
 	}
 	if parent["Description"] != "Cage container "+r.identity || parent["ActiveState"] != "active" {
-		return resourceEvidence{}, errors.New("容器的宿主资源边界未运行")
+		return resourceEvidence{}, errors.New("The host resource boundary of the container is not running.")
 	}
 	parentPath, ok := parent["ControlGroup"].(string)
 	if !ok || !strings.HasPrefix(parentPath, "/") || filepath.Clean(parentPath) != parentPath || filepath.Base(parentPath) != r.resourceSlice() {
-		return resourceEvidence{}, errors.New("宿主资源 cgroup 路径无效")
+		return resourceEvidence{}, errors.New("Invalid host resource cgroup path.")
 	}
 	if containerID != "" {
 		prefix := "docker-"
@@ -106,7 +106,7 @@ func (r *Runtime) readParentLimits(ctx context.Context, connection *systemd.Conn
 		}
 		path, ok := scope["ControlGroup"].(string)
 		if !ok || !strings.HasPrefix(path, parentPath+"/") || scope["ActiveState"] != "active" {
-			return resourceEvidence{}, errors.New("实际容器未处于 Cage 的宿主资源边界内")
+			return resourceEvidence{}, errors.New("The actual container is not inside the Cage host resource boundary.")
 		}
 	}
 	root := filepath.Join("/sys/fs/cgroup", parentPath)

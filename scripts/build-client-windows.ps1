@@ -66,14 +66,14 @@ try {
     }
     Copy-Item -LiteralPath 'LICENSE' -Destination (Join-Path $app 'LICENSE.txt')
     [IO.File]::WriteAllText((Join-Path $app 'README.txt'), @'
-Cage 轻量远程客户端（未签名开发构建）
+Cage lightweight remote client (unsigned development build)
 
-运行 Cage.exe。需要 Windows 10/11 x64 与 Microsoft Edge WebView2 Runtime。
-.NET 运行时已随应用提供。没有 WebView2 时，可使用 -IncludeWebViewRuntime 构建包含已校验安装程序的包；构建不会安装该程序。
-本机只提供窗口、SSH 连接、输入和文件传递；项目、浏览器、终端与网络在云端 Cage 运行。
-默认连接配置目录为用户目录下的 .claude-cage/client；显式 CLAUDE_CAGE_CONFIG 配置保持有效。
-此目录为独立构建产物，不会安装、替换完整 Cage 或自动下载完整 Cage 更新。
-本构建未签名或发布。Windows 原生运行验收范围以项目测试报告为准。
+Run Cage.exe. Requires Windows 10/11 x64 and the Microsoft Edge WebView2 Runtime.
+The .NET runtime ships with the app. Without WebView2, build with -IncludeWebViewRuntime to get a package that includes the verified installer; the build does not install it.
+This computer provides only the window, the SSH connection, input, and file transfer; projects, the browser, terminals, and networking run in the cloud Cage.
+The default connection config directory is .claude-cage/client under your user directory; an explicit CLAUDE_CAGE_CONFIG setting still applies.
+This directory is a standalone build output. It does not install or replace the full Cage, or download full Cage updates automatically.
+This build is not signed or released. The scope of Windows native run acceptance follows the project test report.
 '@)
     if ($IsWindows) {
         Invoke-BuildTool (Join-Path $resources 'cage.exe') @('verify-web-assets')

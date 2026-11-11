@@ -57,7 +57,7 @@ internal static class WindowsFileDialogProbe
             ProgressPath=output+".progress.jsonl";
             Progress("start",detail:new {pid=Environment.ProcessId,session=Process.GetCurrentProcess().SessionId});
             var files=Path.Combine(Path.GetDirectoryName(output)!,"input-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(files);
-            File.WriteAllText(Path.Combine(files,"one 中文.txt"),"own dialog fixture");
+            File.WriteAllText(Path.Combine(files,"one Привет.txt"),"own dialog fixture");
             File.WriteAllText(Path.Combine(files,"two.txt"),"own second fixture");
             var results=new List<object>();Exception? failure=null;
             Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);

@@ -10,8 +10,8 @@ func TestWindowsGuestPathsMatchVMSharePaths(t *testing.T) {
 	previous := paths.Windows
 	paths.Windows = func() bool { return true }
 	t.Cleanup(func() { paths.Windows = previous })
-	for _, path := range []string{`C:\Users\甲 用户\project`, "C:/Users/甲 用户/project"} {
-		if got := guestPath(path); got != "/c/Users/甲 用户/project" {
+	for _, path := range []string{"C:\\Users\\ก ขฃ\\project", "C:/Users/ก ขฃ/project"} {
+		if got := guestPath(path); got != "/c/Users/ก ขฃ/project" {
 			t.Fatalf("guestPath(%q) = %q", path, got)
 		}
 	}
@@ -25,7 +25,7 @@ func TestBoundaryProbeUsesGuestFilePaths(t *testing.T) {
 		windows                                  bool
 		private, shared, wantPrivate, wantShared string
 	}{
-		{"Windows backslashes and another drive", true, `C:\Users\甲 用户\Cage\private-probe`, `D:\项目 工作区\shared-probe`, "/c/Users/甲 用户/Cage/private-probe", "/d/项目 工作区/shared-probe"},
+		{"Windows backslashes and another drive", true, "C:\\Users\\ก ขฃ\\Cage\\private-probe", "D:\\คฅ अआइ\\shared-probe", "/c/Users/ก ขฃ/Cage/private-probe", "/d/คฅ अआइ/shared-probe"},
 		{"Windows forward slashes", true, "C:/Users/user/Cage/private-probe", "C:/Users/user/work/shared-probe", "/c/Users/user/Cage/private-probe", "/c/Users/user/work/shared-probe"},
 		{"POSIX", false, "/Users/user/Cage/private-probe", "/Users/user/work/shared-probe", "/Users/user/Cage/private-probe", "/Users/user/work/shared-probe"},
 	} {

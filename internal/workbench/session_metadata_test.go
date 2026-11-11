@@ -24,7 +24,7 @@ func TestSessionArchiveContentionInBrowser(t *testing.T) {
 	}
 	s, id, project := metadataFixture(t)
 	record, _ := s.mobileCLI.record(s.profile, id)
-	record.Title = "软件宣传视频制作"
+	record.Title = "Software promo video production"
 	if err := writePrivate(mobileRecordPath(s.profile, id), record); err != nil {
 		t.Fatal(err)
 	}
@@ -170,7 +170,7 @@ func metadataFixture(t *testing.T) (*Server, string, string) {
 func TestSessionMetadataBidirectionalAndDurable(t *testing.T) {
 	s, id, project := metadataFixture(t)
 	path := "/api/mobile/cli/sessions/" + id
-	if w := request(s, "POST", path+"/metadata", s.origin, `{"title":"手机命名","pinned":true}`, true); w.Code != 200 {
+	if w := request(s, "POST", path+"/metadata", s.origin, `{"title":"Phone name","pinned":true}`, true); w.Code != 200 {
 		t.Fatalf("mobile metadata: %d %s", w.Code, w.Body.String())
 	}
 	w := request(s, "GET", "/api/terminals", "", "", true)
@@ -178,24 +178,24 @@ func TestSessionMetadataBidirectionalAndDurable(t *testing.T) {
 	if err := json.Unmarshal(w.Body.Bytes(), &terminals); err != nil {
 		t.Fatal(err)
 	}
-	if len(terminals) != 1 || terminals[0]["title"] != "手机命名" || terminals[0]["pinned"] != true {
+	if len(terminals) != 1 || terminals[0]["title"] != "Phone name" || terminals[0]["pinned"] != true {
 		t.Fatalf("desktop did not reflect mobile: %s", w.Body.String())
 	}
-	if w := request(s, "POST", "/api/terminals/fixture-terminal/metadata", s.origin, `{"title":"电脑命名","pinned":false}`, true); w.Code != 200 {
+	if w := request(s, "POST", "/api/terminals/fixture-terminal/metadata", s.origin, `{"title":"Desktop name","pinned":false}`, true); w.Code != 200 {
 		t.Fatal(w.Code, w.Body.String())
 	}
 	// Guest discovery may replace the CLI-generated title; the user's name must survive.
 	record, _ := s.mobileCLI.record(s.profile, id)
-	record.Title = "CLI 自动摘要"
+	record.Title = "CLI auto summary"
 	if err := writePrivate(mobileRecordPath(s.profile, id), record); err != nil {
 		t.Fatal(err)
 	}
 	s.mobileCLI = mobileCLIStore{}
 	summaries, err := s.mobileCLI.summaries(s.profile, map[string]bool{project: true}, false)
-	if err != nil || len(summaries) != 1 || summaries[0].Title != "电脑命名" || summaries[0].Pinned {
+	if err != nil || len(summaries) != 1 || summaries[0].Title != "Desktop name" || summaries[0].Pinned {
 		t.Fatalf("mobile metadata after restart: %#v %v", summaries, err)
 	}
-	for _, body := range []string{`{"title":" "}`, `{"title":"` + strings.Repeat("名", 101) + `"}`, `{}`} {
+	for _, body := range []string{`{"title":" "}`, `{"title":"` + strings.Repeat("ผ", 101) + `"}`, `{}`} {
 		if w := request(s, "POST", path+"/metadata", s.origin, body, true); w.Code == 200 {
 			t.Fatal("invalid metadata accepted", body)
 		}

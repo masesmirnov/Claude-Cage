@@ -50,10 +50,10 @@ func (m *Manager) Connect(hostID string, secrets ConnectSecrets) (ConnectionStat
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.closed {
-		return ConnectionState{}, failure("manager_closed", "远程连接服务已关闭")
+		return ConnectionState{}, failure("manager_closed", "The remote connection service is closed.")
 	}
 	if m.state.State == "connecting" || m.state.State == "connected" {
-		return cloneState(m.state), failure("connection_active", "请先断开当前连接，再连接其他主机")
+		return cloneState(m.state), failure("connection_active", "Disconnect the current connection before connecting to another host.")
 	}
 	if m.cancel != nil {
 		m.cancel()
@@ -61,7 +61,7 @@ func (m *Manager) Connect(hostID string, secrets ConnectSecrets) (ConnectionStat
 	ctx, cancel := context.WithCancel(context.Background())
 	m.cancel = cancel
 	id := newID()
-	m.state = ConnectionState{State: "connecting", ConnectionID: id, HostID: p.ID, Phase: "ssh_connect", Message: "正在连接远程主机"}
+	m.state = ConnectionState{State: "connecting", ConnectionID: id, HostID: p.ID, Phase: "ssh_connect", Message: "Connecting to the remote host"}
 	private := ConnectSecrets{Deploy: secrets.Deploy, Passphrase: append([]byte(nil), secrets.Passphrase...)}
 	m.workers.Add(1)
 	go func() {
@@ -90,7 +90,7 @@ func (m *Manager) run(ctx context.Context, p HostProfile, id string, secrets Con
 	}
 	if err != nil {
 		m.state.State = "failed"
-		m.state.Message = "远程连接未完成"
+		m.state.Message = "The remote connection was not completed"
 		m.state.ErrorCode = "connection_failed"
 		var structured *Error
 		if errors.As(err, &structured) {
@@ -108,7 +108,7 @@ func (m *Manager) run(ctx context.Context, p HostProfile, id string, secrets Con
 	session.Ref = ConnectionRef{ID: id, HostID: p.ID, InstanceID: session.Manifest.InstanceID}
 	m.session = session
 	manifest := session.Manifest
-	m.state = ConnectionState{State: "connected", ConnectionID: id, HostID: p.ID, InstanceID: manifest.InstanceID, Message: "已连接", Manifest: &manifest}
+	m.state = ConnectionState{State: "connected", ConnectionID: id, HostID: p.ID, InstanceID: manifest.InstanceID, Message: "Connected", Manifest: &manifest}
 	m.mu.Unlock()
 	<-session.Context.Done()
 	m.mu.Lock()
@@ -117,7 +117,7 @@ func (m *Manager) run(ctx context.Context, p HostProfile, id string, secrets Con
 		m.session = nil
 		m.state.State = "failed"
 		m.state.ErrorCode = "connection_lost"
-		m.state.Message = "远程连接已中断，请重新连接并核对云端任务"
+		m.state.Message = "The remote connection was interrupted. Reconnect and check the cloud tasks."
 	}
 }
 
@@ -127,7 +127,7 @@ func (m *Manager) Acquire(connectionID string) (*Session, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if connectionID == "" || m.state.State != "connected" || m.state.ConnectionID != connectionID || m.session == nil || m.session.Context.Err() != nil {
-		return nil, failure("connection_changed", "连接已断开或切换，请重新连接后重试")
+		return nil, failure("connection_changed", "The connection was disconnected or switched. Reconnect and try again.")
 	}
 	return m.session, nil
 }
@@ -140,7 +140,7 @@ func (m *Manager) Disconnect(connectionID string) error {
 	}
 	if connectionID == "" || m.state.ConnectionID != connectionID {
 		m.mu.Unlock()
-		return failure("connection_changed", "连接已切换，未断开其他连接")
+		return failure("connection_changed", "The connection was switched. Other connections were not disconnected.")
 	}
 	cancel, session := m.cancel, m.session
 	m.cancel = nil

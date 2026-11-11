@@ -22,7 +22,7 @@ func WriteLinuxTemplate(state string, plan Plan) error {
 		return err
 	}
 	if !IsLinux(plan.Host.System) || plan.Path == "" || plan.Digest == "" {
-		return errors.New("Linux 系统材料尚未准备好")
+		return errors.New("The Linux system files are not ready yet.")
 	}
 	data, err := linuxTemplateData(plan)
 	if err != nil {
@@ -35,7 +35,7 @@ func WriteLinuxTemplate(state string, plan Plan) error {
 	path := filepath.Join(dir, "host-system.yaml")
 	if current, err := os.ReadFile(path); err == nil {
 		if string(current) != string(data) {
-			return errors.New("Linux 安装已绑定另一份系统材料")
+			return errors.New("The Linux installation is bound to a different set of system files.")
 		}
 		return Save(dir, plan)
 	} else if !errors.Is(err, os.ErrNotExist) {
@@ -69,7 +69,7 @@ func ClearLinuxTemplate(state string, plan Plan) error {
 	}
 	expected, err := linuxTemplateData(plan)
 	if err != nil || string(expected) != string(data) {
-		return errors.New("本机系统模板归属已变化")
+		return errors.New("The ownership of the local system template has changed.")
 	}
 	if err := os.Remove(path); err != nil {
 		return err
@@ -85,7 +85,7 @@ func LinuxTemplate(state string) (string, error) {
 	info, err := os.Lstat(path)
 	if errors.Is(err, os.ErrNotExist) {
 		if _, recordErr := os.Lstat(filepath.Join(state, "guest-media", sourceRecord)); !errors.Is(recordErr, os.ErrNotExist) {
-			return "", errors.New("所选 Linux 系统的安装模板缺失，请恢复原环境资料；不会改用其他系统")
+			return "", errors.New("The installation template for the selected Linux system is missing. Restore the original environment data; no other system will be used.")
 		}
 		return "template:debian-13", nil
 	}
@@ -93,16 +93,16 @@ func LinuxTemplate(state string) (string, error) {
 		return "", err
 	}
 	if !info.Mode().IsRegular() || info.Size() > 32<<10 {
-		return "", errors.New("本机系统安装模板无效")
+		return "", errors.New("Invalid local system installation template.")
 	}
 	plan, err := Load(filepath.Join(state, "guest-media"))
 	if err != nil || !IsLinux(plan.Host.System) {
-		return "", errors.New("所选 Linux 系统来源记录无效，请恢复原环境资料")
+		return "", errors.New("The source record of the selected Linux system is invalid. Restore the original environment data.")
 	}
 	expected, err := linuxTemplateData(plan)
 	data, readErr := os.ReadFile(path)
 	if err != nil || readErr != nil || string(data) != string(expected) {
-		return "", errors.New("所选 Linux 系统的模板与来源不一致，请核对原环境资料")
+		return "", errors.New("The template of the selected Linux system does not match its source. Check the original environment data.")
 	}
 	return path, nil
 }

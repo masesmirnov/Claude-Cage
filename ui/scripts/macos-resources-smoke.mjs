@@ -19,7 +19,7 @@ const fixture = await createWorkbench({ beforeNavigate: async (page, state) => {
   await page.route("**/api/environment/resources", route => {
     if (route.request().method() === "POST") {
       const body = route.request().postDataJSON(); requests.push(body);
-      if (failSave) return route.fulfill({ status: 400, contentType: "text/plain; charset=utf-8", body: "资源配置保存失败，请检查磁盘权限。" });
+      if (failSave) return route.fulfill({ status: 400, contentType: "text/plain; charset=utf-8", body: "Saving the resource settings failed. Check the disk permissions." });
       if (body.allocation) Object.assign(resource, body.allocation, { restart_required: true });
       return route.fulfill({ json: { ok: true } });
     }
@@ -30,42 +30,42 @@ const fixture = await createWorkbench({ beforeNavigate: async (page, state) => {
 } });
 const { page, browser, errors } = fixture;
 try {
-  await page.getByRole("button", { name: "设置", exact: true }).click();
-  await page.getByRole("navigation", { name: "设置分组" }).getByRole("button", { name: "环境与恢复", exact: true }).click();
-  const panel = page.getByRole("region", { name: "计算资源", exact: true });
-  await panel.getByText(/macOS 客机使用固定的启动内存容量/).waitFor();
-  const cpu = panel.locator(".setting-summary-row").filter({ hasText: "CPU 使用率" }).locator("strong");
-  assert.equal(await cpu.innerText(), "等待采样");
-  assert.equal(await panel.getByLabel("内存上限（GiB）", { exact: true }).getAttribute("min"), "4");
-  assert.equal(await panel.getByLabel("CPU 逻辑核心数", { exact: true }).getAttribute("min"), "2");
-  await panel.getByText(/当前最低值沿用已有启动配置/).waitFor();
-  await panel.getByLabel("内存上限（GiB）", { exact: true }).fill("3");
-  await panel.getByRole("button", { name: "保存资源配置", exact: true }).click();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByRole("navigation", { name: "Settings groups" }).getByRole("button", { name: "Environment and recovery", exact: true }).click();
+  const panel = page.getByRole("region", { name: "Compute resources", exact: true });
+  await panel.getByText(/The macOS guest uses a fixed startup memory size/).waitFor();
+  const cpu = panel.locator(".setting-summary-row").filter({ hasText: "CPU usage" }).locator("strong");
+  assert.equal(await cpu.innerText(), "Waiting for a sample");
+  assert.equal(await panel.getByLabel("Memory limit (GiB)", { exact: true }).getAttribute("min"), "4");
+  assert.equal(await panel.getByLabel("Number of CPU logical cores", { exact: true }).getAttribute("min"), "2");
+  await panel.getByText(/The current minimum carries over from the existing startup configuration/).waitFor();
+  await panel.getByLabel("Memory limit (GiB)", { exact: true }).fill("3");
+  await panel.getByRole("button", { name: "Save resource settings", exact: true }).click();
   assert.equal(requests.length, 0);
-  await panel.getByLabel("内存上限（GiB）", { exact: true }).fill("6");
-  await panel.getByLabel("CPU 逻辑核心数", { exact: true }).fill("3");
-  await panel.getByRole("button", { name: "保存资源配置", exact: true }).click();
-  await panel.getByText("已保存，重启环境后生效。", { exact: true }).waitFor();
+  await panel.getByLabel("Memory limit (GiB)", { exact: true }).fill("6");
+  await panel.getByLabel("Number of CPU logical cores", { exact: true }).fill("3");
+  await panel.getByRole("button", { name: "Save resource settings", exact: true }).click();
+  await panel.getByText("Saved; it takes effect after the environment restarts.", { exact: true }).waitFor();
   assert.deepEqual(requests[0].allocation, { automatic: false, memory_gib: 6, cpus: 3 });
   failSave = true;
-  await panel.getByLabel("内存上限（GiB）", { exact: true }).fill("8");
-  await panel.getByRole("button", { name: "保存资源配置", exact: true }).click();
-  const error = panel.getByRole("alert").filter({ hasText: "资源配置保存失败" });
+  await panel.getByLabel("Memory limit (GiB)", { exact: true }).fill("8");
+  await panel.getByRole("button", { name: "Save resource settings", exact: true }).click();
+  const error = panel.getByRole("alert").filter({ hasText: "Saving the resource settings failed" });
   await error.waitFor();
   const before = reads;
   resource.observation.cpu_percent = 50;
-  await cpu.getByText("50% / 2 个核心", { exact: true }).waitFor({ timeout: 6000 });
+  await cpu.getByText("50% / 2 cores", { exact: true }).waitFor({ timeout: 6000 });
   assert.ok(reads > before);
   assert.ok(await error.isVisible());
   failSave = false;
-  await panel.getByRole("button", { name: "重启并应用已保存配置", exact: true }).click();
-  await page.getByRole("dialog", { name: "重启并应用已保存的资源配置？", exact: true }).getByRole("button", { name: "重启并应用", exact: true }).click();
+  await panel.getByRole("button", { name: "Restart and apply the saved settings", exact: true }).click();
+  await page.getByRole("dialog", { name: "Restart and apply the saved resource settings?", exact: true }).getByRole("button", { name: "Restart and apply", exact: true }).click();
   await error.waitFor({ state: "hidden" });
   assert.deepEqual(requests.at(-1), {});
-  await panel.getByRole("heading", { name: "计算资源", exact: true }).scrollIntoViewIfNeeded();
+  await panel.getByRole("heading", { name: "Compute resources", exact: true }).scrollIntoViewIfNeeded();
   await page.screenshot({ path: join(output, "macos-resources.png"), animations: "disabled" });
-  await panel.getByText("资源统计说明", { exact: true }).click();
-  await panel.getByText(/内存估算使用客机物理容量/).scrollIntoViewIfNeeded();
+  await panel.getByText("About the resource statistics", { exact: true }).click();
+  await panel.getByText(/The memory estimate is the guest's physical size/).scrollIntoViewIfNeeded();
   await page.screenshot({ path: join(output, "macos-resource-observation.png"), animations: "disabled" });
   assert.deepEqual(errors, []);
   const result = { passed: true, browser: browser.browserType().name(), requests, reads,

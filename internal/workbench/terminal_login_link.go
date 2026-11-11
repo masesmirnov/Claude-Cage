@@ -33,7 +33,7 @@ func (s *Server) terminalLoginLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !claudeAuthorizationURL(input.URL) {
-		http.Error(w, "请选择 Claude 官方授权链接", 400)
+		http.Error(w, "Select the official Claude authorization link.", 400)
 		return
 	}
 	terminal := s.terminals.get(r.PathValue("id"))
@@ -44,14 +44,14 @@ func (s *Server) terminalLoginLink(w http.ResponseWriter, r *http.Request) {
 	terminal.loginLinkMu.Lock()
 	defer terminal.loginLinkMu.Unlock()
 	if !terminal.ownsConversation() {
-		http.Error(w, "登录终端已关闭，请重新发起登录", 409)
+		http.Error(w, "The sign-in terminal was closed. Start the sign-in again.", 409)
 		return
 	}
 	s.mu.Lock()
 	ready, token := s.ready, s.credentials.Token
 	s.mu.Unlock()
 	if !ready {
-		http.Error(w, "请先启动工作环境", 409)
+		http.Error(w, "Start the work environment first.", 409)
 		return
 	}
 
@@ -86,7 +86,7 @@ func (s *Server) terminalLoginLink(w http.ResponseWriter, r *http.Request) {
 		ID string `json:"id"`
 	}
 	if err != nil || json.Unmarshal(data, &tab) != nil || tab.ID == "" {
-		http.Error(w, "Cage 浏览器未能打开授权页，请检查浏览器连接并重试", 502)
+		http.Error(w, "The Cage browser could not open the authorization page. Check the browser connection and try again.", 502)
 		return
 	}
 	w.Header().Set("Cache-Control", "no-store")

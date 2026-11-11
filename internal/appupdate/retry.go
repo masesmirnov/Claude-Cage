@@ -10,7 +10,7 @@ import (
 
 type retryError struct{ at time.Time }
 
-func (e *retryError) Error() string      { return "更新源请求受限，请稍后重试" }
+func (e *retryError) Error() string      { return "The update source is rate limited. Try again later." }
 func (e *retryError) RetryAt() time.Time { return e.at }
 
 func (s *State) fail(err error) {
@@ -25,7 +25,7 @@ func updateSourceError(resp *http.Response, now time.Time) error {
 	after := strings.TrimSpace(resp.Header.Get("Retry-After"))
 	exhausted := strings.TrimSpace(resp.Header.Get("X-RateLimit-Remaining")) == "0"
 	if resp.StatusCode == http.StatusForbidden && after == "" && !exhausted {
-		return errors.New("更新源拒绝访问（HTTP 403），请检查所选代理或稍后重试")
+		return errors.New("The update source denied access (HTTP 403). Check the selected proxy or try again later.")
 	}
 	var at time.Time
 	if seconds, err := strconv.ParseInt(after, 10, 64); err == nil && seconds >= 0 && seconds <= int64((1<<63-1)/time.Second) {

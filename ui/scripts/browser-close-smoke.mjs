@@ -9,9 +9,9 @@ await mkdir(output, { recursive: true });
 const { browser, page, state, errors } = await createWorkbench();
 page.setDefaultTimeout(10000);
 const checks = [];
-const close = page.getByRole('button', { name: '关闭浏览器', exact: true });
-const open = page.getByRole('button', { name: '打开浏览器', exact: true });
-const home = page.getByRole('heading', { name: 'Cage 环境已就绪', exact: true });
+const close = page.getByRole('button', { name: 'Close browser', exact: true });
+const open = page.getByRole('button', { name: 'Open browser', exact: true });
+const home = page.getByRole('heading', { name: 'The Cage environment is ready', exact: true });
 const shot = name => page.screenshot({ path: fileURLToPath(new URL(name + '.png', output)) });
 try {
   await page.addInitScript(() => {
@@ -25,13 +25,13 @@ try {
   } }));
   state.status.ready = state.status.vm_running = true;
   state.tabs = [
-    { id: 'page-one', title: '网页一', kind: 'web', url: 'https://example.test/one' },
-    { id: 'page-two', title: '网页二', kind: 'web', url: 'https://example.test/two' },
+    { id: 'page-one', title: 'Page one', kind: 'web', url: 'https://example.test/one' },
+    { id: 'page-two', title: 'Page two', kind: 'web', url: 'https://example.test/two' },
   ];
   state.active = 'page-one';
   state.terminals = [
-    { id: 'terminal-one', title: '工作终端一', workspace: state.settings.workspace },
-    { id: 'terminal-two', title: '工作终端二', workspace: state.settings.workspace },
+    { id: 'terminal-one', title: 'Work terminal one', workspace: state.settings.workspace },
+    { id: 'terminal-two', title: 'Work terminal two', workspace: state.settings.workspace },
   ];
   await page.reload();
   await home.waitFor();
@@ -44,7 +44,7 @@ try {
   const address = await page.locator('.navigation-row').boundingBox();
   const x = await close.boundingBox();
   assert.ok(x.y < address.y && x.x > address.x + address.width * 0.85, 'X sits at the top right');
-  await page.getByRole('button', { name: '搜索标签页', exact: true }).click();
+  await page.getByRole('button', { name: 'Search tabs', exact: true }).click();
   const withList = await close.boundingBox();
   assert.ok(withList.y < (await page.locator('.navigation-row').boundingBox()).y, 'X stays in top row while tab search is expanded');
   await shot('horizontal-close');
@@ -57,17 +57,17 @@ try {
   assert.equal(await page.locator('.browser-lane').count(), 0);
   checks.push('top-right X works by keyboard and with tab search expanded; returns to home; tabs retained; late focus does not reopen browser');
 
-  await page.getByRole('tab', { name: '工作终端一', exact: true }).click();
+  await page.getByRole('tab', { name: 'Work terminal one', exact: true }).click();
   await page.locator('.terminal-lane:not([hidden])').waitFor();
   await open.click();
-  await page.getByRole('tab', { name: '网页二', exact: true }).click();
+  await page.getByRole('tab', { name: 'Page two', exact: true }).click();
   await close.click();
   await page.locator('.terminal-lane:not([hidden])').waitFor();
-  assert.equal(await page.getByRole('tab', { name: '工作终端一', exact: true }).getAttribute('aria-selected'), 'true');
+  assert.equal(await page.getByRole('tab', { name: 'Work terminal one', exact: true }).getAttribute('aria-selected'), 'true');
   await open.click();
-  assert.equal(await page.getByRole('tab', { name: '网页二', exact: true }).getAttribute('aria-selected'), 'true');
+  assert.equal(await page.getByRole('tab', { name: 'Page two', exact: true }).getAttribute('aria-selected'), 'true');
   await page.waitForFunction(() => document.querySelector('.browser-tabs [role="tab"]')?.getBoundingClientRect().width >= 100);
-  const source = await page.getByRole('tab', { name: '网页一', exact: true }).boundingBox();
+  const source = await page.getByRole('tab', { name: 'Page one', exact: true }).boundingBox();
   const body = await page.locator('.browser-lane .pane-body').boundingBox();
   await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2);
   await page.mouse.down();
@@ -100,14 +100,14 @@ try {
   checks.push('returns to Claude Desktop after opening existing tabs or asynchronously creating a new page; pending creation preserves the previous view');
 
   await open.click();
-  await page.getByRole('button', { name: '浏览器菜单', exact: true }).click();
-  await page.getByRole('menuitem', { name: '设置', exact: true }).click();
-  const settings = page.getByRole('region', { name: '浏览器设置', exact: true });
-  await settings.getByRole('navigation', { name: '浏览器设置分类' }).getByRole('button', { name: '外观', exact: true }).click();
-  await chooseInline(page.getByRole('combobox', { name: '标签栏布局' }), 'vertical');
-  await page.getByRole('button', { name: '关闭 设置', exact: true }).click();
+  await page.getByRole('button', { name: 'Browser menu', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Settings', exact: true }).click();
+  const settings = page.getByRole('region', { name: 'Browser settings', exact: true });
+  await settings.getByRole('navigation', { name: 'Browser settings categories' }).getByRole('button', { name: 'Appearance', exact: true }).click();
+  await chooseInline(page.getByRole('combobox', { name: 'Tab bar layout' }), 'vertical');
+  await page.getByRole('button', { name: 'Close Settings', exact: true }).click();
   await page.setViewportSize({ width: 820, height: 558 });
-  await page.getByRole('complementary', { name: '竖排标签栏' }).waitFor();
+  await page.getByRole('complementary', { name: 'Vertical tab bar' }).waitFor();
   await close.waitFor();
   const navigation = await page.locator('.navigation-row').boundingBox();
   const verticalX = await close.boundingBox();
@@ -118,25 +118,25 @@ try {
   checks.push('vertical tabs show X at the right of the address row at 820×558; settings do not replace the return destination');
 
   // If the previous terminal ends while browsing, return to home safely.
-  await page.getByRole('tab', { name: '工作终端二', exact: true }).click();
+  await page.getByRole('tab', { name: 'Work terminal two', exact: true }).click();
   await open.click();
   state.terminals = state.terminals.filter(tab => tab.id !== 'terminal-two');
   await page.waitForResponse(response => response.url().endsWith('/api/terminals') && response.request().method() === 'GET');
-  await page.getByRole('tab', { name: '工作终端二', exact: true }).waitFor({ state: 'hidden' });
+  await page.getByRole('tab', { name: 'Work terminal two', exact: true }).waitFor({ state: 'hidden' });
   await close.click();
   await home.waitFor();
   assert.equal(state.requests.some(request => request.path === '/stop' || (request.path === '/browser/close' && request.body.id !== 'browser-settings')), false);
   checks.push('ended return terminal falls back to home; closing browser never stops environment or closes individual tabs');
 
   const singlePage = async () => {
-    state.tabs = [{ id: 'last-page', title: '最后一页', kind: 'web', url: 'https://example.test/last' }];
+    state.tabs = [{ id: 'last-page', title: 'Last page', kind: 'web', url: 'https://example.test/last' }];
     state.active = 'last-page';
     await send();
     await open.click();
-    await page.getByRole('tab', { name: '最后一页', exact: true }).waitFor();
+    await page.getByRole('tab', { name: 'Last page', exact: true }).waitFor();
   };
   await singlePage();
-  await page.getByRole('button', { name: '关闭 最后一页', exact: true }).click();
+  await page.getByRole('button', { name: 'Close Last page', exact: true }).click();
   await home.waitFor();
   assert.equal(state.tabs.length, 0);
   assert.equal(await close.count(), 0);
@@ -148,11 +148,11 @@ try {
   checks.push('closing the last tab exits to home without a replacement; empty events stay closed; reopening creates one page');
   await close.click();
 
-  await page.getByRole('tab', { name: '工作终端一', exact: true }).click();
+  await page.getByRole('tab', { name: 'Work terminal one', exact: true }).click();
   await singlePage();
   await page.keyboard.press('Meta+w');
   await page.locator('.terminal-lane:not([hidden])').waitFor();
-  assert.equal(await page.getByRole('tab', { name: '工作终端一', exact: true }).getAttribute('aria-selected'), 'true');
+  assert.equal(await page.getByRole('tab', { name: 'Work terminal one', exact: true }).getAttribute('aria-selected'), 'true');
   assert.equal(state.tabs.length, 0);
   await send();
   await page.getByRole('button', { name: 'Claude Desktop', exact: true }).click();
@@ -166,7 +166,7 @@ try {
     await pendingClose;
     await route.fulfill({ json: { ok: true } });
   });
-  await page.getByRole('button', { name: '关闭 最后一页', exact: true }).click();
+  await page.getByRole('button', { name: 'Close Last page', exact: true }).click();
   await desktop.waitFor();
   const closeResponse = page.waitForResponse('**/api/browser/close');
   releaseClose();
@@ -176,9 +176,9 @@ try {
   checks.push('last-tab keyboard close restores the terminal; a destruction event before the close response restores Claude Desktop');
 
   await singlePage();
-  await page.route('**/api/browser/close', route => route.fulfill({ status: 400, body: '标签尚未关闭，请重试' }));
-  await page.getByRole('button', { name: '关闭 最后一页', exact: true }).click();
-  await page.getByText('标签尚未关闭，请重试', { exact: true }).waitFor();
+  await page.route('**/api/browser/close', route => route.fulfill({ status: 400, body: 'The tab has not closed. Try again.' }));
+  await page.getByRole('button', { name: 'Close Last page', exact: true }).click();
+  await page.getByText('The tab has not closed. Try again.', { exact: true }).waitFor();
   assert.equal(await close.count(), 1, 'failed close preserves the browser');
   await page.unroute('**/api/browser/close');
   state.tabs = []; state.active = '';
@@ -196,10 +196,10 @@ try {
 
   await singlePage();
   await close.click();
-  await page.getByRole('tab', { name: '工作终端一', exact: true }).click();
+  await page.getByRole('tab', { name: 'Work terminal one', exact: true }).click();
   state.tabs = []; state.active = '';
   await send();
-  assert.equal(await page.getByRole('tab', { name: '工作终端一', exact: true }).getAttribute('aria-selected'), 'true');
+  assert.equal(await page.getByRole('tab', { name: 'Work terminal one', exact: true }).getAttribute('aria-selected'), 'true');
   assert.equal(await close.count(), 0);
   checks.push('background last-tab destruction preserves the currently selected terminal');
   assert.deepEqual(errors, []);

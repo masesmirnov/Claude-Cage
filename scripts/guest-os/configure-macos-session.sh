@@ -19,7 +19,7 @@ IFS= read -r password
 printf '%s\n' "$password" | dscl /Local/Default -authonly "$user" >/dev/null
 # FileVault prevents system automatic login; retain its protection and report it.
 if fdesetup status | grep -q 'FileVault is On'; then
-    echo 'FileVault 已启用，请使用客机密码登录。' >&2
+    echo 'FileVault is on. Sign in with the guest password.' >&2
     exit 1
 fi
 existing=$(defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser 2>/dev/null || true)
@@ -74,4 +74,4 @@ sudo -Hu "$user" /bin/bash -ec '
 # Cage owns guest lifetime; the hidden desktop should not sleep while the
 # workbench is running. These settings affect only this virtual Mac.
 pmset -a sleep 0 displaysleep 0
-echo '客机自动登录与首次设置已准备。'
+echo 'Guest auto-login and first-run setup are ready.'

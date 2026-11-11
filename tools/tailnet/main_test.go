@@ -342,7 +342,7 @@ func TestInteractiveAuthorizationFlow(t *testing.T) {
 		t.Fatal(err)
 	}
 	value, err = n.run(ctx, request{Action: "status"})
-	if err != nil || value.Backend != "Running" || !strings.Contains(strings.Join(value.Health, "\n"), "SSH 自动配置未完成") {
+	if err != nil || value.Backend != "Running" || !strings.Contains(strings.Join(value.Health, "\n"), "SSH auto-configuration was not completed") {
 		t.Fatalf("SSH configuration failure hid network status: %+v %v", value, err)
 	}
 }

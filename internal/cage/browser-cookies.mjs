@@ -8,16 +8,16 @@ const forHost = (cookie, hostname) => cookie.domain.startsWith(".")
   : hostname === cookie.domain;
 
 export async function browserCookies(cdp, session, tab, input) {
-  if (!tab || tab.login) throw new Error("当前标签不可管理 Cookie");
-  if (input.url !== undefined && input.url !== tab.url) throw new Error("网页已切换，请重新打开 Cookie 管理");
+  if (!tab || tab.login) throw new Error("Cookies cannot be managed for the current tab.");
+  if (input.url !== undefined && input.url !== tab.url) throw new Error("The page has changed. Reopen cookie management.");
   const { mode = "list", scope = "site", query = "", page = 0 } = input;
   if (!["list", "details", "delete", "clear"].includes(mode) || !["site", "all"].includes(scope) ||
       typeof query !== "string" || query.length > 200 || !Number.isInteger(page) || page < 0)
-    throw new Error("Cookie 操作无效");
+    throw new Error("Invalid cookie operation.");
   let hostname = "";
   if (scope === "site") {
     const url = new URL(tab.url);
-    if (!["http:", "https:"].includes(url.protocol)) throw new Error("当前页面没有网站 Cookie，请选择所有网站");
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error("The current page has no site cookies. Choose all sites.");
     hostname = url.hostname;
   }
   const context = tab.browserContextId ? { browserContextId: tab.browserContextId } : {};
@@ -28,7 +28,7 @@ export async function browserCookies(cdp, session, tab, input) {
   let cookies = await read();
   const remove = async cookie => {
     // Opaque partition keys cannot be addressed exactly by Network.deleteCookies.
-    if (cookie.partitionKeyOpaque) throw new Error("此 Cookie 的分区不可单独定位，请使用清空所有网站 Cookie");
+    if (cookie.partitionKeyOpaque) throw new Error("The partition of this cookie cannot be targeted on its own. Use clear all site cookies.");
     await cdp("Network.deleteCookies", {
       name: cookie.name, domain: cookie.domain, path: cookie.path,
       ...(cookie.partitionKey ? { partitionKey: cookie.partitionKey } : {}),
@@ -36,14 +36,14 @@ export async function browserCookies(cdp, session, tab, input) {
   };
   if (mode === "delete" || mode === "details") {
     const cookie = cookies.find(cookie => key(cookie) === input.cookieKey);
-    if (!cookie) throw new Error("Cookie 已变化，请刷新列表");
+    if (!cookie) throw new Error("The cookie has changed. Refresh the list.");
     if (mode === "details") return { value: cookie.value };
     await remove(cookie);
     cookies = await read();
   } else if (mode === "clear") {
     if (scope === "all") await cdp("Storage.clearCookies", context);
     else {
-      if (cookies.some(cookie => cookie.partitionKeyOpaque)) throw new Error("此网站含不可单独定位的分区 Cookie，请使用清空所有网站 Cookie");
+      if (cookies.some(cookie => cookie.partitionKeyOpaque)) throw new Error("This site has partitioned cookies that cannot be targeted on their own. Use clear all site cookies.");
       for (const cookie of cookies) await remove(cookie);
     }
     cookies = await read();

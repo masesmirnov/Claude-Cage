@@ -29,7 +29,7 @@ func TestWindowsGuestTerminalRPC(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer p.Close()
-	expected := []byte("中文🙂\x03")
+	expected := []byte("ฐฑ🙂\x03")
 	if _, err = p.Write(expected); err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +117,7 @@ func TestWindowsGuestTerminalLargePasteThroughWorkbench(t *testing.T) {
 			t.Fatalf("terminal changed input bytes: received=%d expected=%d", len(actual), len(expected))
 		}
 	}
-	for _, payload := range []string{"small", strings.Repeat("x", 64<<10), strings.Repeat("x", (64<<10)+1), strings.Repeat("中文🙂\n", 20000), strings.Repeat("x", (1<<20)-64)} {
+	for _, payload := range []string{"small", strings.Repeat("x", 64<<10), strings.Repeat("x", (64<<10)+1), strings.Repeat("ฐฑ🙂\n", 20000), strings.Repeat("x", (1<<20)-64)} {
 		if err := ws.WriteJSON(map[string]string{"type": "input", "data": payload}); err != nil {
 			t.Fatal(err)
 		}

@@ -58,23 +58,23 @@ func (s *Server) proxyStatus(w http.ResponseWriter, r *http.Request) {
 	_, appliedErr := managedproxy.Applied(s.profile, cfg.ProxyURL, cfg.ProxyRevision)
 	active := appliedErr == nil
 	running := managedproxy.Running(ctx, s.profile, p)
-	state, label := "unconfigured", "尚未配置"
+	state, label := "unconfigured", "Not configured"
 	_, selected := p.Find(p.Selected)
 	if selected {
-		state, label = "unapplied", "尚未应用"
+		state, label = "unapplied", "Not applied"
 	}
 	if active {
-		state, label = "stopped", "代理已停止"
+		state, label = "stopped", "Proxy stopped"
 		if running {
-			state, label = "prepared", "待启动环境"
+			state, label = "prepared", "Waiting to start environment"
 			if s.vmRunning() {
-				state, label = "paused", "外网未放行"
+				state, label = "paused", "Internet access not allowed"
 				if client, e := s.gateClient(); e == nil {
 					if gate, e := client.Status(ctx); e == nil {
 						if gate.Mode == cage.GateChecking {
-							state, label = "checking", "正在检查"
+							state, label = "checking", "Checking"
 						} else if gate.Mode == cage.GateOpen && gate.Report != nil && gate.Report.Authorizes(gate.RunID, cfg.Fingerprint(), time.Now()) == nil && time.Now().Before(gate.Until) {
-							state, label = "ready", "已联网"
+							state, label = "ready", "Online"
 						}
 					}
 				}
@@ -96,7 +96,7 @@ func (s *Server) proxyStatus(w http.ResponseWriter, r *http.Request) {
 	if routeErr != nil && selected {
 		routeError = routeErr.Error()
 	}
-	jsonReply(w, map[string]any{"route": route, "route_error": routeError, "sources": sources, "selected": p.Selected, "port": p.Port, "running": running, "active": active, "state": state, "state_label": label, "network_open": state == "ready", "core_available": coreErr == nil, "version": version.Version, "revision": p.Revision, "bootstrap_dns": strings.Join(managedproxy.BootstrapDNSURLs(), "、"), "udp_blocked": true, "ipv6_blocked": true})
+	jsonReply(w, map[string]any{"route": route, "route_error": routeError, "sources": sources, "selected": p.Selected, "port": p.Port, "running": running, "active": active, "state": state, "state_label": label, "network_open": state == "ready", "core_available": coreErr == nil, "version": version.Version, "revision": p.Revision, "bootstrap_dns": strings.Join(managedproxy.BootstrapDNSURLs(), ", "), "udp_blocked": true, "ipv6_blocked": true})
 }
 func (s *Server) proxyMutation(w http.ResponseWriter, r *http.Request) {
 	var input proxyInput
@@ -131,7 +131,7 @@ func (s *Server) subscriptionClient(host bool) (*http.Client, error) {
 	}
 	return &http.Client{Transport: &http.Transport{Proxy: nil, DialContext: e.DialContext}, Timeout: 30 * time.Second, CheckRedirect: func(r *http.Request, via []*http.Request) error {
 		if len(via) >= 3 || r.URL.Scheme != "https" || r.URL.User != nil {
-			return errors.New("订阅重定向被拒绝")
+			return errors.New("The subscription redirect was rejected.")
 		}
 		return nil
 	}}, nil
@@ -147,7 +147,7 @@ func (s *Server) changeProxy(action string, in proxyInput, resumeVersion *uint64
 	}
 	ctx := s.operationContext()
 	if action == "stop" {
-		if err = s.closeProxyGate("内置代理已停止，外网保持关闭"); err != nil {
+		if err = s.closeProxyGate("The built-in proxy stopped. Internet access stays off"); err != nil {
 			return err
 		}
 		return managedproxy.Stop(s.profile)
@@ -155,7 +155,7 @@ func (s *Server) changeProxy(action string, in proxyInput, resumeVersion *uint64
 	if action == "select" || action == "restart" || action == "route" {
 		if action == "route" {
 			if len(in.NodeIDs) == 0 {
-				return errors.New("请至少选择一个最终出口")
+				return errors.New("Select at least one final exit.")
 			}
 			p.Chain = append([]string(nil), in.NodeIDs...)
 			p.Selected = p.Chain[len(p.Chain)-1]
@@ -165,7 +165,7 @@ func (s *Server) changeProxy(action string, in proxyInput, resumeVersion *uint64
 		}
 		if action == "select" {
 			if _, ok := p.Find(in.NodeID); !ok {
-				return errors.New("所选节点已不存在，请刷新列表")
+				return errors.New("The selected node no longer exists. Refresh the list.")
 			}
 			p.Selected = in.NodeID
 			if len(p.Chain) > 0 {
@@ -174,7 +174,7 @@ func (s *Server) changeProxy(action string, in proxyInput, resumeVersion *uint64
 		}
 		if in.Port != 0 {
 			if in.Port < 1024 || in.Port > 65535 {
-				return errors.New("代理端口应为 1024–65535")
+				return errors.New("The proxy port must be 1024-65535.")
 			}
 			p.Port = in.Port
 		}
@@ -189,13 +189,13 @@ func (s *Server) changeProxy(action string, in proxyInput, resumeVersion *uint64
 	}
 	if action == "delete" {
 		if index < 0 {
-			return errors.New("订阅来源不存在")
+			return errors.New("The subscription source does not exist.")
 		}
 		if len(p.Chain) > 1 {
 			for _, id := range p.Chain {
 				for _, n := range p.Sources[index].Nodes {
 					if n.ID == id {
-						return errors.New("该来源包含当前代理链中的节点，请先选择并应用其他来源的节点")
+						return errors.New("This source contains nodes in the current proxy chain. Select and apply nodes from another source first.")
 					}
 				}
 			}
@@ -207,17 +207,17 @@ func (s *Server) changeProxy(action string, in proxyInput, resumeVersion *uint64
 		}
 	} else if action == "edit" {
 		if index < 0 {
-			return errors.New("订阅来源不存在")
+			return errors.New("The subscription source does not exist.")
 		}
 		if strings.TrimSpace(in.Name) == "" || len(in.Name) > 100 || in.Interval < 0 || in.Interval > 168 {
-			return errors.New("名称或更新间隔无效")
+			return errors.New("The name or update interval is invalid.")
 		}
 		p.Sources[index].Name = strings.TrimSpace(in.Name)
 		p.Sources[index].Interval = in.Interval
 		if in.URL != "" {
 			u, e := url.Parse(in.URL)
 			if e != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.Fragment != "" {
-				return errors.New("订阅需要完整的 HTTPS 网址")
+				return errors.New("A subscription needs a full HTTPS URL.")
 			}
 			p.Sources[index].URL = in.URL
 		}
@@ -227,7 +227,7 @@ func (s *Server) changeProxy(action string, in proxyInput, resumeVersion *uint64
 		usage := ""
 		if action == "refresh" {
 			if index < 0 || p.Sources[index].URL == "" {
-				return errors.New("该来源没有订阅链接")
+				return errors.New("This source has no subscription link.")
 			}
 			src := p.Sources[index]
 			in.Name, in.URL, in.Interval = src.Name, src.URL, src.Interval
@@ -236,7 +236,7 @@ func (s *Server) changeProxy(action string, in proxyInput, resumeVersion *uint64
 			in.ID = ""
 		}
 		if in.URL != "" {
-			s.setMessage("正在下载节点订阅…")
+			s.setMessage("Downloading the node subscription…")
 			client, e := s.subscriptionClient(in.HostDownload)
 			if e != nil {
 				s.proxySourceFailure(in.ID, e)
@@ -274,7 +274,7 @@ func (s *Server) changeProxy(action string, in proxyInput, resumeVersion *uint64
 	}
 	if cfg.ProxyRevision != "" && cfg.ProxyURL == p.Endpoint() {
 		if p.Selected == "" {
-			if err = s.closeProxyGate("当前节点已被移除，请选择新节点"); err != nil {
+			if err = s.closeProxyGate("The current node was removed. Select a new node"); err != nil {
 				return err
 			}
 			if err = managedproxy.Stop(s.profile); err != nil {
@@ -323,14 +323,14 @@ func (s *Server) applyProxy(p managedproxy.Store, old cage.Config, resumeVersion
 	if err != nil {
 		return err
 	}
-	s.setMessage("正在验证节点配置…")
+	s.setMessage("Verifying the node configuration…")
 	if err := validateProxyCore(ctx, s.profile, p); err != nil {
 		return err
 	}
 	// Changing the endpoint requires an environment restart; node-only switches
 	// keep its SSH sessions and VM alive and revoke the gate synchronously.
 	restartVM := s.vmRunning() && old.ProxyURL != p.Endpoint()
-	if err := s.closeProxyGate("代理节点切换中，旧连接及检测授权已关闭"); err != nil {
+	if err := s.closeProxyGate("Switching proxy nodes. The old connection and check authorization were closed"); err != nil {
 		return err
 	}
 	if restartVM {
@@ -338,7 +338,7 @@ func (s *Server) applyProxy(p managedproxy.Store, old cage.Config, resumeVersion
 			return err
 		}
 	}
-	s.setMessage("正在应用内置代理节点…")
+	s.setMessage("Applying the built-in proxy node…")
 	if err := managedproxy.Stop(s.profile); err != nil {
 		return err
 	}
@@ -390,13 +390,13 @@ func (s *Server) applyProxy(p managedproxy.Store, old cage.Config, resumeVersion
 		if paused {
 			return nil
 		}
-		s.setMessage("节点已应用，正在重新检查环境出口…")
+		s.setMessage("Node applied. Rechecking the environment exit…")
 		return s.runSafetyCheck()
 	}
 	if restartVM {
 		return s.startEnvironment(false)
 	}
-	s.setMessage("节点已应用；启动 Cage 环境后完成联网检查")
+	s.setMessage("Node applied. Start the Cage environment to finish the network check")
 	return nil
 }
 
@@ -411,7 +411,7 @@ func (s *Server) proxyDelay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if _, ok := p.Find(in.NodeID); !ok {
-		requestError(w, errors.New("节点不存在"))
+		requestError(w, errors.New("The node does not exist."))
 		return
 	}
 	var v struct {
@@ -419,7 +419,7 @@ func (s *Server) proxyDelay(w http.ResponseWriter, r *http.Request) {
 	}
 	err = managedproxy.API(r.Context(), s.profile, "GET", "/proxies/"+url.PathEscape(in.NodeID)+"/delay?timeout=5000&url="+url.QueryEscape("https://www.gstatic.com/generate_204"), nil, &v)
 	if err != nil {
-		requestError(w, errors.New("节点未载入核心或测速失败；请先应用节点以载入当前列表"))
+		requestError(w, errors.New("The node has not loaded into the core or the speed test failed. Apply the node first to load the current list."))
 		return
 	}
 	jsonReply(w, v)
@@ -465,11 +465,11 @@ func (s *Server) proxyLogs(w http.ResponseWriter, r *http.Request) {
 	}
 	// Whitelisted lifecycle messages avoid publishing upstream raw log lines,
 	// which can contain subscription secrets, credentials and host paths.
-	lines := []string{"客机公网 UDP、IPv6、ICMP：阻断", "业务 DNS：经选定节点转发", "代理基础设施 DNS：" + strings.Join(managedproxy.BootstrapDNSURLs(), "、") + "（主机网络，并行查询）"}
+	lines := []string{"Guest public UDP, IPv6, ICMP: blocked", "Business DNS: forwarded through the selected node", "Proxy infrastructure DNS: " + strings.Join(managedproxy.BootstrapDNSURLs(), ", ") + " (host network, queried in parallel)"}
 	if managedproxy.Running(r.Context(), s.profile, p) {
-		lines = append(lines, "内置核心运行中；已读回当前节点选择")
+		lines = append(lines, "Built-in core is running; the current node selection was read back")
 	} else {
-		lines = append(lines, "内置核心未就绪；不会直连回退")
+		lines = append(lines, "Built-in core is not ready; there is no direct fallback")
 	}
 	for _, src := range p.Sources {
 		lines = append(lines, src.Updated.Format("2006-01-02 15:04")+" · "+src.Name+" · "+src.Error)
@@ -507,7 +507,7 @@ func (s *Server) checkProxyHealth() {
 		return
 	}
 	if err != nil {
-		_ = s.closeProxyGate("代理配置无法读取，外网保持关闭")
+		_ = s.closeProxyGate("The proxy configuration could not be read. Internet access stays off")
 		return
 	}
 	p, err := managedproxy.Load(s.profile)
@@ -516,8 +516,8 @@ func (s *Server) checkProxyHealth() {
 	if err == nil && cfg.RequireManagedProxy(s.profile) == nil && managedproxy.Running(ctx, s.profile, p) {
 		return
 	}
-	_ = s.closeProxyGate("内置代理已中断或节点状态变化，请重试应用节点")
+	_ = s.closeProxyGate("The built-in proxy was interrupted or the node state changed. Apply the node again")
 	s.mu.Lock()
-	s.safety.monitorError = "内置代理未就绪；外网保持关闭"
+	s.safety.monitorError = "The built-in proxy is not ready. Internet access stays off"
 	s.mu.Unlock()
 }

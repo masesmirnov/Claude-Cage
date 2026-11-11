@@ -64,29 +64,29 @@ func windowsWorkbenchRoute(path string) bool {
 }
 
 var (
-	errWindowsAgentPending  = errors.New("Windows 客机已启动，正在等待图形用户代理连接")
-	errWindowsLoginRequired = errors.New("请在虚拟 Windows 的登录界面解锁已绑定的客机账户，再返回 Cage")
+	errWindowsAgentPending  = errors.New("The Windows guest has started. Waiting for the graphical user agent to connect.")
+	errWindowsLoginRequired = errors.New("Unlock the bound guest account on the virtual Windows sign-in screen, then return to Cage.")
 )
 
 func (s *Server) windowsStatus(ctx context.Context) (windowsGuestState, error) {
 	if runtime.GOOS != "windows" {
-		return windowsGuestState{}, errors.New("Windows 客机需要 Windows Hyper-V 主机")
+		return windowsGuestState{}, errors.New("The Windows guest requires a Windows Hyper-V host.")
 	}
 	binding := s.windowsGuest
 	report, err := guestos.InspectHyperV(ctx, binding.VMID)
 	state := windowsGuestState{Running: err == nil && report.VM != nil && report.VM.State == "Running"}
 	if err != nil || report.Lookup != "found" || report.VM == nil {
-		return state, errors.New("无法核验已绑定的 Windows 客机")
+		return state, errors.New("The bound Windows guest could not be verified.")
 	}
 	vm := report.VM
 	if vm.Generation != 2 || !vm.SecureBoot || vm.SecureBootTemplate != "MicrosoftWindows" || !vm.VirtualTPM {
-		return state, errors.New("Windows 客机安全启动与虚拟 TPM 尚未就绪")
+		return state, errors.New("Secure boot and the virtual TPM of the Windows guest are not ready yet.")
 	}
 	if vm.NetworkAdapterCount != 0 {
-		return state, errors.New("Windows 客机受控网络出口尚未就绪，请使用已隔离的离线客机")
+		return state, errors.New("The controlled network exit of the Windows guest is not ready yet. Use an isolated offline guest.")
 	}
 	if !state.Running {
-		return state, errors.New("Windows 客机尚未启动")
+		return state, errors.New("The Windows guest has not started.")
 	}
 	cmd, err := guestos.WindowsRelayCommand(ctx, s.profile, "status")
 	if err != nil {
@@ -101,11 +101,11 @@ func (s *Server) windowsStatus(ctx context.Context) (windowsGuestState, error) {
 	running := state.Running
 	decoder := json.NewDecoder(&output)
 	if decoder.Decode(&state) != nil || decoder.Decode(new(any)) != io.EOF {
-		return windowsGuestState{Running: running}, errors.New("Windows 客机状态响应无效")
+		return windowsGuestState{Running: running}, errors.New("The Windows guest state response is invalid.")
 	}
 	state.Running = running
 	if state.Version != 1 || state.OS != "windows" || state.VMID != binding.VMID.String() || state.SID != binding.GUIUserSID || state.Session == "" || len(state.Session) > 256 {
-		return state, errors.New("Windows 客机或图形用户身份不匹配")
+		return state, errors.New("The Windows guest or graphical user identity does not match.")
 	}
 	state.ComponentsChecked = time.Now()
 	if !state.Available {
@@ -121,7 +121,7 @@ type boundedWindowsStatusWriter struct {
 
 func (w *boundedWindowsStatusWriter) Write(data []byte) (int, error) {
 	if len(data) > w.remaining {
-		return 0, errors.New("Windows 客机状态超过限制")
+		return 0, errors.New("The Windows guest state exceeds the limit.")
 	}
 	w.remaining -= len(data)
 	return w.buffer.Write(data)
@@ -202,7 +202,7 @@ func waitWindowsBoot(ctx context.Context, interval time.Duration, attach func(co
 		case <-ctx.Done():
 			timer.Stop()
 			if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-				return errors.New("Windows 客机尚未连接。请确认已在虚拟 Windows 中登录绑定的账户，随后在 Cage 点击恢复连接")
+				return errors.New("The Windows guest is not connected yet. Make sure you signed in to the bound account in the virtual Windows, then click Reconnect in Cage.")
 			}
 			return ctx.Err()
 		case <-timer.C:
@@ -246,7 +246,7 @@ func (s *Server) startWindowsGuest() error {
 	if err := guestos.WindowsVMAction(ctx, s.profile, "start"); err != nil {
 		return err
 	}
-	s.setMessage("正在等待 Windows 客机启动并连接账户…")
+	s.setMessage("Waiting for the Windows guest to start and connect the account…")
 	bootCtx, finishBoot := context.WithTimeout(ctx, 90*time.Second)
 	err = waitWindowsBoot(bootCtx, 2*time.Second, s.attachWindowsGuestContext)
 	finishBoot()
@@ -365,5 +365,5 @@ func (s *Server) windowsCapabilitiesLocked() map[string]any {
 	return map[string]any{"registered": registered, "installed": installed, "available": available, "components": components, "unavailable": unsupported, "network": networkMode, "browser_running": s.ready && s.windowsState.Available && fresh && s.windowsState.Browser.Ready}
 }
 func (s *Server) windowsUnavailable(w http.ResponseWriter) {
-	http.Error(w, "Windows 客机尚未接通此功能", http.StatusNotImplemented)
+	http.Error(w, "This feature is not connected to the Windows guest yet.", http.StatusNotImplemented)
 }

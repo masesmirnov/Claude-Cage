@@ -94,7 +94,7 @@ export async function serveMacOSBrowser({ directory, dispatch, close, disconnect
           void (async () => {
             let result;
             try { result = await pending; }
-            catch (error) { result = { error: error.safe ? error.message : "客机浏览器操作失败", code: error.safe ? error.code : "browser_operation_failed" }; }
+            catch (error) { result = { error: error.safe ? error.message : "Guest browser operation failed", code: error.safe ? error.code : "browser_operation_failed" }; }
             if (socket.destroyed) return;
             const data = JSON.stringify({ ...result, service: { version: 1, persistent: true } }) + "\n";
             if (Buffer.byteLength(data) > 30 << 20) throw new Error("Browser service response is too large");

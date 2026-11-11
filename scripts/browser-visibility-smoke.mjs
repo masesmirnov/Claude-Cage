@@ -10,7 +10,7 @@ let legacy, listener, accepted;
 try {
   const original = (await api("/tabs")).active;
   await waitFor(() => evaluate(original, "document.readyState === 'complete'"), "initial page");
-  await evaluate(original, "document.querySelector('input').value='未保存输入🙂';window.framesSeen=0;window.heartbeats=0;requestAnimationFrame(function tick(){framesSeen++;requestAnimationFrame(tick)});setInterval(()=>heartbeats++,200)");
+  await evaluate(original, "document.querySelector('input').value='Несохраненный ввод🙂';window.framesSeen=0;window.heartbeats=0;requestAnimationFrame(function tick(){framesSeen++;requestAnimationFrame(tick)});setInterval(()=>heartbeats++,200)");
   await api("/visibility", { visible: false });
   await waitFor(() => evaluate(original, "document.hidden"), "background visibility");
   const frames = await evaluate(original, "framesSeen");
@@ -23,7 +23,7 @@ try {
   for (let cycle = 0; cycle < 12; cycle++) {
     await api("/visibility", { visible: true });
     await waitFor(() => evaluate(original, "!document.hidden"), "restore viewing");
-    assert.equal(await evaluate(original, "document.querySelector('input').value"), "未保存输入🙂");
+    assert.equal(await evaluate(original, "document.querySelector('input').value"), "Несохраненный ввод🙂");
     assert.equal((await cdp(original, "Browser.getWindowForTarget", { targetId: original })).bounds.windowState, "fullscreen");
     await api("/visibility", { visible: false });
     await waitFor(() => evaluate(original, "document.hidden"), "hide viewing");

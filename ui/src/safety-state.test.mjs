@@ -10,13 +10,13 @@ import {
 
 test("check failures and incomplete evidence link to the checklist without tagging unrelated errors", () => {
   for (const message of [
-    "关键检查尚未通过，外网保持关闭",
-    "关键检测证据不完整，外网保持关闭",
-    "Cage 外网未放行，请在工作台完成关键检查",
-    "代理节点尚未应用或配置不一致，请重新应用节点；外网保持关闭",
-    "浏览器配置检查未通过：语言不一致",
+    "Critical checks have not passed. Internet access stays off.",
+    "Critical check evidence is incomplete. Internet access stays off.",
+    "Cage internet access is not allowed. Complete the critical checks in the workbench.",
+    "The proxy node has not been applied or its configuration is inconsistent. Apply the node again; internet access stays off.",
+    "The browser configuration check did not pass: language mismatch",
   ]) assert.equal(isSafetyCheckMessage(message), true, message);
-  for (const message of [undefined, "", "关键检查已通过", "关键检查进行中", "项目文件夹连接失败", "Git 设置已写入，但检查尚未通过。", "资源限制未通过核验"])
+  for (const message of [undefined, "", "Critical checks passed", "Critical checks in progress", "Failed to connect the project folder", "The Git setting was written, but the check has not passed yet.", "Resource limit verification failed"])
     assert.equal(isSafetyCheckMessage(message), false, message);
 });
 

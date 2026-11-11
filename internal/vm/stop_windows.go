@@ -19,7 +19,7 @@ func stopInstance(ctx context.Context, inst *limatype.Instance) error {
 		return err
 	}
 	if !requested {
-		return fmt.Errorf("Cage 环境的停止通知不可用；保留环境，请查看 hostagent 日志")
+		return fmt.Errorf("The stop notification of the Cage environment is unavailable. The environment was kept; check the hostagent log.")
 	}
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Minute+10*time.Second)
 	defer cancel()
@@ -28,7 +28,7 @@ func stopInstance(ctx context.Context, inst *limatype.Instance) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("等待 Cage 环境保存并停止超时: %w", ctx.Err())
+			return fmt.Errorf("Timed out waiting for the Cage environment to save and stop: %w", ctx.Err())
 		case <-ticker.C:
 			current, err := store.Inspect(ctx, inst.Name)
 			if err != nil {

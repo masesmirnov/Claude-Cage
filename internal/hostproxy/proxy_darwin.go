@@ -109,7 +109,7 @@ func systemProxy(req *http.Request) (*url.URL, error) {
 		return nil, err
 	}
 	if result.failed != 0 {
-		return nil, errors.New("无法解析主机系统代理或 PAC，请检查 Clash 等代理软件后重试；未切换直连")
+		return nil, errors.New("Could not resolve the host system proxy or PAC. Check proxy software such as Clash and try again; no direct connection was used.")
 	}
 	if result.url == nil {
 		return nil, nil

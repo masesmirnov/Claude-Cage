@@ -25,7 +25,7 @@ func hostUploadFixture(t *testing.T, paths []string) []selectedHostFile {
 }
 
 func TestHostFileUploadPreservesBinaryNamesAndEmptyFiles(t *testing.T) {
-	name := "参考视频 #+%.mp4"
+	name := "ยรฝพ #+%.mp4"
 	data := []byte{0, 255, 10, 13, 128, 0}
 	first, second := filepath.Join(t.TempDir(), name), filepath.Join(t.TempDir(), name)
 	if err := os.WriteFile(first, data, 0600); err != nil {

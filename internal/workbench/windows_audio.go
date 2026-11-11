@@ -18,7 +18,7 @@ func (s *Server) windowsAudioStatus(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	cmd, err := guestos.WindowsRelayCommand(ctx, s.profile, "audio")
 	if err != nil {
-		http.Error(w, "Windows 客机声音组件尚未连接", 502)
+		http.Error(w, "The Windows guest audio component is not connected yet.", 502)
 		return
 	}
 	cmd.Stdin = strings.NewReader("{\"action\":\"status\"}\n")
@@ -27,7 +27,7 @@ func (s *Server) windowsAudioStatus(w http.ResponseWriter, r *http.Request) {
 	cmd.Stdout = &boundedWindowsStatusWriter{buffer: &data, remaining: 4096}
 	var status map[string]any
 	if cmd.Run() != nil || json.Unmarshal(data.Bytes(), &status) != nil || status["supported"] != true {
-		http.Error(w, "Windows 客机声音组件尚未就绪", 502)
+		http.Error(w, "The Windows guest audio component is not ready yet.", 502)
 		return
 	}
 	jsonReply(w, status)
@@ -36,19 +36,19 @@ func (s *Server) windowsAudioStatus(w http.ResponseWriter, r *http.Request) {
 func (s *Server) windowsAudioCapture(w http.ResponseWriter, r *http.Request, ctx context.Context, cancel context.CancelFunc) {
 	cmd, err := guestos.WindowsRelayCommand(ctx, s.profile, "audio")
 	if err != nil {
-		http.Error(w, "Windows 客机声音组件尚未连接", 502)
+		http.Error(w, "The Windows guest audio component is not connected yet.", 502)
 		return
 	}
 	cmd.Stdin = strings.NewReader("{\"action\":\"capture\"}\n")
 	cmd.Stderr = io.Discard
 	pipe, err := cmd.StdoutPipe()
 	if err != nil {
-		http.Error(w, "声音连接未能建立", 502)
+		http.Error(w, "The audio connection could not be established.", 502)
 		return
 	}
 	if err = cmd.Start(); err != nil {
 		pipe.Close()
-		http.Error(w, "声音连接未能建立", 502)
+		http.Error(w, "The audio connection could not be established.", 502)
 		return
 	}
 	defer func() { cancel(); pipe.Close(); _ = cmd.Wait() }()
@@ -58,7 +58,7 @@ func (s *Server) windowsAudioCapture(w http.ResponseWriter, r *http.Request, ctx
 	err = readAudioReady(reader)
 	stopped := cancelWindowsAdmissionDeadline(deadline, deadlineDone)
 	if err != nil || !stopped {
-		http.Error(w, "Windows 声音输出未能启动，请确认客机已解锁并有可用的声音输出", 502)
+		http.Error(w, "Windows audio output could not start. Make sure the guest is unlocked and has an available audio output.", 502)
 		return
 	}
 	s.streamAudio(w, r.WithContext(ctx), bufferedAudio{Reader: reader, Closer: pipe})

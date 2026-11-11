@@ -29,7 +29,7 @@ func (surface phoneSurface) label() string {
 	if surface == phoneDesktop {
 		return "Claude Desktop"
 	}
-	return "远程浏览器"
+	return "Remote browser"
 }
 
 type phoneSurfaceState struct {
@@ -263,12 +263,12 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 	allowed := p.pairedRequestLocked(r)
 	p.mu.Unlock()
 	if !allowed {
-		http.Error(w, "请通过电脑 Cage 的二维码或配对码连接这台主机，再打开"+surface.label()+"。", 403)
+		http.Error(w, "Connect to this host with the QR code or pairing code in Cage on your computer, then open "+surface.label()+".", 403)
 		return
 	}
 	epoch, _ := r.Context().Value(mobileEpochKey{}).(context.Context)
 	if epoch == nil || epoch.Err() != nil {
-		http.Error(w, "请先解锁 Cage", 423)
+		http.Error(w, "Unlock Cage first.", 423)
 		return
 	}
 	op := r.URL.Path[strings.LastIndexByte(r.URL.Path, '/')+1:]
@@ -278,13 +278,13 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 	}
 	if input.After != "" || input.Profile != "" || (op != "open" && input.ID != "") ||
 		(input.ReturnFrame && (surface != phoneBrowser || op != "action")) {
-		http.Error(w, "图形会话请求无效", 400)
+		http.Error(w, "The graphics session request is invalid.", 400)
 		return
 	}
 	if r.URL.RawQuery != "" {
 		after, ok := mobilelink.FrameAfter(r.URL.RawQuery)
 		if !ok || surface != phoneBrowser || op != "frame" {
-			http.Error(w, "画面请求无效", 400)
+			http.Error(w, "The display request is invalid.", 400)
 			return
 		}
 		input.After = after
@@ -293,11 +293,11 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 		input.ID = r.PathValue("id")
 	}
 	if !mobileID(input.ID) {
-		http.Error(w, "手机会话编号无效", 400)
+		http.Error(w, "The phone session ID is invalid.", 400)
 		return
 	}
 	if !input.valid(surface, op) {
-		http.Error(w, "操作参数或画面尺寸无效", 400)
+		http.Error(w, "The operation parameters or display size are invalid.", 400)
 		return
 	}
 	defaultHome := op == "open" && surface == phoneBrowser && input.URL == ""
@@ -314,7 +314,7 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 	state.op.Lock()
 	defer state.op.Unlock()
 	if r.Context().Err() != nil || room.Err() != nil || epoch.Err() != nil {
-		http.Error(w, surface.label()+"授权已结束", 403)
+		http.Error(w, surface.label()+" authorization has ended.", 403)
 		return
 	}
 	b := state.session
@@ -323,7 +323,7 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 		b = nil
 	}
 	if op != "open" && (b == nil || b.id != input.ID) {
-		http.Error(w, surface.label()+"会话已结束，请重新打开", 410)
+		http.Error(w, surface.label()+" session has ended. Open it again.", 410)
 		return
 	}
 	if op == "close" {
@@ -333,7 +333,7 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 	}
 	if !s.phoneSurfaceNetwork(r.Context()) {
 		s.retirePhoneSurface(surface, b)
-		http.Error(w, "请在电脑启动 Cage，并确保网络检查已放行。", 409)
+		http.Error(w, "Start Cage on your computer and make sure the network check has allowed internet access.", 409)
 		return
 	}
 	if op == "open" && b != nil {
@@ -363,7 +363,7 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 			release, err := s.acquireDesktopView()
 			if err != nil {
 				s.retirePhoneSurface(surface, b)
-				http.Error(w, "无法恢复 Claude Desktop 画面，请重新打开", http.StatusBadGateway)
+				http.Error(w, "The Claude Desktop display could not be restored. Open it again.", http.StatusBadGateway)
 				return
 			}
 			b.releaseDisplay = release
@@ -377,21 +377,21 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 		job := s.jobs.snapshot()
 		if b.startJob != "" && job.ID == b.startJob && !job.Running && job.Error != "" {
 			s.retirePhoneSurface(surface, b)
-			http.Error(w, "电脑上的 Claude Desktop 未能启动，请在电脑上查看操作详情", 502)
+			http.Error(w, "Claude Desktop on your computer could not start. Check the operation details on your computer.", 502)
 			return
 		}
 		if b.startJob != "" && job.ID == b.startJob && job.Running && time.Now().Before(b.readyUntil) {
-			http.Error(w, "正在打开电脑上的 Claude Desktop", http.StatusTooEarly)
+			http.Error(w, "Opening Claude Desktop on your computer.", http.StatusTooEarly)
 			return
 		}
 		_, status, err := s.phoneSurfaceGuest(ctx, surface, b.token, "open", b.openInput)
 		if err != nil || status != 200 {
 			if err == nil && desktopPreparing(status) && time.Now().Before(b.readyUntil) {
-				http.Error(w, "正在打开 Claude Desktop", http.StatusTooEarly)
+				http.Error(w, "Opening Claude Desktop.", http.StatusTooEarly)
 				return
 			}
 			s.retirePhoneSurface(surface, b)
-			http.Error(w, "无法连接电脑上的 Claude Desktop，请重新打开", 502)
+			http.Error(w, "Could not connect to Claude Desktop on your computer. Open it again.", 502)
 			return
 		}
 		b.startJob, b.openInput = "", phoneSurfaceInput{}
@@ -406,7 +406,7 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 	}
 	if b.ctx.Err() != nil || epoch.Err() != nil || room.Err() != nil {
 		s.retirePhoneSurface(surface, b)
-		http.Error(w, surface.label()+"授权已结束", 410)
+		http.Error(w, surface.label()+" authorization has ended.", 410)
 		return
 	}
 	if r.Context().Err() != nil {
@@ -437,13 +437,13 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 			return
 		}
 		if op == "frame" {
-			http.Error(w, "正在等待 Claude Desktop 窗口", http.StatusTooEarly)
+			http.Error(w, "Waiting for the Claude Desktop window.", http.StatusTooEarly)
 			return
 		}
 	}
 	if (op == "frame" || input.ReturnFrame) && status == 200 && !s.phoneSurfaceNetwork(ctx) {
 		s.retirePhoneSurface(surface, b)
-		http.Error(w, "电脑上的 Cage 网络检查已暂停", 409)
+		http.Error(w, "The Cage network check on your computer is paused.", 409)
 		return
 	}
 	if err != nil || status != 200 {
@@ -451,12 +451,12 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 			s.retirePhoneSurface(surface, b)
 		}
 		if surface == phoneBrowser && status == http.StatusTooEarly {
-			http.Error(w, "正在启动客机浏览器", status)
+			http.Error(w, "Starting the guest browser.", status)
 			return
 		}
 		if surface == phoneBrowser && (op == "open" || op == "frame") && status == http.StatusServiceUnavailable {
 			s.retirePhoneSurface(surface, b)
-			http.Error(w, "客机浏览器暂时无法启动，请稍后重新打开；若仍失败，请在电脑 Cage 中检查并更新客机组件。", status)
+			http.Error(w, "The guest browser cannot start right now. Open it again later. If it still fails, check and update the guest components in Cage on your computer.", status)
 			return
 		}
 		switch status {
@@ -465,53 +465,53 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 			needsUpdate := s.guestUpdateRequired
 			s.mu.Unlock()
 			if op == "open" && needsUpdate {
-				http.Error(w, "请在电脑上更新 Cage 环境后再打开"+surface.label(), 409)
+				http.Error(w, surface.label()+" needs a newer Cage environment. Update it on your computer, then open it again.", 409)
 			} else {
-				http.Error(w, surface.label()+"操作无效，请检查输入后再试", 400)
+				http.Error(w, surface.label()+" operation is invalid. Check the input and try again.", 400)
 			}
 		case 409:
 			if surface == phoneDesktop && op == "frame" {
-				http.Error(w, "正在等待 Claude Desktop 窗口", http.StatusTooEarly)
+				http.Error(w, "Waiting for the Claude Desktop window.", http.StatusTooEarly)
 				return
 			}
-			http.Error(w, "画面或焦点已变化，请查看最新画面后再操作", 409)
+			http.Error(w, "The display or focus has changed. Check the latest display before continuing.", 409)
 		case 410:
 			var native windowsWindowFailure
 			if surface == phoneDesktop && errors.As(err, &native) && native.code == "requires_gui_login" {
-				http.Error(w, "请在电脑的 Cage 中解锁已绑定的 Windows 客机账户，再从手机重新打开 Claude Desktop。", 410)
+				http.Error(w, "Unlock the bound Windows guest account in Cage on your computer, then reopen Claude Desktop from your phone.", 410)
 			} else {
-				http.Error(w, surface.label()+"会话已结束，请重新打开", 410)
+				http.Error(w, surface.label()+" session has ended. Open it again.", 410)
 			}
 		case 404:
-			http.Error(w, "当前客机未提供"+surface.label()+"，请在电脑上更新环境", 409)
+			http.Error(w, "The current guest does not provide "+surface.label()+". Update the environment on your computer.", 409)
 		case 403:
 			if surface == phoneDesktop && s.macosGuest != nil {
-				http.Error(w, "请在电脑的 Cage 中完成虚拟 Mac 的屏幕录制和辅助功能授权，再重新打开。", 403)
+				http.Error(w, "Finish the screen recording and Accessibility authorization for the virtual Mac in Cage on your computer, then open it again.", 403)
 			} else {
-				http.Error(w, "客机拒绝此次访问", 403)
+				http.Error(w, "The guest denied this access.", 403)
 			}
 		case 426:
-			http.Error(w, "请在电脑的 Cage 中更新 Windows 客机组件，再从手机打开 Claude Desktop。", http.StatusUpgradeRequired)
+			http.Error(w, "Update the Windows guest components in Cage on your computer, then open Claude Desktop from your phone.", http.StatusUpgradeRequired)
 		case 501:
 			if surface == phoneDesktop {
-				http.Error(w, "请先在电脑的 Cage 中安装 Claude Desktop，再从手机打开", 501)
+				http.Error(w, "Install Claude Desktop in Cage on your computer first, then open it from your phone.", 501)
 			} else {
-				http.Error(w, "请在电脑上更新 Cage 环境", 501)
+				http.Error(w, "Update the Cage environment on your computer.", 501)
 			}
 		default:
-			http.Error(w, surface.label()+"暂时不可用，请检查电脑上的环境", 502)
+			http.Error(w, surface.label()+" is unavailable right now. Check the environment on your computer.", 502)
 		}
 		return
 	}
 	if ctx.Err() != nil || epoch.Err() != nil || room.Err() != nil {
-		http.Error(w, surface.label()+"授权已结束", 410)
+		http.Error(w, surface.label()+" authorization has ended.", 410)
 		return
 	}
 	if surface == phoneDesktop && op == "frame" {
 		b.readyUntil = time.Time{}
 	}
 	if homeUnavailable {
-		jsonReply(w, map[string]any{"id": input.ID, "action_frame": true, "home_notice": "电脑的新标签页暂时无法在手机上打开。可以输入公网网址或打开收藏夹。"})
+		jsonReply(w, map[string]any{"id": input.ID, "action_frame": true, "home_notice": "The new tab page on your computer cannot be opened on your phone right now. Enter a public URL or open Favorites."})
 		return
 	}
 	// The phone negotiates the fast path with this host. Annotate the guest
@@ -519,7 +519,7 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 	if surface == phoneBrowser && (op == "open" || op == "frame") {
 		out = bytes.TrimSpace(out)
 		if len(out) < 2 || out[0] != '{' {
-			http.Error(w, "客机返回的浏览器状态无效", 502)
+			http.Error(w, "The browser state returned by the guest is invalid.", 502)
 			return
 		}
 		out = out[:len(out)-1]
@@ -539,7 +539,7 @@ func (s *Server) phoneSurfaceRequest(surface phoneSurface, w http.ResponseWriter
 		}
 	}
 	if (op == "frame" || input.ReturnFrame) && len(out) > 3<<20 {
-		http.Error(w, "客机画面超过传输大小限制，请重新读取", http.StatusBadGateway)
+		http.Error(w, "The guest display exceeds the transfer size limit. Read it again.", http.StatusBadGateway)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

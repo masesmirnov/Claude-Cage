@@ -22,7 +22,7 @@ download() {
     if [[ -f $target && ! -L $target ]]; then
         if [[ -z $expected && ${CAGE_REFRESH_TOOLS:-} != 1 ]] || [[ -n $expected && $(shasum -a 256 "$target" | cut -d' ' -f1) == "$expected" ]]; then return; fi
     fi
-    printf '下载 %s\n' "$name"
+    printf 'Downloading %s\n' "$name"
     temporary=$(mktemp "$media/.$name.XXXXXXXX")
     if ! fetch "$url" "$temporary" "$name" "" "$expected"; then
         if [[ -z $api ]] || ! fetch "$api" "$temporary" "$name" application/octet-stream "$expected"; then

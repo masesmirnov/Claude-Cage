@@ -20,7 +20,7 @@ function page() {
   const UI = {connected:true, rfb:{addEventListener:(name,fn)=>remoteEvents.set(name,fn),
     sendKey:(...args)=>calls.push(['key',...args]),
     cagePasteText:text=>{calls.push(['paste',text]);return Promise.resolve();},focus(){document.activeElement=canvas;}}};
-  const clipboard = {writeText:async text=>calls.push(['write-host',text]),readText:async()=>{calls.push(['read-host']);return '本机文本';}};
+  const clipboard = {writeText:async text=>calls.push(['write-host',text]),readText:async()=>{calls.push(['read-host']);return 'Локальный текст';}};
   const source = readFileSync(__dirname+'/clipboard.js','utf8').replace(/^import .*;$/gm,'');
   vm.runInNewContext(source,{getKeycode:e=>e.code || ('Key'+e.key.toUpperCase()),getKeysym:e=>e.key.length===1 ? e.key.codePointAt(0) : ({Shift:0xffe1,Control:0xffe3,Alt:0xffe9}[e.key] ?? null),window:{addEventListener:(name,fn)=>handlers.set('window:'+name,fn)},UI,document,navigator:{clipboard},MutationObserver:class{observe(){}},setTimeout:()=>1,clearTimeout(){}});
   const event = values => ({key:'',metaKey:false,ctrlKey:false,preventDefault(){this.prevented=true;},stopImmediatePropagation(){this.stopped=true;},...values});
@@ -37,14 +37,14 @@ test('Mac copy maps to Linux Ctrl+C and exports the subsequent remote clipboard'
   const e=p.event({key:'c',metaKey:true}); p.handlers.get('keydown')(e);
   assert.equal(e.prevented,true); assert.equal(e.stopped,true);
   assert.deepEqual(p.calls.map(c=>c.slice(0,2)),[['key',0xffe3],['key',99],['key',99],['key',0xffe3]]);
-  await p.remoteEvents.get('clipboard')({detail:{text:'中文\n✅'}});
-  assert.deepEqual(p.calls.at(-1),['write-host','中文\n✅']);
+  await p.remoteEvents.get('clipboard')({detail:{text:'Привет\n✅'}});
+  assert.deepEqual(p.calls.at(-1),['write-host','Привет\n✅']);
 });
 test('native paste transfers Unicode only while the remote canvas is focused',()=>{
   const p=page();
-  const e=p.event({clipboardData:{types:['text/plain'],getData:()=> '中文\n✅'}});
+  const e=p.event({clipboardData:{types:['text/plain'],getData:()=> 'Привет\n✅'}});
   p.handlers.get('paste')(e);
-  assert.equal(e.prevented,true); assert.deepEqual(p.calls[0],['paste','中文\n✅']);
+  assert.equal(e.prevented,true); assert.deepEqual(p.calls[0],['paste','Привет\n✅']);
   p.calls.length=0; p.document.activeElement=p.element('cage-transfer-text');
   p.handlers.get('paste')(p.event({clipboardData:{types:['text/plain'],getData:()=> 'local field'}}));
   assert.equal(p.calls.length,0);

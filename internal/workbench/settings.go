@@ -182,21 +182,21 @@ func proposedSettings(input Settings, old cage.Config, profile string) (cage.Con
 		return c, input.Preferences, err
 	}
 	if input.Keyboard != "mac" && input.Keyboard != "native" {
-		return c, input.Preferences, errors.New("请选择 Mac 或原生 Linux 按键习惯")
+		return c, input.Preferences, errors.New("Choose Mac or native Linux key bindings.")
 	}
 	p := input.Preferences
 	p.MobileRelay = strings.TrimSuffix(strings.TrimSpace(p.MobileRelay), "/")
 	if p.MobileRelay != "" && (!strings.HasPrefix(p.MobileRelay, "https://") || !mobilelink.ValidRelayOrigin(p.MobileRelay)) {
-		return c, p, errors.New("中继地址须为 HTTPS 地址，只包含主机和可选端口")
+		return c, p, errors.New("The relay address must be an HTTPS address with only a host and an optional port.")
 	}
 	if len(p.ClaudeTerminalCommand) > 4096 || strings.ContainsAny(p.ClaudeTerminalCommand, "\x00\r\n") {
-		return c, p, errors.New("Claude 终端命令必须为一行，且不超过 4096 字节")
+		return c, p, errors.New("The Claude terminal command must be one line and at most 4096 bytes.")
 	}
 	p.ClaudeTerminalCommand = claudeTerminalCommand(p)
 	p.BrowserHomeURL = strings.TrimSpace(browserHomeURL(p))
 	home, e := url.Parse(p.BrowserHomeURL)
 	if e != nil || home == nil || (home.Scheme != "https" && home.Scheme != "http") || home.Hostname() == "" || home.User != nil {
-		return c, p, errors.New("浏览器默认网站必须是完整的 HTTP 或 HTTPS 网址，且不能包含用户名或密码")
+		return c, p, errors.New("The browser default site must be a full HTTP or HTTPS URL without a username or password.")
 	}
 	if p.Workspace != "" {
 		workspace, err := validateWorkspace(p.Workspace, profile)
@@ -214,29 +214,29 @@ func validateWorkspace(path, profile string) (string, error) {
 	}
 	abs, err := filepath.Abs(path)
 	if err != nil {
-		return "", errors.New("项目路径无效")
+		return "", errors.New("The project path is invalid.")
 	}
 	abs, err = paths.Resolve(abs)
 	if err != nil {
-		return "", errors.New("项目目录不存在或无法访问")
+		return "", errors.New("The project directory does not exist or cannot be accessed.")
 	}
 	st, err := os.Stat(abs)
 	if err != nil || !st.IsDir() {
-		return "", errors.New("请选择一个项目文件夹")
+		return "", errors.New("Choose a project folder.")
 	}
 	if realHome, err := paths.Resolve(home); err == nil {
 		home = realHome
 	}
 	if executable, e := os.Executable(); e == nil {
 		if real, e := paths.Resolve(executable); e == nil && cage.StorageContains(abs, real) {
-			return "", errors.New("不能共享正在运行的工作台程序所在目录。请将安装版 Cage 放在项目外，并重启控制服务后选择此项目。")
+			return "", errors.New("The directory containing the running workbench program cannot be shared. Place the installed Cage outside the project, restart the control service, then choose this project.")
 		}
 	}
 	if mounts.UnderName(filepath.ToSlash(abs), nil) {
-		return "", errors.New("请选择项目根目录，不要共享 Git 等版本控制元数据目录")
+		return "", errors.New("Choose the project root directory. Do not share version control metadata directories such as Git.")
 	}
 	if paths.Equal(abs, home) || filepath.Dir(abs) == abs {
-		return "", errors.New("请选择具体项目，不要共享主目录、Cage 配置或包含配置的上级目录")
+		return "", errors.New("Choose a specific project. Do not share the home directory, the Cage configuration, or a parent directory that contains the configuration.")
 	}
 	private, err := privateProjectDirectories(profile)
 	if err != nil {
@@ -244,7 +244,7 @@ func validateWorkspace(path, profile string) (string, error) {
 	}
 	for _, dir := range private {
 		if cage.StoragePathsOverlap(abs, dir) {
-			return "", errors.New("Cage 配置、环境存储、迁移备份及其上级目录不能共享给虚拟机")
+			return "", errors.New("The Cage configuration, environment storage, migration backups, and their parent directories cannot be shared with the virtual machine.")
 		}
 	}
 	if err := validateHostProjectData(abs, profile); err != nil {
@@ -287,7 +287,7 @@ func (l Location) exitLocation() cage.ExitLocation {
 func probeLocationForIP(ctx context.Context, c cage.Config, ip string) (Location, error) {
 	address := net.ParseIP(ip)
 	if address == nil {
-		return Location{}, errors.New("出口地址无效")
+		return Location{}, errors.New("The exit address is invalid.")
 	}
 	e, err := cage.NewEgress(c)
 	if err != nil {

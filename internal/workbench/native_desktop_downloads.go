@@ -10,7 +10,7 @@ import (
 
 func nativeDesktopDownloadInput(method, path string, input any) (map[string]any, error) {
 	if method != "POST" || (path != "/file-open" && path != "/file-read" && path != "/file-close") {
-		return nil, errors.New("客机下载操作无效")
+		return nil, errors.New("The guest download operation is invalid.")
 	}
 	data, err := json.Marshal(input)
 	if err != nil {
@@ -112,19 +112,19 @@ func (s *Server) openNativeDesktopDownload(ctx context.Context, id string) (io.R
 func desktopDownloadFailure(reason string) error {
 	switch reason {
 	case "desktop_download_incomplete":
-		return errors.New("Claude Desktop 尚未完整保存文件，请回到应用重新下载")
+		return errors.New("Claude Desktop has not fully saved the file. Go back to the app and download it again.")
 	case "desktop_download_changed":
-		return errors.New("Claude Desktop 下载文件在传输中发生变化，请重新下载")
+		return errors.New("The Claude Desktop download changed during transfer. Download it again.")
 	case "desktop_download_unavailable", "desktop_download_transfer_invalid":
-		return errors.New("Claude Desktop 下载文件已不可用，请确认客机已解锁后重新下载")
+		return errors.New("The Claude Desktop download is no longer available. Make sure the guest is unlocked, then download it again.")
 	case "desktop_download_limit":
-		return errors.New("待保存的 Claude Desktop 文件过多，请先完成现有下载后重试")
+		return errors.New("Too many Claude Desktop files are waiting to be saved. Finish the existing downloads first, then try again.")
 	case "file_open_target_changed":
-		return errors.New("文件或 Claude 窗口已变化，请回到原窗口重新打开文件")
+		return errors.New("The file or Claude window has changed. Go back to the original window and open the file again.")
 	case "file_open_request_invalid", "file_open_request_unavailable":
-		return errors.New("文件打开请求已失效，请确认客机已解锁后重新操作")
+		return errors.New("The file open request is no longer valid. Make sure the guest is unlocked, then try again.")
 	case "file_open_request_limit":
-		return errors.New("正在处理的文件打开请求过多，请稍后重试")
+		return errors.New("Too many file open requests are being processed. Try again later.")
 	default:
 		return nil
 	}

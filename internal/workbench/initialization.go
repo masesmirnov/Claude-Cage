@@ -33,7 +33,7 @@ func (s *Server) initializationState() (initializationView, error) {
 	if err == nil {
 		var record initializationRecord
 		if json.Unmarshal(data, &record) != nil || record.Version != 1 {
-			return initializationView{}, errors.New("初始化记录无法读取，请保留现有数据并导出诊断包")
+			return initializationView{}, errors.New("The setup record could not be read. Keep the existing data and export a diagnostics bundle.")
 		}
 		return initializationView{Required: !record.Completed || s.macSetupPending(), Started: record.Started, Tracked: true, Prepared: s.environmentPrepared()}, nil
 	}
@@ -54,13 +54,13 @@ func (s *Server) initializationState() (initializationView, error) {
 
 func (s *Server) finishInitialization() error {
 	if s.macSetupPending() {
-		return errors.New("请先完成客机的系统权限确认")
+		return errors.New("Confirm the guest system permissions first.")
 	}
 	s.mu.Lock()
 	ready, gate := s.ready, s.safety.Gate
 	s.mu.Unlock()
 	if !ready || !s.vmRunning() {
-		return errors.New("客机尚未就绪，请继续安装并完成启动检查")
+		return errors.New("The guest is not ready. Continue the installation and finish the startup checks.")
 	}
 	cfg, err := loadConfig(s.configPath)
 	if err != nil {
@@ -70,7 +70,7 @@ func (s *Server) finishInitialization() error {
 		return err
 	}
 	if gate == nil || gate.Mode != cage.GateOpen || !gate.PolicyVerified || gate.Fault || gate.Report == nil || !gate.Until.After(time.Now()) || gate.Configuration != cfg.Fingerprint() || gate.Report.Authorizes(gate.RunID, cfg.Fingerprint(), time.Now()) != nil {
-		return errors.New("环境网络检查尚未通过，请在初始化界面重新检查")
+		return errors.New("The environment network check has not passed. Run it again on the setup screen.")
 	}
 	return writePrivate(filepath.Join(s.profile, "initialization.json"), initializationRecord{Version: 1, Completed: true})
 }
@@ -86,7 +86,7 @@ func (s *Server) initialization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !s.hasTrustedView(r) || !s.localVMStorage() {
-		http.Error(w, "请在本机 Cage 窗口完成初始化", http.StatusForbidden)
+		http.Error(w, "Finish setup in the Cage window on this computer.", http.StatusForbidden)
 		return
 	}
 	var input struct {
@@ -96,12 +96,12 @@ func (s *Server) initialization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !s.op.TryLock() {
-		http.Error(w, "环境操作仍在进行，请等待完成后继续", http.StatusConflict)
+		http.Error(w, "An environment operation is still running. Wait for it to finish, then continue.", http.StatusConflict)
 		return
 	}
 	defer s.op.Unlock()
 	if s.busy() {
-		http.Error(w, "环境操作仍在进行，请等待完成后继续", http.StatusConflict)
+		http.Error(w, "An environment operation is still running. Wait for it to finish, then continue.", http.StatusConflict)
 		return
 	}
 	state, err := s.initializationState()
@@ -121,7 +121,7 @@ func (s *Server) initialization(w http.ResponseWriter, r *http.Request) {
 	case "complete":
 		err = s.finishInitialization()
 	default:
-		err = errors.New("未知的初始化操作")
+		err = errors.New("Unknown setup operation.")
 	}
 	if err != nil {
 		requestError(w, err)
