@@ -578,6 +578,7 @@ button.large {
 .environment-tool-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 12px 0; }
 .environment-tool-table th, .environment-tool-table td { padding: 8px 4px; text-align: left; overflow-wrap: anywhere; border-bottom: 1px solid var(--border, #dedede); }
 .environment-version-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.environment-version-actions + .field-help { margin-top: 0; }
 .environment-update-banner { position: absolute; z-index: 8; top: 8px; left: 16px; right: 16px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; justify-content: space-between; background: var(--surface, #fff); border: 1px solid var(--border, #dedede); border-radius: 8px; font-size: 13px; }
 .terminal-view {
   padding: 18px 20px 13px;
@@ -991,6 +992,11 @@ button.large {
   line-height: 1.8;
   color: var(--ink);
   margin: 15px 0 0;
+}
+.footnote + button,
+.footnote + .field-help,
+.settings-group + button {
+  margin-top: 15px;
 }
 .toggle-row {
   display: flex;
@@ -2695,7 +2701,7 @@ svg {
 
 .environment-storage .setting-summary-row strong,
 .environment-storage .field-help code { overflow-wrap: anywhere; }
-.environment-storage .storage-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.environment-storage .storage-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
 .environment-storage .storage-actions button:disabled { opacity: 1; color: var(--muted); background: var(--chrome); }
 .environment-storage .storage-repair-help { margin: 8px 0 0; }
 .environment-storage > [role="status"] { margin: 12px 0 20px; overflow-wrap: anywhere; }

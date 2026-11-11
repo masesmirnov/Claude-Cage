@@ -366,6 +366,7 @@ button.primary:hover:not(:disabled) {
 .theme-file-actions {
   display: flex;
   gap: 8px;
+  margin-bottom: 14px;
 }
 .theme-library button {
   font-size: 0.857rem;

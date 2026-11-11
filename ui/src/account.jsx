@@ -749,7 +749,7 @@ function TrustedDeviceSettings() {
     } catch (error) { setMessage(error.message); }
     finally { setBusy(false); }
   };
-  return <form onSubmit={update}>
+  return <form className="account-device-settings" onSubmit={update}>
     <fieldset disabled={busy}>
       <h4>Remember me</h4>
       <p className="field-help">{enabled ? "This computer is trusted and opens straight in as the current system user. Manual locking still requires verification, and signing out revokes trust." : "Verify your account password once to trust this computer and open straight in next time as the current system user."}</p>

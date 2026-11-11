@@ -446,6 +446,11 @@
 .proxy-metrics + .field-help {
   margin-top: 10px;
 }
+.proxy-summary + .field-help,
+.proxy-toolbar + .field-help,
+.proxy-tabs + .field-help {
+  margin-top: 0;
+}
 .proxy-connection {
   display: flex;
   align-items: center;
