@@ -41,7 +41,8 @@ export function DesktopToolbar({ desktop, platform, zoom, setZoom, onConfirm, on
     try { localStorage.setItem("cage-desktop-toolbar-hidden", String(value)); }
     catch { /* Keep the preference for this session. */ }
   };
-  if (hidden && desktop?.running) {
+  const merged = Boolean(window.cageWindowControls);
+  if (hidden && desktop?.running && !merged) {
     return (
       <div className="desktop-toolbar-reveal">
         {sidebarCollapsed && <button className="icon-button" aria-label="Expand sidebar" title="Expand sidebar" onClick={onExpand}><PanelLeftOpen size={15} /></button>}
@@ -107,7 +108,7 @@ export function DesktopToolbar({ desktop, platform, zoom, setZoom, onConfirm, on
         >
           <RefreshCw size={15} />
         </button>
-        {desktop?.running && <button className="icon-button" aria-label="Hide Desktop toolbar" title="Hide Desktop toolbar" onClick={() => toggleToolbar(true)}><ChevronUp size={15} /></button>}
+        {desktop?.running && !merged && <button className="icon-button" aria-label="Hide Desktop toolbar" title="Hide Desktop toolbar" onClick={() => toggleToolbar(true)}><ChevronUp size={15} /></button>}
       </header>
   );
 }
