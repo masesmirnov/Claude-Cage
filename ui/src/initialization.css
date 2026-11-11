@@ -31,6 +31,7 @@
 .initialization .setting-summary-row { display: flex; gap: 12px; flex-wrap: wrap; font-size: 14px; }
 .initialization .setting-summary-row strong { font-weight: 500; overflow-wrap: anywhere; }
 .initialization .proxy-manager { margin: 0; }
+.initialization .settings-content { padding: 0; overflow: visible; }
 .initialization-actions { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding-top: 24px; margin-top: 28px; border-top: 1px solid var(--line); }
 .initialization-actions button { min-height: 40px; }
 .initialization button { transition: background 150ms, transform 100ms; }
