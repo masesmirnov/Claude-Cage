@@ -34,7 +34,7 @@ export function EnvironmentVersions({ status, onConfirm }) {
     finally { setStarting(false); }
   };
   const componentLabels = { current: "Up to date", update_required: "Update required", stopped: "Environment stopped", unknown: "Cannot confirm right now" };
-  const toolNames = { chromium: "Browser", code_server: "File editor", claude: "Claude Code", mise: "Tool version manager", node: "Node.js", python: "Python", git: "Git", proxy: "Proxy core" };
+  const toolNames = { chromium: "Browser", code_server: "File editor", claude: "Claude Code", mise: "Tool version manager", node: "Node.js", python: "Python", git: "Git", gh: "GitHub CLI", proxy: "Proxy core" };
   return (
     <section className="environment-versions" aria-label="Environment versions">
       <h4>Versions and components</h4>

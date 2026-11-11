@@ -20,6 +20,8 @@ func executionFailure(action string, err error, output string) error {
 		patterns     []string
 		reason, next string
 	}{
+		{[]string{"base vm not found"}, "the base template is missing, so the environment cannot be created or reset", "Finish the environment installation first. Keep the disk of an existing environment, and do not delete or reset personal data."},
+		{[]string{"base vm setup did not complete"}, "the base template has not finished installing", "Continue the environment installation, then try again. Keep the disk of an existing environment, and do not delete or reset personal data."},
 		{[]string{"cage_windows_maintenance_authorization_canceled"}, "Windows administrator authorization was canceled", "Start the original operation again and confirm in the Windows authorization window."},
 		{[]string{"cage_windows_maintenance_authorization"}, "the Windows administrator authorization window could not open", "Start the operation again from Cage on this computer and use a Windows account that can complete administrator authorization."},
 		{[]string{"cage_windows_maintenance_validation"}, "the Windows environment binding or component manifest failed validation", "Start the original operation again. If the component package still cannot be verified, reinstall the full Cage app."},

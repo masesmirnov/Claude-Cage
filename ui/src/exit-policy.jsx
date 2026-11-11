@@ -41,7 +41,7 @@ export function ExitPolicyFields({
       <label className="toggle-row">
         <span>
           <strong>Static IP</strong>
-          <small>When on, detecting a different IPv4 address pauses internet access.</small>
+          <small>Binds to the current final exit node. Internet access pauses when that node's IPv4 address changes.</small>
         </span>
         <input
           type="checkbox"
@@ -57,7 +57,7 @@ export function ExitPolicyFields({
           Bound IPv4 address
           <input
             value={policy.ip}
-            placeholder="The detected address is bound on first save"
+            placeholder="Detected and bound automatically on first use of this node"
             spellCheck="false"
             onChange={(e) => update("ip", e.target.value)}
           />
@@ -164,7 +164,7 @@ export function ExitPolicyFields({
         </div>
       )}
       <p className="footnote">
-        An existing binding is kept; rechecking and restarting never replace the baseline automatically. Internet access is paused when the exit hits a mainland China range, is located in mainland China, its region cannot be confirmed, or it falls outside the saved range. Offline terminals and files remain usable.
+        Exit rules are saved per final exit node and restored automatically when you switch nodes. A node used for the first time is bound after detection. Changing only the relay, rechecking or restarting keeps that node's baseline. Internet access is paused when the exit hits a mainland China range, is located in mainland China, its region cannot be confirmed, or it falls outside the saved range. Offline terminals and files remain usable.
       </p>
       <p className="field-help">
         The range is based on approximate IP database geolocation. The backend samples about every 30

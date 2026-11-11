@@ -91,7 +91,7 @@ You can stop the environment while it is starting or checking. If a network sett
 
 | What you see | Next step |
 |---|---|
-| Exit IP or region doesn't match the rule | Choose a node that matches the original rule. If you really want to change the exit, explicitly edit the baseline under "IP change rules". A recheck does not accept the new IP automatically. |
+| Exit IP or region doesn't match the rule | Switching the final exit uses that node's binding automatically, and a node is checked and bound on first use. If the same node's IP has changed, confirm it and then edit it under "IP change rules". A recheck keeps the original binding. |
 | Matches a mainland China network range, or is located in mainland China | Switch to a non-mainland exit. Static IP and any-region settings can't bypass this. If you think the location is wrong, keep the check report and exit details for review. |
 | Proxy unavailable, or core not ready | Apply the node again on the proxy page, or go to "Diagnostics" to check the core status and restart the Cage core. |
 | Port already in use | In the proxy's "Diagnostics", choose an unused, separate port for Cage. You don't need to stop other proxies on this computer. Changing the port requires restarting the environment. |

@@ -251,7 +251,7 @@ New users have time zone and language following the exit IP turned on by default
 
 Language can follow the exit region separately, or be chosen manually. Automatic mode uses built-in regional defaults. For regions with several languages, you can adjust the choice yourself. For unknown regions, the current language is kept.
 
-"Settings → IP change rules" supports a static IP, or a dynamic IP within the same city, the same state or province, the same country or region, or any region. A city rule checks the country, state or province, and city together. For the first setup, you can use the detection result. An existing baseline only changes when you explicitly edit it. A recheck does not accept a new exit automatically.
+"Settings → IP change rules" supports a static IP, or a dynamic IP within the same city, the same state or province, the same country or region, or any region. A city rule checks the country, state or province, and city together. For how rules are tied to the final exit node, the first binding and what happens on switching, see [Time zone, language and exit rules](guide/network.md#time-zone-language-and-exit-rules). An existing baseline for the same node only changes when you explicitly edit it. A recheck does not accept a new exit automatically.
 
 ### Check, pause and restore network access
 

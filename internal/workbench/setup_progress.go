@@ -179,7 +179,7 @@ func macOSDownloadLabel(name string) string {
 		"editor.tgz": "macOS web editor", "playwright.tgz": "Browser control component", "node.tgz": "Node.js",
 		"macfuse.dmg": "macFUSE file sharing component", "claude.dmg": "Claude Desktop", "chrome.dmg": "Chrome browser",
 		"macos-cli-claude": "Claude Code", "macos-cli-uv.tar.gz": "uv developer tool",
-		"macos-cli-python.tar.gz": "Python", "macos-cli-git.tar.gz": "Git",
+		"macos-cli-python.tar.gz": "Python", "macos-cli-git.tar.gz": "Git", "macos-cli-gh.zip": "GitHub CLI",
 	}[name]
 	if component == "" {
 		return ""

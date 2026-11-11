@@ -41,6 +41,8 @@ func TestRunCageExplainsCommonFailure(t *testing.T) {
 		{"curl: (28) Operation timed out", "timed out"},
 		{"E: No space left on device", "not enough disk space"},
 		{"curl: (60) certificate verify failed", "certificate failed verification"},
+		{"Error: Base VM not found. Run 'agent-vm setup' first.", "base template is missing"},
+		{"Error: Base VM setup did not complete. Run 'agent-vm setup' again.", "base template has not finished installing"},
 		{"CAGE_WINDOWS_MAINTENANCE_HOST_MANAGER synthetic stage token=private-error-secret", "system management helper installation was not completed"},
 		{"CAGE_WINDOWS_MAINTENANCE_GUEST_CONNECTION synthetic stage token=private-error-secret", "guest connection was not completed"},
 		{"unrecognized failure token=private-error-secret", "exit code 7"},

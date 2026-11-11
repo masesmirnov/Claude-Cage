@@ -47,7 +47,7 @@ The critical check failure notice has a "View checklist" button beside it. Click
 
 | Status | What to do |
 | --- | --- |
-| Exit does not match the static IP, city or country rule | Switch back to a node that matches the original rule. If you really want to change the baseline, edit the IP rule explicitly. Rechecking does not accept a new IP automatically. |
+| Exit does not match the static IP, city or country rule | Switching the final exit restores that node's binding, and a node is checked and bound on first use. If the same node's exit has changed, confirm it and then edit the rule explicitly. Rechecking keeps the original binding. See [Exit rules](network.md#time-zone-language-and-exit-rules). |
 | Matches a mainland China network range, or location is mainland China | Use a non-mainland exit. Static IP and "any region" cannot exempt it. If you suspect the attribution is wrong, keep the check report. |
 | Proxy core not ready | Open proxy diagnostics to check the status, then reapply the node or restart the Cage core. |
 | Port in use | Choose an unused independent Cage port and restart as prompted. There is no need to stop other proxies. |

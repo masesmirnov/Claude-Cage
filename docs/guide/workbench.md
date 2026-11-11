@@ -3,7 +3,7 @@ title: Projects, terminal and files
 description: Run Claude Code, edit code and pass attachments in one workbench, and understand how closing and signing out affect your tasks.
 group: Daily use
 order: 3
-keywords: projects Claude Code editor code-server files copy paste shortcuts split view tabs localhost
+keywords: projects Claude Code editor code-server Git GitHub gh commit push files copy paste shortcuts split view tabs localhost
 ---
 ## Open projects and edit files
 
@@ -23,6 +23,41 @@ Shared files appear as owned by the current user inside the environment, and Git
   <a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener"><img src="../../www/public/docs/screenshots/first-start.jpg" alt="Workbench sidebar, default project and terminal entry (environment not started)" width="2560" height="1764" loading="lazy" decoding="async" /></a>
   <figcaption>Workbench sidebar, default project and terminal entry (environment not started). Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
+
+## Git commits and GitHub sign-in
+
+Git can stage, commit and switch branches in shared writable projects. Before your first commit, check the committer details in a regular Cage terminal. If nothing is configured, enter the name and email you want to appear in the commit history. A GitHub privacy email also works.
+
+```sh
+git config --global --get user.name
+git config --global --get user.email
+git config --global user.name "Your committer name"
+git config --global user.email "Your committer email"
+```
+
+The global settings apply to every project in the current environment. When a single project needs a different identity, use `--local` instead of `--global` in the project directory. Local settings that a repository already has take priority. If commits must be signed with GPG or SSH, set up the signing tool and keys separately inside the environment.
+
+Pushing to private repositories, managing PRs or closing issues also needs GitHub authorization. GitHub CLI (`gh`) is installed with the environment tools. If an older environment says the command is not found, update the environment tools under "Settings → Environment and recovery → Versions and components" first, then open a new regular terminal. macOS, Windows and Linux use the same sign-in commands:
+
+```sh
+gh auth login --hostname github.com --git-protocol https --web
+gh auth setup-git --hostname github.com
+gh auth status --hostname github.com
+```
+
+Follow the terminal prompt to open the GitHub authorization page, enter the one-time code and confirm the authorization yourself. If the browser does not open automatically, you can also visit the address shown in the terminal by hand. `gh auth setup-git` makes HTTPS Git operations use this sign-in. For details, see the [GitHub sign-in notes](https://cli.github.com/manual/gh_auth_login) and the [Git credential setup notes](https://cli.github.com/manual/gh_auth_setup-git).
+
+The sign-in is saved in the current environment and survives restarts and updates. Sign-ins in Chrome on this computer, SSH private keys and Git credentials are not imported automatically. `gh` prefers the system credential store and, when that is unavailable, saves to a configuration file inside the environment. Use `gh auth status` to see where it is stored. Browser sign-in and command-line authorization are managed separately.
+
+After signing in, check the project's remote address. HTTPS authorization does not authenticate SSH addresses. If `origin` still uses `git@github.com:…`, you can switch it to HTTPS after confirming the repository address:
+
+```sh
+git remote -v
+git remote set-url origin https://github.com/OWNER/REPOSITORY.git
+git push
+```
+
+The signed-in account still needs write access to the target repository. Organization SSO, branch protection and workflow permissions are still managed by GitHub.
 
 ## Start a new Claude terminal
 
