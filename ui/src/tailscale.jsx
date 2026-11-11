@@ -117,7 +117,7 @@ export function TailscalePanel({ status, onClose, onOpenBrowser, onInstall, onCo
           : visible.length === 0 ? <p className="tailscale-empty">No matching devices. Try another name or address.</p>
           : <div className="tailscale-peers">{visible.map(peer => <article className="tailscale-peer" key={peer.id || peer.ip}>
             <div className="tailscale-peer-row"><DeviceIcon os={peer.os} /><div className="tailscale-peer-info"><strong>{deviceName(peer)}</strong><span>{peer.ip}{peer.os ? ` · ${peer.os}` : ""}</span></div>
-              <span className={`tailscale-presence${peer.online ? " online" : ""}`}><i />{peer.online ? "Online" : "Offline"}</span>
+              <span className="tailscale-presence">{peer.online ? "Online" : "Offline"}</span>
               <button className="icon-button" aria-label={`Copy the address of ${deviceName(peer)}`} onClick={() => copy(peer.ip, "Device private network address copied")}><Copy size={15} /></button>
               <button className="quiet-button" aria-expanded={selected === peer.ip} aria-controls={`tailnet-device-${peer.ip}`} onClick={() => { setSelected(selected === peer.ip ? "" : peer.ip); setUsername(""); setPort("80"); }}>Use device<ChevronDown size={14} /></button>
             </div>

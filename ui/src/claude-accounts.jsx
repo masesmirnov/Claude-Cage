@@ -239,7 +239,7 @@ function ProfileCard({ profile, environment, usageEnvironment, busy, active, def
             onClick={() => { setLabel(profile.label === profile.email ? "" : profile.label || ""); setRenaming(true); }}><Pencil size={14} /></button>
         </div>}
         <div className="claude-profile-meta">
-          <span className="claude-profile-status" data-ready={profile.status === "ready"}>{statusLabels[profile.status] || "Status unknown"}</span>
+          <span className="claude-profile-status">{statusLabels[profile.status] || "Status unknown"}</span>
           {profile.email && <span className="claude-profile-email" title={[profile.email, profile.organization].filter(Boolean).join(" · ")}>
             {[profile.email !== displayName && profile.email, profile.organization].filter(Boolean).join(" · ")}
           </span>}

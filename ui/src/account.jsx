@@ -313,7 +313,6 @@ export function AccountGate({ children }) {
         </p>
         {account?.background_running && (
           <div className="account-background">
-            <i />
             The background environment is still running and tasks have not stopped
           </div>
         )}

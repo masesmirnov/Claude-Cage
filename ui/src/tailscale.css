@@ -29,9 +29,7 @@
 .tailscale-peer:last-child { border-bottom: 0; padding-bottom: 0; }
 .tailscale-peer-row > svg, .tailscale-self > svg { flex-shrink: 0; color: var(--muted); }
 .tailscale-peer-row button { flex-shrink: 0; }
-.tailscale-presence { display: flex; align-items: center; gap: 5px; white-space: nowrap; color: var(--muted); font-size: 11px; }
-.tailscale-presence i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
-.tailscale-presence.online i { background: #528267; }
+.tailscale-presence { white-space: nowrap; color: var(--muted); font-size: 11px; }
 .tailscale-device-detail { display: flex; flex-direction: column; gap: 10px; padding: 16px; margin-top: 12px; background: var(--chrome); border: 1px solid var(--border); border-radius: 8px; }
 .tailscale-dns { overflow-wrap: anywhere; }
 .tailscale-connect-form { display: flex; gap: 8px; }

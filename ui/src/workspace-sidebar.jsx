@@ -269,7 +269,6 @@ export function WorkspaceSidebar({
       </div>
       <div className="sidebar-bottom">
         <button className="sidebar-status" onClick={onSafety}>
-          <i className={`status-dot ${network.mode}`} />
           <span>{healthy ? "Environment running normally" : runtimeLabel}</span>
           <EnvironmentShield size={17} healthy={healthy} />
         </button>

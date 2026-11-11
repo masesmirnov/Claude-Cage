@@ -138,11 +138,7 @@
 }
 .claude-profile-meta { gap: 7px; margin-top: 2px; }
 .claude-profile-email { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.claude-profile-status { display: inline-flex; align-items: center; gap: 4px; flex: none; }
-.claude-profile-status::before {
-  content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--muted);
-}
-.claude-profile-status[data-ready="true"]::before { background: var(--success); }
+.claude-profile-status { flex: none; }
 .claude-profile-heading .claude-participation {
   position: relative;
   display: inline-flex;

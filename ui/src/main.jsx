@@ -1595,7 +1595,6 @@ function App() {
                     {!running && !nativeGuestLabel && status.local_vm_storage && !isRemoteClient() && <button className="storage-entry text-button" disabled={busy} onClick={() => openSettings("project")}>Choose environment storage location</button>}
                     <div className="start-project-footer">
                       <span>
-                        <i className={`status-dot ${network.mode}`} />
                         {busy
                           ? runtimeLabel
                           : running

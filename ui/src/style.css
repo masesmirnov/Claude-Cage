@@ -1191,11 +1191,6 @@ button.large {
     transform: rotate(360deg);
   }
 }
-@keyframes pulse {
-  50% {
-    opacity: 0.35;
-  }
-}
 @keyframes progress {
   to {
     background-position: -200% 0;
@@ -1712,21 +1707,6 @@ svg {
 }
 .sidebar-status > svg {
   margin-left: auto;
-}
-.status-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--inactive);
-  flex: none;
-}
-.status-dot.open {
-  background: var(--success);
-}
-.status-dot.checking {
-  background: var(--warning);
-  animation: pulse 1.4s infinite;
 }
 .content-heading {
   min-height: var(--workbench-header-height);
