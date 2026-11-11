@@ -198,7 +198,7 @@ func downloadStream(parent context.Context, client *http.Client, address, target
 		} else if parent.Err() != nil {
 			return parent.Err()
 		}
-		fmt.Fprintf(out, "%s：分段下载未完成，使用单连接继续\n", name)
+		fmt.Fprintf(out, "%s: the segmented download did not finish, continuing over a single connection\n", name)
 		info, err := os.Stat(target)
 		if err != nil {
 			return err

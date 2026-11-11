@@ -273,7 +273,7 @@ func RequiredToolVersions() map[string]string {
 			result["gh"] = value
 		}
 	}
-	result["claude"] = "官方最新版（下载时解析）"
+	result["claude"] = "Official latest version (resolved at download)"
 	return result
 }
 

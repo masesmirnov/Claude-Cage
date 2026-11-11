@@ -36,7 +36,7 @@ desktop_media() (
         bash "$src/claude-desktop-macos.sh" verify-media "$media/claude.dmg" "$version"
         exit 0
     fi
-    printf '下载 claude.dmg\n'
+    printf 'Downloading claude.dmg\n'
     fetch "$url" "$temporary/claude.dmg" claude.dmg
     bash "$src/claude-desktop-macos.sh" verify-media "$temporary/claude.dmg" "$version"
     digest=$(shasum -a 256 "$temporary/claude.dmg" | cut -d' ' -f1)

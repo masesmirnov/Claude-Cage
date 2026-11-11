@@ -44,8 +44,8 @@ export function DesktopToolbar({ desktop, platform, zoom, setZoom, onConfirm, on
   if (hidden && desktop?.running) {
     return (
       <div className="desktop-toolbar-reveal">
-        {sidebarCollapsed && <button className="icon-button" aria-label="展开侧栏" title="展开侧栏" onClick={onExpand}><PanelLeftOpen size={15} /></button>}
-        <button className="icon-button" aria-label="显示 Desktop 工具栏" title="显示 Desktop 工具栏" onClick={() => toggleToolbar(false)}><ChevronDown size={15} /></button>
+        {sidebarCollapsed && <button className="icon-button" aria-label="Expand sidebar" title="Expand sidebar" onClick={onExpand}><PanelLeftOpen size={15} /></button>}
+        <button className="icon-button" aria-label="Show Desktop toolbar" title="Show Desktop toolbar" onClick={() => toggleToolbar(false)}><ChevronDown size={15} /></button>
       </div>
     );
   }
@@ -107,7 +107,7 @@ export function DesktopToolbar({ desktop, platform, zoom, setZoom, onConfirm, on
         >
           <RefreshCw size={15} />
         </button>
-        {desktop?.running && <button className="icon-button" aria-label="隐藏 Desktop 工具栏" title="隐藏 Desktop 工具栏" onClick={() => toggleToolbar(true)}><ChevronUp size={15} /></button>}
+        {desktop?.running && <button className="icon-button" aria-label="Hide Desktop toolbar" title="Hide Desktop toolbar" onClick={() => toggleToolbar(true)}><ChevronUp size={15} /></button>}
       </header>
   );
 }

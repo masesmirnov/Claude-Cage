@@ -141,7 +141,7 @@ func RequiredNativeComponents(kit, system string) (NativeComponentManifest, erro
 		for _, name := range []string{"python", "git", "gh"} {
 			manifest.Tools[name] = dependencies[name].Version
 		}
-		manifest.Tools["claude"] = "官方最新版（下载时解析）"
+		manifest.Tools["claude"] = "Official latest version (resolved at download)"
 		manifest.Tools["node"] = "24.22.2"
 	}
 	return manifest, manifest.Validate()
