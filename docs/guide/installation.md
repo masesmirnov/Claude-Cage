@@ -21,7 +21,7 @@ The platform selected here is the host that runs Cage. The guest system inside t
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/account-setup.jpg" target="_blank" rel="noopener" aria-label="View original: first-time Cage account creation"><img src="../../www/public/docs/screenshots/account-setup.jpg" alt="First-time Cage account creation" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>First-time Cage account creation. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/account-setup.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>First-time Cage account creation. Screenshot version: 0.1.7-rc.1 (development build) · Windows 11 x64 native app · 2026-11-11. <a href="../../www/public/docs/screenshots/account-setup.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Create a Cage account
@@ -69,8 +69,8 @@ If a download is interrupted, check the error, fix the network or disk space, th
 During download, the app shows received bytes, the total available and sampled speed. Verification shows its processing progress separately. System recovery and tool installation without a measurable total show the stage instead. Continuing the installation keeps the original installation identity, system choice and created disk.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/windows-native-download.png" target="_blank" rel="noopener" aria-label="View original: first image download progress in the Windows native app"><img src="../../www/public/docs/screenshots/windows-native-download.png" alt="First image download progress in the Windows native app" width="750" height="320" loading="lazy" decoding="async" /></a>
-  <figcaption>First image download progress in the Windows native app. Screenshot version: 0.1.5-alpha.2 (test build) · Windows 11 x64 native app · 2026-11-06. <a href="../../www/public/docs/screenshots/windows-native-download.png" target="_blank" rel="noopener">View original (750 × 320) ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/windows-native-download.png" target="_blank" rel="noopener" aria-label="View original: first image download progress in the Windows native app"><img src="../../www/public/docs/screenshots/windows-native-download.png" alt="First image download progress in the Windows native app" width="753" height="347" loading="lazy" decoding="async" /></a>
+  <figcaption>First image download progress in the Windows native app. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/windows-native-download.png" target="_blank" rel="noopener">View original (753 × 347) ↗</a></figcaption>
 </figure>
 
 ## Do your first task

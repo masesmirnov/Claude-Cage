@@ -23,7 +23,7 @@ If tasks must keep running after you leave SSH, or services must recover after a
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/ssh-sidebar.jpg" target="_blank" rel="noopener" aria-label="View original: SSH hosts sidebar with your own server added"><img src="../../www/public/docs/screenshots/ssh-sidebar.jpg" alt="SSH hosts sidebar with your own server added" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>SSH hosts sidebar with your own server added. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/ssh-sidebar.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>SSH hosts sidebar with your own server added. Screenshot version: 0.1.7-rc.1 (development build) · Windows 11 x64 native app · 2026-11-11. <a href="../../www/public/docs/screenshots/ssh-sidebar.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Deploy and connect from the sidebar
@@ -38,7 +38,7 @@ If tasks are running locally, the connection card offers options to keep or stop
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/ssh-host-form.jpg" target="_blank" rel="noopener" aria-label="View original: remote host address, authentication and private key path form"><img src="../../www/public/docs/screenshots/ssh-host-form.jpg" alt="Remote host address, authentication and private key path form" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Remote host address, authentication and private key path form. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/ssh-host-form.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Remote host address, authentication and private key path form. Screenshot version: 0.1.7-rc.1 (development build) · Windows 11 x64 native app · 2026-11-11. <a href="../../www/public/docs/screenshots/ssh-host-form.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Server projects and local sharing
@@ -57,7 +57,7 @@ After you switch hosts, file selections, input and requests from the old connect
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/ssh-install-paths.jpg" target="_blank" rel="noopener" aria-label="View original: programs and configuration paths on a custom server"><img src="../../www/public/docs/screenshots/ssh-install-paths.jpg" alt="Programs and configuration paths on a custom server" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Programs and configuration paths on a custom server. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/ssh-install-paths.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Programs and configuration paths on a custom server. Screenshot version: 0.1.7-rc.1 (development build) · Windows 11 x64 native app · 2026-11-11. <a href="../../www/public/docs/screenshots/ssh-install-paths.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Updates and recovery

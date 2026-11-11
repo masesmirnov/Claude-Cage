@@ -7,7 +7,7 @@ keywords: Clash Mihomo YAML SOCKS5 residential IP DNS DoH pause offline proxy ch
 ---
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/proxy-subscription.jpg" target="_blank" rel="noopener" aria-label="View original: adding a subscription link and the first-time host download option"><img src="../../www/public/docs/screenshots/proxy-subscription.jpg" alt="Adding a subscription link and the first-time host download option" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Adding a subscription link and the first-time host download option. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/proxy-subscription.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Adding a subscription link and the first-time host download option. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/proxy-subscription.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Import your own proxy
@@ -34,7 +34,7 @@ The same subscription URL may return different formats depending on the client i
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/proxy-manual.jpg" target="_blank" rel="noopener" aria-label="View original: entering an HTTP / SOCKS5 node manually"><img src="../../www/public/docs/screenshots/proxy-manual.jpg" alt="Entering an HTTP / SOCKS5 node manually" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Entering an HTTP / SOCKS5 node manually. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/proxy-manual.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Entering an HTTP / SOCKS5 node manually. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/proxy-manual.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Reach a residential exit through a relay
@@ -45,7 +45,7 @@ Check the preview before applying, for example: `Cage → Relay node → Residen
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/network-settings.jpg" target="_blank" rel="noopener" aria-label="View original: network and proxy page and exit change rules"><img src="../../www/public/docs/screenshots/network-settings.jpg" alt="Network and proxy page and exit change rules" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Network and proxy page and exit change rules. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/network-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Network and proxy page and exit change rules. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/network-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Why the node is applied but still offline
@@ -64,7 +64,7 @@ While offline, you can still use terminals, shared files and local services insi
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/region-settings.jpg" target="_blank" rel="noopener" aria-label="View original: time zone and language settings that follow the exit IP"><img src="../../www/public/docs/screenshots/region-settings.jpg" alt="Time zone and language settings that follow the exit IP" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Time zone and language settings that follow the exit IP. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/region-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Time zone and language settings that follow the exit IP. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/region-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Download network for system images

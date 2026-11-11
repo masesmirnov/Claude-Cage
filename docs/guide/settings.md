@@ -27,7 +27,7 @@ Appearance changes take effect immediately and are saved automatically. If savin
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/account-settings.jpg" target="_blank" rel="noopener" aria-label="View original: account profile, password and sign-in unlock settings"><img src="../../www/public/docs/screenshots/account-settings.jpg" alt="Account profile, password and sign-in unlock settings" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Account profile, password and sign-in unlock settings. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/account-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Account profile, password and sign-in unlock settings. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/account-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Account and sign-in
@@ -38,7 +38,7 @@ The Cage account is only used to unlock the current environment, and there is no
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/password-add.jpg" target="_blank" rel="noopener" aria-label="View original: form for manually adding a website password"><img src="../../www/public/docs/screenshots/password-add.jpg" alt="Form for manually adding a website password" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Form for manually adding a website password. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/password-add.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Form for manually adding a website password. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/password-add.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Password vault
@@ -51,7 +51,7 @@ Password records are saved in the current host's Cage configuration and do not s
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/general-settings.jpg" target="_blank" rel="noopener" aria-label="View original: terminal startup command, image quality and shortcut settings"><img src="../../www/public/docs/screenshots/general-settings.jpg" alt="Terminal startup command, image quality and shortcut settings" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Terminal startup command, image quality and shortcut settings. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/general-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Terminal startup command, image quality and shortcut settings. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/general-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## General and keyboard
@@ -64,7 +64,7 @@ Password records are saved in the current host's Cage configuration and do not s
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/appearance.jpg" target="_blank" rel="noopener" aria-label="View original: light, dark and custom themes"><img src="../../www/public/docs/screenshots/appearance.jpg" alt="Light, dark and custom themes" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Light, dark and custom themes. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/appearance.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Light, dark and custom themes. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/appearance.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Appearance, themes and accessibility

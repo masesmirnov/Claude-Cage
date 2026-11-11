@@ -38,7 +38,7 @@ When the Git pre-check fails, follow the prompt to update Git on this computer t
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/proxy-diagnostics.jpg" target="_blank" rel="noopener" aria-label="View original: proxy core status and independent port diagnostics"><img src="../../www/public/docs/screenshots/proxy-diagnostics.jpg" alt="Proxy core status and independent port diagnostics" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Proxy core status and independent port diagnostics. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/proxy-diagnostics.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Proxy core status and independent port diagnostics. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/proxy-diagnostics.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Node applied but no internet access
@@ -135,7 +135,7 @@ Do not repair the deployment by deleting containers, the engine data-root or acc
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/resources-diagnostics.jpg" target="_blank" rel="noopener" aria-label="View original: automatic resource limits and diagnostics export entry"><img src="../../www/public/docs/screenshots/resources-diagnostics.jpg" alt="Automatic resource limits and diagnostics export entry" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Automatic resource limits and diagnostics export entry. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/resources-diagnostics.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Automatic resource limits and diagnostics export entry. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/resources-diagnostics.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Export diagnostics and feedback

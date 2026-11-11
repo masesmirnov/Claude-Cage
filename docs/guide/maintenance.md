@@ -13,7 +13,7 @@ Cloud data is on the server, including the configuration, projects and the persi
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/environment-maintenance.jpg" target="_blank" rel="noopener" aria-label="View original: environment storage location and version component entry"><img src="../../www/public/docs/screenshots/environment-maintenance.jpg" alt="Environment storage location and version component entry" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Environment storage location and version component entry. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/environment-maintenance.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Environment storage location and version component entry. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/environment-maintenance.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Move the environment to another disk
@@ -29,7 +29,7 @@ The target disk needs enough space and must support permissions and sparse files
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/resources-manual.jpg" target="_blank" rel="noopener" aria-label="View original: form for manually adjusting memory and CPU limits"><img src="../../www/public/docs/screenshots/resources-manual.jpg" alt="Form for manually adjusting memory and CPU limits" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Form for manually adjusting memory and CPU limits. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/resources-manual.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Form for manually adjusting memory and CPU limits. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/resources-manual.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Set CPU and memory
@@ -56,7 +56,7 @@ Automatic installation on macOS requires a Developer ID signature from the same 
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/windows-native-storage.png" target="_blank" rel="noopener" aria-label="View original: version and environment maintenance in the Windows native app"><img src="../../www/public/docs/screenshots/windows-native-storage.png" alt="Version and environment maintenance in the Windows native app" width="1259" height="759" loading="lazy" decoding="async" /></a>
-  <figcaption>Version and environment maintenance in the Windows native app. Screenshot version: 0.1.5-alpha.2 (test build) · Windows 11 x64 native app · 2026-11-06. <a href="../../www/public/docs/screenshots/windows-native-storage.png" target="_blank" rel="noopener">View original (1259 × 759) ↗</a></figcaption>
+  <figcaption>Version and environment maintenance in the Windows native app. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/windows-native-storage.png" target="_blank" rel="noopener">View original (1259 × 759) ↗</a></figcaption>
 </figure>
 
 ## Restore configuration and export diagnostics

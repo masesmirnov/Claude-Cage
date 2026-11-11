@@ -21,7 +21,7 @@ Shared files appear as owned by the current user inside the environment, and Git
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener"><img src="../../www/public/docs/screenshots/first-start.jpg" alt="Workbench sidebar, default project and terminal entry (environment not started)" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Workbench sidebar, default project and terminal entry (environment not started). Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Workbench sidebar, default project and terminal entry (environment not started). Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Start a new Claude terminal

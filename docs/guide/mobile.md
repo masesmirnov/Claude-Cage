@@ -34,7 +34,7 @@ The build output is in `mobile/.build/ios/`, and device certificates and signing
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/mobile-pairing.jpg" target="_blank" rel="noopener" aria-label="View original: phone pairing entry and relay choice on the computer"><img src="../../www/public/docs/screenshots/mobile-pairing.jpg" alt="Phone connection entry and relay choice on the computer" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Phone connection entry and relay choice on the computer. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/mobile-pairing.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Phone connection entry and relay choice on the computer. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/mobile-pairing.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Scan a QR code or use a pairing code

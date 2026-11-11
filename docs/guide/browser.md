@@ -63,7 +63,7 @@ If an older environment lacks the entry point or shows an error about installati
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/password-vault.jpg" target="_blank" rel="noopener" aria-label="View original: password vault management entry"><img src="../../www/public/docs/screenshots/password-vault.jpg" alt="Password vault management entry" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Password vault management entry. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/password-vault.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Password vault management entry. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/password-vault.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Save website passwords

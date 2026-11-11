@@ -17,7 +17,7 @@ Start the environment first, wait for the tools to be ready, then open the accou
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/claude-accounts.jpg" target="_blank" rel="noopener" aria-label="View original: Claude accounts panel with the environment not started and no accounts registered"><img src="../../www/public/docs/screenshots/claude-accounts.jpg" alt="Claude accounts panel with the environment not started and no accounts registered" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Claude accounts panel with the environment not started and no accounts registered. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/claude-accounts.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+  <figcaption>Claude accounts panel with the environment not started and no accounts registered. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/claude-accounts.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
 ## Add an existing sign-in to scheduling
