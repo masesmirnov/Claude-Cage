@@ -4,6 +4,7 @@ import { installDiagnostics } from "./diagnostics.mjs";
 import { DiagnosticBoundary } from "./diagnostics.jsx";
 import { ClientRoot } from "./remote-hosts";
 import { native } from "./api";
+import { WindowControls } from "./window-controls";
 import "./style.css";
 
 const Workbench = lazy(() => import("./main.jsx"));
@@ -15,19 +16,22 @@ window.cageNativeAction = (command) => {
   if (command === "quit") return native("quitNow");
 };
 createRoot(document.getElementById("root")).render(
-  <DiagnosticBoundary>
-    <ClientRoot>
-      <Suspense
-        fallback={
-          <div className="client-loading" role="status">
-            Opening the workbench…
-          </div>
-        }
-      >
-        <Workbench />
-      </Suspense>
-    </ClientRoot>
-  </DiagnosticBoundary>,
+  <>
+    <WindowControls />
+    <DiagnosticBoundary>
+      <ClientRoot>
+        <Suspense
+          fallback={
+            <div className="client-loading" role="status">
+              Opening the workbench…
+            </div>
+          }
+        >
+          <Workbench />
+        </Suspense>
+      </ClientRoot>
+    </DiagnosticBoundary>
+  </>,
 );
 
 window.addEventListener("hashchange", () => {

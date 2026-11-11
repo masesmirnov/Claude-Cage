@@ -54,6 +54,7 @@ internal sealed class MainWindow : Form
             await Initialize();
         };
         Resize += (_, _) => PublishVisibility(); VisibleChanged += (_, _) => PublishVisibility();
+        status.VisibleChanged += (_, _) => UpdateFrame();
         FormClosing += (_, e) => {
             SaveWindowPlacement();
             if (!allowQuit && e.CloseReason is not (CloseReason.WindowsShutDown or CloseReason.TaskManagerClosing)) { e.Cancel = true; Hide(); }
@@ -124,6 +125,25 @@ internal sealed class MainWindow : Form
         ApplyWindowChrome();
     }
 
+    private bool pageControls, customFrame;
+
+    private void UpdateFrame()
+    {
+        if (!Visible || customFrame == (pageControls && web.Visible && !status.Visible)) return;
+        customFrame = !customFrame;
+        WindowChrome.RefreshFrame(Handle);
+        PublishVisibility();
+    }
+
+    protected override void WndProc(ref Message m)
+    {
+        if (m.Msg != WindowChrome.NonClientCalcSize || m.WParam == IntPtr.Zero || !customFrame) { base.WndProc(ref m); return; }
+        int top = System.Runtime.InteropServices.Marshal.ReadInt32(m.LParam, 4);
+        base.WndProc(ref m);
+        System.Runtime.InteropServices.Marshal.WriteInt32(m.LParam, 4, top + WindowChrome.MaximizedInset(Handle, DeviceDpi));
+        m.Result = IntPtr.Zero;
+    }
+
     private bool ConfirmStop() => MessageBox.Show(this,
         "Save the files in the editor and finish any running work first. Continuing makes Cage stop the environment, install the verified update, and restart.",
         "Save, stop environment, install, and restart", MessageBoxButtons.OKCancel, MessageBoxIcon.Information) == DialogResult.OK;
@@ -136,7 +156,7 @@ internal sealed class MainWindow : Form
         else { allowQuit = true; Close(); }
     }
     private void Action(string name) => Script("window.cageNativeAction?.(" + JsonSerializer.Serialize(name) + ")");
-    private void PublishVisibility() => Script($"window.cageWindowVisible = {(Visible && WindowState != FormWindowState.Minimized ? "true" : "false")}; window.dispatchEvent(new Event('cage-window-visibility'));");
+    private void PublishVisibility() => Script($"window.cageWindowVisible = {(Visible && WindowState != FormWindowState.Minimized ? "true" : "false")}; window.cageWindowControls = {(customFrame ? "true" : "false")}; window.cageWindowMaximized = {(WindowState == FormWindowState.Maximized ? "true" : "false")}; window.dispatchEvent(new Event('cage-window-visibility'));");
     private void PublishUpdate(Dictionary<string, object?> state) {
         if (state.TryGetValue("phase", out var phase) && phase as string == "failed") _ = Backend.Report("App update failed: " + state.GetValueOrDefault("message"));
         Script("window.dispatchEvent(new CustomEvent('cage-app-update',{detail:" + JsonSerializer.Serialize(state) + "}));");
@@ -174,6 +194,7 @@ internal sealed class MainWindow : Form
             core.Settings.IsStatusBarEnabled = false; core.Settings.IsZoomControlEnabled = false;
             core.Settings.AreBrowserAcceleratorKeysEnabled = false;
             core.Settings.IsPasswordAutosaveEnabled = false; core.Settings.IsGeneralAutofillEnabled = false;
+            core.Settings.IsNonClientRegionSupportEnabled = true;
             core.NavigationStarting += (_, e) => { if (!UpdatePolicy.IsWorkbench(e.Uri, expectedPort)) e.Cancel = true; };
             core.NewWindowRequested += (_, e) => e.Handled = true;
             core.DownloadStarting += (_, e) => e.Cancel = true;
@@ -190,7 +211,7 @@ internal sealed class MainWindow : Form
                     };
                     Error("Opening the workbench failed: " + reason + ". Click \"Retry connection\". If it still fails, keep this message and report it to the maintainers. Background tasks are not stopped automatically."); return;
                 }
-                status.Hide(); web.Show(); web.Focus(); PublishVisibility();
+                status.Hide(); web.Show(); web.Focus(); UpdateFrame(); PublishVisibility();
             };
             await core.AddScriptToExecuteOnDocumentCreatedAsync(BridgeScript);
             if (Program.SmokeOutput != null) await core.AddScriptToExecuteOnDocumentCreatedAsync(SmokeDiagnosticsScript);
@@ -509,6 +530,17 @@ internal sealed class MainWindow : Form
                     if (exit != 0) throw new IOException("Workbench session restore failed");
                     result = new { url = UpdatePolicy.Entry(data.Text("url")).AbsoluteUri }; break;
                 case "reconnect": result = true; _ = Bootstrap(); break;
+                case "window":
+                    switch (request.Text("operation"))
+                    {
+                        case "controls": pageControls = true; UpdateFrame(); break;
+                        case "minimize": WindowState = FormWindowState.Minimized; break;
+                        case "maximize": WindowState = WindowState == FormWindowState.Maximized ? FormWindowState.Normal : FormWindowState.Maximized; break;
+                        case "resize": if (WindowState == FormWindowState.Normal) WindowChrome.ResizeFromTop(Handle); break;
+                        case "close": BeginInvoke(Close); break;
+                        default: throw new InvalidDataException("Unknown native operation");
+                    }
+                    result = true; break;
                 case "quitNow": result = true; allowQuit = true; BeginInvoke(Close); break;
                 default: throw new InvalidDataException("Unknown native operation");
             }

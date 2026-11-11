@@ -7,8 +7,40 @@ internal sealed class WindowChrome(Color background, Color foreground, bool dark
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
+    [DllImport("user32.dll")]
+    private static extern bool IsZoomed(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    private static extern int GetSystemMetricsForDpi(int index, uint dpi);
+
+    [DllImport("user32.dll")]
+    private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int width, int height, uint flags);
+
+    [DllImport("user32.dll")]
+    private static extern bool ReleaseCapture();
+
+    [DllImport("user32.dll")]
+    private static extern bool PostMessage(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam);
+
+    internal const int NonClientCalcSize = 0x0083;
+    private const int NonClientLeftButtonDown = 0x00A1, HitTop = 12;
+    private const int SizeFrameHeight = 33, PaddedBorder = 92;
+    private const uint FrameChanged = 0x0037;
+
     internal static Color ContrastingText(Color value) =>
         value.GetBrightness() < 0.5 ? Color.White : Color.Black;
+
+    internal static void RefreshFrame(IntPtr window) =>
+        SetWindowPos(window, IntPtr.Zero, 0, 0, 0, 0, FrameChanged);
+
+    internal static int MaximizedInset(IntPtr window, int dpi) => IsZoomed(window)
+        ? GetSystemMetricsForDpi(SizeFrameHeight, (uint)dpi) + GetSystemMetricsForDpi(PaddedBorder, (uint)dpi) : 0;
+
+    internal static void ResizeFromTop(IntPtr window)
+    {
+        ReleaseCapture();
+        PostMessage(window, NonClientLeftButtonDown, HitTop, IntPtr.Zero);
+    }
 
     internal void Apply(IntPtr window, MenuStrip? menus)
     {

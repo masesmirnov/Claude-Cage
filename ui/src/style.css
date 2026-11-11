@@ -1343,6 +1343,55 @@ button:active:not(:disabled) {
 svg {
   flex-shrink: 0;
 }
+.window-drag {
+  position: fixed;
+  inset: 0 0 auto;
+  height: var(--workbench-header-height);
+  app-region: drag;
+  pointer-events: none;
+}
+.window-controls {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 10001;
+  display: flex;
+  height: var(--workbench-header-height);
+}
+.window-controls button {
+  width: 46px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  transition: none;
+}
+.window-controls button:hover {
+  background: var(--hover);
+}
+.window-controls .window-close:hover {
+  background: #c42b1c;
+  color: #ffffff;
+}
+.window-controls button:active {
+  transform: none;
+}
+.window-resize {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 4px;
+  cursor: ns-resize;
+}
+[data-window-controls] :is(button, a, input, select, textarea, label, summary, [role], [tabindex], .window-resize) {
+  app-region: no-drag;
+}
+[data-window-controls] :is(.content-heading, .browser-header-cell:last-child .browser-tab-bar, .claude-desktop-toolbar):not(.split-left *) {
+  padding-right: 150px;
+}
+[data-window-controls] .settings-main {
+  padding-top: var(--workbench-header-height);
+}
 .workbench-shell {
   display: flex;
   height: 100%;
