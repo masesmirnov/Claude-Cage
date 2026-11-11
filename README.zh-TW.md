@@ -8,9 +8,9 @@
 
 [![Release](https://img.shields.io/github/v/release/Lee-xeo/Claude-Cage?include_prereleases)](https://github.com/Lee-xeo/Claude-Cage/releases) [![CI](https://github.com/Lee-xeo/Claude-Cage/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Lee-xeo/Claude-Cage/actions/workflows/ci.yml) [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**[專案主頁](https://lee-xeo.github.io/Claude-Cage/) · [下載應用程式](https://lee-xeo.github.io/Claude-Cage/zh-TW/#download) · [開始使用](docs/getting-started.md) · [常見問題](docs/troubleshooting.md) · [使用文件（簡體中文）](https://lee-xeo.github.io/Claude-Cage/docs/)**
+**[專案主頁](https://lee-xeo.github.io/Claude-Cage/) · [下載應用程式](https://lee-xeo.github.io/Claude-Cage/zh-TW/#download) · [開始使用](docs/getting-started.md) · [常見問題](docs/troubleshooting.md) · [使用文件](https://lee-xeo.github.io/Claude-Cage/docs/)**
 
-[简体中文](README.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [العربية](README.ar.md) · [فارسی](README.fa.md) · [한국어](README.ko.md) · [Español](README.es.md) · [မြန်မာဘာသာ](README.my.md) · [Беларуская](README.be.md) · [پښتو](README.ps.md) · [دری](README.prs.md) · [አማርኛ](README.am.md) · [Soomaali](README.so.md) · [ትግርኛ](README.ti.md) · [Français](README.fr.md)
+[English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [العربية](README.ar.md) · [فارسی](README.fa.md) · [한국어](README.ko.md) · [Español](README.es.md) · [မြန်မာဘာသာ](README.my.md) · [Беларуская](README.be.md) · [پښتو](README.ps.md) · [دری](README.prs.md) · [አማርኛ](README.am.md) · [Soomaali](README.so.md) · [ትግርኛ](README.ti.md) · [Français](README.fr.md)
 
 </div>
 
@@ -62,7 +62,7 @@ Claude Cage 讓你在熟悉的系統裡與 Claude 一起工作：Mac 上使用 m
 Cage 支援 macOS、Windows 和 Linux：macOS 14+ 的 Apple Silicon Mac、Windows 10 22H2 / 11 x64，以及 Debian 12 / Ubuntu 22.04 / 24.04 x86_64。 Intel Mac、Windows ARM64 和 Linux ARM64 尚不受支援。 [macOS](docs/getting-started.md) · [Windows](docs/windows.md) · [Linux](docs/linux.md)。
 
 1. 開啟[專案主頁](https://lee-xeo.github.io/Claude-Cage/zh-TW/#download)，點選「下載應用程式」並選擇平台。
-2. macOS：開啟安裝包，將 **Cage** 拖入 **Applications（應用程式）**，再從“應用程式”啟動。Windows：[安裝說明](docs/windows.md#安装并开始工作) · Linux：[安裝說明](docs/linux.md#安装并开始工作)。
+2. macOS：開啟安裝包，將 **Cage** 拖入 **Applications（應用程式）**，再從“應用程式”啟動。Windows：[安裝說明](docs/windows.md#install-and-get-started) · Linux：[安裝說明](docs/linux.md#install-and-get-started)。
 3. 按應用內引導配置自己的代理，啟動環境後開啟專案。
 
 安裝包隨附工作臺和代理核心，無需先安裝 Go、Node.js、Docker 或 Clash。首次建立環境時選擇客機系統與儲存位置，再準備對應的官方系統映像和開發工具。Cage 不提供作業系統授權、代理服務或 Claude 帳戶。
@@ -94,7 +94,7 @@ macOS 和已簽章 Windows 版本支援透過所選代理更新；Windows 未簽
 - 預設公網出站支援 IPv4 TCP，DNS 透過同一代理；公網 UDP、IPv6、ICMP 及主機和區域網路直連受限。主動啟用 Tailscale 後，可依私網權限連接裝置。
 - 網路檢查展示當前配置和取樣證據，無法保證賬戶不會受到平臺限制，也不能代替完整的虛擬化安全審計。
 
-詳細機制見[網路與資料邊界](docs/getting-started.md#网络与数据边界)。
+詳細機制見[網路與資料邊界](docs/getting-started.md#network-and-data-boundaries)。
 
 ## 文件與貢獻
 
@@ -105,7 +105,7 @@ macOS 和已簽章 Windows 版本支援透過所選代理更新；Windows 未簽
 | macOS / Windows / Debian / Ubuntu 22.04 | [選擇客機系統](https://lee-xeo.github.io/Claude-Cage/docs/guest-systems/) |
 | 第一次安裝、配置代理、開啟專案 | [開始使用](docs/getting-started.md) |
 | 處理下載、啟動、聯網和登入問題 | [常見問題與恢復](docs/troubleshooting.md) |
-| 瞭解按鍵、外觀、資料儲存和退出行為 | [日常使用](docs/getting-started.md#日常使用) |
+| 瞭解按鍵、外觀、資料儲存和退出行為 | [日常使用](docs/getting-started.md#daily-use) |
 | 報告可復現問題 | [GitHub Issues](https://github.com/Lee-xeo/Claude-Cage/issues) |
 
 本專案仍在快速迭代中，歡迎加入交流群提意見，歡迎社群大佬一起維護

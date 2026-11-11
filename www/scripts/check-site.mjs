@@ -8,19 +8,18 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const readme = fs.readFileSync(path.join(root,'README.md'),'utf8');
 const menu = readme.split('\n').find(line => line.includes('(README.md)') && line.includes('(README.'));
 assert.ok(menu, 'README language navigation is missing');
-const codes = [...menu.matchAll(/\]\(README(?:\.([\w-]+))?\.md\)/g)].map(m => m[1] || 'zh');
-// README.md has no dot before the base name's extension in the optional group.
-assert.equal(codes[0], 'zh');
-assert.ok(!codes.includes('en'));
+const codes = [...menu.matchAll(/\]\(README(?:\.([\w-]+))?\.md\)/g)].map(m => m[1] || 'en').filter(code => !code.startsWith('zh'));
+assert.equal(codes[0], 'en');
+const route = code => code === 'en' ? '' : `${code}/`;
 const dist = path.join(root,'www/dist');
 const published = JSON.parse(fs.readFileSync(path.join(root, 'www/src/data/release.json'), 'utf8'));
 for (const code of codes) {
-  const html = fs.readFileSync(path.join(dist,code === 'zh' ? '' : code,'index.html'),'utf8');
+  const html = fs.readFileSync(path.join(dist,route(code),'index.html'),'utf8');
   const picker = html.match(/<details\b[^>]*id="site-language"[^>]*>([\s\S]*?)<\/details>/)?.[1];
   assert.ok(picker, `${code}: missing language picker`);
   const options = [...picker.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(m=>m[1]);
   assert.equal(options.length,codes.length, `${code}: language dropdown missing options`);
-  assert.deepEqual(options, codes.map(locale => `/Claude-Cage/${locale === 'zh' ? '' : locale + '/'}`), `${code}: incorrect language destinations`);
+  assert.deepEqual(options, codes.map(locale => `/Claude-Cage/${route(locale)}`), `${code}: incorrect language destinations`);
   assert.equal([...picker.matchAll(/aria-current="page"/g)].length, 1, `${code}: current language must be marked once`);
   assert.ok(!html.includes('<select'), `${code}: system popup selector remains`);
   assert.ok(!options.some(url=>url.endsWith('/en/')), `${code}: unexpected English route`);
@@ -67,7 +66,7 @@ for (const relative of guideFiles) {
   const html = fs.readFileSync(filename, 'utf8');
   assert.ok(html.includes('id="guide-search"'), `${relative}: missing search`);
   assert.ok(html.includes('id="guide-article"'), `${relative}: missing article`);
-  assert.ok(html.includes('aria-label="前后章节"'), `${relative}: missing chapter navigation`);
+  assert.ok(html.includes('aria-label="Previous and next chapters"'), `${relative}: missing chapter navigation`);
   assert.ok(!html.includes('/Users/'), `${relative}: local developer path leaked`);
   assert.ok(!html.includes('<select'), `${relative}: system popup selector remains`);
   assert.equal([...html.matchAll(/<h1\b/g)].length, 1, `${relative}: expected one page title`);
@@ -87,7 +86,7 @@ for (const relative of guideFiles) {
   }
 }
 for (const code of codes) {
-  const html = fs.readFileSync(path.join(dist, code === 'zh' ? '' : code, 'index.html'), 'utf8');
+  const html = fs.readFileSync(path.join(dist, route(code), 'index.html'), 'utf8');
   assert.ok(html.includes('href="/Claude-Cage/docs/"'), `${code}: homepage needs a guide entry`);
 }
 console.log(`Verified ${guideFiles.length} user guide pages, local links, anchors, search and homepage entries.`);
@@ -95,9 +94,9 @@ console.log(`Verified ${guideFiles.length} user guide pages, local links, anchor
 const agentGuide = fs.readFileSync(path.join(dist, 'agent.md'), 'utf8');
 assert.equal(agentGuide, fs.readFileSync(path.join(dist, 'llms-full.txt'), 'utf8'), 'Agent text copies must share the same source');
 assert.ok(agentGuide.includes('agent capabilities') && agentGuide.includes('job_not_found'), 'Agent guide lacks discovery or recovery contract');
-assert.ok(!agentGuide.includes('title: 让 Agent'), 'Agent Markdown must omit frontmatter');
+assert.ok(!agentGuide.includes('title: Let an agent'), 'Agent Markdown must omit frontmatter');
 for (const name of ['llms.txt', 'agent-bootstrap.mjs', 'cage-install.sh']) assert.ok(fs.existsSync(path.join(dist, name)), `Missing Agent entry ${name}`);
-assert.ok(fs.readFileSync(path.join(dist, 'docs/agent/index.html'), 'utf8').includes('JSON 结果和异步任务'), 'Rendered Agent guide missing');
+assert.ok(fs.readFileSync(path.join(dist, 'docs/agent/index.html'), 'utf8').includes('JSON results and asynchronous jobs'), 'Rendered Agent guide missing');
 console.log('Verified Agent Markdown, discovery, download helper and rendered guide.');
 
 const screenshotManifest = JSON.parse(fs.readFileSync(path.join(root, 'www/public/docs/screenshots/manifest.json'), 'utf8'));

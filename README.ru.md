@@ -8,9 +8,9 @@
 
 [![Release](https://img.shields.io/github/v/release/Lee-xeo/Claude-Cage?include_prereleases)](https://github.com/Lee-xeo/Claude-Cage/releases) [![CI](https://github.com/Lee-xeo/Claude-Cage/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Lee-xeo/Claude-Cage/actions/workflows/ci.yml) [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**[Сайт проекта](https://lee-xeo.github.io/Claude-Cage/) · [Скачать приложение](https://lee-xeo.github.io/Claude-Cage/ru/#download) · [Начало работы](docs/getting-started.md) · [Часто задаваемые вопросы](docs/troubleshooting.md) · [Руководство (на китайском)](https://lee-xeo.github.io/Claude-Cage/docs/)**
+**[Сайт проекта](https://lee-xeo.github.io/Claude-Cage/) · [Скачать приложение](https://lee-xeo.github.io/Claude-Cage/ru/#download) · [Начало работы](docs/getting-started.md) · [Часто задаваемые вопросы](docs/troubleshooting.md) · [Руководство](https://lee-xeo.github.io/Claude-Cage/docs/)**
 
-[简体中文](README.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [العربية](README.ar.md) · [فارسی](README.fa.md) · [한국어](README.ko.md) · [Español](README.es.md) · [မြန်မာဘာသာ](README.my.md) · [Беларуская](README.be.md) · [پښتو](README.ps.md) · [دری](README.prs.md) · [አማርኛ](README.am.md) · [Soomaali](README.so.md) · [ትግርኛ](README.ti.md) · [Français](README.fr.md)
+[English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [العربية](README.ar.md) · [فارسی](README.fa.md) · [한국어](README.ko.md) · [Español](README.es.md) · [မြန်မာဘာသာ](README.my.md) · [Беларуская](README.be.md) · [پښتو](README.ps.md) · [دری](README.prs.md) · [አማርኛ](README.am.md) · [Soomaali](README.so.md) · [ትግርኛ](README.ti.md) · [Français](README.fr.md)
 
 </div>
 
@@ -62,7 +62,7 @@ Claude Cage объединяет терминал, браузер, редакт�
 Cage поддерживает macOS, Windows и Linux: Apple Silicon с macOS 14+, Windows 10 22H2 / 11 x64 и Debian 12 / Ubuntu 22.04 / 24.04 x86_64. Intel Mac, Windows ARM64 и Linux ARM64 пока не поддерживаются. [macOS](docs/getting-started.md) · [Windows](docs/windows.md) · [Linux](docs/linux.md).
 
 1. Скачать приложение: [macOS / Windows / Linux](https://lee-xeo.github.io/Claude-Cage/ru/#download).
-2. macOS: Откройте установочный пакет и перетащите **Cage** в **Приложения**; затем запустите его из приложений. Windows: [Инструкция по установке](docs/windows.md#安装并开始工作) · Linux: [Инструкция по установке](docs/linux.md#安装并开始工作).
+2. macOS: Откройте установочный пакет и перетащите **Cage** в **Приложения**; затем запустите его из приложений. Windows: [Инструкция по установке](docs/windows.md#install-and-get-started) · Linux: [Инструкция по установке](docs/linux.md#install-and-get-started).
 3. Следуйте инструкциям в приложении, чтобы настроить собственный сетевой прокси, запустить среду и открыть проект.
 
 Установщик включает рабочую среду и ядро прокси. Предварительно устанавливать Go, Node.js, Docker или Clash не нужно. При создании выберите гостевую систему и место хранения, затем подготовьте официальный образ и инструменты. Cage не предоставляет лицензии ОС, услуги прокси или аккаунты Claude.
@@ -94,7 +94,7 @@ macOS и подписанные версии Windows обновляются че
 - По умолчанию публичный исходящий трафик поддерживает IPv4 TCP, а DNS идёт через тот же прокси. Публичные UDP, IPv6, ICMP и прямой доступ к хосту или локальной сети ограничены. При явном включении Tailscale доступ к устройствам определяется правилами частной сети.
 - Сетевые проверки показывают текущую конфигурацию и выборочные доказательства. Они не могут гарантировать, что учетная запись обойдет ограничения платформы, и не заменяют полный аудит безопасности виртуализации.
 
-Подробности см. [Границы сети и данных](docs/getting-started.md#网络与数据边界).
+Подробности см. [Границы сети и данных](docs/getting-started.md#network-and-data-boundaries).
 
 ## Документация и вклад
 
@@ -105,7 +105,7 @@ macOS и подписанные версии Windows обновляются че
 | macOS / Windows / Debian / Ubuntu 22.04 | [Выбор гостевой системы](https://lee-xeo.github.io/Claude-Cage/docs/guest-systems/) |
 | Установите, настройте сетевой прокси и откройте свой первый проект. | [Начало работы](docs/getting-started.md) |
 | Устранение неполадок при загрузке, запуске, подключении и входе в систему | [FAQ и восстановление](docs/troubleshooting.md) |
-| Изучите элементы управления клавиатурой, внешний вид, сохранение данных и поведение при выходе. | [Ежедневное использование](docs/getting-started.md#日常使用) |
+| Изучите элементы управления клавиатурой, внешний вид, сохранение данных и поведение при выходе. | [Ежедневное использование](docs/getting-started.md#daily-use) |
 | Сообщить о воспроизводимой проблеме | [GitHub Issues](https://github.com/Lee-xeo/Claude-Cage/issues) |
 
 Проект быстро развивается. Присоединяйтесь к группе сообщества, чтобы поделиться отзывами; сопровождающие сообщества приветствуются.
@@ -118,7 +118,7 @@ macOS и подписанные версии Windows обновляются че
 
 Cage происходит от [agent-vm](https://github.com/sylvinus/agent-vm).
 
-Основная лицензия проекта [MIT](LICENSE). Входящие в комплект компоненты сохраняют соответствующие лицензии. Mihomo распространяется как отдельный исполняемый файл под лицензией GPL-3.0. Также см. [NOTICE](NOTICE) · [Сторонние лицензии](THIRD_PARTY_LICENSES) · [noVNC](ui/vendor/novnc/LICENSE.txt)。
+Основная лицензия проекта [MIT](LICENSE). Входящие в комплект компоненты сохраняют соответствующие лицензии. Mihomo распространяется как отдельный исполняемый файл под лицензией GPL-3.0. Также см. [NOTICE](NOTICE) · [Сторонние лицензии](THIRD_PARTY_LICENSES) · [noVNC](ui/vendor/novnc/LICENSE.txt).
 
 Cage — это независимый общественный проект, не связанный с Anthropic.
 

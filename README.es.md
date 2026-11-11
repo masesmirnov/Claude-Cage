@@ -8,9 +8,9 @@
 
 [![Release](https://img.shields.io/github/v/release/Lee-xeo/Claude-Cage?include_prereleases)](https://github.com/Lee-xeo/Claude-Cage/releases) [![CI](https://github.com/Lee-xeo/Claude-Cage/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Lee-xeo/Claude-Cage/actions/workflows/ci.yml) [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**[Sitio web del proyecto](https://lee-xeo.github.io/Claude-Cage/) · [Descargar aplicación](https://lee-xeo.github.io/Claude-Cage/es/#download) · [Empezando](docs/getting-started.md) · [Preguntas frecuentes](docs/troubleshooting.md) · [Guía de uso (chino)](https://lee-xeo.github.io/Claude-Cage/docs/)**
+**[Sitio web del proyecto](https://lee-xeo.github.io/Claude-Cage/) · [Descargar aplicación](https://lee-xeo.github.io/Claude-Cage/es/#download) · [Empezando](docs/getting-started.md) · [Preguntas frecuentes](docs/troubleshooting.md) · [Guía de uso](https://lee-xeo.github.io/Claude-Cage/docs/)**
 
-[简体中文](README.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [العربية](README.ar.md) · [فارسی](README.fa.md) · [한국어](README.ko.md) · [Español](README.es.md) · [မြန်မာဘာသာ](README.my.md) · [Беларуская](README.be.md) · [پښتو](README.ps.md) · [دری](README.prs.md) · [አማርኛ](README.am.md) · [Soomaali](README.so.md) · [ትግርኛ](README.ti.md) · [Français](README.fr.md)
+[English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [العربية](README.ar.md) · [فارسی](README.fa.md) · [한국어](README.ko.md) · [Español](README.es.md) · [မြန်မာဘာသာ](README.my.md) · [Беларуская](README.be.md) · [پښتو](README.ps.md) · [دری](README.prs.md) · [አማርኛ](README.am.md) · [Soomaali](README.so.md) · [ትግርኛ](README.ti.md) · [Français](README.fr.md)
 
 </div>
 
@@ -62,7 +62,7 @@ Todo lo que necesita es un punto final de proxy de red confiable. Este proyecto 
 Cage admite macOS, Windows y Linux: Apple Silicon con macOS 14+, Windows 10 22H2 / 11 x64 y Debian 12 / Ubuntu 22.04 / 24.04 x86_64. Intel Mac, Windows ARM64 y Linux ARM64 aún no son compatibles. [macOS](docs/getting-started.md) · [Windows](docs/windows.md) · [Linux](docs/linux.md).
 
 1. Descargar aplicación: [macOS / Windows / Linux](https://lee-xeo.github.io/Claude-Cage/es/#download).
-2. macOS: Abra el paquete de instalación y arrastre **Cage** en **Aplicaciones**; luego ejecútelo desde Aplicaciones. Windows: [Guía de instalación](docs/windows.md#安装并开始工作) · Linux: [Guía de instalación](docs/linux.md#安装并开始工作).
+2. macOS: Abra el paquete de instalación y arrastre **Cage** en **Aplicaciones**; luego ejecútelo desde Aplicaciones. Windows: [Guía de instalación](docs/windows.md#install-and-get-started) · Linux: [Guía de instalación](docs/linux.md#install-and-get-started).
 3. Siga las instrucciones de la aplicación para configurar su propio proxy de red, iniciar el entorno y abrir un proyecto.
 
 El instalador incluye el espacio de trabajo y el motor del proxy. No necesitas instalar antes Go, Node.js, Docker ni Clash. Al crear el entorno, elige el sistema invitado y su ubicación y prepara la imagen oficial y las herramientas. Cage no proporciona licencias del sistema, servicio de proxy ni cuentas Claude.
@@ -94,7 +94,7 @@ Haga clic en 'Abrir proyecto' para seleccionar una carpeta en su equipo, abra un
 - Por defecto, las conexiones públicas salientes admiten IPv4 TCP y DNS usa el mismo proxy. UDP, IPv6, ICMP públicos y el acceso directo al equipo o a la red local están limitados. Al activar Tailscale, el acceso a los dispositivos sigue los permisos de la red privada.
 - Las comprobaciones de red muestran la configuración actual y pruebas de muestra. No pueden garantizar que una cuenta evite las restricciones de la plataforma y no reemplazan una auditoría completa de seguridad de virtualización.
 
-Para más detalles, consulte [Límites de red y datos](docs/getting-started.md#网络与数据边界).
+Para más detalles, consulte [Límites de red y datos](docs/getting-started.md#network-and-data-boundaries).
 
 ## Documentación y aportaciones
 
@@ -105,7 +105,7 @@ Para consultar el índice completo, consulte [Índice de documentación](docs/RE
 | macOS / Windows / Debian / Ubuntu 22.04 | [Elegir el sistema invitado](https://lee-xeo.github.io/Claude-Cage/docs/guest-systems/) |
 | Instale, configure un proxy de red y abra su primer proyecto | [Empezando](docs/getting-started.md) |
 | Solucionar problemas de descargas, inicio, conectividad e inicio de sesión | [Preguntas frecuentes y recuperación](docs/troubleshooting.md) |
-| Aprenda los controles del teclado, la apariencia, la persistencia de datos y el comportamiento de salida | [Uso diario](docs/getting-started.md#日常使用) |
+| Aprenda los controles del teclado, la apariencia, la persistencia de datos y el comportamiento de salida | [Uso diario](docs/getting-started.md#daily-use) |
 | Informar un problema reproducible | [GitHub Issues](https://github.com/Lee-xeo/Claude-Cage/issues) |
 
 El proyecto está evolucionando rápidamente. Únase al grupo comunitario para compartir comentarios; Los mantenedores de la comunidad son bienvenidos.
@@ -118,7 +118,7 @@ El proyecto está evolucionando rápidamente. Únase al grupo comunitario para c
 
 La jaula se deriva de [agent-vm](https://github.com/sylvinus/agent-vm).
 
-La licencia principal del proyecto es [MIT](LICENSE). Los componentes incluidos conservan sus respectivas licencias. Mihomo se distribuye como un ejecutable independiente bajo GPL-3.0. Ver también [NOTICE](NOTICE) · [Licencias de terceros](THIRD_PARTY_LICENSES) · [noVNC](ui/vendor/novnc/LICENSE.txt)。
+La licencia principal del proyecto es [MIT](LICENSE). Los componentes incluidos conservan sus respectivas licencias. Mihomo se distribuye como un ejecutable independiente bajo GPL-3.0. Ver también [NOTICE](NOTICE) · [Licencias de terceros](THIRD_PARTY_LICENSES) · [noVNC](ui/vendor/novnc/LICENSE.txt).
 
 Cage es un proyecto comunitario independiente y no está afiliado a Anthropic.
 

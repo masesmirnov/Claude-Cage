@@ -31,11 +31,11 @@ try {
     if (!release.windowsDownloadURL) {
       const status = await dialog.locator('[data-platform="Windows"] .platform-status').textContent();
       assert.ok(status.trim() && !status.trim().startsWith('.exe'), 'unsigned Windows requires an explicit label');
-      if (!route) assert.match(status, /未签名/);
+      if (!route) assert.match(status, /unsigned/);
     }
     const bounds = await dialog.boundingBox();
     assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width + 1, 'download chooser overflows viewport');
-    await page.screenshot({ path: `${output}/${route.replaceAll('/', '') || 'zh'}-${width}.png` });
+    await page.screenshot({ path: `${output}/${route.replaceAll('/', '') || 'en'}-${width}.png` });
     await page.keyboard.press('Escape');
     await dialog.waitFor({ state: 'hidden' });
     await page.goto(new URL(`${route}#download`, origin).href);

@@ -20,12 +20,14 @@ function pair(text: string): [string, string] {
   const bold = text.match(/^\*\*(.+?)\*\*\s*(.*)$/);
   return bold ? [plain(bold[1]), plain(bold[2])] : ['', plain(text)];
 }
+export const defaultLocale: CageLocale = 'en';
+export const readmeFile = (code: CageLocale) => code === 'en' ? 'README.md' : `README.${code}.md`;
 function readCopy(language: typeof languages[number]) {
-  const file = language.code === 'zh' ? 'README.md' : `README.${language.code}.md`;
+  const file = readmeFile(language.code);
   const source = readmes[`../../../${file}`];
   if (!source) throw new Error(`Missing website language source: ${file}`);
   const allHeadings = [...source.matchAll(/^## (.+)$/gm)];
-  const headings = allHeadings.filter(heading => !/^Star (?:History|增长曲线|成長曲線)$/.test(heading[1]));
+  const headings = allHeadings.filter(heading => !/^Star History$/.test(heading[1]));
   if (headings.length !== 9) throw new Error(`${file}: expected the nine shared README sections; update the website mapping when the document structure changes`);
   const sections = headings.map(heading => ({
     title: heading[1], body: source.slice(heading.index! + heading[0].length, allHeadings[allHeadings.indexOf(heading) + 1]?.index ?? source.length),
@@ -43,14 +45,12 @@ function readCopy(language: typeof languages[number]) {
     title: plain(match[1]), label: match[2], href: match[3].startsWith('https://') ? match[3] : `https://github.com/Lee-xeo/Claude-Cage/blob/main/${match[3]}`,
   }));
   const slogan = source.slice(0, headings[0].index).match(/^\*\*(.+?)\*\*$/m)?.[1] || 'Claude Cage';
-  const isChinese = language.code === 'zh' || language.code === 'zh-TW';
   const limit = plain(bullets(boundaries.body).at(-1)!);
   return {
     ...language, title: `Claude Cage — ${plain(slogan)}`, description: reasonParagraphs[1],
     home: 'Claude Cage', start: quick.title, boundary: boundaries.title,
-    hero: isChinese ? '把 Claude 大小姐' : 'Claude Cage',
-    heroAccent: language.code === 'zh' ? '关起来。' : language.code === 'zh-TW' ? '關起來。' : '',
-    tagline: isChinese ? plain(slogan).split(/[，,]/).slice(1).join('，') : plain(slogan),
+    hero: 'Claude Cage',
+    tagline: plain(slogan),
     intro: reasonParagraphs[1], requirements: 'macOS · Windows · Linux · Android · iOS', artAlt: 'Claude Cage',
     why: reason.title, whyText: reasonParagraphs[0], whyNote: limit,
     keyFeatures: bullets(reason.body).map(plain),

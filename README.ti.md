@@ -8,9 +8,9 @@
 
 [![Release](https://img.shields.io/github/v/release/Lee-xeo/Claude-Cage?include_prereleases)](https://github.com/Lee-xeo/Claude-Cage/releases) [![CI](https://github.com/Lee-xeo/Claude-Cage/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Lee-xeo/Claude-Cage/actions/workflows/ci.yml) [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**[መርበብ ሓበሬታ ፕሮጀክት](https://lee-xeo.github.io/Claude-Cage/) · [ነቲ መተግበሪ ኣውርድ](https://lee-xeo.github.io/Claude-Cage/ti/#download) · [ምጅማር](docs/getting-started.md) · [FAQ](docs/troubleshooting.md) · [መምርሒ ኣጠቓቕማ (ብቻይንኛ)](https://lee-xeo.github.io/Claude-Cage/docs/)**
+**[መርበብ ሓበሬታ ፕሮጀክት](https://lee-xeo.github.io/Claude-Cage/) · [ነቲ መተግበሪ ኣውርድ](https://lee-xeo.github.io/Claude-Cage/ti/#download) · [ምጅማር](docs/getting-started.md) · [FAQ](docs/troubleshooting.md) · [መምርሒ ኣጠቓቕማ](https://lee-xeo.github.io/Claude-Cage/docs/)**
 
-[简体中文](README.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [العربية](README.ar.md) · [فارسی](README.fa.md) · [한국어](README.ko.md) · [Español](README.es.md) · [မြန်မာဘာသာ](README.my.md) · [Беларуская](README.be.md) · [پښتو](README.ps.md) · [دری](README.prs.md) · [አማርኛ](README.am.md) · [Soomaali](README.so.md) · [ትግርኛ](README.ti.md) · [Français](README.fr.md)
+[English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [العربية](README.ar.md) · [فارسی](README.fa.md) · [한국어](README.ko.md) · [Español](README.es.md) · [မြန်မာဘာသာ](README.my.md) · [Беларуская](README.be.md) · [پښتو](README.ps.md) · [دری](README.prs.md) · [አማርኛ](README.am.md) · [Soomaali](README.so.md) · [ትግርኛ](README.ti.md) · [Français](README.fr.md)
 
 </div>
 
@@ -62,7 +62,7 @@ Claude Cage ተርሚናል፣ መርበብ መዳህሰሲ፣ ኣርታዒን �
 Cage macOS፣ Windows እና Linux ይድግፍ፦ Apple Silicon ምስ macOS 14+፣ Windows 10 22H2 / 11 x64 እና Debian 12 / Ubuntu 22.04 / 24.04 x86_64. Intel Mac፣ Windows ARM64 እና Linux ARM64 ገና ኣይድገፉን። [macOS](docs/getting-started.md) · [Windows](docs/windows.md) · [Linux](docs/linux.md).
 
 1. ነቲ መተግበሪ ኣውርድ: [macOS / Windows / Linux](https://lee-xeo.github.io/Claude-Cage/ti/#download).
-2. macOS: ነቲ ናይ ምትካል ፓCage ከፊትካ ጎተቶ **Cage** ናብ... **መመልከቲታት**; ድሕሪኡ ካብ Applications ጀምር። Windows: [መምርሒ ምትካል](docs/windows.md#安装并开始工作) · Linux: [መምርሒ ምትካል](docs/linux.md#安装并开始工作).
+2. macOS: ነቲ ናይ ምትካል ፓCage ከፊትካ ጎተቶ **Cage** ናብ... **መመልከቲታት**; ድሕሪኡ ካብ Applications ጀምር። Windows: [መምርሒ ምትካል](docs/windows.md#install-and-get-started) · Linux: [መምርሒ ምትካል](docs/linux.md#install-and-get-started).
 3. ናይ ገዛእ ርእስኻ ኔትወርክ ፕሮክሲ ንምውቃር፣ ነቲ ከባቢ ንምጅማርን ፕሮጀክት ንምኽፋትን ኣብ ውሽጢ ኣፕ ዘሎ መምርሒታት ተኸተል።
 
 መትከሊ ንናይ ስራሕ ቦታን ሞተር ፕሮክሲን የጠቓልል። Go፣ Node.js፣ Docker ወይ Clash ኣቐዲምካ ምትካል ኣየድልን። ኣከባቢ ክትፈጥር ከለኻ ናይ ጋሻ ስርዓትን መኽዘኒ ቦታን ምረጽ፣ ወግዓዊ ምስልን መሳርሒታትን ኣዳሉ። Cage ፍቓድ ስርዓት፣ ኣገልግሎት ፕሮክሲ ወይ ሕሳብ Claude ኣይህብን።
@@ -94,7 +94,7 @@ macOS እና ዝተፈረሙ Windows ስሪቶች ብዝተመርጸ ፕሮክ�
 - ብነባሪ ህዝባዊ ወጻኢ ግንኙነት IPv4 TCP ይድግፍ፣ DNS ብተመሳሳሊ ፕሮክሲ ይሕለፍ። ህዝባዊ UDP፣ IPv6፣ ICMP እና ቀጥታ ናብ ኣአንጋዲ ወይ LAN ግንኙነት ውሱናት እዮም። Tailscale ብግልጺ ምስ ኣንቃሕካ፣ ናይ መሳርሒ ግንኙነት ናይ ውልቃዊ መርበብ ፍቓድ ይኽተል።
 - ኔትወርክ ምፍታሽ ህሉው ውቅርን ናሙና ዝተወሰደ መርትዖን የርኢ። ሓደ ኣካውንት ካብ ናይ መድረኽ ገደባት ከም ዝርሕቕ ውሕስነት ክህቡ ኣይክእሉን እዮም፣ ምሉእ ቨርቹዋላይዜሽን ድሕነት ኦዲት ድማ ኣይትክኡን እዮም።
 
-ንዝርዝር ሓበሬታ ርአ [ዶባት ኔትወርክን ዳታን](docs/getting-started.md#网络与数据边界).
+ንዝርዝር ሓበሬታ ርአ [ዶባት ኔትወርክን ዳታን](docs/getting-started.md#network-and-data-boundaries).
 
 ## ሰነዳትን ኣበርክቶታትን
 
@@ -105,7 +105,7 @@ macOS እና ዝተፈረሙ Windows ስሪቶች ብዝተመርጸ ፕሮክ�
 | macOS / Windows / Debian / Ubuntu 22.04 | [ናይ ጋሻ ስርዓት ምምራጽ](https://lee-xeo.github.io/Claude-Cage/docs/guest-systems/) |
 | ኔትወርክ ፕሮክሲ ምትካል፡ ምውቃር፡ ናይ መጀመርታ ፕሮጀክትካ ድማ ክፈት | [ምጅማር](docs/getting-started.md) |
 | ናይ ምውራድ፣ ምጅማር፣ ምትእስሳርን ምእታውን ጸገማት ምፍታሕ | [FAQን ምሕዋይን](docs/troubleshooting.md) |
-| ቁጽጽር ቁልፊ ሰሌዳ፡ መልክዕ፡ ጽንዓት ዳታን ናይ ምውጻእ ባህሪን ተማሃር | [መዓልታዊ ኣጠቓቕማ](docs/getting-started.md#日常使用) |
+| ቁጽጽር ቁልፊ ሰሌዳ፡ መልክዕ፡ ጽንዓት ዳታን ናይ ምውጻእ ባህሪን ተማሃር | [መዓልታዊ ኣጠቓቕማ](docs/getting-started.md#daily-use) |
 | ክባዛሕ ዝኽእል ጉዳይ ሪፖርት ግበሩ | [GitHub Issues](https://github.com/Lee-xeo/Claude-Cage/issues) |
 
 እቲ ፕሮጀክት ብቕልጡፍ ይምዕብል ኣሎ። ርእይቶ ንምክፋል ኣብቲ ናይ ማሕበረሰብ ጉጅለ ​​ተጸንበሩ፤ ሕብረተሰብ ዝሕልዉ ሰባት ድሉዋት እዮም።
@@ -118,7 +118,7 @@ macOS እና ዝተፈረሙ Windows ስሪቶች ብዝተመርጸ ፕሮክ�
 
 ጓጓ ካብ ዝመጸ እዩ። [agent-vm](https://github.com/sylvinus/agent-vm).
 
-እቲ ፕሮጀክት ቀንዲ ፍቓድ... [MIT](LICENSE). ዝተጠርነፉ ኣካላት በብወገኖም ፍቓድ ይዕቅቡ። ሚሆሞ ኣብ ትሕቲ GPL-3.0 ከም ፍሉይ ፈጻሚ ይዝርጋሕ። ከምኡ ውን ርአ [NOTICE](NOTICE) · [ናይ ሳልሳይ ወገን ፍቓድ](THIRD_PARTY_LICENSES) · [noVNC](ui/vendor/novnc/LICENSE.txt)。
+እቲ ፕሮጀክት ቀንዲ ፍቓድ... [MIT](LICENSE). ዝተጠርነፉ ኣካላት በብወገኖም ፍቓድ ይዕቅቡ። ሚሆሞ ኣብ ትሕቲ GPL-3.0 ከም ፍሉይ ፈጻሚ ይዝርጋሕ። ከምኡ ውን ርአ [NOTICE](NOTICE) · [ናይ ሳልሳይ ወገን ፍቓድ](THIRD_PARTY_LICENSES) · [noVNC](ui/vendor/novnc/LICENSE.txt).
 
 Cage ናጻ ማሕበረሰባዊ ፕሮጀክት ኮይኑ ምስ ኣንትሮፒክ ርክብ የብሉን።
 
