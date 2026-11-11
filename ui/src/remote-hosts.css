@@ -36,6 +36,7 @@
 .environment-picker h1 { font-size:1.7rem; margin:0 0 8px; color:var(--strong); }
 .environment-picker p { line-height:1.65; margin:0 0 18px; color:var(--muted); }
 .environment-actions, .remote-button-row { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.environment-picker :is(.environment-actions, .environment-recent) + p { margin-top:18px; }
 .environment-recent { margin-top:24px; border-top:1px solid var(--line); }
 .environment-recent h2 { margin:16px 0 8px; color:var(--muted); font-size:.88rem; font-weight:500; }
 .environment-recent button { width:100%; justify-content:flex-start; gap:8px; border:none; background:var(--chrome); margin-bottom:4px; }
