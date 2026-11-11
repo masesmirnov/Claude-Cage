@@ -1,65 +1,65 @@
 ---
-title: Tailscale 私网
-description: 登录 Tailscale，让 Cage 加入自己的私网，查看设备并连接 SSH、Web 与其他 TCP 服务。
-group: 日常工作
+title: Tailscale private network
+description: Sign in to Tailscale, join Cage to your private network, view devices, and connect to SSH, web and other TCP services.
+group: Daily use
 order: 6.5
-keywords: Tailscale tailnet 设备 私网 SSH Web TCP 代理
+keywords: Tailscale tailnet devices private network SSH web TCP proxy
 ---
 
-## 登录并加入私网
+## Sign in and join the private network
 
-工作台左侧「浏览器」下方的「Tailscale」，用于将当前 Cage 环境作为一台独立设备加入你的 Tailscale 网络。登录状态保存在客机磁盘中，关闭面板不会断开连接。本机、手机或服务器也需要安装 Tailscale，并加入同一网络。
+The "Tailscale" item below "Browser" in the workbench's left column adds the current Cage environment to your Tailscale network as a separate device. Sign-in state is saved on the guest disk, and closing the panel does not disconnect it. Your computer, phone or server also needs Tailscale installed and joined to the same network.
 
-启动 Cage 环境，打开 Tailscale 面板，点击「连接并登录」。在打开的官方授权页面完成登录，然后重新打开 Tailscale 面板。连接成功后，可看到当前账号、网络名称、Cage 的私网地址与设备清单。网络要求设备审批时，面板显示「等待管理员批准」，由网络管理员在 Tailscale 管理台批准 Cage 后即可继续。
+Start the Cage environment, open the Tailscale panel, and click "Connect and sign in". Complete the sign-in on the official authorization page that opens, then reopen the Tailscale panel. After a successful connection, you can see the current account, network name, Cage's private address and the device list. If the network requires device approval, the panel shows "Waiting for administrator approval". Once a network administrator approves Cage in the Tailscale admin console, you can continue.
 
-Google 登录若提示“此浏览器或应用可能不安全”，先更新 Cage 与环境组件，停止并重新启动环境，再回到 Tailscale 面板点击「重新发起登录」。浏览器启动设置需要重启环境才能生效，请从新授权页继续操作。网页登录状态和设备身份保存在原有个人数据中。
+If Google sign-in shows "This browser or app may not be secure", first update Cage and the environment components, stop and restart the environment, then go back to the Tailscale panel and click "Sign in again". Browser startup settings only take effect after the environment restarts, so continue from the new authorization page. Web sign-in state and device identity are kept in your existing personal data.
 
-Debian 环境首次使用时需点击「安装 Tailscale」。macOS 和 Windows 环境随客机组件提供，已有环境可按面板提示更新环境组件。Linux 已安装的 Tailscale 也会随环境组件同步更新，设备身份和 SSH 公钥保留；尚未安装的环境继续按需安装。
+On a Debian environment, click "Install Tailscale" the first time you use it. macOS and Windows environments include it with the guest components, and existing environments can update the environment components as the panel prompts. Tailscale already installed on Linux is also updated with the environment components, and the device identity and SSH public key are kept. Environments that do not have it installed yet install it on demand.
 
-设备清单显示当前网络允许 Cage 发现的设备，在线设备排在前面，支持按名称、系统或私网地址搜索。清单为空时，先检查其他设备是否加入同一网络，以及网络的设备访问规则。
+The device list shows the devices this network lets Cage discover. Online devices appear first, and you can search by name, system or private address. If the list is empty, first check whether other devices have joined the same network and what the network's device access rules are.
 
-## 使用设备上的服务
+## Use services on devices
 
-在设备旁点击「使用设备」，按服务类型选择连接方式。设备在线表示它已连接 Tailscale，服务是否可用仍取决于目标设备是否启动该服务、端口和访问权限。
+Click "Use device" next to a device and choose a connection method based on the service type. Online means the device is connected to Tailscale. Whether the service is usable still depends on whether the target device has started that service, and on the port and access permissions.
 
-### Web、数据库与其他 TCP 服务
+### Web, databases and other TCP services
 
-例如，服务器上的开发网站监听端口 `8080`：填写「服务端口」为 `8080`，点击「创建连接地址」。面板会给出类似 `127.0.0.1:32123` 的地址，在 Cage 内的应用中使用这个地址，即可连接到该设备的 `8080` 端口。HTTP 网站可直接点击「打开 HTTP 页面」。数据库客户端等应用填写此地址和对应端口，并按目标服务的要求认证。
+For example, if a development website on your server listens on port `8080`, enter `8080` as "Service port" and click "Create connection address". The panel gives you an address like `127.0.0.1:32123`. Use this address in apps inside Cage to connect to port `8080` on that device. For an HTTP site, click "Open HTTP page" directly. For database clients and similar apps, enter this address and the matching port, and authenticate as the target service requires.
 
-这些地址只在当前 Cage 环境内生效，在宿主机打开同一个回环地址无法连接。映射不修改目标服务的登录方式。HTTPS 和其他要求目标域名与证书一致的服务，应使用下述私网代理，保留原目标域名和证书校验。
+These addresses only work inside the current Cage environment. Opening the same loopback address on the host will not connect. The mapping does not change the target service's sign-in method. For HTTPS and other services that require the target domain and certificate to match, use the private-network proxy described below, which keeps the original target domain and certificate validation.
 
-### 需要设备域名、HTTPS 或多个端口的应用
+### Apps that need device domains, HTTPS or multiple ports
 
-展开「应用访问私网」，点击「复制私网代理地址」，将其配置为 Cage 内应用的 HTTP 代理。代理支持 HTTP 和 HTTPS CONNECT，仅连接当前私网中可见的设备；请只为需要访问私网的应用配置它。该专用代理拒绝公网目标，不能用来替代应用原有的公网代理。
+Expand "Apps using the private network", click "Copy private network proxy address", and configure it as the HTTP proxy of apps inside Cage. The proxy supports HTTP and HTTPS CONNECT, and only connects to devices visible on the current private network. Configure it only for apps that need private-network access. This dedicated proxy rejects public targets and cannot replace an app's existing public proxy.
 
-复制的地址包含本地访问凭据，不要分享给他人。组件进程重启后需重新复制代理地址。
+The copied address includes local access credentials, so do not share it. After the component process restarts, copy the proxy address again.
 
-Cage 使用内嵌 Tailscale 节点。SSH 已自动配置私网传输，其他应用通过本地连接地址或 HTTP 代理访问 TCP 服务。系统 VPN、任意应用直接使用私网地址、UDP、子网路由和出口节点未启用。此功能不接管宿主机的 Tailscale 或系统网络。
+Cage uses an embedded Tailscale node. SSH is already configured for private-network transport, and other apps reach TCP services through the local connection address or the HTTP proxy. The system VPN, apps using private addresses directly, UDP, subnet routing and exit nodes are not enabled. This feature does not take over the host's Tailscale or system network.
 
-### 从 Cage SSH 到其他设备
+### SSH from Cage to other devices
 
-目标设备需开启远程登录或 SSH 服务。在「SSH 连接」中填写该设备的系统用户名，点击「复制 SSH 命令」，在 Cage 终端运行。认证使用目标 SSH 服务支持的密码或密钥，Cage 不会自动导入宿主机私钥。
+The target device must have remote login or an SSH service enabled. In "SSH connection", enter the device's system username, click "Copy SSH command", and run it in the Cage terminal. Authentication uses the password or key that the target SSH service supports. Cage does not import the host's private keys automatically.
 
-普通 `ssh`、SFTP 和使用 OpenSSH 的工具，也可使用设备的私网 IPv4、完整名称或短名称。Cage 为已发现设备维护专用的 OpenSSH 传输配置，保留用户原有规则。
+Ordinary `ssh`, SFTP and tools that use OpenSSH can also use the device's private IPv4 address, full name or short name. Cage maintains a dedicated OpenSSH transport configuration for discovered devices and keeps the user's existing rules.
 
-## 从其他设备 SSH 到 Cage
+## SSH from other devices to Cage
 
-仅在需要远程终端、SFTP 或编辑器连接时，展开「从其他设备 SSH 到 Cage」。将连接设备的 SSH 公钥添加到面板，私钥保留在原设备。面板接受一条公钥，不接受私钥或带有限制选项的 `authorized_keys` 条目。
+Expand "SSH into Cage from other devices" only when you need a remote terminal, SFTP or editor connection. Add the connecting device's SSH public key to the panel, and keep the private key on that device. The panel accepts one public key, not a private key or an `authorized_keys` entry with restriction options.
 
-复制面板给出的命令，在连接设备的终端运行，例如：
+Copy the command shown in the panel and run it in the terminal of the connecting device, for example:
 
 ```sh
 ssh cage@100.88.2.3
 ```
 
-首次连接时核对并保存 SSH 服务端指纹。登录后拥有当前 Cage 客机普通用户的权限，可使用交互终端、远程命令、SFTP 和 SSH 本地端口转发。移除公钥可拒绝该密钥的新连接；断开 Tailscale 可结束已有私网连接。
+The first time you connect, verify and save the SSH server fingerprint. After signing in, you have the permissions of a regular user of the current Cage guest, and can use an interactive terminal, remote commands, SFTP and SSH local port forwarding. Removing a public key rejects new connections with that key. Disconnecting Tailscale ends existing private-network connections.
 
-这里使用标准 SSH 公钥认证。Tailscale 专用的「Tailscale SSH」身份认证需另行配置，登录 Tailscale 本身不自动授予系统 SSH 权限。
+This uses standard SSH public-key authentication. Tailscale's own "Tailscale SSH" identity authentication must be configured separately, and signing in to Tailscale itself does not automatically grant system SSH access.
 
-## 断开、退出与数据保留
+## Disconnect, sign out and data retention
 
-「断开连接」结束私网连接与服务映射，保留登录状态、公钥和 SSH 服务端身份。重新连接沿用原设备；本地服务地址需要重新创建。「退出登录」撤销当前登录，下次连接需要浏览器重新授权，已添加的 SSH 公钥保留。
+"Disconnect" ends the private-network connection and service mappings, and keeps the sign-in state, public keys and SSH server identity. Reconnecting uses the same device, but local service addresses need to be created again. "Sign out" revokes the current sign-in. The next connection requires browser reauthorization, and added SSH public keys are kept.
 
-私网外层通信继续经过 Cage 的受控出口。公网 UDP 受限时，Tailscale 通过中继传输。暂停 Cage 联网、代理中断、环境停止或后台退出会影响私网连接。环境重新启动后恢复已启用的 Tailscale 身份。
+The outer private-network traffic still goes through Cage's controlled exit. When public UDP is restricted, Tailscale transfers through a relay. Pausing Cage networking, a proxy interruption, stopping the environment or quitting in the backend affects private-network connections. After the environment restarts, the enabled Tailscale identity is restored.
 
-设备间访问仍受 Tailscale 网络规则控制。连接到其他设备后，命令的权限和网络行为由目标设备管理。
+Access between devices is still controlled by Tailscale network rules. After you connect to other devices, command permissions and network behavior are governed by the target device.

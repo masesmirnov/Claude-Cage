@@ -1,67 +1,67 @@
 ---
-title: 云端部署与 SSH
-description: 将工作环境放到自己的 Linux VPS，通过桌面 Cage 部署、连接和管理服务器上的任务。
-group: 远程使用
+title: Cloud deployment and SSH
+description: Put a working environment on your own Linux VPS, then deploy, connect to and manage tasks on the server from the desktop Cage app.
+group: Remote use
 order: 8
-keywords: 云端 远程部署 VPS SSH 无KVM rootless 服务器 主机 指纹 远程项目
+keywords: cloud remote deploy VPS SSH no KVM rootless server host fingerprint remote projects
 ---
-## 什么时候选择云端
+## When to choose cloud
 
-希望任务在服务器上持续运行，或本机不适合运行虚拟机时，可以使用云端模式。终端、浏览器、编辑器、Claude Desktop 和网络出口位于服务器，电脑显示同一套工作台。本机虚拟机可以保持关闭。
+Use cloud mode when you want tasks to keep running on a server, or when this computer is not suited to running virtual machines. The terminal, browser, editor, Claude Desktop and network exit live on the server, and your computer shows the same workbench. The local virtual machine can stay off.
 
-服务器模式通过 rootless 容器运行，不需要 KVM。它仍需要满足系统、权限和资源条件，并非所有 VPS 都可以直接部署。
+Server mode runs in rootless containers and does not require KVM. It still has to meet system, permission and resource requirements, and not every VPS can be deployed directly.
 
-云端使用 Linux 环境，与本机选择 macOS、Windows 或 Debian 分开。需要 Mac 或 Windows 原生工具时，使用对应的本机客机；需要服务器常驻任务时，选择云端。两种方式沿用同一套工作台。见[选择客机系统](guest-systems.md)。
+Cloud uses a Linux environment, separate from the local choice of macOS, Windows or Debian. When you need native Mac or Windows tools, use the matching local guest. When you need tasks to run on a server all the time, choose cloud. Both approaches use the same workbench. See [Choose a guest system](guest-systems.md).
 
-## 准备服务器
+## Prepare the server
 
-当前目标为 Linux x86_64，具备 systemd 用户服务、cgroup v2、rootless 用户命名空间、至少 65,536 个 subordinate UID/GID，以及 `/dev/fuse`、`/dev/net/tun`。普通 SSH 用户需要相应权限；还需 OpenSSH、curl、tar、sha256sum、iproute2 与 iptables 等基础工具。
+The current target is Linux x86_64. It needs a systemd user service, cgroup v2, rootless user namespaces, at least 65,536 subordinate UIDs/GIDs, and `/dev/fuse` and `/dev/net/tun`. The regular SSH user needs the matching permissions. You also need basic tools such as OpenSSH, curl, tar, sha256sum, iproute2 and iptables.
 
-完整前提和维护命令见[部署说明](https://github.com/Lee-xeo/Claude-Cage/blob/main/deploy/cloud/README.md)。权限缺失应修复服务器配置，不要改用特权容器或把 Docker socket 暴露给工作环境。
+For the full prerequisites and maintenance commands, see the [deployment guide](https://github.com/Lee-xeo/Claude-Cage/blob/main/deploy/cloud/README.md). If a permission is missing, fix the server configuration instead of switching to a privileged container or exposing the Docker socket to the working environment.
 
-需要在退出 SSH 后持续运行或在服务器重启后恢复服务时，由服务器管理员配置 systemd 用户服务、linger 与相应启动策略。
-
-<figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/ssh-sidebar.jpg" target="_blank" rel="noopener" aria-label="查看原图：SSH 主机侧栏：添加自己的服务器"><img src="../../www/public/docs/screenshots/ssh-sidebar.jpg" alt="SSH 主机侧栏：添加自己的服务器" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>SSH 主机侧栏：添加自己的服务器。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/ssh-sidebar.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
-</figure>
-
-## 从侧栏部署并连接
-
-1. 打开 Cage，进入左栏“SSH 主机”，点击加号填写名称、地址、端口、用户名和本机密钥文件或 SSH agent。自定义路径可在“云端安装路径”设置。
-2. 点击“连接此主机”，将 SSH 主机指纹与服务器独立显示的记录核对。指纹变化时先核查原因，再继续。
-3. 首次使用空配置目录时，点击“部署并连接”。Cage 传输匹配的程序和脚本，在服务器准备独立引擎与持久环境。
-4. 已部署且就绪时直接进入；能确认归属的用户服务已停止时会尝试启动。安装中断后可用同一版本重试。
-5. 云端工作台打开后，创建或解锁服务器自己的 Cage 账户，再配置服务器的代理和项目。
-
-本机有任务时，连接卡片提供保留或停止本机环境的选项，停止前先保存内容。不要在未经备份的已有本机数据目录上首次部署云端实例。
+If tasks must keep running after you leave SSH, or services must recover after a server reboot, have the server administrator configure the systemd user service, linger and the matching startup policy.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/ssh-host-form.jpg" target="_blank" rel="noopener" aria-label="查看原图：远程主机地址、认证与私钥路径表单"><img src="../../www/public/docs/screenshots/ssh-host-form.jpg" alt="远程主机地址、认证与私钥路径表单" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>远程主机地址、认证与私钥路径表单。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/ssh-host-form.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/ssh-sidebar.jpg" target="_blank" rel="noopener" aria-label="View original: SSH hosts sidebar with your own server added"><img src="../../www/public/docs/screenshots/ssh-sidebar.jpg" alt="SSH hosts sidebar with your own server added" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>SSH hosts sidebar with your own server added. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/ssh-sidebar.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 服务器项目与本机共享
+## Deploy and connect from the sidebar
 
-远端工作台可选择服务器目录。云端账户、浏览资料、保险箱、节点与系统语言属于该服务器，本机已有配置不会自动复制过去。操作前看清当前主机名称。
+1. Open Cage, go to "SSH hosts" in the left column, and click the plus button. Fill in the name, address, port, username, and local key file or SSH agent. To use a custom path, set it under "Cloud install path".
+2. Click "Connect to this host" and compare the SSH host fingerprint with the record the server shows separately. If the fingerprint has changed, find out why before you continue.
+3. On first use with an empty configuration directory, click "Deploy and connect". Cage transfers the matching program and scripts, and sets up an independent engine and persistent environment on the server.
+4. If it is already deployed and ready, you go straight in. If a user service that Cage can confirm it owns is stopped, Cage tries to start it. After an interrupted install, retry with the same version.
+5. Once the cloud workbench opens, create or unlock the server's own Cage account, then set up the server's proxy and projects.
 
-需要使用本机源码时，按界面授权一个具体项目，选择所需的只读或读写方式。共享仅在授权连接期间有效。Git 目录与历史随项目共享：只读共享允许查看，读写共享允许暂存、提交和切换分支。授权目录内的隐藏文件、凭据和工具配置也会共享，目录外访问仍被拒绝。读写共享会直接修改本机源文件与仓库，先备份并审查改动。
-
-上传由本机选择器读取你选定的文件，下载由服务器提供文件内容，再明确保存到本机。远端文件与本地副本的保存位置分别显示。
-
-## 断开、锁定与停止
-
-关闭本地窗口或断开 SSH 会释放客户端连接，服务器环境和任务继续运行。重新连接读取仍存活的会话。需要结束远端任务时，在对应云端工作台明确“停止环境”。
-
-切换主机后，旧连接的文件选择、输入和请求不能继续进入新主机。连接失败时不会自动改为操作本机。对发送、保存等结果不明确的操作，重连后先核对状态再重试。
+If tasks are running locally, the connection card offers options to keep or stop the local environment. Save your content before you stop it. Do not deploy a cloud instance for the first time onto an existing local data directory that has no backup.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/ssh-install-paths.jpg" target="_blank" rel="noopener" aria-label="查看原图：自定义服务器上的程序与配置路径"><img src="../../www/public/docs/screenshots/ssh-install-paths.jpg" alt="自定义服务器上的程序与配置路径" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>自定义服务器上的程序与配置路径。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/ssh-install-paths.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/ssh-host-form.jpg" target="_blank" rel="noopener" aria-label="View original: remote host address, authentication and private key path form"><img src="../../www/public/docs/screenshots/ssh-host-form.jpg" alt="Remote host address, authentication and private key path form" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Remote host address, authentication and private key path form. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/ssh-host-form.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 更新与故障恢复
+## Server projects and local sharing
 
-客户端更新只更新本机程序，服务器维护另行执行。更新服务器前保存任务、停止相关环境与服务，完整保留配置、项目、容器文件系统及引擎数据，用原绝对路径恢复。
+The remote workbench lets you choose a server directory. Cloud accounts, browsing data, the vault, nodes and system language belong to that server, and existing local configuration is not copied over automatically. Before you act, check which host name is currently active.
 
-不要删除容器或执行清理全部引擎数据的命令来升级；容器可写文件系统也保存持久资料。出现连接、指纹或部署前提错误时，查[SSH 与云端故障](troubleshooting.md#ssh-或云端部署失败)。
+To use local source code, authorize one specific project in the interface and choose read-only or read-write access. Sharing is valid only while the authorized connection lasts. The Git directory and history are shared with the project: read-only sharing allows viewing, and read-write sharing allows staging, committing and switching branches. Hidden files, credentials and tool configuration inside the authorized directory are also shared, while access outside the directory is still denied. Read-write sharing modifies local source files and the repository directly, so back up first and review your changes.
+
+Uploads are read from the files you select with the local picker. Downloads are provided by the server, and then explicitly saved to this computer. The save locations for remote files and local copies are shown separately.
+
+## Disconnect, lock and stop
+
+Closing the local window or disconnecting SSH releases the client connection, while the server environment and tasks keep running. Reconnecting reads the sessions that are still alive. To end remote tasks, click "Stop environment" in the matching cloud workbench.
+
+After you switch hosts, file selections, input and requests from the old connection cannot reach the new host. A failed connection never falls back to operating this computer. For operations whose result is unclear, such as sending or saving, check the status after reconnecting before you retry.
+
+<figure class="guide-shot">
+  <a href="../../www/public/docs/screenshots/ssh-install-paths.jpg" target="_blank" rel="noopener" aria-label="View original: programs and configuration paths on a custom server"><img src="../../www/public/docs/screenshots/ssh-install-paths.jpg" alt="Programs and configuration paths on a custom server" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Programs and configuration paths on a custom server. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/ssh-install-paths.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+</figure>
+
+## Updates and recovery
+
+Client updates only update the local program, and server maintenance is done separately. Before you update the server, save your tasks and stop the related environments and services. Keep the configuration, projects, container file system and engine data intact, and restore them using the original absolute paths.
+
+Do not delete containers or run commands that clear all engine data to upgrade. The container's writable file system also holds persistent data. If you see a connection, fingerprint or deployment prerequisite error, see [SSH and cloud failures](troubleshooting.md#ssh-or-cloud-deployment-failure).

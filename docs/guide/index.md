@@ -1,61 +1,61 @@
 ---
-title: 从这里开始
-description: 选择熟悉的客机系统，在统一工作台使用 Claude，找到安装、项目、手机连接与云端部署指南。
-group: 开始使用
+title: Start here
+description: Pick a guest system you know, use Claude in one workbench, and find guides for installation, projects, phone pairing and cloud deployment.
+group: Getting started
 order: 0
-keywords: 概览 功能 导航 入门 版本 客机 macOS Windows Debian
+keywords: overview features navigation getting started version guest macOS Windows Debian
 ---
-Cage 把终端、浏览器、编辑器和官方 Claude Desktop 放进同一个工作台。Mac 用户可以在 macOS 客机里使用原生工具，Windows 用户可以在 Windows 客机里编译和运行项目，也可以选择轻量的 Debian 环境。项目按需共享，网络独立管理，工具与登录资料随环境保留。
+Cage puts the terminal, browser, editor and the official Claude Desktop in one workbench. Mac users can use native tools in a macOS guest, Windows users can build and run projects in a Windows guest, or choose the lightweight Debian environment. Projects are shared on demand, networking is managed separately, and tools and sign-in data stay with each environment.
 
-你可以在自己的电脑上工作，也可以通过 SSH 连接自己的 Linux 服务器。离开电脑后，用手机接续同一份 Claude Code 会话、处理工具审批，或操作电脑上的浏览器与 Claude Desktop。
+You can work on your own computer, or connect to your own Linux server over SSH. When you step away, use your phone to pick up the same Claude Code session, handle tool approvals, or operate the browser and Claude Desktop on your computer.
 
-本手册描述当前开发构建的功能。公开安装包是否包含相应入口，以及各平台的验收范围，以对应发行说明为准。首次创建可选择“自动匹配本机系统版本”，匹配官方材料建立干净的客机；详细条件与当前验证范围见[选择客机系统](guest-systems.md)。
+This guide describes the features of the current development build. Whether a public installer includes each entry point, and the testing scope for each platform, is defined in the matching release notes. When you create a new environment, you can choose "Match this computer's system version automatically" to build a clean guest from official materials. For requirements and current test coverage, see [Choose a guest system](guest-systems.md).
 
-配图来自实际应用与隔离验收环境，每张图下方标注版本、平台和日期，点击图片可查看原始分辨率。桌面主图使用 `0.1.6-alpha-preview` 开发构建；Windows 旧版与手机模拟器预览会单独注明。界面里的空账号、停止状态或示例对话保留原样，不代表已登录或真实模型请求成功。
+Screenshots come from the actual app and an isolated test environment. Each image is labeled below with its version, platform and date; click an image to see the original resolution. The main desktop images use the `0.1.6-alpha-preview` development build. Older Windows builds and phone simulator previews are noted separately. Empty accounts, stopped states and sample conversations in the UI are kept as they are. They do not mean that you are signed in or that a real model request succeeded.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener"><img src="../../www/public/docs/screenshots/first-start.jpg" alt="Cage 工作台的首次使用引导" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Cage 工作台的首次使用引导。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener"><img src="../../www/public/docs/screenshots/first-start.jpg" alt="First-run guide in the Cage workbench" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>First-run guide in the Cage workbench. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 第一次使用
+## First use
 
-1. 阅读[安装与首次启动](installation.md)，安装适合电脑的 Cage；按[选择客机系统](guest-systems.md)准备 macOS、Windows 或 Debian 环境。
-2. 在[网络与代理](network.md)中导入自己的节点，应用代理后启动环境，等待关键检查通过。
-3. 按[项目、终端与文件](workbench.md)打开一个项目，在 Cage 内完成 Claude Code 授权，发出第一条消息。
-4. 有多个 Claude 订阅时，继续配置[多账号与额度](accounts.md)。希望离开电脑后继续处理任务，可查看[手机连接与远程会话](mobile.md)。
+1. Read [Installation and first launch](installation.md) and install the Cage build that fits your computer. Then set up a macOS, Windows or Debian environment following [Choose a guest system](guest-systems.md).
+2. In [Network and proxy](network.md), import your own nodes, apply the proxy, then start the environment and wait for the critical checks to pass.
+3. Open a project following [Projects, terminal and files](workbench.md), complete Claude Code authorization inside Cage, and send your first message.
+4. If you have several Claude subscriptions, set up [Multiple accounts and usage limits](accounts.md). To keep working away from your computer, see [Phone connection and remote sessions](mobile.md).
 
-## 按你想做的事查找
+## Find by task
 
-| 你想做什么 | 阅读哪篇 |
+| What you want to do | Read this |
 | --- | --- |
-| 把安装、配置与排障交给自己的 Agent | [让 Agent 配置 Cage](agent.md) |
-| 安装应用、换盘、准备本机虚拟化 | [安装与首次启动](installation.md) |
-| 使用与主机同类的系统、选择原生开发工具 | [选择客机系统](guest-systems.md) |
-| 导入订阅、连接住宅代理、设置出口规则 | [网络与代理](network.md) |
-| 打开项目、启动 Claude 终端、传文件与截图 | [项目、终端与文件](workbench.md) |
-| 添加多个订阅、查看额度、分配或接续会话 | [多账号与额度](accounts.md) |
-| 收藏网页、无痕浏览、清理 Cookie、安装扩展 | [浏览器与网站数据](browser.md) |
-| 在 Cage 内使用 Claude Desktop | [Claude Desktop](desktop.md) |
-| 扫码配对手机、审批工具、使用手机远程浏览器 | [手机连接与远程会话](mobile.md) |
-| 部署到无 KVM 的 VPS、连接服务器和管理远端项目 | [云端部署与 SSH](cloud.md) |
-| 在 Cage 登录私网，从本机与客机双向使用 SSH | [Tailscale 与 SSH 私网](tailscale.md) |
-| 找到每一项设置，了解修改何时生效 | [设置参考](settings.md) |
-| 换存储盘、调整 CPU 与内存、升级、备份或卸载 | [维护、资源与数据](maintenance.md) |
-| 按错误现象恢复使用、导出诊断 | [故障排查](troubleshooting.md) |
+| Have your own agent install, configure and troubleshoot Cage | [Let an agent configure Cage](agent.md) |
+| Install the app, change disks, prepare local virtualization | [Installation and first launch](installation.md) |
+| Use the same kind of system as your host, choose native dev tools | [Choose a guest system](guest-systems.md) |
+| Import subscriptions, connect a residential proxy, set exit rules | [Network and proxy](network.md) |
+| Open projects, start a Claude terminal, transfer files and screenshots | [Projects, terminal and files](workbench.md) |
+| Add several subscriptions, check usage limits, assign or resume sessions | [Multiple accounts and usage limits](accounts.md) |
+| Bookmark pages, browse incognito, clear cookies, install extensions | [Browser and site data](browser.md) |
+| Use Claude Desktop inside Cage | [Claude Desktop](desktop.md) |
+| Pair a phone by QR code, approve tools, use the remote browser on your phone | [Phone connection and remote sessions](mobile.md) |
+| Deploy to a VPS without KVM, connect to servers and manage remote projects | [Cloud deployment and SSH](cloud.md) |
+| Sign in to a private network in Cage, use SSH both ways between this computer and the guest | [Tailscale and private-network SSH](tailscale.md) |
+| Find each setting and see when changes take effect | [Settings reference](settings.md) |
+| Change the storage disk, adjust CPU and memory, upgrade, back up or uninstall | [Maintenance, resources and data](maintenance.md) |
+| Recover from an error, export diagnostics | [Troubleshooting](troubleshooting.md) |
 
-## 本机、云端与手机如何配合
+## How local, cloud and phone work together
 
-本机模式下，所选的 macOS、Windows 或 Debian 虚拟机在电脑上运行。系统选择取决于主机的平台与虚拟化能力；明确打开的主机项目与环境共享，改动直接影响原文件。
+In local mode, the macOS, Windows or Debian virtual machine you choose runs on your computer. Which systems you can choose depends on the host platform and its virtualization support. Host projects you explicitly open are shared with the environment, and changes apply directly to the original files.
 
-云端模式下，终端、网页、工具、账户和网络配置属于所选服务器。桌面应用负责连接和显示；本机项目只有在明确授权后才临时共享。断开 SSH 会保留远端任务，停止远端环境才会结束任务。
+In cloud mode, the terminal, web pages, tools, accounts and network settings belong to the server you chose. The desktop app handles the connection and display. Local projects are shared temporarily only after you explicitly authorize it. Disconnecting SSH keeps remote tasks running; only stopping the remote environment ends them.
 
-手机是远程客户端，命令在配对的电脑上执行。电脑需要在线并运行 Cage；当前手机配对指向本机 Cage，不会随着桌面切换 SSH 自动转到云端。手机没有独立运行 Cage 虚拟机的模式。
+The phone is a remote client, and commands run on the paired computer. That computer must be online and running Cage. The current phone pairing points to the local Cage and does not switch to the cloud automatically when you change the SSH target in the desktop app. The phone has no mode that runs a Cage virtual machine on its own.
 
-## 先了解数据与网络边界
+## Data and network boundaries
 
-- 打开的项目可以被环境中的程序读取与修改。重要文件先备份；项目内的 `.git` 可读写，可以在 Cage 内审查、暂存与提交代码。
-- 同一环境的所有项目共用客机系统、工具、账户和文件系统。切换项目不会停止原任务，也不会撤销已授权的共享。
-- Cage 需要你自己的代理和 Claude 使用资格。网络检查通过表示当前配置和采样证据通过，无法保证第三方账户不受限制。
-- 默认公网出站支持 IPv4 TCP，DNS 通过同一代理；公网 UDP、IPv6、ICMP，以及环境到主机或局域网的直连受限。主动启用 Tailscale 后，已授权的私网设备可通过独立通道连接。
-- 关闭窗口、锁定 Cage、停止环境和退出账户的影响不同，操作前可查[关闭与退出](workbench.md#关闭锁定与退出)。
+- Programs in the environment can read and modify open projects. Back up important files first. The project's `.git` is readable and writable, so you can review, stage and commit code inside Cage.
+- All projects in the same environment share the guest system, tools, accounts and file system. Switching projects does not stop running tasks or revoke shares you have already authorized.
+- Cage needs your own proxy and your own eligibility to use Claude. Passing the network checks means the current configuration and sampled evidence pass. It cannot guarantee that a third-party account will not be restricted.
+- By default, outbound public traffic supports IPv4 TCP, and DNS goes through the same proxy. Public UDP, IPv6, ICMP, and direct connections from the environment to the host or the LAN are restricted. After you enable Tailscale, authorized private-network devices can connect through a separate channel.
+- Closing the window, locking Cage, stopping the environment and signing out of an account each have different effects. Check [Closing, locking and signing out](workbench.md#close-lock-and-sign-out) before you act.

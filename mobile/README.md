@@ -1,12 +1,12 @@
-# 在手机上使用 Cage
+# Using Cage on your phone
 
-手机 Cage 是远程客户端。点首页中央的「连接电脑」，用二维码或配对码连接主机，即可查看项目、接续 Claude Code 会话和处理工具审批。配对后还可在手机上操作主机里的浏览器和 Claude Desktop。代理、时区和语言在远程主机的 Cage 中设置。右上角的设置提供主题和电脑连接选项。
+Cage on your phone is a remote client. Tap "Connect computer" in the middle of the home screen, then connect to your host with a QR code or pairing code. You can view projects, continue Claude Code sessions and handle tool approvals. After pairing, you can also operate the browser and Claude Desktop on your host from the phone. Proxy, time zone and language are set in Cage on the remote host. The settings at the top right offer themes and computer connection options.
 
-Android arm64 APK 可从[官网下载入口](https://lee-xeo.github.io/Claude-Cage/#download)获取，支持 Android 8.0+。iOS 17+ 设备版由用户通过 Xcode 在本地构建并签名安装。
+The Android arm64 APK is available from the [website download page](https://lee-xeo.github.io/Claude-Cage/#download). It supports Android 8.0 and later. For iOS 17+ devices, you build and sign the app locally with Xcode and install it yourself.
 
-## iOS 本地构建
+## Build for iOS locally
 
-在 Mac 安装完整 Xcode 与 iOS SDK，并完成 Xcode 首次启动设置。安装 Node.js 24 和符合 `bindings/go.mod` 的 Go 后，在仓库根目录执行。
+On a Mac, install full Xcode and the iOS SDK, and finish Xcode's first-launch setup. After installing Node.js 24 and a Go version that matches `bindings/go.mod`, run the following in the repository root.
 
 ```sh
 npm ci --prefix ui
@@ -14,24 +14,24 @@ bash mobile/build.sh ios
 open mobile/ios/CageMobile.xcodeproj
 ```
 
-命令会生成 `mobile/.build/ios/Cagemobile.xcframework` 和未签名的设备构建。在 Xcode 选择 `CageMobile` scheme 和自己的开发团队，连接 iPhone，按系统提示启用开发者模式，再通过 Run 签名安装。需要导出开发 IPA 时运行以下命令，将 `TEAM_ID` 替换为自己的十位 Apple Team ID。
+The command produces `mobile/.build/ios/Cagemobile.xcframework` and an unsigned device build. In Xcode, select the `CageMobile` scheme and your own development team, connect your iPhone, enable Developer Mode when the system asks, then sign and install with Run. To export a development IPA, run the following command and replace `TEAM_ID` with your own 10-character Apple Team ID.
 
 ```sh
 bash mobile/build.sh ios-ipa TEAM_ID
 ```
 
-归档与 IPA 保存在 `mobile/.build/ios/device-*/`，导出后会验证设备描述文件与应用签名。
+The archive and IPA are saved in `mobile/.build/ios/device-*/`. After export, the device provisioning profile and app signature are verified.
 
-## Android 构建与签名
+## Build and sign for Android
 
-准备 JDK 21、Android SDK Platform 35、Build Tools 35.0.0 与 NDK 27.2.12479018，并将 `JAVA_HOME`、`ANDROID_HOME` 指向各自的安装目录。安装 UI 依赖后，可在仓库根目录生成本地开发 APK。
+Prepare JDK 21, Android SDK Platform 35, Build Tools 35.0.0 and NDK 27.2.12479018, and point `JAVA_HOME` and `ANDROID_HOME` to their install folders. After installing the UI dependencies, you can build a local development APK in the repository root.
 
 ```sh
 npm ci --prefix ui
 bash mobile/build.sh android
 ```
 
-公开发行使用持久保存的签名密钥和独立的密码文件。以下路径由构建者自行设置，签名材料保存在源码和临时构建目录之外，限制为本人可读。后续 APK 更新沿用同一签名身份，并使用大于上一版的 Android versionCode。[Android 签名说明](https://developer.android.com/studio/publish/app-signing)
+Public releases use a persistently stored signing key and a separate password file. The builder sets the paths below. Signing material is kept outside the source and temporary build folders, and only you can read it. Later APK updates keep the same signing identity and use an Android versionCode higher than the previous one. [Android signing guide](https://developer.android.com/studio/publish/app-signing)
 
 ```sh
 export CAGE_ANDROID_KEYSTORE=/private/signing/release.p12
@@ -41,84 +41,84 @@ export CAGE_ANDROID_VERSION_CODE=2
 bash mobile/build.sh android-release
 ```
 
-发行 APK 的 versionName 读取根目录 `VERSION`，输出为 `mobile/.build/android/Cage-<版本>-android-arm64.apk`。签名和 16 KiB 对齐检查通过后才写入最终文件。发布时附带 SHA-256，并核对签名证书指纹、应用版本、安装与覆盖更新行为。
+The release APK's versionName is read from the root `VERSION` file, and the output is `mobile/.build/android/Cage-<version>-android-arm64.apk`. The final file is written only after the signing and 16 KiB alignment checks pass. Publish the SHA-256 with it, and verify the signing certificate fingerprint, app version, and install and update-over-existing behavior.
 
-## 扫码连接电脑
+## Connect a computer by scanning a QR code
 
-1. 在电脑上打开并解锁 Cage，选择本机工作台，在「设置 → 远程连接 → 手机连接」点「生成配对二维码」。电脑显示二维码后，用手机扫描。
-2. 在手机 Cage 首页中央点「连接电脑」，在弹出的卡片里选择扫码，允许使用相机，把电脑上的二维码完整放入取景框中。二维码约两分钟有效，过期后可在电脑上刷新。
-3. 扫码成功后手机会保存这台电脑并打开工作台。工作台默认打开左侧栏。点「浏览器」「Claude.ai」或「Claude Desktop」进入对应画面，「Claude Code」分区列出各个项目。点项目名展开或收起会话，点会话进入对话。左上角的 Cage Logo 可重新打开侧栏，右上角图标表示当前工具。下次打开手机，从「连接电脑」卡片重新连接已配对的电脑。电脑重启后，打开 Cage 即可恢复扫码配对的连接。
+1. On the computer, open and unlock Cage, select the local workbench, then click "Generate pairing QR code" under "Settings → Remote connection → Phone connection". When the computer shows the QR code, scan it with your phone.
+2. On the phone, tap "Connect computer" in the middle of the Cage home screen, choose scan in the card that appears, allow camera access, and place the whole QR code from the computer inside the frame. The QR code is valid for about two minutes. If it expires, refresh it on the computer.
+3. After a successful scan, the phone saves this computer and opens the workbench. The workbench opens the left sidebar by default. Tap "Browser", "Claude.ai" or "Claude Desktop" to open that view. The "Claude Code" section lists each project. Tap a project name to expand or collapse its sessions, and tap a session to open the conversation. The Cage logo at the top left reopens the sidebar, and the icon at the top right shows the current tool. The next time you open the phone, reconnect to a paired computer from the "Connect computer" card. After the computer restarts, open Cage to restore the QR-paired connection.
 
-二维码只交给希望授权的手机。要更换扫码配对的手机，先在电脑「设置 → 远程连接」移除旧手机，再为新手机生成二维码。手机可以在指纹配对或主机设置中忘记本机保存的连接。
+Only give the QR code to a phone you want to authorize. To replace the phone paired by QR code, first remove the old phone in the computer's "Settings → Remote connection", then generate a QR code for the new phone. The phone can forget the saved connection in fingerprint pairing or in the host settings.
 
-暂不连接时，可点击卡片外侧收起；Android 也可使用系统返回，iPhone 可使用系统下滑手势。配对过程中需等待本次操作结束。
+If you don't want to connect now, tap outside the card to close it. On Android, you can also use the system back button. On iPhone, you can use the system swipe-down gesture. Wait for the current pairing step to finish.
 
-## 用手机操作远程浏览器
+## Use the remote browser on your phone
 
-1. 更新电脑和手机的 Cage，并在电脑上启动环境，等待网络检查通过。如果界面提示客机版本较旧，在电脑上关闭并重新启动环境，让新的浏览器组件生效。
-2. 通过电脑生成的二维码或配对码连接。已配对手机可以直接重新连接。
-3. 在手机左侧栏点「浏览器」，会打开电脑 Cage 浏览器设置中的「新标签页地址」。电脑保存新地址后，下次从手机打开浏览器即生效。「Claude.ai」入口始终直达 Claude.ai。
-4. 点网页中的输入框后，打开「输入文字」使用手机键盘。先点勾号把文字插入网页，需要提交时再点「发送回车」。如果发生断线，先读取最新画面再决定是否重新输入。
+1. Update Cage on both the computer and the phone, start the environment on the computer, and wait for the network check to pass. If the interface says the guest version is old, stop and restart the environment on the computer so the new browser components take effect.
+2. Connect with the QR code or pairing code generated on the computer. A phone that is already paired can reconnect directly.
+3. Tap "Browser" in the phone's left sidebar. It opens the "New tab address" from the Cage browser settings on the computer. After the computer saves a new address, it takes effect the next time you open the browser from the phone. The "Claude.ai" entry always goes straight to Claude.ai.
+4. After you tap an input box on the web page, open "Enter text" to use the phone keyboard. Tap the check mark first to insert the text into the page. When you need to submit, tap "Send Enter". If the connection drops, read the latest screen before deciding whether to type again.
 
-点手机浏览器底部的「收藏夹」，可以按电脑上的文件夹浏览收藏、打开网址，或把当前页存入指定文件夹。两端共用配对主机的收藏。另一端有更改时，重新打开收藏夹，或在手机上点刷新即可看到。
+Tap "Favorites" at the bottom of the phone browser to browse bookmarks by the folders on the computer, open addresses, or save the current page to a folder you choose. Both ends share the bookmarks of the paired host. If the other end makes changes, reopen Favorites, or tap refresh on the phone to see them.
 
-手机和电脑各用自己的浏览器窗口，首次访问需要在手机的远程窗口里登录。同一配对重新打开后可以沿用已保存的登录资料。网络出口、时区和首选语言取自主机的 Cage。关闭浏览器会结束手机的浏览进程。取消配对或锁定 Cage 会中止访问。
+The phone and the computer each have their own browser window. On first use, you need to sign in within the phone's remote window. When the same pairing is reopened, saved sign-in data can be reused. Internet exit, time zone and preferred language come from Cage on the host. Closing the browser ends the phone's browsing process. Unpairing or locking Cage stops access.
 
-手机浏览器按手机宽度请求移动网页。拖动时连续发送滚动位移，页面静止时只检查是否有变化。图像和输入经配对通道传输，反馈速度受网络往返延迟影响。支持公网 IPv4 的 HTTP 和 HTTPS。需要另开弹窗登录、上传或下载附件、播放声音的网页场景尚未接入。模拟器扫码示例用于预览侧栏和对话，测试真实窗口请用配对码连接电脑。
+The phone browser requests mobile web pages sized to the phone's width. While dragging, scroll offsets are sent continuously. When the page is still, it only checks for changes. Images and input travel over the paired channel, so responsiveness depends on network round-trip latency. Public IPv4 HTTP and HTTPS are supported. Web scenarios that need a separate popup sign-in, file uploads or downloads, or sound playback are not connected yet. The emulator QR-code example is for previewing the sidebar and conversations. To test a real window, connect to the computer with a pairing code.
 
-## 用手机操作 Claude Desktop
+## Use Claude Desktop on your phone
 
-在电脑的 Cage 环境中安装 Claude Desktop 并通过网络检查。已配对的手机连接电脑后打开左侧栏，点「Claude Desktop」，等待应用画面出现。
+Install Claude Desktop in the Cage environment on the computer and pass the network check. After a paired phone connects to the computer, open the left sidebar, tap "Claude Desktop", and wait for the app screen to appear.
 
-手机直接访问电脑上同一份 Claude Desktop，共用账号、应用数据和当前窗口。电脑已登录时，手机可以直接接续。手机的点击、输入和切换页面会同步显示在电脑上，两端共用鼠标与输入焦点。应用尚未运行时，由电脑的 Cage 启动。
+The phone accesses the same Claude Desktop on the computer directly, sharing the account, app data and the current window. If the computer is signed in, the phone can continue right away. Taps, typing and page switches on the phone also show up on the computer, and both ends share the mouse and input focus. If the app isn't running yet, Cage on the computer starts it.
 
-新版手机端会自动读取屏幕像素密度，使远程画面匹配当前显示分辨率。手机进入后，共享窗口按手机宽度重新排版，旋转屏幕或弹出键盘时跟随调整，电脑也会同步显示这个布局。点「放大阅读」可查看局部。退出手机的 Desktop 页面后恢复电脑尺寸，电脑上的应用和任务继续运行。需要重新登录或选择本机文件时，在电脑上完成。
+The newer phone app reads the screen pixel density automatically, so the remote view matches the current display resolution. After you enter on the phone, the shared window is laid out again to the phone's width. It follows screen rotation or the keyboard appearing, and the computer shows this layout too. Tap "Zoom to read" to view a section. When you leave Desktop on the phone, the computer's size is restored, and apps and tasks on the computer keep running. If you need to sign in again or choose a local file, do it on the computer.
 
-## 使用指纹和文件配对
+## Pair with a fingerprint and a file
 
-相机不可用时，在电脑点「复制配对码」，再在手机首页点「连接电脑」，选择配对码入口并粘贴这串一次性配对码。使用命令行连接助手时，从手机右上角的设置进入指纹与连接文件选项，再按以下步骤交换指纹与文件。
+If the camera isn't available, click "Copy pairing code" on the computer, then tap "Connect computer" on the phone's home screen, choose the pairing code entry, and paste this one-time pairing code. When you use the command-line connection helper, open the fingerprint and connection file options from the settings at the top right of the phone, then exchange the fingerprint and file with the steps below.
 
-在电脑上运行包含移动会话接口的 Cage，解锁账户并启动工作环境。电脑上的连接助手可在仓库根目录构建。
+On the computer, run a Cage build that includes the mobile session interface, unlock your account and start the workbench environment. You can build the connection helper on the computer from the repository root.
 
 ```sh
 go build -o ./cage-mobile-link ./cmd/cage-mobile-link
 ```
 
-1. 在电脑上用 `cage-mobile-link init --state <新私有目录>` 创建主机身份，记录显示的公开指纹。以后可用 `fingerprint --state <原目录>` 再次查看。
-2. 手机打开 Cage，在“这台手机的指纹”下复制公开指纹。对照手机屏幕，在电脑上执行 `cage-mobile-link trust --state <原目录> --peer-pin <已核对的手机指纹>`。
-3. 在电脑上生成这台手机的连接文件，并保持连接助手运行。官方中继允许直接创建连接。请填写主机身份目录、新连接文件路径，以及 Cage 后台程序和配置文件的绝对路径。
+1. On the computer, run `cage-mobile-link init --state <new private folder>` to create the host identity, and record the public fingerprint it shows. Later, you can view it again with `fingerprint --state <original folder>`.
+2. Open Cage on the phone, and copy the public fingerprint under "This phone's fingerprint". Compare it with the phone screen, then run `cage-mobile-link trust --state <original folder> --peer-pin <verified phone fingerprint>` on the computer.
+3. On the computer, generate a connection file for this phone, and keep the connection helper running. The official relay allows creating the connection directly. Enter the host identity folder, the new connection file path, and the absolute paths of the Cage background program and config file.
 
 ```sh
 ./cage-mobile-link host --state "$host_state" --connection-out "$new_connection_json" \
   --cage-bin "$cage_binary" --config "$cage_config"
 ```
 
-4. 通过自己的私有文件传输方式将 JSON 送到手机。在 App 中点“导入连接文件”，对照**电脑独立显示的公开指纹**，确认与手机上填入的指纹一致。勾选核对项，点“保存已核对的主机”，然后点“重新连接”。换用另一台电脑或更换电脑密钥时需再次核对。
+4. Send the JSON to the phone through your own private file transfer method. In the app, tap "Import connection file", and compare it with **the public fingerprint shown separately on the computer** to confirm it matches the fingerprint entered on the phone. Tick the check box, tap "Save checked host", then tap "Reconnect". If you switch to another computer or change the computer's key, verify again.
 
-进入工作台后，在左侧栏的「Claude Code」下选择项目，新建或继续会话。工具需要授权时，手机显示本次调用的具体参数，可选择“允许一次”或“拒绝”。此入口列出通过 Cage 会话界面创建的对话，普通终端里手工启动的 CLI 仍在原终端操作。
+After you enter the workbench, choose a project under "Claude Code" in the left sidebar, then start a new session or continue one. When a tool needs approval, the phone shows the specific parameters of this call, and you can choose "Allow once" or "Deny". This entry lists conversations created through the Cage session interface. CLI tools you start by hand in a regular terminal are still used in that terminal.
 
-续聊前，Cage 检查原会话使用的账号和模型服务地址，避免把历史发到另一个服务。主机无法确认所用配置的身份时，手机会提示本次仅支持一轮；可以新建会话再发消息。
+Before you continue a conversation, Cage checks the account and model service address the original session used, so history isn't sent to a different service. If the host can't confirm the identity of the config in use, the phone says only one round is supported this time. You can start a new session and send your message there.
 
-## 使用自己的 VPS
+## Use your own VPS
 
-部署[自建中继](../deploy/relay/README.md)后，在桌面「设置 → 远程连接」选择「自建中继」，填写 VPS 的 HTTPS 地址并保存。手机进入设置并展开「中继设置」，开启自建中继，填写同一地址并保存。需要管理令牌的自建中继只在电脑端填写令牌。选择官方中继并保存可恢复默认。新配对采用保存的地址，手机导入连接文件时会自动填入同一地址。自建中继要求管理令牌时，在上面的 host 命令中同时指定 `--relay` 和 `--admin-token-file`，明确私有令牌的接收方。
+After you deploy a [self-hosted relay](../deploy/relay/README.md), on the computer select "Self-hosted relay" in "Settings → Remote connection", enter the VPS HTTPS address and save. On the phone, open Settings, expand "Relay settings", turn on the self-hosted relay, then enter the same address and save. For a self-hosted relay that needs an admin token, enter the token only on the computer. Choose the official relay and save to restore the default. New pairings use the saved address, and when the phone imports a connection file, it fills in the same address automatically. If the self-hosted relay requires an admin token, specify both `--relay` and `--admin-token-file` in the host command above, so the private token goes only to the intended recipient.
 
-已配对的手机继续使用原来的地址与凭据。要迁往另一台中继，扫码设备在桌面设置中移除后重新扫码；命令行配对设备用下文的 revoke 撤销后重新登记。
+Paired phones keep using the original address and credentials. To move to another relay, remove the QR-paired device in the computer's settings, then scan again. For a device paired from the command line, revoke it with `revoke` below, then register it again.
 
-## 下次使用
+## Next time
 
-点左上角的 Cage Logo 打开侧栏，点侧栏底部「退出」回到首页。需要切换电脑时，点首页的「连接电脑」，在卡片的「已连接设备」中选另一台电脑。长按设备可取消这次连接，配对记录会保留。
+Tap the Cage logo at the top left to open the sidebar, then tap "Exit" at the bottom of the sidebar to return to the home screen. To switch computers, tap "Connect computer" on the home screen, then choose another computer under "Connected devices" in the card. Long-press a device to cancel the current connection. The pairing record is kept.
 
-Claude Code 的项目可以各自展开，方便在不同项目的会话之间切换。会话进度自动刷新；读取失败时可以点提示中的「重新读取」。聊天通过气泡区分消息来源，输入框为大圆角，右侧箭头用于发送，运行时显示停止按钮。
+Each Claude Code project can be expanded on its own, so you can switch between sessions in different projects. Session progress refreshes automatically. If reading fails, tap "Read again" in the notice. Chat bubbles show where each message came from. The input box has large rounded corners, the arrow on the right sends, and a stop button appears while it's running.
 
-在已配对的手机上，短暂断网时可以留在当前会话。网络恢复后，工作台再次读取进度时会重新验证电脑身份并恢复连接，输入框里的草稿仍在。若发消息或审批时断线，先看电脑返回的最新记录。已收到的消息会显示在历史里；电脑仍在等待同一项审批时，手机会重新显示可选的「允许一次」和「拒绝」。
+On a paired phone, you can stay in the current session during a brief network drop. After the network recovers, the next time the workbench reads progress, it verifies the computer's identity again and restores the connection. Your draft in the input box is kept. If the connection drops while you're sending a message or approving, check the latest record the computer returns first. Messages already received appear in the history. If the computer is still waiting on the same approval, the phone shows "Allow once" and "Deny" again.
 
-主动断开或重新打开 App 后，从「连接电脑」卡片选择已配对的电脑，再打开原会话即可继续。如果使用命令行连接助手，电脑重启后先启动 Cage，再运行以下命令恢复该助手的配对：
+After you disconnect on purpose or reopen the app, choose the paired computer in the "Connect computer" card, then open the original session to continue. If you use the command-line connection helper, start Cage after the computer restarts, then run the following command to restore that helper's pairing:
 
 ```sh
 ./cage-mobile-link host --state "$host_state" --serve-saved
 ```
 
-连接文件包含中继地址、电脑公开指纹和持久查询凭据，请只交给配对手机。Android 用独立的 Android Keystore AES-GCM 密钥加密查询凭据，并将密文绑定到已核对的中继地址和指纹。iPhone 将记录保存在仅限本设备、解锁时可访问的 Keychain 项中。设备签名私钥由 Android Keystore 或 iPhone Secure Enclave 保管。仅 iPhone 模拟器的 Debug 构建使用单独的软件测试密钥，设置中的设备指纹旁会注明。网页只访问本机受限的会话接口。
+A connection file contains the relay address, the computer's public fingerprint and a persistent lookup credential. Give it only to the paired phone. On Android, a separate Android Keystore AES-GCM key encrypts the lookup credential, and the ciphertext is bound to the verified relay address and fingerprint. On iPhone, the record is stored in a Keychain item that is available only on this device and only when unlocked. The device signing private key is kept in Android Keystore or the iPhone Secure Enclave. Only Debug builds on the iPhone simulator use a separate software test key, and the device fingerprint in settings is labeled accordingly. The web page only accesses the restricted local session interface.
 
-在手机点“忘记主机”会清除保存的主机地址、指纹和重连凭据，手机仍使用自己的设备签名身份。要同时在电脑端撤销访问，执行 `cage-mobile-link revoke --state <主机身份目录>`。使用旧版单次邀请时，在电脑以 `--invitation-out <新邀请文件>` 代替 `--connection-out`，手机手工核对并保存中继地址与电脑指纹，再通过同一个导入入口打开邀请。单次邀请断开后需要新邀请。
+Tapping "Forget host" on the phone clears the saved host address, fingerprint and reconnect credentials. The phone still uses its own device signing identity. To revoke access on the computer as well, run `cage-mobile-link revoke --state <host identity folder>`. For the older one-time invitation, use `--invitation-out <new invitation file>` on the computer instead of `--connection-out`. The phone verifies and saves the relay address and computer fingerprint by hand, then opens the invitation through the same import entry. After a one-time invitation disconnects, you need a new invitation.

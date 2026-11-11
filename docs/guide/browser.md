@@ -1,73 +1,73 @@
 ---
-title: 浏览器与网站数据
-description: 管理网页、收藏、无痕会话、Cookie 和扩展，在 Cage 内完成网站登录与开发预览。
-group: 日常工作
+title: Browser and site data
+description: Manage web pages, bookmarks, incognito sessions, cookies and extensions, and sign in to websites and preview development sites inside Cage.
+group: Daily use
 order: 5
-keywords: Chromium 浏览器 设置 无痕 Cookie 扩展 插件 ZIP 收藏 新标签 竖排 隐私
+keywords: Chromium browser settings incognito cookies extensions plugins ZIP bookmarks new tab vertical tabs privacy
 ---
-## 打开网页与浏览器设置
+## Open web pages and browser settings
 
-点击侧栏“浏览器”，用地址栏访问网站，顶部加号新建页面。`claude.ai` 入口直接打开 Claude 官网。`localhost` 属于当前 Cage 客机，预览服务需从 Cage 终端启动。
+Click "Browser" in the sidebar, enter a site in the address bar, and use the plus button at the top to open a new page. The `claude.ai` entry opens the Claude website directly. `localhost` refers to the current Cage guest, so start preview servers from the Cage terminal.
 
-地址栏右侧的浏览器菜单提供设置、无痕和网站数据等操作。浏览器设置页可搜索“新标签页、外观、隐私与网站数据、扩展、关于浏览器”。新标签默认地址影响之后的新建标签；横排或竖排标签布局立即生效，保存在当前客户端。
+The browser menu to the right of the address bar offers settings, incognito and site data. The browser settings page can be searched for "New tab", "Appearance", "Privacy and site data", "Extensions" and "About browser". The default new-tab address applies to tabs you open later. The horizontal or vertical tab layout takes effect immediately and is saved in the current client.
 
-关闭浏览器视图只返回原工作区，页面和登录继续保留。需结束无痕会话时，关闭全部无痕标签或停止环境。
+Closing the browser view only returns you to the previous workspace, and pages and sign-ins stay open. To end an incognito session, close all incognito tabs or stop the environment.
 
-Linux 环境在最后一个浏览器查看窗口离开后，将浏览器窗口最小化，让后台网页采用 Chromium 的节流机制。返回浏览器时恢复原窗口和未保存的输入。多个工作台同时查看时，仍在查看的窗口继续显示。手机浏览器拥有独立会话。
+On Linux environments, after the last browser view window leaves, the browser window is minimized so that background pages use Chromium's throttling. When you return to the browser, the original window and unsaved input are restored. When several workbenches view it at once, windows still being viewed keep displaying. Mobile browsers have their own sessions.
 
-Linux 环境的浏览器和 Claude Desktop 画面按使用情况调整刷新率。操作键盘、鼠标或调整窗口时保持 60 Hz；停止操作约 3 秒后降到 30 Hz，约 3 分钟无操作后降到 20 Hz，再次操作时立即恢复。分辨率、字号和清晰度保持不变，网页动画与视频在无人操作时按较低帧率播放。此功能随环境组件更新启用，需要环境中的 `python3-xlib`：已安装 Claude Desktop 的环境直接生效，只使用浏览器的旧环境在下次更新环境工具后生效。
+On Linux environments, the refresh rate of the browser and Claude Desktop adjusts to how you use them. It stays at 60 Hz while you use the keyboard or mouse or resize the window. It drops to 30 Hz about 3 seconds after you stop, and to 20 Hz after about 3 minutes of inactivity. It returns to full rate as soon as you act again. Resolution, font size and sharpness stay the same. Web animations and videos play at a lower frame rate when nobody is interacting. This feature is enabled by environment component updates and requires `python3-xlib` in the environment. Environments with Claude Desktop installed get it immediately. Environments that only use the browser get it after the next environment tools update.
 
-Linux 环境的浏览器和 Claude Desktop 按显示它的屏幕渲染。2 倍的高分屏上，画面的每个像素对应一个屏幕像素；100% 缩放的普通屏幕只渲染四分之一的像素，文字同样逐像素清晰。把窗口移到另一块屏幕或更改系统缩放后，画面随即按新的密度重绘，字号和可见内容保持不变。高于 2 倍的屏幕按 2 倍渲染。
+On Linux environments, the browser and Claude Desktop render at the density of the screen that shows them. On a 2x high-DPI screen, each pixel of the picture maps to one screen pixel. On a regular screen at 100% scaling, only a quarter of the pixels are rendered, and text is equally pixel-sharp. When you move the window to another screen or change system scaling, the picture redraws at the new density, while font size and visible content stay the same. Screens above 2x render at 2x.
 
-新配置默认开启“设置 → 通用 → 优先流畅”：高分屏上按屏幕像素的四分之三渲染，2 倍屏的像素量减少约 44%；普通屏幕已是最少像素，不再降低。需要更清晰的细节时可关闭，设置在下次启动环境时生效。已有配置沿用原画质。
+New setups turn on "Settings → General → Prefer smoothness" by default. On high-DPI screens it renders at three quarters of the screen pixels, which cuts the pixel count on a 2x screen by about 44%. Regular screens already use the fewest pixels, so they do not change. Turn it off if you need finer detail. The setting takes effect the next time you start the environment. Existing setups keep their original quality.
 
-按屏幕渲染随环境组件更新启用，需要环境中的 `xsettingsd`：已安装 Claude Desktop 的环境直接生效，只使用浏览器的旧环境在下次更新环境工具后生效。在此之前以及 Windows 客机上，画面继续使用固定的 1.5 倍或 2 倍渲染。
+Rendering at the screen's density is enabled by environment component updates and requires `xsettingsd` in the environment. Environments with Claude Desktop installed get it immediately. Environments that only use the browser get it after the next environment tools update. Until then, and on Windows guests, the picture keeps rendering at a fixed 1.5x or 2x.
 
-macOS 和 Windows 客机的浏览器按滚轮或触控板的实际距离滚动。操作时画面最高 60 Hz，停止操作约 1 秒后回到 30 Hz，静止时进一步放慢取帧。此行为在客机组件更新后生效，旧组件继续按固定步长滚动。
+In macOS and Windows guests, the browser scrolls by the actual distance of the wheel or trackpad. While you scroll, the picture updates at up to 60 Hz. About 1 second after you stop, it returns to 30 Hz, and when still, it slows frame updates further. This behavior takes effect after the guest components are updated. Older components keep scrolling in fixed steps.
 
-地址栏右侧的下载按钮在右上角展开文件列表，可查看下载进度、另存为、打开文件或在文件夹中显示；保存失败时可重试。长列表在面板内滚动，点击外部或按 Esc 收起。侧栏“下载”也可打开此面板。
+The download button to the right of the address bar opens a file list in the upper-right corner. From there you can see download progress, save as, open files or show them in the folder. If a save fails, you can retry. Long lists scroll inside the panel. Click outside it or press Esc to close it. The "Downloads" item in the sidebar also opens this panel.
 
-浏览器设置的“隐私与网站数据”还提供“网站权限”和“清除浏览数据”，打开 Chromium 对应页面。摄像头、麦克风等权限应结合环境实际设备能力判断。“关于浏览器”中的“搜索引擎”和“下载设置”可以打开更多原生浏览器配置；网页显示这些选项不代表 Cage 已接通所有设备能力。
+Under "Privacy and site data" in the browser settings, you can also find "Site permissions" and "Clear browsing data", which open the matching Chromium pages. Decide on permissions such as camera and microphone based on the devices the environment actually has. "Search engine" and "Download settings" under "About browser" open more native browser options. Seeing these options does not mean Cage has connected every device capability.
 
-## 收藏与标签管理
+## Bookmarks and tabs
 
-地址栏星标或 Mac 的 `⌘D` 可收藏当前页，修改名称并选择或新建收藏夹。收藏夹按钮或 `⌘⇧O` 打开管理，可搜索、打开、改名和移动收藏。Windows/Linux 对应使用 Ctrl。
+Click the star in the address bar, or press `⌘D` on a Mac, to bookmark the current page. Edit its name and choose or create a folder. The bookmarks button or `⌘⇧O` opens management, where you can search, open, rename and move bookmarks. On Windows and Linux, use Ctrl instead.
 
-删除收藏夹会将网页移至“未分类”。收藏属于当前 Cage 配置，所有项目共用，不随切换项目消失。
+Deleting a folder moves its pages to "Uncategorized". Bookmarks belong to the current Cage configuration and are shared by all projects, so switching projects does not remove them.
 
-标签右键或 Shift+F10 可打开操作菜单，拖动改变顺序。列表较多时可搜索已打开网页；置顶标签在自己的分组内排序。
+Right-click a tab or press Shift+F10 to open its action menu, and drag tabs to change their order. When the list is long, you can search open pages. Pinned tabs are sorted within their own group.
 
-## 使用无痕会话
+## Use incognito sessions
 
-在菜单选“新建无痕标签”，或按 Mac 的 `⌘⇧N`、Windows/Linux 的 `Ctrl+Shift+N`。无痕标签和地址栏会明确标记。无痕页面的加号继续新建无痕标签，需要普通页时从菜单选择。
+Choose "New incognito tab" from the menu, or press `⌘⇧N` on a Mac or `Ctrl+Shift+N` on Windows and Linux. Incognito tabs and the address bar are clearly marked. The plus button on an incognito page keeps opening incognito tabs. To open a regular page, choose it from the menu.
 
-普通和无痕会话的 Cookie、登录与网站存储分开；同一批无痕标签共用临时会话。关闭最后一个无痕页会清理会话，重启不会恢复这些标签。无痕不会提示保存密码；主动保存的收藏和下载仍保留。
+Cookies, sign-ins and site storage for regular and incognito sessions are kept separate. All incognito tabs from the same batch share one temporary session. Closing the last incognito page clears that session, and restarting does not restore those tabs. Incognito never offers to save passwords, but bookmarks and downloads you save on purpose are kept.
 
-无痕会话继续使用相同代理出口，网站和代理服务仍能观察请求。隐藏窗口不会结束后台无痕进程。
+Incognito sessions still use the same proxy exit, so websites and the proxy service can still see requests. Hiding a window does not end a background incognito process.
 
-## 查看与清理 Cookie
+## View and clear cookies
 
-从浏览器菜单进入“管理 Cookie”，查看当前网站或所有网站，按网站或名称搜索，可查看值、删单条、清空当前网站或当前会话的全部 Cookie。
+Open "Manage cookies" from the browser menu to view cookies for the current site or all sites. Search by site or name. You can view values, delete a single cookie, or clear all cookies for the current site or the current session.
 
-清理仅影响当前标签所属的普通或无痕会话。**搜索条件不会缩小清空范围**，确认前核对网站与会话，清理后可能需要重新登录。Cookie 清理不会同时删除网站的 localStorage。
+Clearing only affects the regular or incognito session that the current tab belongs to. **A search filter does not narrow what gets cleared.** Check the site and session before you confirm. You may need to sign in again after clearing. Clearing cookies does not also delete the site's localStorage.
 
-清空普通会话全部 Cookie 也会清除文件编辑器认证，使用编辑器菜单的“恢复编辑器”重新进入。
+Clearing all cookies in the regular session also clears the file editor's authentication. Use "Restore editor" in the editor menu to get back in.
 
-## 安装或导入扩展
+## Install or import extensions
 
-在浏览器设置的“扩展”中导入 Manifest V3 ZIP，单包上限 32 MB。安装前阅读界面列出的权限，再确认。仅安装可信来源，扩展可能读取它获准访问的网页内容。
+In the browser settings under "Extensions", import a Manifest V3 ZIP. Each package is limited to 32 MB. Read the permissions the interface lists before you confirm the install. Install only from trusted sources, since an extension can read the web page content it is allowed to access.
 
-桌面版可从本机 Edge、Chrome、Brave 或 Chromium 复制扩展及启停状态。导入不会复制浏览器账户、Cookie 或扩展自身的登录数据，部分标识变化的扩展需要重新配置。扩展在 Cage 浏览器中运行，本机浏览器的操作环境与网络不会因此迁移。
+The desktop app can copy extensions and their on/off state from Edge, Chrome, Brave or Chromium on this computer. Importing does not copy browser accounts, cookies or an extension's own sign-in data. Some extensions whose IDs change need to be set up again. Extensions run in the Cage browser, so your local browser's environment and network do not move with them.
 
-旧环境缺少入口或安装组件报错时，先更新应用与环境组件，再重新打开浏览器。
+If an older environment lacks the entry point or shows an error about installation components, update the app and environment components first, then reopen the browser.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/password-vault.jpg" target="_blank" rel="noopener" aria-label="查看原图：密码保险箱的管理入口"><img src="../../www/public/docs/screenshots/password-vault.jpg" alt="密码保险箱的管理入口" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>密码保险箱的管理入口。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/password-vault.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/password-vault.jpg" target="_blank" rel="noopener" aria-label="View original: password vault management entry"><img src="../../www/public/docs/screenshots/password-vault.jpg" alt="Password vault management entry" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Password vault management entry. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/password-vault.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 保存网站密码
+## Save website passwords
 
-网页登录完成后，在工具区选择“保存密码”或“更新密码”。再次访问时展开“密码”，选账号填入，最后由你提交登录。
+After you finish signing in to a website, choose "Save password" or "Update password" in the tools area. On your next visit, expand "Password", pick an account to fill in, and then submit the sign-in yourself.
 
-“设置 → 密码保险箱”支持搜索、手动添加、修改、删除和恢复网站提示。查看或复制密码需再次输入 Cage 密码。支持范围与备份要求见[设置参考](settings.md#密码保险箱)。
+"Settings → Password vault" lets you search, add manually, edit, delete and restore website prompts. To view or copy a password, you must enter your Cage password again. For supported scopes and backup requirements, see [Settings reference](settings.md#password-vault).

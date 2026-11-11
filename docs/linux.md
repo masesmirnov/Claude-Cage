@@ -1,42 +1,42 @@
-# Linux 安装、使用与验收
+# Linux installation, use and testing
 
-Cage 的 Linux 桌面版面向 Debian 12、Ubuntu 22.04/24.04 的 x86_64 电脑，使用 GTK 3 与 WebKitGTK 显示工作台。项目、终端、浏览器、编辑器和内置代理沿用其他平台的操作方式。选择本机时，默认创建持久 Debian 13 虚拟机，也可通过“自动匹配本机系统版本”下载官方镜像，创建与主机同发行版的 Linux 客机，包括 Ubuntu 22.04。所有本机项目共用所选的持久环境与 Linux 工具链。首次创建时可以直接选择 Ubuntu 22.04，无需主机也运行该版本。主机与客机可以是不同的 Linux 发行版；macOS、Windows、Debian 与 Ubuntu 的组合见[选择客机系统](guide/guest-systems.md)。
+Cage's Linux desktop version targets x86_64 computers running Debian 12 or Ubuntu 22.04/24.04. It uses GTK 3 and WebKitGTK to show the workbench. Projects, terminals, the browser, the editor and the built-in proxy work the same way as on other platforms. For a local environment, it creates a persistent Debian 13 VM by default. You can also download official images through "Match this computer's system version automatically" to create a Linux guest with the same distribution as your host, including Ubuntu 22.04. All local projects share the chosen persistent environment and Linux toolchain. When you first create the environment, you can select Ubuntu 22.04 directly, without running that version on the host. The host and guest can be different Linux distributions. For combinations of macOS, Windows, Debian and Ubuntu, see [Choose a guest system](guide/guest-systems.md).
 
-同一个桌面应用也可以从侧栏 SSH 连接已部署 Cage 的服务器。使用远程工作台只需本机图形依赖，本机模式另需 KVM 和虚拟机工具。云服务器的无 KVM 容器部署见[云端使用指南](guide/cloud.md)和[部署说明](../deploy/cloud/README.md)。
+The same desktop app can also connect over SSH from the sidebar to a server where Cage is deployed. The remote workbench only needs local graphics dependencies. Local mode also needs KVM and VM tools. For container deployment without KVM on a cloud server, see the [Cloud guide](guide/cloud.md) and the [deployment notes](../deploy/cloud/README.md).
 
-Ubuntu 22.04 的桌面包采用兼容该系统的构建基线，已在隔离容器验证真实窗口、浏览器启动、重装与卸载数据保留。完整 KVM 客机安装、物理桌面输入法和 Claude 登录尚未实测，不能把容器验证视为这些操作通过。系统匹配、续装与各路线范围见[客机系统指南](guide/guest-systems.md)。
+The Ubuntu 22.04 desktop package uses a build baseline compatible with that system. In an isolated container, we verified the real window, browser startup, reinstall and uninstall data retention. A full KVM guest install, physical desktop input methods and Claude sign-in have not been tested yet, so the container results should not be taken as passing those steps. For system matching, resume behavior and the scope of each route, see the [Guest system guide](guide/guest-systems.md).
 
-## 安装前准备
+## Before you install
 
-Ubuntu 22.04 需要启用 `universe`、`jammy-updates` 与 `jammy-security`，并安装更新后的 WebKitGTK 4.1（至少 2.40）。系统初始镜像中的旧 WebKit 无法运行当前工作台。
+Ubuntu 22.04 needs `universe`, `jammy-updates` and `jammy-security` enabled, and an updated WebKitGTK 4.1 (at least 2.40). The old WebKit in the initial system image can't run the current workbench.
 
-电脑需要图形桌面、可用的 KVM 硬件虚拟化、足够的磁盘空间和自己的代理节点。默认虚拟磁盘上限为 24 GiB。云主机需要服务商开放嵌套虚拟化；没有 `/dev/kvm` 的服务器不能按普通桌面流程启动 Cage 环境。
+Your computer needs a graphical desktop, working KVM hardware virtualization, enough disk space and your own proxy node. The default virtual disk limit is 24 GiB. A cloud host must have nested virtualization enabled by the provider. A server without `/dev/kvm` can't start the Cage environment with the normal desktop flow.
 
-检查当前用户可读写 `/dev/kvm`：
+Check that the current user can read and write `/dev/kvm`:
 
 ```sh
 test -r /dev/kvm && test -w /dev/kvm
 ```
 
-设备不存在时，检查 BIOS/UEFI 虚拟化和内核 KVM 模块。设备存在但权限不足时，可由管理员将用户加入 `kvm` 组，再退出桌面并重新登录：
+If the device doesn't exist, check virtualization in BIOS/UEFI and the kernel KVM module. If the device exists but permissions are insufficient, an administrator can add the user to the `kvm` group, then sign out of the desktop and sign back in:
 
 ```sh
 sudo usermod -aG kvm "$USER"
 ```
 
-Cage 日常以普通用户运行。不要用 `sudo cage-desktop` 启动工作台。
+Cage normally runs as a regular user. Don't start the workbench with `sudo cage-desktop`.
 
-## 安装并开始工作
+## Install and get started
 
-在[项目主页](https://lee-xeo.github.io/Claude-Cage/#download)点击“下载应用”并选择 Linux。从对应 Release 下载 `Cage-<版本>-linux-amd64.deb` 与 `SHA256SUMS`，核对该文件的 SHA-256 后安装。只有对应 Release 提供安装包时，才执行下面的安装命令：
+On the [project homepage](https://lee-xeo.github.io/Claude-Cage/#download), click "Download the app" and choose Linux. Download `Cage-<version>-linux-amd64.deb` and `SHA256SUMS` from the matching Release, and check the file's SHA-256 before you install it. Run the install command below only if the matching Release provides the installer:
 
 ```sh
-sudo apt install ./Cage-<版本>-linux-amd64.deb
+sudo apt install ./Cage-<version>-linux-amd64.deb
 ```
 
-安装器随附 Cage 后台、工作台和 Mihomo 代理核心。APT 安装 WebKitGTK 等图形依赖。只连接 SSH 主机时可直接打开应用。要使用本机环境，请再运行 `sudo apt install qemu-system-x86 qemu-utils ovmf openssh-client iproute2 git` 并确认 KVM 可用。首次启动本机环境时会下载 Linux 镜像与客机工具。
+The installer includes the Cage background service, the workbench and the Mihomo proxy core. APT installs graphics dependencies such as WebKitGTK. If you only connect to SSH hosts, you can open the app directly. To use a local environment, also run `sudo apt install qemu-system-x86 qemu-utils ovmf openssh-client iproute2 git` and confirm KVM is available. The first local environment start downloads the Linux image and guest tools.
 
-本机 Git 必须为 **2.38 或更新版本**。Cage 首次启动本机环境或授权共享项目时，会要求明确启用 Git 安全保护；Git 版本不足时会阻止该操作并提示升级，避免宿主机误执行项目中的裸仓库配置。可以先运行 `git --version` 检查。Ubuntu 22.04 默认仓库中的 Git 版本不足，可按 [Git 官方 Linux 安装说明](https://git-scm.com/install/linux)使用维护者提供的 Ubuntu PPA：
+Local Git must be **version 2.38 or later**. When Cage first starts a local environment or you authorize a shared project, it asks you to explicitly turn on Git safety protection. If your Git version is too old, Cage blocks this step and asks you to upgrade, so the host doesn't accidentally run bare repository config from a project. You can check with `git --version`. Git in the default Ubuntu 22.04 repositories is too old. You can use the Ubuntu PPA provided by the maintainers, as described in the [official Git Linux install guide](https://git-scm.com/install/linux):
 
 ```sh
 sudo apt install software-properties-common
@@ -46,35 +46,35 @@ sudo apt install git
 git --version
 ```
 
-升级后返回工作台，重新检查并按提示明确授权 Git 安全保护。此要求不会阻止应用安装和打开工作台；仅打开窗口不能证明本机环境已满足启动条件。
+After upgrading, return to the workbench, run the check again, and explicitly authorize Git safety protection as prompted. This requirement doesn't block installing the app or opening the workbench. Just opening the window doesn't prove that the local environment meets the startup requirements.
 
-作为手机远程主机时，Cage 通过系统的 `systemd-inhibit` 和 logind 申请保持系统运行，屏幕仍可熄灭。完整安装包依赖 systemd；服务或用户权限不满足时，“设置 → 远程连接”会显示防休眠失败原因，不会自动改动系统电源策略。
+When used as a remote host for the phone, Cage asks the system to keep running through `systemd-inhibit` and logind. The screen can still turn off. The full installer depends on systemd. If the service or user permissions aren't enough, "Settings → Remote connection" shows why sleep prevention failed. It does not change the system power policy automatically.
 
-从应用菜单打开 **Cage**，也可运行 `cage-desktop`。系统包名和后台命令为 `claude-cage`，避免与发行版自带的同名 Wayland 程序冲突。导入自己的代理、选择节点，再按[开始使用](getting-started.md#2-导入并选择代理)打开项目。项目路径例如 `/home/alice/Projects/demo`，只共享默认工作区与明确选择的目录；项目中的修改和删除会同步到主机。已授权项目中的 Git 元数据可读写，客机提交直接更新主机仓库；共享范围仍限于授权目录。
+Open **Cage** from the application menu, or run `cage-desktop`. The system package name and background command are `claude-cage`, which avoids a conflict with a same-named Wayland program that ships with the distribution. Import your proxy, choose a node, then open a project as described in [Getting started](getting-started.md#2-import-and-choose-a-proxy). For example, a project path might be `/home/alice/Projects/demo`. Only the default workspace and folders you explicitly choose are shared. Changes and deletions in a project sync to the host. Git metadata in an authorized project is readable and writable, and commits made in the guest update the host repository directly. Sharing is still limited to authorized folders.
 
-Linux 使用 Ctrl 快捷键：`Ctrl+O` 打开项目，`Ctrl+T` 新建网页，`Ctrl+L` 定位地址栏，`Ctrl+W` 关闭标签，`Ctrl+Shift+Enter` 新建终端。终端用 `Ctrl+Shift+C/V` 复制粘贴，`Ctrl+C` 中断命令。
+Linux uses Ctrl shortcuts: `Ctrl+O` opens a project, `Ctrl+T` opens a new web page, `Ctrl+L` focuses the address bar, `Ctrl+W` closes a tab, and `Ctrl+Shift+Enter` opens a new terminal. Terminals use `Ctrl+Shift+C/V` to copy and paste, and `Ctrl+C` interrupts commands.
 
-关闭窗口保留后台环境与任务，再次打开 Cage 可重新连接。在应用内停止环境后退出，才能结束后台任务。Linux 本地账户使用密码解锁；设备快速解锁暂不提供。
+Closing the window keeps the background environment and tasks running, and reopening Cage reconnects them. To end background tasks, stop the environment in the app and then quit. Local Linux accounts unlock with a password. Quick unlock with a device is not available yet.
 
-浏览器上传使用本机文件选择窗口，下载可通过 GTK“另存为”选择保存位置。侧栏“下载”提供打开文件、打开所在文件夹和再次另存为；文件按当前桌面关联的应用打开。操作与限制见[浏览器上传与下载](getting-started.md#浏览器上传与下载)。
+Browser uploads use the local file picker. Downloads can use the GTK "Save as" window to choose a save location. The "Downloads" entry in the sidebar offers opening files, opening the containing folder and saving again as. Files open in the app associated with the current desktop. For actions and limits, see [Browser uploads and downloads](getting-started.md#browser-uploads-and-downloads).
 
-## 更新与卸载
+## Updates and uninstalling
 
-Linux 版本通过系统安装包手动更新。应用内更新入口显示更新方式，不自动替换系统文件。先保存文件、停止环境并退出 Cage，再安装新版 `.deb`。安装器发现已安装的 Cage、控制服务或代理进程仍运行时，会拒绝覆盖并提示退出。
+The Linux version is updated manually with the system installer package. The in-app update entry shows the update method and does not replace system files automatically. Save your files, stop the environment and quit Cage first, then install the new `.deb`. If the installer finds that Cage, the control service or a proxy process is still running, it refuses to overwrite and asks you to quit.
 
-更新和卸载保留 `~/.claude-cage` 中的配置、代理与虚拟磁盘，默认工作区 `~/.claude-cage-workspace` 及自行打开的项目目录也保留。卸载命令为：
+Updating and uninstalling keep the config, proxy and virtual disk in `~/.claude-cage`. The default workspace `~/.claude-cage-workspace` and project folders you opened yourself are also kept. The uninstall command is:
 
 ```sh
 sudo apt remove claude-cage
 ```
 
-需要删除用户数据时应先自行备份。只保存在虚拟磁盘中的文件和登录状态会随虚拟磁盘删除而丢失。
+Back up user data yourself before you delete it. Files and sign-in state that exist only in the virtual disk are lost when the virtual disk is deleted.
 
-## 常见问题
+## Common problems
 
-- 工作台无法显示：确认在普通用户的图形桌面会话中启动，且系统 WebKitGTK 安装完整。不要关闭 WebKit 沙箱来绕过桌面配置问题。
-- 提示 KVM 不可用：按安装前准备检查设备和权限。普通阿里云实例未必提供嵌套虚拟化。
-- 提示找不到物理网卡：内置代理需要可识别的主机网络接口。Docker 容器的 veth、VPN 隧道和桥接接口不作为物理出口；桌面主机与容器测试的网络条件不同。
-- 能打开工作台但无法联网：在 Cage 内确认已选择代理节点并查看网络检查。主机浏览器能联网不能证明 Cage 代理已可用。
+- The workbench doesn't show: make sure you start it in a regular user's graphical desktop session, and that the system WebKitGTK is fully installed. Don't turn off the WebKit sandbox to work around desktop configuration issues.
+- KVM is unavailable: check the device and permissions as described under "Before you install". A regular Alibaba Cloud instance may not provide nested virtualization.
+- No physical network interface found: the built-in proxy needs a recognizable host network interface. Docker container veth interfaces, VPN tunnels and bridge interfaces are not used as physical exits. Desktop hosts and container tests have different network conditions.
+- The workbench opens but there's no internet access: in Cage, make sure a proxy node is selected and check the network results. A browser on the host being online doesn't prove that the Cage proxy works.
 
-反馈时提供发行版、CPU 架构、Cage 版本、桌面环境以及失败步骤和错误原文。避免附带代理密码、订阅链接、账户文件和带会话信息的地址。
+When you report a problem, include the distribution, CPU architecture, Cage version, desktop environment, the steps that failed, and the exact error text. Avoid attaching proxy passwords, subscription links, account files, and addresses that contain session information.

@@ -1,304 +1,304 @@
-# 开始使用 Cage
+# Getting started with Cage
 
-这份指南从安装应用开始，带你完成系统选择、代理配置、启动环境和第一次项目操作。Cage 在电脑上运行独立的持久环境：可以在 Mac 上使用 macOS、在 Windows 上使用 Windows，也可以选择轻量的 Debian。终端、浏览器、编辑器和官方 Claude Desktop 都从同一个工作台进入。
+This guide walks you through installing the app, choosing a guest system, setting up a proxy, starting the environment and doing your first project task. Cage runs a separate, persistent environment on your computer. You can use macOS on a Mac, Windows on Windows, or a lightweight Debian. The terminal, browser, editor and official Claude Desktop are all opened from the same workbench.
 
-功能按当前开发构建说明；公开安装包包含的入口与验证范围，以对应发行说明为准。详细的日常操作集中在[使用手册](guide/index.md)，本页保留从安装到第一次工作的路径与常用参考。
+Features are described for the current development build. For the entry points and verified scope in a public installer, see its release notes. Detailed day-to-day tasks are in the [user manual](guide/index.md). This page covers the path from installation to your first session of work, plus common reference details.
 
-打开 Cage 默认进入本机首页。要使用服务器，在侧栏点「SSH 主机」，用加号保存地址、SSH 用户和密钥，然后点「连接此主机」。首次连接须核对主机指纹。服务器已就绪时直接进入远程工作台，已部署的服务停止时会自动启动。首次安装会显示「部署并连接」，点击后 Cage 通过 SSH 上传部署包并准备容器，本机虚拟机可以一直关闭。如果本机环境正在运行，切换前可选择保留或停止。[支持的服务器和部署条件](../deploy/cloud/README.md)
+Opening Cage goes to your local home page by default. To use a server, click "SSH host" in the sidebar, use the plus button to save the address, SSH user and key, then click "Connect to this host". Verify the host fingerprint on first connection. If the server is ready, you go straight to the remote workbench. Stopped deployed services start automatically. The first install shows "Deploy and connect". When you click it, Cage uploads the deployment package over SSH and prepares the container. Your local VM can stay off the whole time. If the local environment is running, you can choose to keep or stop it before switching. [Supported servers and deployment requirements](../deploy/cloud/README.md)
 
-## 使用本机环境前的准备
+## Before you use the local environment
 
-| 需要准备 | 说明 |
+| What you need | Details |
 |---|---|
-| 支持的平台与虚拟化 | Apple Silicon Mac 需要 macOS 14+；Windows 10 22H2 / 11 x64 运行 Debian 时需要 Windows 虚拟机监控程序平台，Windows 11 客机需要受支持版本的完整 Hyper-V；Debian 12 / Ubuntu 22.04 / 24.04 x86_64 主机需要 KVM。具体组合见[选择客机系统](guide/guest-systems.md)。Intel Mac、Windows ARM64 和 Linux ARM64 暂不支持。 |
-| 可用的代理 | Clash/Mihomo YAML 订阅、本地 YAML，或自己的 HTTP/SOCKS5 节点。Cage 随附代理核心，不提供代理服务。 |
-| 自己的 Claude 使用资格 | 需要使用 Claude Code 时，在 Cage 内完成自己的授权。主机已有登录不会自动导入。 |
+| Supported platforms and virtualization | Apple Silicon Macs need macOS 14+. Windows 10 22H2 / 11 x64 running Debian needs the Windows Hypervisor Platform, and a Windows 11 guest needs a supported version of full Hyper-V. Debian 12 / Ubuntu 22.04 / 24.04 x86_64 hosts need KVM. For supported combinations, see [Choose a guest system](guide/guest-systems.md). Intel Macs, Windows ARM64 and Linux ARM64 are not supported yet. |
+| A working proxy | A Clash/Mihomo YAML subscription, a local YAML file, or your own HTTP/SOCKS5 node. Cage includes its own proxy core but does not provide a proxy service. |
+| Your own Claude access | To use Claude Code, authorize your own account inside Cage. Sign-ins on the host are not imported automatically. |
 
-首次创建时需要准备所选系统的官方安装介质和开发工具，请保持网络可用并留出磁盘空间。下载与安装时间由系统和网络速度决定；随后启动复用已有环境。主机与客机的具体组合见[选择客机系统](guide/guest-systems.md)。
+The first setup needs the official installation media and developer tools for the system you chose, so keep your network connected and leave enough disk space. Download and install time depends on the system and your network speed. Later starts reuse the existing environment. For host and guest combinations, see [Choose a guest system](guide/guest-systems.md).
 
-## 1. 安装应用
+## 1. Install the app
 
-在[项目主页](https://lee-xeo.github.io/Claude-Cage/#download)点击“下载应用”，选择 macOS、Windows 或 Linux。也可直接查看 [GitHub Releases](https://github.com/Lee-xeo/Claude-Cage/releases)，无需获得仓库访问授权。各平台的可下载版本可能不同；没有公开安装包的平台会提供安装与构建说明。
+On the [project homepage](https://lee-xeo.github.io/Claude-Cage/#download), click "Download the app" and choose macOS, Windows or Linux. You can also go straight to [GitHub Releases](https://github.com/Lee-xeo/Claude-Cage/releases). No repository access is required. Downloadable versions can differ by platform. Platforms without a public installer have install and build instructions instead.
 
-| 平台 | 安装方式 |
+| Platform | How to install |
 |---|---|
-| macOS | 下载 Apple Silicon `.dmg`，打开后将 Cage 拖入 Applications（应用程序），再从“应用程序”启动。 |
-| Windows | 下载 x64 `.exe` 安装器，运行后从开始菜单打开 Cage。可信签名包支持校验发布者身份；旧版或单独标明“未签名”的预览包仅用于手动安装测试，不能自动安装更新。详见 [Windows 指南](windows.md)。 |
-| Linux | 下载 x86_64 `.deb`，使用 `sudo apt install ./Cage-<版本>-linux-amd64.deb` 安装。缺少 QEMU、GTK、WebKitGTK、OpenSSH 等主机依赖时，APT 会从系统配置的软件源补齐，再从应用菜单打开 Cage。详见 [Linux 指南](linux.md)。 |
+| macOS | Download the Apple Silicon `.dmg`, open it, drag Cage into Applications, then launch it from the Applications folder. |
+| Windows | Download the x64 `.exe` installer, run it, then open Cage from the Start menu. Trusted signed packages let you verify the publisher. Older builds, or preview builds marked "Preview · unsigned", are only for manual install testing and cannot install updates automatically. See the [Windows guide](windows.md). |
+| Linux | Download the x86_64 `.deb` and install it with `sudo apt install ./Cage-<version>-linux-amd64.deb`. If host dependencies such as QEMU, GTK, WebKitGTK or OpenSSH are missing, APT installs them from your system's configured sources. Then open Cage from the application menu. See the [Linux guide](linux.md). |
 
-无需先安装开发工具或 Clash。签名、公证和平台验证情况以该安装包的 Release 说明为准。如果系统拒绝打开，先按[安装问题](troubleshooting.md#下载或安装受阻)核对版本与来源。下述代理、环境和项目操作共用。
+You don't need to install developer tools or Clash first. For signing, notarization and platform verification, see the release notes for that installer. If your system refuses to open the app, first check the version and source under [Installation problems](troubleshooting.md#download-or-installation-problems). The proxy, environment and project steps below apply to all platforms.
 
-首次打开 Cage，先注册用户名和至少 8 个字符的密码，再选择客机系统、存储位置和网络代理。Mac 上的用户名使用小写字母开头的 1–31 个小写字母、数字或下划线，密码使用 8–256 个英文键盘可输入的字符；新建 macOS 客机使用同一套账密。三平台完整桌面版默认勾选“记住我”，可取消勾选；已有密码账户也可在登录时勾选，或在“设置 → 账户 → 记住我”中开启。关闭后的选择会保留。
+When you first open Cage, register a username and a password of at least 8 characters, then choose the guest system, storage location and network proxy. On a Mac, the username starts with a lowercase letter and is 1–31 lowercase letters, digits or underscores. The password is 8–256 characters you can type on an English keyboard. A new macOS guest uses the same username and password. The full desktop version on all three platforms has "Remember me" checked by default, and you can uncheck it. If you already have a password account, you can also check it when signing in, or turn it on in "Settings → Account → Remember me". Your choice is kept after you close the app.
 
-账户保存在当前主机，没有在线找回。左下角头像菜单的“设置 → 账户”可以更换头像和密码；用户名用于 macOS 客机后会固定，以保留用户目录和文件。修改共用密码时，客机关闭或暂时无法连接，会在下次启动时继续同步；完成前客机可能仍需原密码。Cage 账户不替代 Claude 账号，也不会加密项目文件或整个虚拟磁盘。
+Accounts are stored on the current host and cannot be recovered online. In the avatar menu at the bottom left, "Settings → Account" lets you change your avatar and password. The username cannot change once it has been used for a macOS guest, which keeps the user folder and files. If you change the shared password while the guest is off or unreachable, the change syncs at the next start. Until then, the guest may still need the old password. A Cage account does not replace your Claude account, and it does not encrypt project files or the whole virtual disk.
 
-### 选择客机系统
+### Choose a guest system
 
-首次创建本机环境时，可以选择与主机同类的系统：Apple Silicon Mac 上使用兼容的 macOS，具备完整 Hyper-V 的 Windows 11 专业版、企业版或教育版上使用 Windows 11。三个受支持的桌面平台都可以选择 Debian 13；Windows 家庭版和受支持的 Windows 10 主机使用 Debian。
+When you create the local environment for the first time, you can choose a guest system of the same type as your host. On Apple Silicon Macs, use a compatible macOS. On Windows 11 Pro, Enterprise or Education with full Hyper-V, use Windows 11. All three supported desktop platforms can choose Debian 13. Windows Home and supported Windows 10 hosts use Debian.
 
-客机系统决定终端、编译器和应用实际运行的平台。开发 Mac 或 Windows 应用时选择对应系统，主要使用 Linux 命令行与服务时选择 Debian。macOS 和 Windows 按引导完成客机账户、首次登录和权限设置；系统镜像来源、空间要求与许可见[客机系统指南](guide/guest-systems.md)。更新 Cage 不改变已有系统，更换系统需要独立安装并保留原环境。
+The guest system decides which platform your terminal, compilers and apps actually run on. When developing Mac or Windows apps, choose the matching system. If you mainly use the Linux command line and services, choose Debian. For macOS and Windows, follow the prompts to set up the guest account, first sign-in and permissions. For system image sources, space requirements and licenses, see the [Guest system guide](guide/guest-systems.md). Updating Cage does not change existing systems. To switch systems, install the new one separately and keep the original environment.
 
-首次创建也可按本机版本自动匹配官方材料，建立干净的独立客机，主机个人文件和登录资料不在创建来源中。Mac 的本机匹配入口要求 macOS 26.4+；Windows 匹配发行版本、版本类型和语言，补丁构建可不同；Linux 支持 Debian 12/13 与 Ubuntu 22.04/24.04。具体版本、下载量、空间与续装规则见[本机系统匹配](guide/guest-systems.md#克隆本机系统)。
+When creating the environment for the first time, you can also match official materials to your local version. This creates a clean, separate guest. Your personal host files and sign-in data are not used as a source. On a Mac, local system matching requires macOS 26.4+. Windows matching covers the release, edition and language. Patch builds can differ. Linux supports Debian 12/13 and Ubuntu 22.04/24.04. For exact versions, download sizes, space and resume rules, see [Local system matching](guide/guest-systems.md#clone-this-computers-system).
 
-### 选择环境存储位置
+### Choose the environment storage location
 
-Windows 安装器中选择的是程序目录。如果希望镜像下载和虚拟磁盘都放在 D 盘，首次登录后在独立初始化界面的“系统与存储”中修改已填入默认值的“存储目录”，或选择专用空文件夹，例如 `D:\CageData`，点击“下一步：配置代理”时保存。macOS 和 Linux 使用相同流程。安装、必要授权与网络检查完成后才进入工作台；中断后重新打开仍可继续。Debian 环境默认设置下，虚拟磁盘在用户主目录的 `.claude-cage/state/lima`，镜像下载缓存在系统用户缓存目录下的 `lima`（Windows 为 `%LOCALAPPDATA%\lima`）。
+The Windows installer lets you choose the program folder. To keep both image downloads and the virtual disk on drive D, change the pre-filled "Storage directory" under "System and storage" on the separate setup screen after your first sign-in, or choose an empty folder such as `D:\CageData`. Save it when you click "Next: configure proxy". macOS and Linux use the same steps. You only reach the workbench after installation, required authorization and network checks finish. If you close the app midway, reopening it lets you continue. With the default Debian settings, the virtual disk is at `.claude-cage/state/lima` in your home folder, and image download cache is in the `lima` folder under the system user cache directory (on Windows, `%LOCALAPPDATA%\lima`).
 
-选择支持私有文件权限和稀疏文件的本地磁盘。Windows 可用 NTFS，Linux 可用 ext4、XFS 或 Btrfs。Mac 需要 APFS 卷并启用所有权。使用 Mac 外接盘时，在 Finder 的磁盘“显示简介”中取消“忽略此宗卷的所有权”。
+Choose a local disk that supports private file permissions and sparse files. On Windows, use NTFS. On Linux, use ext4, XFS or Btrfs. On a Mac, use an APFS volume with ownership enabled. If you use an external disk on a Mac, open its "Get Info" window in Finder and uncheck "Ignore ownership on this volume".
 
-已有环境可在“设置 → 环境与恢复 → 本机环境存储”换盘。先保存终端和编辑器中的工作，选择空文件夹并确认迁移。Cage 会停止环境，复制并校验数据，然后切换目录。手动启动环境，核对原先的文件和登录状态后，可以清理面板显示的旧备份以释放空间。目标盘需有足够的可用空间，使用外接盘时每次启动前都要接回原盘。账户配置保存在原用户目录，共享项目仍从各自的项目文件夹打开。旧的系统用户缓存可能还供其他 Lima 实例使用，迁移会将它留在原处。
+For an existing environment, you can change the disk in "Settings → Environment and recovery → Local environment storage". First save your work in the terminal and editor, then choose an empty folder and confirm the move. Cage stops the environment, copies and verifies the data, then switches the directory. Start the environment manually and check your old files and sign-in state. After that, you can clear the old backup shown in the panel to free up space. The target disk needs enough free space. If you use an external disk, reconnect the original disk before every start. Account settings stay in the original user folder, and shared projects still open from their own project folders. The old system user cache may still be used by other Lima instances, so the move leaves it where it is.
 
-### 首次启动下载什么
+### What is downloaded on first start
 
-macOS 使用 Apple 提供的兼容恢复镜像，或用户已有的官方 IPSW；Windows 使用 Microsoft 官方 ISO，并准备对应系统的开发工具。两者的下载量和系统盘需求按所选版本显示。下面的下载清单及 24 GiB 初始磁盘上限适用于 Debian 13；macOS、Windows 的要求见[下载量与磁盘空间](guide/guest-systems.md#下载量与磁盘空间)。
+macOS uses the compatible recovery image from Apple, or an official IPSW you already have. Windows uses the official Microsoft ISO and prepares the developer tools for that system. Download size and system disk needs for both are shown for the version you choose. The download list below and the 24 GiB initial disk limit apply to Debian 13. For macOS and Windows requirements, see [Download size and disk space](guide/guest-systems.md#download-size-and-disk-space).
 
-| 内容 | 来源与用途 |
+| Item | Source and purpose |
 |---|---|
-| Debian 13 基础镜像 | 按处理器架构下载一份，约 320–325 MiB。优先尝试南大、中科大的镜像，再尝试 Debian 官方源，使用 Cage 固定的 SHA-512 校验。 |
-| Linux 软件包 | Debian 提供 Chromium、Python、Git、编译工具、远程桌面、字体和系统依赖。安装依赖前先检查 Debian 13 的 APT；低于 3.0.4 时通过官方安全源升级，并保留 Debian 签名与摘要校验。软件包默认优先使用通过连通性探测的南大、中科大镜像，最后回到官方。不可达的镜像本轮跳过；自定义软件源保持原配置。 |
-| Node.js、编辑器与工具管理器 | Node.js 24 通过 NodeSource 安装。mise 优先从 npmmirror 下载上游发布的对应架构可执行包。code-server 优先从中科大下载固定版本的 Debian 安装包。两者都按 Cage 固定的 SHA-256 校验，公共镜像不可用时自动回到各自的 GitHub Release。编辑器还会从 SchemaStore 等来源预取 JSON 校验规则供离线使用，缺少某条规则只影响对应文件的校验。 |
-| Claude Code | npm 官方注册表提供版本与完整性信息。较大的 Linux 可执行包优先从 npmmirror 下载，使用 npm 官方摘要校验。 |
+| Debian 13 base image | One image per processor architecture, about 320–325 MiB. Tries the Nanjing University and USTC mirrors first, then the official Debian source. Verified with the SHA-512 checksum pinned by Cage. |
+| Linux packages | Debian provides Chromium, Python, Git, build tools, remote desktop, fonts and system dependencies. Before installing dependencies, Cage checks the APT version in Debian 13. If it is older than 3.0.4, it upgrades from the official security source and keeps Debian signature and digest checks. By default, packages use the Nanjing University and USTC mirrors first, but only if a connectivity test passes, then fall back to the official source. Unreachable mirrors are skipped for this run. Custom software sources keep their original settings. |
+| Node.js, editor and tool manager | Node.js 24 is installed through NodeSource. mise first downloads the upstream executable for your architecture from npmmirror. code-server first downloads a pinned Debian package from USTC. Both are verified with the SHA-256 checksums pinned by Cage. If public mirrors are unavailable, they fall back to their GitHub Releases. The editor also pre-fetches JSON validation rules from sources such as SchemaStore for offline use. A missing rule only affects validation of the matching files. |
+| Claude Code | The official npm registry provides version and integrity information. Larger Linux executables are downloaded from npmmirror first and verified with the official npm digest. |
 
-首次安装和工具升级会自动选择下载来源，无需手动补缓存。中科大的 code-server 镜像只保留最近版本；Cage 固定的版本缺失时，会直接从 GitHub 下载该版本。下载仍经过当前选择的 Cage 代理。初始虚拟磁盘的容量上限为 24 GiB，下载流量与实际占用取决于架构、软件包版本和已有缓存。以后启动会复用已安装的环境。需要 Claude Desktop 时，在工作台单独安装，届时才访问 Anthropic 的软件源。
+The first install and tool upgrades choose download sources automatically, so you don't need to fill the cache by hand. The USTC code-server mirror keeps only recent versions. If the version Cage pins is missing there, Cage downloads that version directly from GitHub. Downloads still go through the Cage proxy you selected. The initial virtual disk is capped at 24 GiB. Download traffic and actual disk use depend on the architecture, package versions and existing cache. Later starts reuse the installed environment. If you need Claude Desktop, install it separately from the workbench. Only then does Cage contact Anthropic's software source.
 
-需要固定 Debian 官方源时，在客机的 `/etc/claude-cage/debian-mirror` 中写入 `official`；写入 `auto` 或移除该文件可恢复自动选择。下一次安装或维护时生效，偏好随虚拟磁盘保留，从基础环境克隆出的工作环境也会继承。镜像探测每个地址最多等待 8 秒；安装下载的无响应等待为 15 秒，最多重试一次。APT 升级失败会停止后续依赖安装，修复网络后可重试，无需删除个人数据或虚拟磁盘。
+To pin the official Debian source, write `official` to `/etc/claude-cage/debian-mirror` in the guest. Write `auto`, or remove the file, to restore automatic selection. The change takes effect at the next install or maintenance. The preference is kept with the virtual disk, and work environments cloned from the base environment inherit it too. Mirror probing waits up to 8 seconds for each address. Install downloads wait 15 seconds for a response and retry once. If an APT upgrade fails, later dependency installs stop. After you fix the network, you can retry. You don't need to delete personal data or the virtual disk.
 
-### 受信任的本机登录
+### Trusted local sign-in
 
-注册账户时勾选「记住我」，以后同一系统用户打开 Cage 可自动进入。已有密码账户在登录页验证密码后也可启用，或在「设置 → 账户 → 记住我」中开启或关闭。三平台使用相同的本机信任机制。手动锁定仍需验证，退出账户会撤销此项信任。远程连接不能使用本机信任登录；Claude 服务仍需自己的授权。
+When you register an account, check "Remember me" and the same system user can open Cage automatically later. For an existing password account, you can turn it on after verifying the password on the sign-in page, or turn it on or off in "Settings → Account → Remember me". All three platforms use the same local trust mechanism. Manual locking still requires verification, and signing out of the account revokes this trust. Remote connections cannot use local trusted sign-in. Claude services still need your own authorization.
 
-受信任模式依赖操作系统的用户登录。离开电脑时请锁定系统。已有免账号工作区仍可继续使用；准备 macOS 客机时，引导会先要求设置共用账密，工作区内部密钥和已有数据继续保留。备份免账号工作区时，还需备份系统用户配置目录（Windows 使用 `%LOCALAPPDATA%`）下的 `Cage/trusted-local` 私有信任凭据，并以私有权限保存。
+Trusted mode relies on your operating system's user sign-in. Lock your system when you leave your computer. Existing account-free workspaces can still be used. When you prepare a macOS guest, setup first asks you to set a shared username and password. The workspace's internal keys and existing data are kept. To back up an account-free workspace, also back up the private trust credentials in `Cage/trusted-local` under the system user configuration directory (on Windows, `%LOCALAPPDATA%`), and keep them with private permissions.
 
-## 2. 导入并选择代理
+## 2. Import and choose a proxy
 
-进入工作台后点击“配置网络与代理”。之后也可以从左下角“设置 → 网络与代理”进入。没有节点时点击“添加来源”，选择一种导入方式：
+In the workbench, click "Set up network and proxy". You can also open it later from "Settings → Network and proxy" at the bottom left. If there are no nodes, click "Add source" and choose an import method:
 
-- **订阅链接**：填写来源名称和 HTTPS 订阅地址。首次没有可用节点时，勾选“通过主机网络下载这份订阅”；不勾选则经当前配置的代理下载，失败不会自动切换路径。
-- **本地 YAML**：选择文件，或粘贴配置内容。适合已经导出节点配置的情况。
-- **手动节点**：填写自己的 HTTP 或 SOCKS5 节点参数；用户名和密码在对应字段中填写。
+- **Subscription link**: Enter a source name and an HTTPS subscription URL. If you don't have any usable nodes yet, check "Download this subscription over the host network". If you leave it unchecked, the subscription downloads through the proxy you configured. If that fails, the path doesn't switch automatically.
+- **Local YAML**: Choose a file or paste the config content. Good if you have already exported your node config.
+- **Manual node**: Enter your HTTP or SOCKS5 node settings. Fill in the username and password in their fields.
 
-点击“导入并验证”，再进入“节点”，选择最终出口并点击“应用代理”。顶部会显示当前出口和准确状态：核心运行但环境未启动时显示“待启动环境”，检查通过后显示“已联网”；核心停止或未应用节点时不会放行外网。
+Click "Import and verify", then go to "Nodes", choose the final exit and click "Apply proxy". The top bar shows the current exit and its exact status. When the core is running but the environment isn't started, it shows "Waiting to start environment". After checks pass, it shows "Connected". If the core is stopped or no node is applied, internet access is not allowed.
 
-如果住宅代理无法从国内直接连接，在“节点”页切换到“链式代理”，选择国内可连接的中转节点，再将住宅代理选为“最终出口”。节点可以来自不同订阅；按页面从上到下的顺序连接，预览应显示“Cage → 中转节点 → 住宅代理 → 目标网站”。点击“应用代理”后生效，网站看到的是最终出口的 IP。若需要多次中转，可点击“添加中转”。
+If a residential proxy cannot be reached directly from mainland China, switch to "Chained proxy" on the "Nodes" page, choose a relay node that can be reached from China, and then set the residential proxy as the "Final exit". Nodes can come from different subscriptions. They connect in the order shown on the page, from top to bottom. The preview should show "Cage → relay node → residential proxy → target site". The chain takes effect after you click "Apply proxy", and websites see the IP of the final exit. For more relays, click "Add relay".
 
-代理组合会独立保存，订阅更新不会覆盖它；更新移除了正在使用的节点时，会保留原配置并显示错误。应用前的选择只是草稿，离开页面会提示是否放弃。“保存设置”用于 DNS、IP 变化规则等其他设置；代理使用配置区内的“应用代理”。
+Proxy combinations are saved separately, so subscription updates don't overwrite them. If an update removes a node that is in use, the original config is kept and an error is shown. Choices you haven't applied yet are drafts. If you leave the page, you are asked whether to discard them. "Save settings" is for DNS, IP change rules and other settings. For the proxy, use "Apply proxy" in the configuration area.
 
-订阅应包含 `proxies` 或 `payload` 节点内容。Base64 列表、单个分享链接以及仅含远程 provider 的配置暂不支持；请向服务提供方获取 Clash/Mihomo YAML 节点订阅，或导出本地 YAML。导入只采用节点与明确的代理链，配置中的系统代理、TUN、端口及直连规则不会应用到 Cage。
+A subscription must include `proxies` or `payload` node content. Base64 lists, single share links, and configs that only contain remote providers are not supported yet. Get a Clash/Mihomo YAML node subscription from your provider, or export a local YAML file. Import only takes nodes and explicit proxy chains. System proxy, TUN, port and direct-connection rules in the config are not applied to Cage.
 
-Cage 使用独立端口和配置，不设置 系统代理，不开启主机 TUN，也不改变本机 Clash 的节点选择。订阅的主机下载与节点域名启动解析属于代理的准备通信；Cage 环境内的业务 DNS 仍经过选定节点。
+Cage uses its own ports and config. It does not set the system proxy, does not turn on the host TUN, and does not change the node choice in your local Clash. Downloading a subscription through the host and resolving node domains at startup are proxy preparation traffic. Business DNS inside the Cage environment still goes through the selected node.
 
-HTTP/SOCKS5 服务可通过“订阅 → 添加来源 → 手动节点”录入服务器、端口和认证。所有节点均由 Cage 自带核心承接，网络页的加密 DNS 经当前节点转发。没有应用有效节点时，Cage 不会联网。
+HTTP/SOCKS5 services can be added through "Subscription → Add source → Manual node", including the server, port and authentication. All nodes are handled by Cage's built-in core. Encrypted DNS on the network page is forwarded through the current node. If no valid node is applied, Cage does not connect to the internet.
 
-## 3. 启动并等待检查完成
+## 3. Start and wait for checks to finish
 
-返回工作台，首次创建时确认客机系统与存储位置，再点击“启动 Cage 环境”。无需先选择项目。应用先只读检查本机 Git；已启用保护，或确认未安装 Git 时，会直接继续。系统安装和必要授权完成后，后续启动继续使用原环境。
+Go back to the workbench. On first setup, confirm the guest system and storage location, then click "Start Cage environment". You don't need to choose a project first. The app first checks your local Git in read-only mode. If protection is already on, or Git isn't installed, it continues right away. After system installation and required authorization finish, later starts keep using the same environment.
 
-如果出现“启动前，保护本机 Git”，请阅读说明，再点击“启用保护并继续”。这会将当前主机用户的一项全局 Git 设置改为 `safe.bareRepository=explicit`，防止 Git 自动识别共享目录中的裸仓库并使用其中的配置。普通 `.git` 项目的提交、拉取、历史和远程地址不受影响；使用裸仓库时需要通过 `--git-dir` 明确指定。设置也会影响本机其他 Git 工具，Cage 仅在你明确确认后修改，重新检查通过后才启动环境。也可以选择“暂不启动”。
+If you see "Protect Git on this computer before installing", read the notice, then click "Enable protection and continue". This changes one global Git setting for the current host user to `safe.bareRepository=explicit`. It stops Git from automatically detecting bare repositories in shared folders and using their config. Commits, pulls, history and remote addresses in regular `.git` projects are not affected. To use a bare repository, specify it explicitly with `--git-dir`. The setting also affects other Git tools on this computer. Cage only changes it after you explicitly confirm, and starts the environment only after the re-check passes. You can also choose "Not now".
 
-第一次启动时，工作台会显示当前正在下载或安装的组件。下载 Debian 镜像时可以看到已接收的数据量，服务器提供文件总大小时也会显示百分比。下载 mise、Claude Code 和网页编辑器时，可以看到当前文件已接收的数据量。安装软件包时显示组件名称，点击“操作详情”可查看安装日志。下载中断后，可以点击“继续安装”，Cage 会尝试从已保存的位置续传。环境启动后会连接浏览器并执行网络检查。Git 检查未通过时，按[启动前 Git 检查](troubleshooting.md#启动前的-git-检查未通过)处理，无需重新配置代理。
+On first start, the workbench shows the components being downloaded or installed. When downloading the Debian image, you can see how much data has arrived. If the server reports the total file size, a percentage is also shown. When downloading mise, Claude Code and the web editor, you can see how much of the current file has arrived. When installing packages, the component name is shown. Click "Operation details" to see the install log. If a download is interrupted, click "Continue installation", and Cage tries to resume from where it was saved. After the environment starts, it connects to the browser and runs network checks. If the Git check fails, follow [Git check before startup](troubleshooting.md#git-check-before-startup-failed). You don't need to set up the proxy again.
 
-环境启动后先关闭业务外网，执行 11 项关键检查，覆盖出口、DNS、系统和浏览器配置、文件共享、宿主管理接口、代理故障关闭、UDP、IPv6 与出口规则。首次构建基础镜像没有项目挂载，需要经指定代理下载工具。
+After the environment starts, business internet access is turned off first. Then it runs 11 critical checks covering exit, DNS, system and browser settings, file sharing, the host management interface, proxy fail-closed behavior, UDP, IPv6 and exit rules. The first base image build has no project mounts and has to download tools through the proxy you chose.
 
-环境就绪、关键检查通过且网络授权有效时，界面显示绿色带对钩的盾牌。检查失败或证据缺失会保持外网关闭，终端、共享文件和环境内的本地网页仍可使用。点击底部网络状态查看具体失败项，修复后重新检查；检查进行中可以取消，也可以停止环境。
+When the environment is ready, critical checks pass, and network authorization is valid, the interface shows a green shield with a check mark. If a check fails or evidence is missing, internet access stays off. The terminal, shared files and local web pages inside the environment still work. Click the network status at the bottom to see which checks failed. After you fix the issue, check again. You can cancel a check that is running, or stop the environment.
 
-macOS、Windows 和 Linux 首次使用时，默认开启“跟随出口 IP 的时区”，在启动或应用设置时同步 Cage 环境的时区。进入“设置 → 时区与语言”可改为手动选择；已保存的手动选择会保留。语言可以单独开启自动跟随或手动选择。网络与系统设置需要应用后重启环境，界面会提醒保存文件和终端中断。运行中的任务不会因后台发现位置变化而被静默重启。
+On first use on macOS, Windows and Linux, "Follow the time zone of the exit IP" is on by default. It syncs the Cage environment's time zone when you start it or apply settings. To choose one manually, go to "Settings → Time zone and language". Saved manual choices are kept. Language can be set to follow automatically or chosen manually, separately. Network and system settings need the environment restarted after you apply them. The interface warns you to save files, since terminals will be interrupted. Running tasks are not silently restarted just because a background check found a location change.
 
-## 4. 打开项目并开始工作
+## 4. Open a project and start working
 
-点击左侧“项目”标题旁的加号，选择已有项目，或点击“添加本机项目…”选择主机上的项目文件夹。新终端和文件编辑器将从这个目录开始工作；首次试用也可保留默认工作区。终端使用所选客机的系统工具，Windows 客机提供 PowerShell 7，并保留 Windows PowerShell 5.1。
+Click the plus button next to the "Projects" heading on the left to choose an existing project, or click "Add a local project…" to choose a project folder on your host. New terminals and file editors start in this folder. For a first try, you can keep the default workspace. The terminal uses the tools of the guest system you chose. A Windows guest provides PowerShell 7 and keeps Windows PowerShell 5.1.
 
-点击项目右侧的终端图标，选择“新建 Claude 终端”，Cage 会在该项目中自动运行 `claude`。也可选择普通终端，手动输入命令。“设置 → 通用 → Claude 终端启动命令”可添加参数，例如 `claude --continue`；保存后只影响新建的 Claude 终端，退出 Claude 后仍可继续使用 shell。
+Click the terminal icon on the right of a project and choose "New Claude terminal". Cage automatically runs `claude` in that project. You can also choose a regular terminal and type commands yourself. "Settings → General → Claude terminal startup command" lets you add options, such as `claude --continue`. Saving only affects new Claude terminals. After you quit Claude, you can still use the shell.
 
-打开“设置 → Claude 账号”。如果你已在 Cage 普通终端用 Claude Code 登录订阅，环境就绪后，页面会显示默认终端检测到的邮箱。点击“加入调度”即可复用这份登录。设备上的 Claude Desktop、网页和 Mac 系统终端有各自的登录，面板只检查 Cage 客机里的 Claude Code。
+Open "Settings → Claude account". If you have already signed in to your subscription with Claude Code in a regular Cage terminal, the page shows the email detected by the default terminal once the environment is ready. Click "Add to scheduling" to reuse that sign-in. Claude Desktop, the web and the macOS Terminal on your device each have their own sign-in. The panel only checks Claude Code in the Cage guest.
 
-要添加另一个订阅，点击“登录新账号”，在临时浏览器窗口完成官方授权。Cage 为这次登录分配独立目录，成功后按邮箱登记并参与调度，也可以再改备注。取消登录不会增加一个可调度账号。以后点击项目右侧的终端图标新建 Claude 终端，标签会显示它分配到的账号。
+To add another Claude subscription, click "Sign in to a new account" and complete the official authorization in a temporary browser window. Cage gives this sign-in its own folder. After success, it's registered by email and included in scheduling. You can also edit the note afterwards. Canceling sign-in does not add a schedulable account. Later, click the terminal icon on the right of a project to create a new Claude terminal. Its tab shows the account it was assigned.
 
-如果普通终端原先登录 A，后来登录 B，Cage 会停止把默认目录分配给 A。B 需要单独点击“加入调度”。要让 A 和 B 长期同时在线，可以保留一份默认登录，再用“登录新账号”为另一个账号建立独立登录。
+If a regular terminal was first signed in as A and later signed in as B, Cage stops assigning the default folder to A. B needs its own click on "Add to scheduling". To keep A and B both online over time, keep one default sign-in, then use "Sign in to a new account" to create a separate sign-in for the other account.
 
-关闭某个账号的“参与自动分配”只影响之后新建的终端，正在使用该账号的会话可以继续。打开账号面板时，Cage 会向客机里的官方 Claude Code 查询五小时和七天额度。点击卡片的“检查状态”可立即重查该账号，无需先发一条模型消息。某个窗口没有返回读数时，面板会说明结果，并保留该窗口上一次的百分比和读取时间。[账号调度与额度说明](guide/accounts.md)
+Turning off "Include in automatic assignment" for an account only affects terminals created later. Sessions already using that account can continue. When you open the account panel, Cage asks the official Claude Code in the guest for the five-hour and seven-day usage limits. Click "Check status" on the card to recheck that account right away, without sending a model message first. If a window returns no reading, the panel explains this and keeps that window's last percentage and read time. [Account scheduling and usage limits](guide/accounts.md)
 
-新会话可均衡分配或按列表顺序选择账号。已有会话只有在明确授权、同一接续分组且原任务可安全停止时，才能切换账号恢复历史；也可预先允许额度确认耗尽后的自动接续。技能、指令与同项目记忆的共享范围，以及原生客机验证条件，见[多账号与额度](guide/accounts.md)。Claude Code 标签中的 Agent 编号表示当前绑定账号。
+New sessions can be assigned evenly or chosen in list order. An existing session can switch accounts to resume its history only when you explicitly allow it, the session is in the same continuation group, and the original task can be stopped safely. You can also allow automatic continuation in advance, after a usage limit is confirmed to be used up. For how skills, instructions and project memory are shared, and the conditions for verifying native guests, see [Multiple accounts and usage limits](guide/accounts.md). The Agent number on a Claude Code tab shows the account it is currently bound to.
 
-可以先让 Claude 读取项目并解释一个文件，确认模型请求正常，再让它在测试文件中完成一个小修改。通过“浏览文件”查看内容，并在主机上确认同一文件的变化。首次使用前请备份重要项目。
+You can first ask Claude to read the project and explain a file, to confirm model requests work. Then ask it to make a small change to a test file. Use "Browse files" to view the content, and check the same file's changes on your host. Back up important projects before first use.
 
-文件修改会直接作用于共享目录。项目内的 `.git` 可读写，可以让 Claude 修改代码，并在 Cage 中审查、暂存和提交。
+File changes apply directly to the shared folder. The `.git` folder in a project is readable and writable, so Claude can change code, and you can review, stage and commit it in Cage.
 
-点击左侧“浏览器”可返回正在使用的浏览页面；通过顶部加号新建网页。地址栏中的 `localhost` 指向当前 Cage 客机，可用于预览在 Cage 终端中启动的开发服务。
+Click "Browser" on the left to return to the browser page you were using. Use the plus button at the top to open a new web page. `localhost` in the address bar points to the current Cage guest, so you can preview dev servers you started in a Cage terminal.
 
-## 日常使用
+## Daily use
 
-### Claude 官网与桌面应用
+### Claude website and desktop app
 
-浏览器下方的 `claude.ai` 入口直接在 Cage 浏览器中打开官网。`Claude Desktop` 入口提供官方桌面应用：首次点击“下载并安装”，Cage 从 Anthropic 官方源完成安装，随后打开应用；Chat 和 Code 在同一个应用内切换。安装前先启动环境并确保所选代理可用，无需等待业务网络放行；应用内联网仍需通过网络检查。安装失败时可查看进度并重试。
+The `claude.ai` entry below the browser opens the website directly in the Cage browser. The `Claude Desktop` entry gives you the official desktop app. The first time, click "Download and install". Cage installs it from Anthropic's official source, then opens the app. Chat and Code switch within the same app. Before installing, start the environment and make sure the proxy you chose works. You don't need to wait for business internet access to be allowed. Internet access inside the app still has to pass the network check. If installation fails, you can check progress and retry.
 
-如果浏览器和 Claude Desktop 在滚动时卡顿，可开启“设置 → 通用 → 流畅画质”并保存。下次启动环境时，两者会用 1.5 倍像素绘图，文字和控件维持原有大小。关闭后可切回默认的 2 倍高清画质。
+If the browser and Claude Desktop stutter while scrolling, turn on "Settings → General → Prefer smoothness" and save. The next time you start the environment, both draw at 1.5× pixel density, while text and controls keep their original size. Turn it off to switch back to the default 2× high-definition graphics.
 
-Desktop 的画面会随 Cage 窗口和侧栏自动调整。右上角“显示大小”默认 100%；选择较小的值可以显示更多内容，较大的值可以放大文字和控件，无需重启应用。调整结果会在本机保留。若提示画面尺寸未能同步，点击“重试调整”。
+The Desktop view adjusts automatically with the Cage window and sidebar. "Display size" in the top right defaults to 100%. A smaller value shows more content. A larger value enlarges text and controls. No app restart is needed. Your setting is saved on this computer. If a notice says the display size couldn't sync, click "Retry resizing".
 
-应用只在使用时下载和启动。切换到浏览器或终端时保持运行；点击应用上方的“关闭应用”释放其运行资源，登录数据仍保留在 Cage 中。应用关闭后可“更新 / 修复安装”。Claude 账号的首次登录在 Cage 内完成，不导入主机账号。系统密钥环由 Cage 在内部创建和解锁，无需再设置一份密钥环密码；修改 Cage 密码会保留应用登录数据。需要额外虚拟机的 Cowork 功能暂未适配。
+The app is downloaded and started only when you use it. It keeps running when you switch to the browser or terminal. Click "Close app" above the app to free its resources. Your sign-in data stays in Cage. After closing the app, you can click "Update / repair install". Your first Claude account sign-in happens inside Cage and does not import a host account. Cage creates and unlocks the system keyring internally, so you don't need to set a separate keyring password. Changing your Cage password keeps the app's sign-in data. Cowork, which needs an extra virtual machine, is not supported yet.
 
-应用页或 Cage 主机窗口不可见时，Cage 暂停对应用状态的定时检查；返回时立即重新读取。应用内任务继续运行，画质设置保持原有选择。
+When the app page or the Cage host window is not visible, Cage pauses its scheduled checks of app status. It reads the status again right away when you return. Tasks inside the app keep running, and your graphics setting stays as it was.
 
-Linux 客机中由 Cage 管理的 Desktop 在最后一个电脑或手机查看者断开后自动隐藏窗口，减少后台绘图；再次打开画面时恢复。应用进程与正在执行的任务继续运行。Windows 和 macOS 原生客机保持其原生窗口行为，画面捕获随查看连接停止。
+On a Linux guest, the Desktop app managed by Cage hides its window automatically after the last computer or phone viewer disconnects, to reduce background drawing. The window comes back when you open the view again. The app process and running tasks keep going. On native Windows and macOS guests, the windows keep their native behavior. Screen capture stops along with the viewing connection.
 
-### 锁定与退出账户
+### Lock and sign out of account
 
-左下角头像菜单中的“锁定 Cage”隐藏工作台并要求重新输入密码，正在运行的 Claude、终端和环境任务继续运行。“退出账户”会先提醒保存文件，再停止环境并锁定凭据。仅退出应用时后台任务继续运行。“设置 → 账户 → 记住我”可开启本机自动登录，下次用当前系统用户打开时直接进入；手动锁定后仍需密码或 Touch ID，重新打开也不会跳过验证。Mac 已设置 Touch ID 时，可在“登录与解锁”中开启指纹解锁。退出账户会撤销本机快捷登录授权。
+"Lock Cage" in the avatar menu at the bottom left hides the workbench and asks for your password again. Running Claude, terminal and environment tasks keep running. "Sign out" first reminds you to save files, then stops the environment and locks credentials. If you only quit the app, background tasks keep running. "Settings → Account → Remember me" turns on local automatic sign-in. Next time you open the app as the current system user, you go straight in. After a manual lock, a password or Touch ID is still required, and reopening the app doesn't skip verification. If Touch ID is set up on your Mac, you can turn on fingerprint unlock in "Sign-in and unlock". Signing out of account revokes the local quick sign-in authorization.
 
-### 保存网站账号密码
+### Save website passwords
 
-在 Cage 浏览器中提交邮箱等网站的登录表单后，浏览器工具区会提示保存账号密码。先确认网站登录成功，再点击“保存密码”；密码变化时可选择“更新密码”。“此网站不再提示”只关闭该网站的保存提示。
+After you submit a sign-in form for a site such as your email in the Cage browser, the browser tools area asks whether to save the password. First make sure the sign-in worked, then click "Save password". If the password changes, you can choose "Update password". "Never for this site" only turns off save prompts for that site.
 
-再次打开同一网站时，展开浏览器工具区的“密码”，选择账号填入登录框，再自行提交。当前支持 HTTPS 顶层页面的常见表单；嵌入框架、验证码和 Passkey 不自动处理。旧环境如果提示密码功能不可用，先到“设置 → 环境与恢复”更新环境组件。
+When you open the same site again, expand "Passwords" in the browser tools area, choose an account to fill into the sign-in form, then submit it yourself. Common forms on HTTPS top-level pages are supported for now. Embedded frames, CAPTCHAs and passkeys are not handled automatically. If an older environment says the password feature is unavailable, update the environment components under "Settings → Environment and recovery" first.
 
-在“设置 → 密码保险箱”中可以搜索、添加、编辑、删除记录，或恢复某网站的保存提示。查看、复制密码需要再次输入 Cage 账户密码。保险箱随 Cage 一起解锁和锁定；已启用记住登录时，也会随之解锁。密码只保存在本机，备份时需同时保留配置目录中的账户文件与密码库，具体边界见[密码保险箱设置](guide/settings.md)。
+In "Settings → Password vault", you can search, add, edit and delete entries, or restore save prompts for a site. Viewing or copying a password requires you to enter your Cage account password again. The vault unlocks and locks along with Cage. If Remember me is on, it also unlocks along with Cage. Passwords are stored only on this computer. When you back up, keep both the account file and the password vault in the config folder. For the exact limits, see [Password vault settings](guide/settings.md).
 
-### 项目、标签与文件
+### Projects, tabs and files
 
-左侧“项目”列出默认工作区和明确打开的文件夹，列表由 Cage 保存，重新打开应用后仍可看到。每个项目右侧有两个图标。点击打开图标（↗）可在 code-server 中编辑该目录的文件。点击终端图标（>_）可选择终端类型，在该目录新建终端。已有终端始终留在创建它的目录下。所有项目共用一个持久环境，所选客机系统、工具、账户和文件系统也相互共享。已打开的目录在环境启动时恢复连接。
+The "Projects" list on the left shows the default workspace and folders you opened explicitly. Cage saves the list, so it is still there after you reopen the app. Each project has two icons on its right. Click the open icon (↗) to edit files in that folder in code-server. Click the terminal icon (>_) to choose a terminal type and open a new terminal in that folder. Existing terminals stay in the folder where they were created. All projects share one persistent environment, so the chosen guest system, tools, accounts and file system are shared too. Opened folders reconnect when the environment starts.
 
-浏览器独立于项目，网页和文件编辑器使用顶部标签页；切换项目不会关闭或迁移网页。将鼠标移入终端行，或用键盘聚焦该行，即可在右侧置顶、重命名或删除终端。浏览器标签可通过右键或 Shift+F10 打开操作菜单。拖动可调整同一列表内的顺序，刷新后保留。⌘1–9 切换当前浏览器的页面或当前目录的终端。
+The browser is separate from projects. Web pages and file editors use tabs at the top. Switching projects does not close or move web pages. Hover over a terminal row, or focus it with the keyboard, to pin, rename or delete the terminal from the right side. Browser tabs open their action menu with right-click or Shift+F10. Drag to change the order within the same list. The order is kept after a refresh. ⌘1–9 switches between pages in the current browser or terminals in the current folder.
 
-点击浏览器工作区右上角的 ×，退出浏览器视图并返回打开前的首页、终端或 Claude Desktop；原来的终端已结束时返回首页。横排与竖排标签均提供此按钮，双网页分屏共用一个关闭按钮。网页标签、登录和后台无痕会话继续保留，再次点击侧栏“浏览器”可以继续使用；结束无痕会话需关闭全部无痕标签或停止环境。
+Click the × in the top right of the browser workspace to leave the browser view and return to the home page, terminal or Claude Desktop you were on before. If that terminal has already ended, you return to the home page. Both horizontal and vertical tab layouts have this button, and a split view of two web pages shares one close button. Web tabs, sign-ins and background incognito sessions are kept. Click "Browser" in the sidebar again to continue. To end an incognito session, close all incognito tabs or stop the environment.
 
-标签较多时会自动缩短，当前页面的标签保留更多标题空间。拖动时其他标签即时让位，松手保存顺序，Esc 取消；置顶标签在置顶分组内排序。右侧向下箭头可以搜索已打开的页面。
+When there are many tabs, they shrink automatically, and the current page's tab keeps more room for its title. While you drag, other tabs move aside right away. Release to save the order, or press Esc to cancel. Pinned tabs are sorted within the pinned group. The down arrow on the right lets you search open pages.
 
-点击地址栏右侧的星标或按 ⌘D 收藏当前网页，可修改名称并选择或新建收藏夹。点击旁边的收藏夹按钮或按 ⌘⇧O，可搜索、打开和编辑收藏；编辑时可移动到其他收藏夹。删除收藏夹会把其中的网页移至“未分类”。收藏保存在本机当前 Cage 配置中，所有项目共用，重启后保留。
+Click the star on the right of the address bar, or press ⌘D, to bookmark the current web page. You can edit its name and choose or create a bookmark folder. Click the bookmarks button next to it, or press ⌘⇧O, to search, open and edit bookmarks. When editing, you can move a bookmark to another folder. Deleting a folder moves its pages to "Uncategorized". Bookmarks are saved in the current Cage config on this computer. They are shared by all projects and kept after a restart.
 
-### 浏览器设置与扩展
+### Browser settings and extensions
 
-在浏览器右上角“…”菜单点击“设置”，即可打开独立的设置标签；再次点击会回到同一标签。“新标签页”中可保存默认网址，“外观”中选择横排或竖排标签，“隐私与网站数据”中管理 Cookie 和网站权限。这些浏览器专属设置由浏览器自身管理。
+Click "Settings" in the "…" menu at the top right of the browser to open a separate settings tab. Clicking it again returns you to the same tab. In "New tab", you can save a default address. In "Appearance", you can choose horizontal or vertical tabs. In "Privacy and site data", you can manage cookies and site permissions. The browser manages these browser-specific settings itself.
 
-进入“扩展”，可以添加 Manifest V3 的 ZIP 扩展。选择文件后先检查名称、版本和权限，再点击“安装扩展”。已安装列表支持启用、停用、移除和打开扩展选项；也可进入 Chromium 原生扩展管理或扩展商店。安装和启停状态随当前 Cage 环境保存，重启后继续使用。
+Go to "Extensions" to add a Manifest V3 ZIP extension. After you choose a file, check its name, version and permissions, then click "Install extension". The installed list lets you enable, disable, remove and open extension options. You can also open Chromium's native extension management or the extension store. Install and enable or disable state is saved with the current Cage environment, and it stays after a restart.
 
-点击“从本机导入”，选择 Edge、Chrome、Brave 或 Chromium 的用户配置，核对清单后导入所选扩展。原启停状态能读取时按原状态导入，无法读取时显示说明并保持停用。不兼容或已导入的扩展会单独标明；失败项目给出原因，不影响其余项目的结果。完成后点击“完成并关闭”，回到已安装列表。
+Click "Import from this computer", choose the user profile of Edge, Chrome, Brave or Chromium, check the list, then import the extensions you pick. If the original enabled state can be read, it is imported as is. If not, a note is shown and the extension stays disabled. Incompatible or already imported extensions are marked separately. Failed items show the reason, without affecting the results of the others. When done, click "Done and close" to return to the installed list.
 
-导入一次后，两边独立管理。本机浏览器的账户、Cookie、扩展登录数据与原生伴随程序不会包含在程序包中，相关扩展可能需要重新登录或配置。部分扩展依赖浏览器专属能力或授权，兼容范围以扩展在 Cage 内的实际运行结果为准。详细机制见[浏览器设置与扩展](guide/browser.md)。
+After importing, the two are managed separately. Accounts, cookies, extension sign-in data and native companion programs from your local browser are not included in the package, so some extensions may need you to sign in again or set them up. Some extensions depend on browser-specific features or permissions, so compatibility is judged by how the extension actually runs in Cage. For details, see [Browser settings and extensions](guide/browser.md).
 
-### 无痕浏览与 Cookie
+### Incognito browsing and cookies
 
-点击地址栏右侧的“浏览器菜单”，选择“新建无痕标签”；也可按 macOS 的 ⌘⇧N 或 Windows、Linux 的 Ctrl+Shift+N。无痕标签在标题和地址栏中显示“无痕”。在无痕页点击标签栏加号或按新建网页快捷键，会继续创建无痕标签；从菜单选择“新建普通标签”可返回普通浏览。
+Click "Browser menu" on the right of the address bar and choose "New incognito tab". You can also press ⌘⇧N on macOS, or Ctrl+Shift+N on Windows and Linux. Incognito tabs show "Incognito" in the title and address bar. Clicking the plus button on the tab bar, or pressing the new web page shortcut on an incognito page, creates another incognito tab. To go back to normal browsing, choose "New regular tab" from the menu.
 
-普通网页与无痕网页的 Cookie、登录状态和网站存储相互隔离，同一批无痕标签之间共享临时会话。关闭最后一个无痕标签后清理该会话，重启环境不会恢复无痕网页。无痕页不会提示保存密码，标签重命名和排列也不写入本地持久存储。下载文件及主动保存的收藏继续保留。仅关闭或隐藏 Cage 窗口会保留后台浏览器；结束无痕会话应关闭所有无痕标签或停止环境。无痕浏览继续使用 Cage 的网络出口，网站和代理服务仍可识别相应请求。无痕网页可以与终端分屏，双网页分屏目前仅支持普通标签。
+Cookies, sign-in state and site storage for regular and incognito web pages are kept separate. Incognito tabs share a temporary session. The session is cleared after you close the last incognito tab. Restarting the environment does not restore incognito pages. Incognito pages do not prompt you to save passwords, and tab renames and order are not written to local persistent storage. Downloaded files and bookmarks you saved are kept. Closing or hiding the Cage window only keeps the background browser running. To end an incognito session, close all incognito tabs or stop the environment. Incognito browsing still uses Cage's network exit, so websites and proxy services can still recognize the requests. Incognito pages can be split with a terminal, but split view of two web pages currently supports regular tabs only.
 
-在浏览器菜单选择“管理 Cookie”，即可查看当前网站的 Cookie，或切换到“所有网站”。列表支持按网站或名称搜索、查看值、删除单条，以及清空当前网站或当前会话所有网站的 Cookie。每次操作仅影响当前标签所属的普通或无痕会话；清空范围不受搜索条件限制，需要再次确认，完成后网站可能要求重新登录。清空普通会话的所有 Cookie 也会清除文件编辑器的认证，可通过编辑器菜单的“恢复编辑器”重新打开。Cookie 清理保留网站的其他存储，例如 localStorage。
+Choose "Manage cookies" in the browser menu to see cookies for the current site, or switch to "All sites". The list lets you search by site or name, view values, delete single cookies, and clear cookies for the current site or for all sites in the current session. Each action only affects the regular or incognito session of the current tab. Clearing applies to all results, regardless of the search filter, and you must confirm it. Afterward, a site may ask you to sign in again. Clearing all cookies in a regular session also clears file editor sign-in, which you can restore with "Restore editor" in the editor menu. Clearing cookies keeps other site storage, such as localStorage.
 
-### 浏览器上传与下载
+### Browser uploads and downloads
 
-在网页中点击上传后，工作台显示“上传本机文件”。点击“选择本机文件”，即可用系统文件窗口选择图片、视频或文档，传递状态会显示在面板中。只传递所选文件，不增加文件夹共享。网页允许多选时最多选择 100 个文件，每个文件不超过 2 GB；目标网站自身的格式与大小限制仍然有效。可以取消上传，刷新或关闭原网页后需要重新选择。Claude Desktop 的文件上传也使用此本机选择入口；如果仍显示客机文件窗口，先保存并关闭 Claude Desktop，再重新打开。 在 Claude Desktop 的 Code 页选择工作文件夹时，Cage 会显示“选择工作项目”，列表与左侧项目列表保持一致。选中已有项目后点击“使用此项目”；新目录通过“添加本机项目…”打开系统窗口，确认后加入 Cage 项目列表并交给 Claude。Claude 选择项目不会切换 Cage 当前项目或已有终端。该目录中的改动会同步到本机。
+When you click upload on a web page, the workbench shows "Upload local file". Click "Choose local file" to pick images, videos or documents in the system file window. Transfer status appears in the panel. Only the files you choose are sent, and no folder is shared. If the web page allows multiple selection, you can choose up to 100 files, each up to 2 GB. The target site's own format and size limits still apply. You can cancel an upload. If you refresh or close the original web page, you need to choose the files again. Claude Desktop file uploads also use this local picker. If a guest file window still appears, save and close Claude Desktop, then open it again. When you pick a working folder on the Code page of Claude Desktop, Cage shows "Choose a working project". The list matches the project list on the left. Select an existing project and click "Use this project". For a new folder, "Add a local project…" opens the system window. After you confirm, it is added to the Cage project list and handed to Claude. Choosing a project in Claude does not switch Cage's current project or existing terminals. Changes in that folder sync to this computer.
 
-网页下载仍在 Cage 内完成。本机先收到默认工作区 `Downloads` 中的完整文件，同名文件自动换名。工作台连接期间观察到下载完成后，会弹出系统“另存为”窗口；取消时保留默认位置的文件。共享目录暂时不可写而客机文件已完整下载时，也可以从下载列表直接另存为。
+Web downloads still happen inside Cage. This computer first receives the complete file in the default `Downloads` folder of the workspace, and files with the same name are renamed automatically. When a download finishes while the workbench is connected, the system "Save as" window appears. If you cancel it, the file stays in the default location. If the shared folder is temporarily read-only but the guest file has finished downloading, you can also save it from the download list.
 
-左侧“下载”入口和地址栏旁的下载按钮都可查看进度、文件名和保存位置，并提供“打开文件”“在文件夹中显示”“另存为”。已记录的本机文件在停止环境后仍能查看；再次打开 Cage 也保留保存位置。新配置的默认工作区通常为 `~/.claude-cage-workspace/`，迁移配置可能保留已有位置。使用普通浏览器打开工作台时，导出由该浏览器的下载功能处理。
+The "Downloads" entry on the left and the download button next to the address bar both show progress, file names and save locations. They also offer "Open file", "Show in folder" and "Save as". Recorded local files can still be viewed after the environment stops. Save locations are kept when you reopen Cage. A new default workspace is usually `~/.claude-cage-workspace/`, while migrated configs may keep their existing location. When you open the workbench in a regular browser, exports are handled by that browser's download feature.
 
-Desktop 的主机文件操作只接受已授权项目或已保存下载记录中的文件，生成文档须先完成保存。Linux 客机沿用现有文件入口；macOS、Windows 原生保存与文件打开已经接入，完整官方应用的上传、保存、打开与定位仍待实机验收。需要其他目录时，先通过“添加本机项目…”明确授权；更新后关闭再打开 Desktop。当前条件与恢复方法见[Claude Desktop](guide/desktop.md#选择项目与传文件)。
+Desktop file operations on the host only accept files in authorized projects or in saved download records. A generated document must be saved first. Linux guests keep using the existing file entry point. Native saving and file opening on macOS and Windows are connected, but uploads, saves, opening and locating files in the full official app still need hands-on testing. For other folders, first grant access explicitly with "Add a local project…". After an update, close and reopen Desktop. For the current conditions and recovery steps, see [Claude Desktop](guide/desktop.md#choose-a-project-and-transfer-files).
 
-### 关闭、退出与再次打开
+### Closing, quitting and reopening
 
-| 操作 | 会发生什么 |
+| Action | What happens |
 |---|---|
-| 关闭窗口 | 环境和后台终端保留运行。 |
-| 退出时选择保留环境 | 后台任务继续运行，下次打开 App 重新连接。 |
-| 停止环境，或停止环境并退出 | 终端进程结束；项目文件、虚拟磁盘与登录状态保留。 |
-| 刷新工作台 | 可重新连接控制服务中仍存活的终端。 |
-| 重启控制服务或虚拟机 | 旧终端会话不能恢复，需要新建终端。 |
+| Close the window | The environment and background terminals keep running. |
+| Quit and keep the environment | Background tasks keep running. The app reconnects the next time you open it. |
+| Stop the environment, or stop it and quit | Terminal processes end. Project files, the virtual disk and sign-in state are kept. |
+| Refresh the workbench | Reconnects to terminals that are still running in the control service. |
+| Restart the control service or VM | Old terminal sessions can't be restored. Create new terminals. |
 
-停止前先保存编辑器中的修改。再次打开 Cage 会使用同一环境，无需重新导入项目或重新创建虚拟磁盘。
+Save changes in the editor before you stop the environment. When you open Cage again, it uses the same environment, so you don't need to import projects again or recreate the virtual disk.
 
-切到终端、设置页，或隐藏、最小化窗口时，Cage 暂停浏览器画面的显示连接，保留浏览器页面、下载和后台任务。画面重新可见时自动连接；这项节省显示资源的行为不等于暂停浏览器或停止环境。
+When you switch to a terminal or the settings page, or hide or minimize the window, Cage pauses the browser view's display connection. Web pages, downloads and background tasks are kept. The view reconnects automatically when it is visible again. This display-saving behavior does not mean the browser is paused or the environment is stopped.
 
-### 按键与剪贴板
+### Keys and clipboard
 
-“设置 → 通用”可以选择按键习惯。Mac 模式将网页和编辑器的 `⌘F`、`⌘Z`、`⌘⇧Z` 等映射为 Linux 对应的 Ctrl 组合；本机地址栏与设置输入框保留 Mac 操作。终端的 `Ctrl+C` 中断命令，`⌘C` 复制选中文本。
+"Settings → General" lets you choose a keyboard style. Mac mode maps shortcuts such as `⌘F`, `⌘Z` and `⌘⇧Z` in web pages and the editor to the matching Ctrl combinations on Linux. The address bar and settings inputs on this computer keep Mac shortcuts. In the terminal, `Ctrl+C` interrupts a command, and `⌘C` copies selected text.
 
-Windows 和 Linux 默认采用 Ctrl 按键习惯，工作台快捷键中的 `⌘` 对应 `Ctrl`；终端复制粘贴使用 `Ctrl+Shift+C/V`，保留 `Ctrl+C` 中断命令。
+Windows and Linux use the Ctrl keyboard style by default. `⌘` in workbench shortcuts maps to `Ctrl`. Terminal copy and paste use `Ctrl+Shift+C/V`, and `Ctrl+C` still interrupts commands.
 
-在 Claude Desktop、Claude Code 和普通终端的多行输入中，按 `Shift+Enter` 在当前输入内换行，按 `Enter` 提交消息或执行命令。网页和 Desktop 的目标输入框须支持多行；终端程序须支持多行粘贴或识别 Shift+Enter。Bash、zsh 启用多行粘贴时，换行不会执行已写好的命令；自行关闭此模式或使用其他终端程序时，行为取决于程序的按键支持。中文输入法仍在选择候选词时，回车先由输入法处理。
+In multi-line input in Claude Desktop, Claude Code and regular terminals, press `Shift+Enter` to start a new line within the current input, and press `Enter` to submit a message or run a command. The target input box in web pages and Desktop must support multiple lines. Terminal programs must support multi-line paste or recognize Shift+Enter. When multi-line paste is on in Bash or zsh, line breaks don't run commands that are already written. If you turn this mode off yourself, or use another terminal program, the behavior depends on that program's key support. While a Chinese input method is still choosing candidates, Enter is handled by the input method first.
 
-复制粘贴支持纯文本、中文、多行和 emoji。先点击目标输入框，再使用快捷键或工具栏按钮；普通浏览器限制剪贴板权限时，可用“文本传递”面板。Cage 仅在主动复制或粘贴时访问本机剪贴板，不持续轮询。
+Copy and paste support plain text, Chinese, multiple lines and emoji. Click the target input box first, then use the shortcut or toolbar button. If a regular browser limits clipboard access, use the "Text transfer" panel. Cage only accesses the clipboard on this computer when you copy or paste, and does not keep polling it.
 
-Cage 浏览器中的网页复制按钮也可同步纯文本到本机。点击后保持当前网页和 Cage 窗口处于前台，出现“已复制到本机”即可在其他应用粘贴。如果网页采用不受支持的旧式复制方式，或复制期间切换了标签、输入位置或窗口，可重新复制，或使用复制快捷键和“文本传递”面板。
+The copy button on web pages in the Cage browser can also sync plain text to this computer. After you click it, keep the current web page and Cage window in front. When "Copied to this computer" appears, you can paste into other apps. If the web page uses an unsupported old copy method, or you switch tabs, input position or windows during copying, copy again, or use the copy shortcut and the "Text transfer" panel.
 
-本机截图可以粘贴到 Cage。视频、文档和图片文件可以直接拖入工作内容区，也可以先在本机文件管理器中复制，再到 Cage 粘贴。文件保留原始名称与内容，包括 GIF 动画；单文件最多 2 GB，一次最多 100 个。网页拖入会交给落点，文件粘贴会交给当前输入位置，目标网页须支持附件拖入；Claude Desktop 须先点击支持附件的输入位置。终端把文件保存到客机附件目录并插入带引号的路径，供 Claude Code 等工具读取，不自动执行命令。
+Screenshots from this computer can be pasted into Cage. You can drag video, document and image files directly into the work area, or copy them in the file manager on this computer and paste them into Cage. Files keep their original names and contents, including GIF animations. Each file can be up to 2 GB, and you can send up to 100 at a time. Dragging into a web page goes to the drop target, and pasting files goes to the current input position. The target web page must support attachment drag-and-drop. In Claude Desktop, first click an input that accepts attachments. In the terminal, files are saved to the guest attachments folder and inserted as quoted paths, so Claude Code and other tools can read them. No command runs automatically.
 
-截图粘贴上限为 20 MB、4000 万像素。Cage 通过本机与客机的控制通道传递附件，不借助外部存储服务；目标网页或应用可以按自身行为上传。终端附件保留到用户自行删除，Desktop 的上传副本保留到图形会话重建。切换目标或断开连接后，尚未发送的输入会取消。使用旧环境时，先按应用提示更新环境组件。
+Screenshot pastes are limited to 20 MB and 40 megapixels. Cage passes attachments through the control channel between this computer and the guest, without any external storage service. The target web page or app can upload them however it normally does. Terminal attachments stay until you delete them. Desktop upload copies stay until the graphics session is rebuilt. If you switch targets or disconnect, unsent input is canceled. If you use an older environment, first update its components as the app prompts.
 
-### 外观与浏览器首页
+### Appearance and browser home page
 
-“设置 → 外观”支持跟随系统或固定使用浅色、深色主题。基础配色可调整强调色、背景和文字，展开每套主题的“自定义”后，还可分别调整侧栏、工具栏、标题、辅助文字、边框、输入框、按钮、链接、焦点、悬停、选中及状态提示颜色。终端的背景、文字、光标、选区与 ANSI 色板也可单独设置；虚拟机内的网页和编辑器保留各自外观设置。
+"Settings → Appearance" lets you follow the system theme or use a fixed light or dark theme. Basic colors let you adjust the accent, background and text. Expand "Customize" for each theme to adjust the sidebar, toolbar, titles, secondary text, borders, inputs, buttons, links, focus, hover, selection and status colors separately. The terminal's background, text, cursor, selection and ANSI palette can also be set separately. Web pages and editors inside the VM keep their own appearance settings.
 
-每套主题的预设下拉框按“经典、编辑器、阅读、无障碍”分组，共有 14 个系列、22 套明暗搭配。可选 Codex、Solarized、Ayu、VS Code Modern / Classic、GitHub、Nord、Dracula、Monokai，以及参考 Typora 的纸白、暖纸和夜间风格。部分主题只提供浅色或深色版本，下拉框只显示当前模式可用的版本。选择预设会同时应用界面与终端配色，替换之前的元素颜色覆盖，保留已设置的字体；已保存的自定义主题不会被改写。
+The preset dropdown for each theme is grouped into "Classic", "Editor", "Reading" and "Accessibility". It has 14 families and 22 light and dark pairings. Options include Codex, Solarized, Ayu, VS Code Modern / Classic, GitHub, Nord, Dracula, Monokai, and paper white, warm paper and night styles inspired by Typora. Some themes come only in a light or dark version, and the dropdown shows only the versions available for the current mode. Choosing a preset applies both interface and terminal colors. It replaces earlier element color overrides and keeps your font settings. Saved custom themes are not changed.
 
-“无障碍 → 色觉友好 · 蓝橙”用蓝色与橙色区分成功和错误，减少红绿依赖；“高对比”提供白底黑字和黑底白字两种搭配，并加强边框与焦点。两类预设都关闭半透明侧栏，使对比保持稳定。卡片中带图标和文字的成功、警告、错误预览，可帮助比较状态色。不同色觉差异的适用配色会有差别，可继续自定义并另存主题；这些配色影响 Cage 界面和内置终端，虚拟机中的网页与编辑器保持各自外观。
+"Accessibility → Color-blind friendly · Blue and orange" uses blue and orange to tell success and error apart, which reduces reliance on red and green. "High contrast" offers black-on-white and white-on-black pairings, with stronger borders and focus outlines. Both presets turn off the translucent sidebar to keep contrast stable. Success, warning and error previews on cards, which have icons and text, help you compare status colors. Suitable palettes vary between people with different color vision. You can keep customizing and save a theme separately. These colors affect the Cage interface and the built-in terminal. Web pages and editors in the VM keep their own appearance.
 
-颜色支持取色器和六位 HEX 输入。HEX 输入按 Enter 或离开输入框后生效；单独设置的颜色旁可恢复自动配色。字体、字号、对比度、指针和动态效果也在此调整。修改即时生效并自动保存，失败时保留当前输入，可点击“重试保存”。
+Colors support a color picker and six-digit HEX input. HEX input takes effect when you press Enter or leave the input box. Next to a color you set separately, you can restore automatic coloring. Font, text size, contrast, pointer and motion effects are also adjusted here. Changes apply immediately and save automatically. If saving fails, your current input is kept, and you can click "Retry save".
 
-在“我的主题”中输入名称，点击“另存为主题”，即可将浅色、深色两套配色、字体和侧栏透明度保存为一个主题。下拉框用于切换主题；修改后可“更新此主题”，也可另存，或点击“恢复已保存配色”放弃此次配色调整。删除主题会保留当前配色。最多保存 50 个自定义主题。
+In "My themes", enter a name and click "Save as theme". This saves the light and dark color sets, font and sidebar transparency as one theme. The dropdown switches themes. After you change a theme, you can click "Update this theme", save it under a new name, or click "Restore saved palette" to discard these color changes. Deleting a theme keeps the current colors. You can save up to 50 custom themes.
 
-“导出主题”将当前两套配置保存为 `.cage-theme.json` 文件；“导入主题”校验文件后添加并应用，同名文件会另存，不覆盖已有主题。桌面版通过系统文件窗口读写，浏览器版使用文件选择与下载。主题文件不包含账户、代理、项目或本机路径；明暗切换模式、字号及交互偏好不随主题文件迁移。文件须为不超过 256 KB 的 Cage JSON 主题，格式版本不支持或内容无效时保留当前设置。
+"Export theme" saves the current light and dark settings as a `.cage-theme.json` file. "Import theme" checks the file, then adds and applies it. If a theme with the same name already exists, the imported one is saved as a new theme, and existing themes are not overwritten. The desktop version reads and writes files through the system file window. The browser version uses file selection and downloads. Theme files do not include accounts, proxies, projects or local paths. The light/dark switching mode, text size and interaction preferences are not moved with the theme file. A file must be a Cage JSON theme of up to 256 KB. If the format version is unsupported or the content is invalid, the current settings are kept.
 
-“从本机 Codex 同步”可复制 Codex 当前的外观偏好，导入后独立保存，并保留 Cage 中已保存的自定义主题。
+"Sync from local Codex" copies Codex's current appearance preferences. The copy is saved separately after import, and your saved custom themes in Cage are kept.
 
-浏览器“…”菜单的“设置 → 新标签页”控制新网页的默认入口，初始为 Bing；保存后下次打开网页生效，无需重启环境。
+"Settings → New tab" in the browser's "…" menu controls the default address for new web pages. It starts as Bing. It takes effect the next time you open a web page after saving. No environment restart is needed.
 
-### 计算资源上限
+### Compute resource limits
 
-“设置 → 环境与恢复 → 计算资源”默认按主机份额自动设置上限。关闭“自动分配资源上限”后，可分别指定内存 GiB 和 CPU 逻辑核心数，可填范围显示在输入框下方。点击“保存资源配置”后，下次启动环境时生效；运行中可点击“重启并应用已保存配置”，请先保存工作，重启会结束正在运行的命令。内存仍会在指定上限内按需增长和回收。macOS、Windows 和 Linux 操作一致；服务器容器资源由服务器部署配置管理。
+"Settings → Environment and recovery → Compute resources" sets limits automatically by default, based on a share of the host's resources. Turn off "Automatically assign resource limits" to set memory in GiB and CPU logical cores separately. The allowed range is shown below each input. Click "Save resource settings" to apply them the next time you start the environment. While it's running, click "Restart and apply the saved settings". Save your work first, because the restart stops running commands. Memory still grows and is reclaimed as needed within the limit. macOS, Windows and Linux work the same way. Server container resources are managed by the server deployment config.
 
-### 时区、语言和出口变化
+### Time zone, language and exit changes
 
-新用户默认开启时区和语言跟随出口 IP。自动时区经代理查询出口位置，采用返回的 IANA 时区；保存时和停止后的下一次启动会同步。位置服务不可用时显示错误，不使用主机位置代替。IP 定位依赖外部数据库，不能保证节点的物理位置。
+New users have time zone and language following the exit IP turned on by default. Automatic time zone checks the exit location through the proxy and uses the IANA time zone it returns. It syncs when you save and at the next start after stopping. If the location service is unavailable, an error is shown, and the host's location is not used instead. IP geolocation depends on an external database, so it cannot guarantee a node's physical location.
 
-语言可独立跟随出口地区，也可手动选择。自动模式使用内置地区默认值，多语言地区可自行调整；未知地区保留现有语言。
+Language can follow the exit region separately, or be chosen manually. Automatic mode uses built-in regional defaults. For regions with several languages, you can adjust the choice yourself. For unknown regions, the current language is kept.
 
-“设置 → IP 变化规则”支持静态 IP，以及动态 IP 的同一城市、同一州／省、同一国家／地区、不限地区。城市规则同时检查国家、州／省和城市。首次配置可使用检测结果；已有基准只在用户明确修改时改变，重检不会自动接受新出口。
+"Settings → IP change rules" supports a static IP, or a dynamic IP within the same city, the same state or province, the same country or region, or any region. A city rule checks the country, state or province, and city together. For the first setup, you can use the detection result. An existing baseline only changes when you explicitly edit it. A recheck does not accept a new exit automatically.
 
-### 查看检查、暂停与恢复网络
+### Check, pause and restore network access
 
-点击底部网络状态可查看证据、重检或暂停外网。暂停会切断已有外部连接，终端和文件仍可离线使用。第三方 IP 信誉仅作提示，不单独决定联网；社区检查网站需要用户主动打开。
+Click the network status at the bottom to view evidence, recheck, or pause internet access. Pausing cuts existing external connections, while the terminal and files still work offline. Third-party IP reputation is only a hint and does not decide connectivity on its own. Community check websites open only when you open them yourself.
 
-人工暂停会保存，关闭并重开后台后仍保持暂停，定期订阅刷新也不会自动恢复。旧配置没有暂停记录，或记录损坏时，Cage 默认保持外网关闭；确认后可通过启动环境、重新检测或手动应用网络配置恢复。若提示无法保存状态，当前外网仍会关闭，请解决配置写入问题后重试。
+A manual pause is saved. It stays paused after you close and reopen the backend service, and regular subscription refreshes do not restore it. If an older config has no pause record, or the record is damaged, Cage keeps internet access off by default. After you confirm, you can restore access by starting the environment, rechecking, or applying the network config manually. If a notice says the state couldn't be saved, internet access is still turned off. Fix the config write problem, then try again.
 
-后台约每 30 秒核对出口与环境配置，发现不符合规则时暂停外网。网络放行每次最多 90 秒，控制服务失联后到期关闭；完整报告最多有效 24 小时，过期需要重检。HTTP/SOCKS5 代理可能按连接分配不同出口，抽样检查不能证明每条连接使用相同 IP；固定出口仍需代理服务自身保证。
+In the background, Cage checks the exit and environment config about every 30 seconds, and pauses internet access if a rule is broken. Each internet access allowance lasts up to 90 seconds. If the control service loses contact, it expires and turns off. A full report is valid for up to 24 hours and must be rechecked after that. HTTP/SOCKS5 proxies may assign different exits per connection, so sample checks cannot prove that every connection uses the same IP. A fixed exit still depends on the proxy service itself.
 
-## 网络与数据边界
+## Network and data boundaries
 
-Cage 使用轻量 Linux 虚拟机，没有完整桌面。浏览器与编辑器页面在虚拟机内执行，本机工作台呈现画面和终端；Chromium 以普通用户运行并保留自身沙箱。
+Cage uses a lightweight Linux VM without a full desktop. Browser and editor pages run inside the VM. The workbench on this computer shows the display and terminal. Chromium runs as a regular user and keeps its own sandbox.
 
-- 对外 TCP 在主机侧虚拟网卡出口统一交给指定代理，没有直连回退。DNS 经同一代理转为 DoH，代理失败时不回退主机 DNS。
-- 客机公网 IPv6、普通 UDP、ICMP，以及到主机和局域网的直连受限；当前公网出站支持 IPv4 TCP。SSH 管理、共享文件和本地显示使用明确的内部通道。主动启用 [Tailscale 私网](guide/tailscale.md)后，可按设备和 SSH 权限双向连接，外层通信仍受代理与暂停控制。
-- 代理凭据保存在主机私有配置，不传入客机。终端 SSH 禁用本机转义、本机命令、代理转发与交互密码，且不继承主机环境变量。
-- 工作台只监听本机 loopback，App 自动换取会话；接口校验 Host、Origin 与会话，外部网页不能直接调用管理操作。
-- 默认工作区及明确打开的项目目录会共享到同一环境，彼此可以访问。修改、删除共享文件会影响主机，请保留备份。不要把 Cage 私有配置目录或正在运行的控制程序作为共享项目。
+- Outbound TCP from the host-side virtual network interface always goes to the proxy you chose, with no direct fallback. DNS goes through the same proxy as DoH. If the proxy fails, DNS does not fall back to the host's DNS.
+- Guest public IPv6, regular UDP, ICMP, and direct connections to the host and LAN are restricted. Public outbound currently supports IPv4 TCP only. SSH management, shared files and local display use explicit internal channels. After you turn on a [Tailscale private network](guide/tailscale.md), connections can run both ways, based on device and SSH permissions. The outer traffic is still subject to the proxy and pause controls.
+- Proxy credentials are stored in the host's private config and are not passed to the guest. Terminal SSH disables local escape sequences, local commands, proxy forwarding and interactive passwords, and does not inherit host environment variables.
+- The workbench only listens on local loopback. The app exchanges for a session automatically. The interface checks Host, Origin and the session, so external web pages cannot call management actions directly.
+- The default workspace and project folders you open explicitly are shared into the same environment, and they can access each other. Changing or deleting shared files affects the host, so keep backups. Don't use the Cage private config folder or the running control program as a shared project.
 
-网络约束在虚拟机外，客机中的 sudo 不能直接关闭。虚拟机或浏览器漏洞、主机管理员修改配置，以及用户在主机执行共享项目中的脚本，超出这层边界能阻止的范围。Cage 不提供账号封禁预测或避免限制的承诺。镜像化分享和系统时钟伪造尚未提供。
+Network limits are enforced outside the VM, so sudo in the guest cannot turn them off directly. This boundary cannot stop VM or browser vulnerabilities, changes to the configuration by a host administrator, or running scripts from a shared project on the host. Cage does not predict account bans or promise to avoid restrictions. Image-based sharing and system clock spoofing are not available yet.
 
-### 播放环境声音
+### Play sound from the environment
 
-在 Cage 浏览器播放视频或音频时，声音会从本机当前的扬声器或耳机输出。点击底部的扬声器按钮展开音量滑块，调整整个 Cage 环境的音量；展开时再次点击扬声器可以静音或取消静音。鼠标移出控件后滑块自动收起。Claude Desktop 和终端程序共用此控制。若播放受到限制，点击页面后继续播放。
+When you play video or audio in the Cage browser, sound comes out of the speakers or headphones currently used by this computer. Click the speaker button at the bottom to open the volume slider, which controls the volume for the whole Cage environment. While it's open, click the speaker again to mute or unmute. When the mouse leaves the control, the slider closes automatically. Claude Desktop and terminal programs share this control. If playback is blocked, click the page to continue playing.
 
-切换标签或项目不会停止声音。静音、停止环境、锁定 Cage 账户或退出应用会断开播放；取消静音后播放当前内容，不补播中断期间的声音。旧环境首次使用时需要更新组件。此功能提供声音输出，不提供本机麦克风输入。
+Switching tabs or projects does not stop sound. Muting, stopping the environment, locking the Cage account or quitting the app disconnects playback. When you unmute, the current content plays, and sound missed during the interruption is not replayed. Older environments need their components updated the first time you use this. This feature provides sound output only, not microphone input on this computer.
 
-## 升级与卸载
+## Upgrading and uninstalling
 
-本节的安装包替换与卸载步骤适用于 macOS。Windows 用户参阅 [Windows 更新与卸载](windows.md#更新与卸载)，Linux 用户参阅 [Linux 更新与卸载](linux.md#更新与卸载)；Linux 使用系统安装包手动更新。环境组件与工具仍在各平台共用的工作台设置中更新。
+The installer replacement and uninstall steps in this section apply to macOS. Windows users, see [Windows update and uninstall](windows.md#updates-and-uninstalling). Linux users, see [Linux update and uninstall](linux.md#updates-and-uninstalling). Linux updates are done manually with the system installer package. Environment components and tools are still updated in the workbench settings shared by all platforms.
 
-首次安装请下载公开 Release 的 DMG。应用内更新用于后续版本升级。
+For a first install, download the DMG from the public release. In-app updates are used for later version upgrades.
 
-安装、重装、更新和卸载均保留个人数据。macOS、Windows 和 Linux 默认使用用户主目录下的 `~/.claude-cage/`：本地账户、收藏和设置保存在该目录，浏览器历史、网站登录状态和环境内文件保存在其中的持久虚拟磁盘。更换应用安装位置不会更换默认数据目录；通过 `CLAUDE_CAGE_CONFIG` 指定其他配置时，应始终使用同一配置。终端窗口的临时输出和正在运行的进程不属于磁盘备份。
+Installing, reinstalling, updating and uninstalling all keep personal data. On macOS, Windows and Linux, the default location is `~/.claude-cage/` in your home folder. Local accounts, bookmarks and settings are stored there. Browser history, website sign-in state and files inside the environment are stored on the persistent virtual disk in that folder. Moving the app to a different install location does not change the default data folder. If you set another config with `CLAUDE_CAGE_CONFIG`, always use the same config. Temporary terminal window output and running processes are not part of the disk backup.
 
-已创建过账户却再次出现创建页面时，先按[账户与数据目录检查](troubleshooting.md#已有账户却再次显示创建账户)核对目录，不要创建新账户或删除旧配置。
+If you created an account before but see the create-account page again, first check the folder under [Account and data folder check](troubleshooting.md#existing-account-shows-the-create-account-page-again). Do not create a new account or delete the old config.
 
-应用会在启动后自动检查更新，运行期间每六小时重查；普通检查失败后每五分钟重试，更新源要求等待时按其指定时间重试，隐藏窗口期间暂停检查。没有新版时不显示更新入口。有新版时，左下角显示金色圆形下载按钮；请先保存文件并结束运行中的任务，再点击一次。按钮会显示环形下载进度和百分比，下载校验完成后自动停止环境、安装并重启，不再弹出确认框。应用更新会结束工作台终端，保留项目、配置、虚拟磁盘和登录状态。失败时显示原因，点击原按钮可重试；限流等待期间按钮禁用，悬浮可查看最早重试时间。
+The app checks for updates automatically after it starts, and rechecks every six hours while it runs. After a normal check fails, it retries every five minutes. If the update source asks for a wait, it retries at the time it specifies. Checks pause while the window is hidden. If there is no new version, no update entry is shown. When a new version is available, a gold round download button appears at the bottom left. Save your files and end running tasks first, then click it once. The button shows circular download progress and a percentage. After the download is verified, the environment stops automatically, the update is installed, and the app restarts. No confirmation dialog appears. Updating ends the workbench terminals, but keeps projects, config, the virtual disk and sign-in state. If it fails, the reason is shown. Click the same button to retry. While rate-limit waiting is in progress, the button is disabled, and hovering shows the earliest retry time.
 
-macOS 的 `0.1.3-alpha.1` 及更早公开版本存在本机更新校验错误。遇到“本机更新验证未完成”时，请保存文件、停止环境并退出 Cage，从官方 Release 下载 `0.1.3-alpha.2` 或更新的 DMG，替换原来的应用一次；已有项目和数据会保留。修复版之后可使用应用内更新。
+Public macOS versions `0.1.3-alpha.1` and earlier have a local update verification bug. If you see "Local update verification did not complete", save your files, stop the environment and quit Cage. Then download the DMG for `0.1.3-alpha.2` or later from the official Release and replace the app once. Your existing projects and data are kept. After the fixed version, you can use in-app updates.
 
-检查和下载使用已经应用并运行的所选代理，失败不会改用主机直连。自动安装要求当前 App 与新 App 使用相同发布者的 Developer ID 签名，且新包通过 Apple 验证；ad-hoc 开发构建不能自动安装。更新器使用公开的 GitHub Releases 接口，无需 GitHub 登录，也不读取浏览器会话。若提示更新源不可访问，先确认所选代理可用，再检查对应 Release 是否仍公开且附件完整；需要手动下载时使用同一公开 Release。实际安装、重启和恢复的验收范围以该版本说明为准。
+Checks and downloads use the proxy you selected, which must already be applied and running. If it fails, Cage does not fall back to a direct host connection. Automatic installation requires the current app and the new app to use a Developer ID signature from the same publisher, and the new package must pass Apple verification. Ad-hoc development builds cannot be installed automatically. The updater uses the public GitHub Releases API. It does not need a GitHub sign-in and does not read browser sessions. If the update source is unreachable, first confirm the selected proxy works, then check that the Release is still public and has complete attachments. For a manual download, use the same public Release. For the scope of actual installation, restart and recovery testing, see the release notes for that version.
 
-手动替换 App 前，保存文件并选择“停止环境并退出”。新 App 会核对后台版本；若出现“更新待完成”，可先打开现有环境保存文件，再选择“保存后停止环境并完成更新”。预发行版本间的兼容性和特殊迁移要求以对应 Release 说明为准。
+Before you replace the app manually, save your files and choose "Stop environment and quit". The new app checks the backend version. If you see "update pending", first open the existing environment and save your files, then choose "Save, stop environment, and update". For compatibility and special migration requirements between pre-release versions, see the release notes for that version.
 
-“设置 → 环境与恢复”分别提供环境组件与工具更新，并显示实际版本。组件更新会重启浏览器和编辑器，保留 VM、磁盘和工作台独立终端；编辑器内的集成终端可能结束，操作前需要保存内容。依赖安装和工具更新使用所选代理，无需业务网络已经放行；工具更新采用当前 App 指定的最低版本，人工暂停外网不会被更新操作解除。替换 App 不等于已经升级全部 Linux 工具。
+"Settings → Environment and recovery" provides separate updates for environment components and tools, and shows the actual versions. Updating components restarts the browser and editor, and keeps the VM, the disk and the workbench's own terminals. Integrated terminals in the editor may end, so save content before you start. Dependency installs and tool updates use the proxy you selected, and don't need business internet access to be allowed first. Tool updates use the minimum version the current app specifies. A manual internet pause is not lifted by an update. Replacing the app does not mean all Linux tools have been upgraded.
 
-卸载应用前也应先停止环境并退出，再将 Cage.app 移到废纸篓。删除 App 不会自动删除共享项目、默认工作区、代理配置或虚拟磁盘。需要清理这些数据时，先备份：私有状态默认在 `~/.claude-cage/`，默认工作区通常在 `~/.claude-cage-workspace/`，自行打开的项目仍在原目录。删除虚拟磁盘会丢失只存在于客机中的文件和登录状态。
+Before uninstalling the app, also stop the environment and quit. Then move Cage.app to the Trash. Deleting the app does not automatically delete shared projects, the default workspace, proxy config or the virtual disk. To clean up this data, back up first. Private state is in `~/.claude-cage/` by default, the default workspace is usually in `~/.claude-cage-workspace/`, and projects you opened yourself remain in their original folders. Deleting the virtual disk removes files and sign-in state that exist only in the guest.
 
-下一步：[常见问题与恢复](troubleshooting.md)
+Next: [Troubleshooting and recovery](troubleshooting.md)

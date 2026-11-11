@@ -1,83 +1,83 @@
 ---
-title: 多账号与额度
-description: 将多个 Claude Code 订阅加入调度，查看额度，为新会话分配账号，并按授权接续历史。
-group: 日常工作
+title: Multiple accounts and usage limits
+description: Add several Claude Code subscriptions to scheduling, check usage limits, assign accounts to new sessions, and resume history with authorization.
+group: Daily use
 order: 4
-keywords: 多账号 账号池 登录 加入调度 自动分配 接续 切换 分组 技能 记忆 五小时 七天 用量 配额 5h 7d
+keywords: multiple accounts account pool sign in add to scheduling automatic assignment resume switch group skills memory five hours seven days usage quota 5h 7d
 ---
-## 先区分三类账户
+## Tell apart three kinds of accounts
 
-| 账户或登录 | 用途与归属 |
+| Account or sign-in | Purpose and ownership |
 | --- | --- |
-| Cage 账户 | 解锁当前主机的 Cage 工作台。 |
-| Claude Code 账号 | 授权环境内终端使用 Claude 订阅，由“设置 → Claude 账号”管理与调度。 |
-| 网页与 Claude Desktop 登录 | 各自保存登录状态，不会自动加入 Claude Code 调度。 |
+| Cage account | Unlocks the Cage workbench on this host. |
+| Claude Code account | Lets terminals in the environment use a Claude subscription after authorization. Managed and scheduled under "Settings → Claude accounts". |
+| Web and Claude Desktop sign-ins | Each keeps its own sign-in state and is not added to Claude Code scheduling automatically. |
 
-先启动环境，等待工具就绪，再打开账号面板。账号功能以所用构建为准；没有该面板时先核对版本。
+Start the environment first, wait for the tools to be ready, then open the accounts panel. Account features depend on the build you are using. If the panel is missing, check the version first.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/claude-accounts.jpg" target="_blank" rel="noopener" aria-label="查看原图：Claude 账号面板：环境未启动、尚未登记账号"><img src="../../www/public/docs/screenshots/claude-accounts.jpg" alt="Claude 账号面板：环境未启动、尚未登记账号" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>Claude 账号面板：环境未启动、尚未登记账号。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/claude-accounts.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/claude-accounts.jpg" target="_blank" rel="noopener" aria-label="View original: Claude accounts panel with the environment not started and no accounts registered"><img src="../../www/public/docs/screenshots/claude-accounts.jpg" alt="Claude accounts panel with the environment not started and no accounts registered" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Claude accounts panel with the environment not started and no accounts registered. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/claude-accounts.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 将已有登录加入调度
+## Add an existing sign-in to scheduling
 
-在 Cage 普通终端运行 `claude auth login`。如果终端显示 Claude 官方授权链接，点击它即可在 Cage 浏览器的临时标签中继续。按页面提示完成后，回到原终端确认登录结果。
+In a regular terminal in Cage, run `claude auth login`. If the terminal shows an official Claude authorization link, click it to continue in a temporary tab of the Cage browser. Follow the prompts on the page, then return to the original terminal to confirm the sign-in result.
 
-登录成功后，账号面板会显示默认终端检测到的邮箱。核对后点“加入调度”。它只读取 Cage 环境里的登录，不读取主机系统终端上的账号。
+After a successful sign-in, the accounts panel shows the email detected by the default terminal. Check it, then click "Add to scheduling". This only reads the sign-in inside the Cage environment, not accounts in the host system's terminal.
 
-如果普通终端原先是 A，后来登录成 B，Cage 会停止将默认目录分配给 A。B 需要单独加入。要让 A、B 长期共存，保留一份默认登录，另一个账号通过独立登录添加。
+If the regular terminal was first signed in as A and later signed in as B, Cage stops assigning the default directory to A. B must be added separately. To keep A and B both available long term, keep one default sign-in and add the other account through a separate sign-in.
 
-## 添加另一个订阅
+## Add another subscription
 
-1. 在“设置 → Claude 账号”点“登录新账号”。
-2. 按打开的登录终端和临时授权浏览器提示完成官方登录。每个独立登录使用自己的配置目录。
-3. 成功后账号按邮箱登记，可编辑备注，检查“参与自动分配”是否开启。
-4. 点击项目旁的终端图标，新建 Claude 终端，查看标签所显示的分配账号。
+1. In "Settings → Claude accounts", click "Sign in to a new account".
+2. Complete the official sign-in by following the prompts in the sign-in terminal and the temporary authorization browser that open. Each separate sign-in uses its own configuration directory.
+3. After success, the account is registered by email. You can edit its note and check that "Include in automatic assignment" is turned on.
+4. Click the terminal icon next to a project to open a new Claude terminal, then check which account the tab shows.
 
-取消登录不会增加可调度账号。同一订阅不会重复参与调度。独立账号需要重新登录时，先关闭仍使用它的终端，再按面板提示处理。
+Cancelling a sign-in does not add an account to scheduling. The same subscription is not added to scheduling twice. If a separate account needs to sign in again, close the terminals still using it first, then follow the panel's prompts.
 
-## 自动分配什么时候发生
+## When automatic assignment happens
 
-自动分配发生在新建 Claude 终端时。在“调度设置”中选择：
+Automatic assignment happens when you open a new Claude terminal. In "Scheduling settings", choose:
 
-- **均衡分配**：考虑正在使用的终端数量和已知剩余额度，条件相近时轮转，并兼顾同一项目近期使用的账号。
-- **按列表顺序优先**：优先使用排在前面的可用账号，相关额度已耗尽、登录失效或暂停分配时使用后面的账号。通过“上移”调整顺序。
+- **Balanced assignment**: considers the number of terminals in use and known remaining usage. It rotates when conditions are similar and favors accounts recently used by the same project.
+- **List order first**: uses the first available account in the list. Accounts further down are used only when their usage is exhausted, their sign-in has expired or assignment is paused. Adjust the order with "Move up".
 
-关闭某个账号的“参与自动分配”，只影响以后新建的终端，正在使用该账号的任务可以继续。改变调度模式不改变已有会话的账号绑定。
+Turning off "Include in automatic assignment" for an account only affects terminals opened later. Tasks already using that account can continue. Changing the scheduling mode does not change the account bindings of existing sessions.
 
-## 共享技能、指令和记忆
+## Share skills, instructions and memory
 
-登录凭据各自独立，Cage 会话列表统一展示历史。项目文件、项目中的指令与技能直接共用；用户级的本地技能、指令、规则和代理定义共用环境内的资料，同一个项目的自动记忆使用同一位置。更换账号后可以继续使用这些资料。主机系统的个人配置不会自动导入。
+Sign-in credentials are separate for each account, while the Cage session list shows history together. Project files and the instructions and skills in a project are shared directly. User-level local skills, instructions, rules and agent definitions share the material inside the environment, and automatic memory for the same project uses the same location. You can keep using this material after changing accounts. Personal settings from the host system are not imported automatically.
 
-从 Claude.ai 账号或组织下载的技能仍属于原账号；登录身份、凭据、账号远程设置和 MCP 的账号授权不自动合并。原有资料同名且内容不同时，Cage 保留原文件并提示先核对，避免覆盖用户资料。
+Skills downloaded from a Claude.ai account or organization still belong to the original account. Sign-in identity, credentials, account remote settings and MCP account authorization are not merged automatically. If existing material has the same name but different content, Cage keeps the original file and asks you to check it first, to avoid overwriting user material.
 
-## 在同一会话中换账号
+## Switch accounts within the same session
 
-先在账号卡片中填写“接续分组”，将允许接收同一份会话历史的账号设为同一组。未分组的账号不进行跨账号接续。工作资料与个人资料不应随意混入同一组；分组控制自动交接的目标，不构成文件系统安全隔离。
+First fill in "Handoff group" on the account card, and put the accounts that may receive the same session history into the same group. Accounts without a group do not resume across accounts. Do not mix work and personal material in the same group carelessly. The group controls where automatic handoff goes, and it is not filesystem security isolation.
 
-电脑终端上方和手机会话中的账号按钮显示当前绑定。展开后可以选择：
+The account button above the computer's terminal and in phone sessions shows the current binding. Expand it to choose:
 
-- **每次询问**：由用户选择目标账号，勾选允许交接历史，再执行“切换并恢复历史”。
-- **额度耗尽后自动接续**：官方 CLI 报告限流且额度读数确认窗口耗尽时，尝试在同组可用账号间接续。
-- **始终等待原账号**：自动接续保持关闭，仍可手动发起一次明确确认的切换。
+- **Ask each time**: you choose the target account, tick to allow handing over history, then run "Switch and restore history".
+- **Resume automatically when usage runs out**: when the official CLI reports rate limiting and the usage reading confirms the window is used up, it tries to resume on an available account in the same group.
+- **Always wait for the original account**: automatic resume stays off, but you can still start one explicit, confirmed switch manually.
 
-账号设置中的授权默认只影响新会话；会话内可以单独修改。接续保留同一个 Cage 会话入口，目标账号运行新的官方 CLI 进程并恢复历史，原历史保留。手动切换默认只恢复历史；需要继续执行时，勾选“恢复后继续未完成的任务”。跨账号的服务端提示缓存可能重建，第一轮可能更慢。
+The authorization in account settings only affects new sessions by default, and you can change it separately within a session. Resuming keeps the same Cage session entry. The target account runs a new official CLI process and restores the history, and the original history is kept. Manual switching only restores history by default. To keep executing, tick "Continue the unfinished task after restoring". Server-side prompt caches across accounts may need to be rebuilt, so the first turn may be slower.
 
-交接前必须停止原执行者。执行中的工具、未处理消息、工具审批、后台任务或结果不明的工具会阻止切换；按提示结束或核对后重试。交接失败时可以重试原操作，准备阶段也可取消并保留原账号。Cage 不会为恢复重新提交旧消息或已完成的工具，但模型后续仍可能决定再次调用工具，需要继续检查任务结果。
+The original executor must stop before handing over. Running tools, unprocessed messages, tool approvals, background tasks or tools with unknown results block the switch. End them or check them as prompted, then retry. If the handover fails, you can retry the original operation. During preparation you can also cancel and keep the original account. Cage does not resubmit old messages or completed tools to restore, but the model may still decide to call tools again, so check the task results as you continue.
 
-这套能力运行客机中的原版 Claude Code，不提取订阅令牌代理模型请求。当前代码已接入 Linux、macOS 和 Windows 客机路径；原生客机须使用匹配的环境组件，Windows 还需登录并解锁绑定的客机桌面。
+This feature runs the official Claude Code inside the guest and does not extract subscription tokens to proxy model requests. The current code supports the Linux, macOS and Windows guest paths. Native guests must use matching environment components, and Windows also requires signing in to and unlocking the bound guest desktop.
 
-跨账号恢复、共享资料和授权检查已通过隔离官方 CLI 验证，测试使用合成账号与本地模型响应。真实双订阅服务端兼容性、原生客机完整登录与交接，以及供应商对自动轮换的具体许可仍须核实。CLI 版本或组织策略不支持 Channels 时，手机接续能力也会受到限制。旧额度、服务过载或未知错误不会被当作已确认的额度耗尽。
+Cross-account restore, shared material and authorization checks have been verified with an isolated official CLI, using synthetic accounts and local model responses. Real dual-subscription server compatibility, full sign-in and handover on native guests, and the vendor's specific permission for automatic rotation still need to be confirmed. If the CLI version or organization policy does not support Channels, phone resume is also limited. Stale usage readings, service overload or unknown errors are not treated as confirmed usage exhaustion.
 
-## 查看五小时和七天额度
+## View five-hour and seven-day usage
 
-打开面板会向环境内的官方 Claude Code 查询五小时、七天用量与重置时间。卡片的“检查状态”可以立即刷新，无需先发一条模型消息。
+Opening the panel queries the official Claude Code inside the environment for five-hour and seven-day usage and reset times. The "Check status" button on a card refreshes immediately, without sending a model message first.
 
-某个额度窗口没有返回读数时，界面会说明结果，并保留该窗口上次的百分比和读取时间。旧读数不能视为实时可用额度，也不能代表服务一定接受下一条请求。
+When a usage window returns no reading, the interface says so and keeps that window's last percentage and read time. An old reading should not be treated as live available usage, nor as a guarantee that the service will accept the next request.
 
-## 无账号可分配时
+## When no account is available
 
-按以下顺序检查：账号是否成功登录、是否开启参与分配、是否已达到已知额度、预计重置时间是否已到。先点“检查状态”，身份失效时按提示重新登录。
+Check in this order: whether the account signed in successfully, whether "Include in automatic assignment" is on, whether known usage has been reached, and whether the expected reset time has passed. Click "Check status" first. If the identity has expired, sign in again as prompted.
 
-普通终端切换过账号时，检查新身份是否单独加入调度。官方授权或请求失败，继续查[Claude 登录与账号异常](troubleshooting.md#claude-登录与账号异常)。
+If you switched accounts in a regular terminal, check whether the new identity was added to scheduling separately. For official authorization or request failures, see [Claude sign-in and account errors](troubleshooting.md#claude-sign-in-and-account-problems).

@@ -1,151 +1,151 @@
 ---
-title: 故障排查
-description: 从你看到的现象开始，检查原因、恢复使用，再收集足够的诊断信息。
-group: 设置与维护
+title: Troubleshooting
+description: Start from what you see, check the cause, restore use, then collect enough diagnostic information.
+group: Settings and maintenance
 order: 11
-keywords: 错误 失败 白屏 断网 137 OOM 代理 账号 配对 SSH 损坏 超时 下载 日志
+keywords: errors failures white screen offline 137 OOM proxy account pairing SSH corrupted timeout download logs
 ---
-先核对当前主机、Cage 版本和报错原文。操作结果不确定时先读取最新状态，再决定重试。不要用清空个人目录、删除虚拟磁盘或重建账户作为常规排障手段。
+First check the current host, the Cage version and the exact error text. If the result of an operation is uncertain, read the latest status before deciding whether to retry. Do not use clearing the personal directory, deleting the virtual disk or rebuilding the account as routine troubleshooting steps.
 
-报错会先说明失败的操作，再说明当前能确认的原因。例如，“上传窗口已关闭”需要重新打开应用内的文件窗口；“等待响应超时”应先检查连接；“磁盘剩余空间不足”应先释放环境所在磁盘的空间。看到“尚未取得可识别的原因”时，保留提示中的 HTTP 状态或退出码，打开“操作详情”，并在设置的“环境与恢复”中导出诊断包。
+An error first states the operation that failed, then the cause that can be confirmed right now. For example, "The upload window was closed" means you need to reopen the file window in the app. "Timed out waiting for a response" means you should check the connection first. "Not enough disk space" means you should first free up space on the disk that holds the environment. If you see "No recognizable cause was returned", keep the HTTP status or exit code shown in the message, open "Operation details", and export a diagnostics bundle from "Environment and recovery" in settings.
 
-“联网检查未通过”会列出具体项目及检测结果。“未能确认”表示没有取得足够结果；它不会被当作检查通过，外网继续关闭。点击提示旁的“查看检查清单”可以查看其他项目和处理建议，无需猜测是哪一项阻止联网。
+"Network check failed" lists the specific items and their results. "Not confirmed" means that enough results were not obtained. It is not treated as a passed check, and internet access stays off. Click "View checklist" next to the message to see the other items and suggested actions, without guessing which item is blocking the network.
 
-## 下载或安装失败
+## Download or install failed
 
-| 现象 | 处理方式 |
+| Symptom | What to do |
 | --- | --- |
-| GitHub 404 或没有安装包 | 从官网下载区选择平台，确认 Release 公开且链接完整。源码 ZIP 不能当安装包。 |
-| Mac 显示损坏、无法验证或不支持 | 核对 Apple Silicon、macOS 14+，重新下载完整 DMG，检查该版签名、公证和校验说明。保留系统原文，不关闭系统验证来掩盖问题。 |
-| Windows 未知发布者 | 确认是否为明确标注的未签名预览，阅读对应发行说明；不能把它当作已签名发行。 |
-| Windows 启动虚拟机失败 | 检查 BIOS/UEFI 虚拟化和“Windows 虚拟机监控程序平台”，启用后重启。保留 WHPX 错误原文供定位。 |
-| Linux 无法启动 | 确认 x86_64、支持发行版与 KVM 权限，使用 APT 补齐安装依赖。 |
-| 缺少代理核心 | 重装对应平台完整应用，不要只复制单个命令行文件。 |
+| GitHub 404 or no installer package | Choose your platform in the website download section, and confirm that the Release is public and the link is complete. A source ZIP cannot be used as an installer. |
+| Mac says the app is damaged, cannot be verified or is unsupported | Check for Apple Silicon and macOS 14+, download the full DMG again, and check that version's signature, notarization and checksum notes. Keep the system's original message, and do not turn off system verification to hide the problem. |
+| Windows unknown publisher | Confirm whether it is a preview clearly labeled as unsigned, and read the matching release notes. Do not treat it as a signed release. |
+| Windows fails to start the virtual machine | Check virtualization in BIOS/UEFI and "Windows Hypervisor Platform", enable it, then restart. Keep the original WHPX error text for diagnosis. |
+| Linux won't start | Confirm x86_64, a supported distribution and KVM permission, and use APT to install the missing dependencies. |
+| Proxy core missing | Reinstall the complete app for the matching platform. Do not copy a single command-line file only. |
 
-## 准备环境卡住或反复下载
+## Environment setup stuck or downloading repeatedly
 
-打开“操作详情”区分仍在下载、安装依赖和已经失败。检查节点、剩余磁盘和存储盘连接后，点“继续安装”。仍有数据持续接收时可以等待，完整性校验未通过的文件不能使用。
+Open "Operation details" to tell apart what is still downloading, what is installing dependencies, and what has already failed. After you check the node, the remaining disk space and the storage disk connection, click "Continue installation". If data is still arriving, you can wait. Files that fail the integrity check cannot be used.
 
-| 错误 | 下一步 |
+| Error | Next step |
 | --- | --- |
-| `Download interrupted` / `partial data retained` | 未完成文件已保留，修复网络后重试续传。 |
-| `checksum mismatch` | 文件摘要不符，重新下载，不跳过校验。 |
-| `Guest DNS could not resolve` | 检查节点及 DNS 配置，应用后重试。 |
-| NodeSource / APT 失败 | 查看失败来源，检查代理访问；保存具体错误与诊断。 |
-| APT 重复 `Tried to start delayed item` | 更新到包含 APT 修正的构建，旧版依赖管理器升级失败时先修复网络，不能继续依赖安装。 |
+| `Download interrupted` / `partial data retained` | The incomplete file is kept. Fix the network and retry to resume. |
+| `checksum mismatch` | The file digest does not match. Download it again, and do not skip the check. |
+| `Guest DNS could not resolve` | Check the node and DNS settings, then retry after applying. |
+| NodeSource / APT failure | Check the failing source and proxy access. Save the specific error and the diagnostics. |
+| APT repeats `Tried to start delayed item` | Update to a build that includes the APT fix. If the older dependency manager fails to upgrade, fix the network first. Do not continue the dependency installation. |
 
-Git 前置检查未通过时，按提示更新本机 Git 至 2.38+、检查全局配置写入权限或重新检查；不必重配节点。启用保护会影响主机全局 Git，先阅读确认卡片。
+When the Git pre-check fails, follow the prompt to update Git on this computer to 2.38+, check write permission for the global configuration, or check again. You do not need to reconfigure nodes. Enabling protection affects the host's global Git, so read the confirmation card first.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/proxy-diagnostics.jpg" target="_blank" rel="noopener" aria-label="查看原图：代理核心状态与独立端口诊断"><img src="../../www/public/docs/screenshots/proxy-diagnostics.jpg" alt="代理核心状态与独立端口诊断" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>代理核心状态与独立端口诊断。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/proxy-diagnostics.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/proxy-diagnostics.jpg" target="_blank" rel="noopener" aria-label="View original: proxy core status and independent port diagnostics"><img src="../../www/public/docs/screenshots/proxy-diagnostics.jpg" alt="Proxy core status and independent port diagnostics" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Proxy core status and independent port diagnostics. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/proxy-diagnostics.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 节点已应用但无法联网
+## Node applied but no internet access
 
-关键检查失败的提示旁有“查看检查清单”按钮，点击后可查看未通过项，展开可见检测证据与处理建议。底部网络状态也能打开同一份清单。“已应用”只表示节点选择成功，外网还需检查通过。
+The critical check failure notice has a "View checklist" button beside it. Click it to see the failed items, and expand an item to see its detection evidence and suggested actions. The network status at the bottom also opens the same checklist. "Applied" only means the node was selected successfully. Internet access still needs the checks to pass.
 
-| 状态 | 处理方式 |
+| Status | What to do |
 | --- | --- |
-| 出口不符合静态 IP、城市或国家规则 | 换回符合原规则的节点；确实要换基准时明确修改 IP 规则。重检不会自动接受新 IP。 |
-| 命中大陆网段或定位为中国大陆 | 换用非大陆出口，静态 IP 和不限地区均不能豁免。怀疑归属错误时保留检查报告。 |
-| 代理核心未就绪 | 进入代理诊断检查状态，重新应用节点或重启 Cage 核心。 |
-| 端口占用 | 选一个未占用的 Cage 独立端口，按提示重启，无需终止其他代理。 |
-| 位置查询失败 | 重试或换节点；所有模式均须确认非大陆出口，手动时区和语言不能跳过国家或地区检查。 |
-| 出口采样不完整 | 展开证据，查看缺失的是宿主、虚拟机终端还是浏览器，以及超时或 HTTP 状态；终端代理通过仍需其他路径成功。动态 IP 规则无法代替缺失的采样。 |
-| 手动暂停或报告过期 | 确认后主动重新检查，全部关键项通过才恢复。 |
-| “检查或监测授权已到期”反复出现 | 查看下文的续期排查，记录发生和恢复时间，导出诊断包。 |
-| 主机切网后离线 | 等待恢复和完整复检；原手动暂停不会自行解除。 |
+| Exit does not match the static IP, city or country rule | Switch back to a node that matches the original rule. If you really want to change the baseline, edit the IP rule explicitly. Rechecking does not accept a new IP automatically. |
+| Matches a mainland China network range, or location is mainland China | Use a non-mainland exit. Static IP and "any region" cannot exempt it. If you suspect the attribution is wrong, keep the check report. |
+| Proxy core not ready | Open proxy diagnostics to check the status, then reapply the node or restart the Cage core. |
+| Port in use | Choose an unused independent Cage port and restart as prompted. There is no need to stop other proxies. |
+| Location lookup failed | Retry or switch nodes. In every mode, confirm a non-mainland exit. A manual time zone and language setting does not skip the country or region check. |
+| Exit sampling is incomplete | Expand the evidence to see whether the host, the virtual machine terminal or the browser is missing, and whether it was a timeout or an HTTP status. A passing terminal proxy check still needs the other paths to succeed. The dynamic IP rule cannot replace missing samples. |
+| Manually paused or report expired | Check again after confirming. Internet access resumes only when all critical items pass. |
+| "Check or monitoring authorization expired" keeps appearing | See the renewal troubleshooting below, record when it happens and when it recovers, and export a diagnostics bundle. |
+| Offline after the host switches networks | Wait for recovery and a full recheck. A manual pause is not lifted automatically. |
 
-本机浏览器可联网不能证明 Cage 代理已经配置。订阅无节点时检查是不是含 `proxies` / `payload` 的 YAML；不要把私人订阅上传到在线转换网站或 Issue。
+Being able to reach the internet in your local browser does not prove that the Cage proxy is configured. If a subscription has no nodes, check whether it is YAML containing `proxies` / `payload`. Do not upload a private subscription to an online conversion site or to an Issue.
 
-### 联网许可反复到期
+### Network permission keeps expiring
 
-“检查或监测授权已到期”表示 Cage 没能在短期许可到期前完成续期，环境会关闭外网。节点仍能访问网站时，也可能因检查调度等待或执行过慢发生到期；日志中同时出现代理错误时，仍需核对节点。
+"Check or monitoring authorization expired" means Cage could not finish renewing before the short-term permission ran out, so the environment turns internet access off. Even when the node can still reach websites, expiry can happen because checks were waiting in the schedule or running too slowly. If proxy errors also appear in the logs, check the node as well.
 
-先查看检查清单和“操作详情”，记录离线、完整重检开始与恢复的时间。非人为暂停的环境会尝试完整复检，网络状态会显示等待时间或原因；手动暂停需主动恢复。安全监测独立于生命周期操作锁运行，完整复检仍需等待当前操作结束。若反复发生，在复现后从设置导出诊断包；维护者可据此区分操作锁等待、网卡查询、代理检查、环境核验、续期请求与恢复等待。等待恢复时，已保存文件和离线终端仍可使用。
+First look at the checklist and "Operation details", and record when it went offline, when the full recheck started, and when it recovered. An environment that was not paused manually tries a full recheck, and the network status shows the wait time or the reason. A manual pause must be resumed manually. Security monitoring runs independently of the lifecycle operation lock, but a full recheck still waits for the current operation to finish. If it keeps happening, export a diagnostics bundle from settings after you reproduce the problem. Maintainers can use it to tell apart waiting for the operation lock, NIC queries, proxy checks, environment verification, renewal requests and recovery waits. While waiting for recovery, saved files and offline terminals remain usable.
 
-当前源码的诊断日志用固定服务标识 `icanhazip` 和 `ipify` 记录每次出口查询的耗时与错误，导出时保留这些标识。诊断包中的 `logs/`、`safety/latest-report.json` 和 `manifest.json` 可用于定位失败阶段；分享前仍须检查脱敏结果。旧版安装包可能缺少分阶段诊断或超时重试，需同时提供应用版本，不能只根据源码判断已安装版的行为。
+The diagnostic logs in the current source record the time and errors of each exit query, using the fixed service identifiers `icanhazip` and `ipify`, and these identifiers are kept on export. The `logs/`, `safety/latest-report.json` and `manifest.json` in the diagnostics bundle can help locate the failed stage. Check the sanitization result before you share. Older installers may lack staged diagnostics or timeout retries, so include the app version as well. Do not judge the behavior of an installed version from the source code alone.
 
-## 任务退出 137 或重任务后断网
+## Task exits with 137 or network drops after a heavy task
 
-137 表示被强制终止，无法独立证明 OOM。到“设置 → 环境与恢复 → 计算资源”查看环境启动后的 OOM 计数、上限和用量，再导出日志。OOM 计数增加表示客机曾因内存不足终止进程，具体进程需结合日志。
+137 means the process was forcibly killed, and it cannot independently prove an OOM. Go to "Settings → Environment and recovery → Compute resources" to check the OOM count, the limit and the usage after the environment starts, then export the logs. An increasing OOM count means the guest once killed a process because it ran out of memory. Use the logs to identify the specific process.
 
-旧环境上限较低时，保存工作后重启应用已保存资源配置；到达上限则降低编译、渲染或其他并行任务数。重任务还可能使检查超时并触发外网关闭，恢复须通过完整复检。
+If the old environment's limit is low, save your work, then restart the app with the saved resource settings. If you reach the limit, reduce the number of parallel compile, render or other tasks. Heavy tasks can also make checks time out and trigger internet shutdown, and recovery must pass a full recheck.
 
-## 原账户与数据看不见了
+## Original account and data seem to be gone
 
-再次出现创建账户通常意味着当前配置目录找不到原账户。核对默认 `.claude-cage`、显式 `CLAUDE_CAGE_CONFIG`、原环境存储及当前本机/SSH 主机。先保留现场，不新建账户，不只拷贝 `account.json`。
+If the create-account screen appears again, the current configuration directory usually cannot find the original account. Check the default `.claude-cage`, an explicit `CLAUDE_CAGE_CONFIG`, the original environment storage, and the current local or SSH host. Keep the current state first, do not create a new account, and do not copy only `account.json`.
 
-原目录需连同收藏、密码库、配置与持久磁盘保留。迁移前停止相关后台、做完整备份，再恢复同一套数据。快捷登录绑定原目录时，迁移后用原密码解锁并重新授权。系统钥匙串暂不可用时，使用密码并点“重新检查快捷登录”。
+The original directory must be kept together with bookmarks, the password vault, the configuration and the persistent disk. Before migrating, stop the related background services, make a full backup, and then restore the same set of data. If quick sign-in is bound to the original directory, unlock with the original password after migrating and authorize again. If the system keychain is temporarily unavailable, use the password and click "Check quick sign-in again".
 
-## Claude 登录与账号异常
+## Claude sign-in and account problems
 
-主机已有登录不会自动导入。到 Cage 内的 Claude 终端完成官方授权，账号面板核对身份后“加入调度”。网页、Desktop 和 CLI 登录分别管理。
+Existing sign-ins on the host are not imported automatically. Complete the official authorization in a Claude terminal inside Cage, then verify the identity in the accounts panel and click "Add to scheduling". Web, Desktop and CLI sign-ins are managed separately.
 
-“暂无可分配账号”时检查登录是否有效、是否参与自动分配、额度与重置时间，点击“检查状态”。普通终端换身份后新账号要重新加入。额度读数缺失或过旧时不能把旧百分比当实时承诺。
+When "No account available for assignment" appears, check whether the sign-in is valid, whether the account is included in automatic assignment, and the usage limit and reset time, then click "Check status". After a regular terminal switches identity, the new account must be added again. When a usage reading is missing or too old, do not treat the old percentage as a live guarantee.
 
-模型仍拒绝请求时记录官方错误类型，核对使用资格与关键网络检查。能打开授权页只说明网页可达，完成授权和一次真实请求后才能确认使用成功。
+If the model still rejects requests, record the official error type, and check the usage eligibility and the critical network checks. Being able to open the authorization page only shows that the web page is reachable. Success is confirmed only after authorization is complete and one real request succeeds.
 
-历史列表提示“未能读取”时，已读取会话保留，活跃标记暂时清除。点击重试按钮，等待读取完成。Windows 提示会区分配置、配对校验、连接、通信和请求超时；只有明确的桌面状态错误才要求登录或解锁客机。不要仅凭读取失败就重新登录 Claude。持续失败时复制完整原因并导出诊断包。
+When the history list shows "Could not read", sessions already read are kept, and the active markers are cleared temporarily. Click the retry button and wait for reading to finish. On Windows, prompts distinguish configuration, pairing verification, connection, communication and request timeouts. Only explicit desktop status errors require signing in again or unlocking the guest. Do not sign in to Claude again just because reading failed. If failures persist, copy the full reason and export a diagnostics bundle.
 
-账号交接被阻止时，先处理未完成工具、审批、待发消息和后台任务，再核对接续分组、目标登录与额度。交接失败沿用原操作重试，准备阶段也可取消；不要重新发送旧消息来恢复历史。详细授权条件见[同一会话换账号](accounts.md#在同一会话中换账号)。
+When an account handover is blocked, first deal with unfinished tools, approvals, pending messages and background tasks, then check the resume group, the target sign-in and the usage limit. After a failed handover, retry the original operation, or cancel during preparation. Do not resend old messages to restore history. For detailed authorization conditions, see [Switch accounts within the same session](accounts.md#switch-accounts-within-the-same-session).
 
-## 浏览器、Desktop 或文件上传异常
+## Browser, Desktop or file upload problems
 
-浏览器白屏或待恢复时点“恢复浏览器”。整个界面中断时重开 App；异常页可“重新加载界面”或导出诊断。`localhost` 应在 Cage 内启动服务。
+If the browser shows a white screen or is waiting to be restored, click "Restore browser". If the whole interface stops, reopen the app. On an error page, you can click "Reload interface" or export diagnostics. Start `localhost` services inside Cage.
 
-Desktop 画面比例异常时先设“显示大小”为 100%，点“重试调整”。更新组件后保存工作、关闭再打开 Desktop。上传仍显示内部目录或出现 “The file picker didn’t open” 时，同样先同步组件再重开应用。
+If the Desktop picture has the wrong proportions, first set "Display size" to 100%, then click "Retry resizing". After updating components, save your work, then close and reopen Desktop. If uploads still show an internal directory or "The file picker didn’t open", sync the components first in the same way, then reopen the app.
 
-Desktop 文件服务退出或连接中断时，Cage 会提示原因并降低重试频率；恢复后自动继续读取文件请求。反复提示服务退出时，重新打开 Desktop，并在资源设置与诊断日志中检查应用退出原因。
+When the Desktop file service exits or the connection breaks, Cage tells you the reason and lowers the retry frequency. After recovery, it resumes reading file requests automatically. If it keeps reporting that the service exited, reopen Desktop and check the app's exit reason in the resource settings and diagnostics log.
 
-共享项目出现 Git 文件所有者错误时，更新 Cage 后重新连接项目；新连接会使用环境内的用户编号显示文件。Git 远程操作出现主机密钥或认证错误时，需要在客机中完成相应的 Git 认证和主机身份核验。
+When a shared project shows Git file owner errors, update Cage and reconnect the project. The new connection shows files using the user ID inside the environment. If a Git remote operation shows host key or authentication errors, complete the matching Git authentication and host identity verification in the guest.
 
-清空普通会话全部 Cookie 后，编辑器认证会失效，点“恢复编辑器”。密码、扩展或 Cookie 功能入口不可用时，核对应用和环境组件版本。网站拒绝附件还需检查自身格式与大小限制。
+After clearing all cookies in a regular session, editor authentication becomes invalid. Click "Restore editor". If the password, extension or cookie entries are unavailable, check the app and environment component versions. If a website rejects attachments, also check its own format and size limits.
 
-## 手机配对与会话异常
+## Phone pairing and session problems
 
-| 现象 | 处理方式 |
+| Symptom | What to do |
 | --- | --- |
-| 二维码失效 | 电脑切回本机、解锁 Cage，刷新二维码；相机不可用时用一次性配对码。 |
-| 连上但没有项目 | 在电脑 Cage 明确打开项目，启动环境后重新读取。 |
-| 电脑已锁定 | 在电脑解锁，再读取手机会话。 |
-| 手机提示去电脑设置开启浏览器或 Claude Desktop | 运行支持配对后直接访问的电脑端构建，退出旧版并重新打开 Cage，再用原配对重连。使用命令行连接文件的手机需要改用电脑 Cage 生成的二维码或配对码。 |
-| 发送或审批时断网 | 恢复连接后先读取历史与未决审批，核对结果再操作。 |
-| 身份变化或只能验证本轮 | 不继续发送旧历史，按提示新建会话。 |
-| 换中继后连不上 | 两端保存相同地址，撤销旧配对后重新登记。 |
+| QR code invalid | Switch the computer back to this computer, unlock Cage, and refresh the QR code. If the camera is unavailable, use a one-time pairing code. |
+| Connected but no projects | Open the project explicitly in Cage on the computer, start the environment, then read again. |
+| Computer is locked | Unlock the computer, then read the phone sessions again. |
+| Phone says to enable the browser or Claude Desktop in the computer's settings | Run a computer build that supports direct access after pairing, quit the old version and reopen Cage, then reconnect with the original pairing. A phone that uses a command-line connection file needs to switch to the QR code or pairing code generated by Cage on the computer. |
+| Network drops while sending or approving | After the connection is restored, read the history and pending approvals first, check the result, then act. |
+| Identity changed, or only the current turn can be verified | Do not keep sending old history. Start a new session as prompted. |
+| Cannot connect after changing the relay | Save the same address on both ends, revoke the old pairing, then register again. |
 
-模拟器预览不能证明真实连接可用。手机只接续能够核验原账号与项目的会话；授权项目中的既有历史可以按[会话范围](mobile.md#创建会话与处理工具审批)进入列表。手机已支持 Claude Desktop 控制，Windows 原生官方应用的完整流程仍待验收；入口不可用时核对电脑端与客机组件版本。
+Simulator previews cannot prove that a real connection works. A phone only resumes sessions whose original account and project can be verified. Existing history in authorized projects can enter the list according to the [session scope](mobile.md#create-sessions-and-handle-tool-approvals). Phones already support Claude Desktop control, but the full flow for the native official Windows app still needs verification. If the entry is unavailable, check the computer and guest component versions.
 
-## Tailscale 登录或 SSH 失败
+## Tailscale sign-in or SSH failure
 
-先确认 Cage 环境已启动并通过网络检查，组件已安装，本机 Tailscale 与 Cage 加入同一私网。登录页面由 Cage 浏览器打开，启用设备审批的网络还需管理员批准。
+First confirm that the Cage environment has started and passed the network check, that the components are installed, and that Tailscale on this computer and Cage have joined the same private network. The sign-in page opens in the Cage browser. Networks that require device approval also need an administrator to approve.
 
-本机连 Cage 时，核对公钥已加入面板、使用面板显示的实际客机用户名与地址，并检查私网访问规则。Cage 连本机时，本机还需开启 SSH 服务并允许认证；Tailscale 登录不自动提供本机 SSH 权限。不要把私钥粘贴到公钥输入框。
+When this computer connects to Cage, check that the public key has been added to the panel, use the actual guest username and address shown in the panel, and check the private-network access rules. When Cage connects to this computer, this computer must also have the SSH service enabled and allow authentication. Tailscale sign-in does not automatically grant SSH access on this computer. Do not paste a private key into the public key field.
 
-暂停外网、代理中断或停止环境会影响私网连接。“断开”保留身份与公钥，“退出登录”要求下次重新授权。真实账号授权与安装环境的完整连接仍待验收，当前范围见[Tailscale 指南](tailscale.md)。
+Pausing internet access, a proxy interruption or stopping the environment affects private-network connections. "Disconnect" keeps the identity and public keys, and "Sign out" requires reauthorization next time. Verification of real account authorization and a full connection in the installed environment is still pending. For the current scope, see the [Tailscale guide](tailscale.md).
 
-## SSH 或云端部署失败
+## SSH or cloud deployment failure
 
-先确认 SSH 地址、端口、用户、认证方式和服务器网络。主机指纹变化时独立核对，避免直接接受未知身份。首次部署失败需检查 Linux x86_64、cgroup v2、systemd 用户服务、UID/GID 映射及 FUSE/TUN 前提。
+First confirm the SSH address, port, user, authentication method and server network. When the host fingerprint changes, verify it separately instead of accepting an unknown identity directly. If the first deployment fails, check the Linux x86_64, cgroup v2, systemd user service, UID/GID mapping and FUSE/TUN prerequisites.
 
-服务退出时重连可尝试启动；持续失败查看用户服务日志。关闭本机 App 不停止远端，若希望停止任务，须在对应服务器工作台停止环境。无人登录后服务停止时由管理员检查 linger；服务器重启恢复需单独配置和验证。
+If the service exited, reconnecting can try to start it. If it keeps failing, check the user service logs. Closing the local app does not stop the remote side. If you want to stop tasks, stop the environment in the matching server workbench. If the service stops when nobody is logged in, the administrator should check linger. Restoring the service after a server reboot must be configured and verified separately.
 
-不要通过删除容器、引擎 data-root 或账户修复部署。连接中断时先核对操作是否已完成，再重试有写入效果的动作。
+Do not repair the deployment by deleting containers, the engine data-root or accounts. If the connection breaks, first check whether the operation completed, then retry actions that have a write effect.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/resources-diagnostics.jpg" target="_blank" rel="noopener" aria-label="查看原图：自动资源上限与导出诊断入口"><img src="../../www/public/docs/screenshots/resources-diagnostics.jpg" alt="自动资源上限与导出诊断入口" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>自动资源上限与导出诊断入口。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/resources-diagnostics.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/resources-diagnostics.jpg" target="_blank" rel="noopener" aria-label="View original: automatic resource limits and diagnostics export entry"><img src="../../www/public/docs/screenshots/resources-diagnostics.jpg" alt="Automatic resource limits and diagnostics export entry" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Automatic resource limits and diagnostics export entry. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/resources-diagnostics.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 导出诊断与反馈
+## Export diagnostics and feedback
 
-在“设置 → 环境与恢复”的日志诊断中导出 ZIP。云端导出需保持连接；界面打不开时可用安装包内的 Cage 命令：
+Export a ZIP from the log diagnostics under "Settings → Environment and recovery". Cloud exports require the connection to stay open. If the interface will not open, use the Cage command included in the installer:
 
 ```sh
 cage diagnostics --json /absolute/path/cage-diagnostics.zip
 ```
 
-macOS 命令在 `Cage.app/Contents/Resources/cage`，Windows 在安装目录 `resources\cage.exe`，Linux 位于应用目录。使用本机绝对输出路径；控制服务不可用时仍可导出本机日志。
+The macOS command is at `Cage.app/Contents/Resources/cage`, the Windows command is at `resources\cage.exe` in the install directory, and the Linux command is in the application directory. Use an absolute output path on this computer. Local logs can still be exported when the control service is unavailable.
 
-向 [GitHub Issues](https://github.com/Lee-xeo/Claude-Cage/issues)提供应用版本、操作系统、处理器架构、当前模式、复现步骤、期望结果与错误原文。分享前检查诊断和截图，遮盖账号、IP、路径、代理凭据和授权链接。不要上传整个配置目录、完整订阅或项目内容。
+When reporting to [GitHub Issues](https://github.com/Lee-xeo/Claude-Cage/issues), include the app version, operating system, processor architecture, current mode, reproduction steps, expected result and the exact error text. Before sharing, check the diagnostics and screenshots, and hide account names, IPs, paths, proxy credentials and authorization links. Do not upload the whole configuration directory, the full subscription or project content.

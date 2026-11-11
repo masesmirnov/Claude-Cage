@@ -1,26 +1,26 @@
-# 自建 Cage 中继
+# Self-hosted Cage relay
 
-此目录面向维护自有服务器的开发者，用于部署两个已授权设备之间的连接转发服务。电脑和客户端分别主动连接服务器，服务器将同一房间内的两条 WebSocket 连接互相转发。
+This directory is for developers who maintain their own servers. It deploys a connection forwarding service between two authorized devices. The computer and the client each connect to the server actively, and the server forwards the two WebSocket connections in the same room to each other.
 
-部署中继后，使用主机连接助手登记手机的公钥指纹。Android/iOS 客户端通过设备通道操作 Claude Code CLI 会话。设备信任、保存连接与撤销由端点负责。[移动客户端](../../mobile/README.md) · [主机连接助手](../../cmd/cage-mobile-link/README.md)
+After you deploy the relay, use the host connection helper to register the phone's public key fingerprint. The Android and iOS clients operate Claude Code CLI sessions through the device channel. Device trust, saved connections and revocation are handled by the endpoints. [Mobile client](../../mobile/README.md) · [Host connection helper](../../cmd/cage-mobile-link/README.md)
 
-普通用户可直接使用[官方中继](../../mobile/README.md)。本文的自建部署默认要求管理令牌。如果运营者需要允许任何电脑创建房间，可显式启用 `--public-rooms`。应在公网入口按源 IP 限制创建频率和并发连接数，同时保留中继的全局房间上限。公开创建房间时仍需在手机和电脑上互信指纹才能操作工作台。
+Regular users can use the [official relay](../../mobile/README.md) directly. Self-hosted deployments in this document require an admin token by default. If the operator wants to let any computer create rooms, enable `--public-rooms` explicitly. At the public entry point, limit creation rate and concurrent connections per source IP, and keep the relay's global room cap. Even when rooms are created publicly, the phone and computer must still trust each other's fingerprints before the workbench can be operated.
 
-## 连接与密钥的归属
+## Connection and key ownership
 
-中继管理令牌仅用于创建短期连接房间。每个房间返回独立的主机令牌、客户端令牌和过期时间；两端各使用自己的令牌连接一次。两端之间的业务数据须由 `internal/remotelink` 的 TLS 1.3 双向证书验证通道保护，端点校验预先信任的对端身份后才能发送业务数据。中继房间令牌只代表一次连接资格，不能替代设备身份或 Cage 的账户授权。
+The relay admin token is used only to create short-lived connection rooms. Each room returns its own host token, client token and expiry time. Each end connects once with its own token. Business data between the two ends must be protected by the mutual TLS 1.3 certificate-verified channel in `internal/remotelink`. Endpoints send business data only after they verify the pre-trusted identity of the peer. A relay room token grants one connection only. It cannot replace device identity or Cage's account authorization.
 
-HTTPS/WSS 保护设备到中继的外层连接，端到端 TLS 保护中继内转发的业务内容。中继实现本身只转发不透明二进制帧，无法强迫任意自编客户端加密；客户端必须使用端到端通道。部署者仍能观察连接地址、时间与流量规模。
+HTTPS/WSS protects the outer connection from devices to the relay. End-to-end TLS protects the business content forwarded through the relay. The relay itself only forwards opaque binary frames, so it can't force any self-written client to encrypt. Clients must use the end-to-end channel. The operator can still observe connection addresses, timing and traffic volume.
 
-房间只存在于内存中。未在配对期限内到齐的连接会被关闭；一端断开后需要创建新房间。服务重启也会中断所有房间，恢复业务状态由设备侧负责。默认最多 128 个房间，配对期限 2 分钟，空闲期限 5 分钟；单个 WebSocket 消息不得超过 64 KiB。
+Rooms exist only in memory. Connections that don't both arrive within the pairing deadline are closed. If one end disconnects, a new room must be created. A service restart also interrupts all rooms, and restoring business state is the device side's job. By default, up to 128 rooms, a 2-minute pairing deadline and a 5-minute idle timeout apply. A single WebSocket message must not exceed 64 KiB.
 
-本服务不接收 SSH 客户端、普通 HTTP 代理、任意浏览器 WebSocket 或 VNC 客户端。浏览器发起的带 `Origin` 请求会被拒绝，原生客户端负责建立设备通道。现有 Cage 的 SSH 远程主机连接使用另一套启动与认证流程，不能把 SSH 主机地址直接替换成此中继地址。
+This service does not accept SSH clients, plain HTTP proxies, arbitrary browser WebSockets or VNC clients. Requests from a browser with an `Origin` header are rejected. Native clients set up the device channel. Cage's existing SSH remote host connection uses a different startup and authentication flow, so you can't simply replace an SSH host address with this relay address.
 
-## 在 Linux 服务器部署
+## Deploy on a Linux server
 
-准备一台安装 Docker Engine 和 Compose 的 Linux 服务器，以及指向该服务器的域名。仅开放 TCP 80、443；Caddy 使用域名取得可信证书，转发到容器内部的中继服务。部署配置不会将中继的 8787 端口映射到主机。
+Prepare a Linux server with Docker Engine and Compose installed, plus a domain name that points to it. Open only TCP 80 and 443. Caddy uses the domain to obtain a trusted certificate and forwards traffic to the relay service inside the container. The deployment config does not map the relay's port 8787 to the host.
 
-在仓库根目录执行以下命令。密钥保存在仓库外，`openssl` 不会将内容输出到终端；使用当前部署用户运行后续 Compose 命令。
+Run the following commands in the repository root. Keys are stored outside the repository, and `openssl` does not print their contents to the terminal. Run the later Compose commands as the current deployment user.
 
 ```sh
 install -d -m 700 "$HOME/.config/cage-relay"
@@ -38,59 +38,59 @@ docker compose -f deploy/relay/compose.yaml config --quiet
 docker compose -f deploy/relay/compose.yaml up -d --build
 ```
 
-将示例域名改为自己的域名。密钥生成命令拒绝覆盖已有文件；已有部署直接复用原文件。Compose 缺少域名、密钥路径或文件所有者标识时会直接报错。Go 构建镜像固定为与项目声明一致的 `1.26.10`，Caddy 固定为 `2.11.8-alpine`；镜像升级需修改并验证配置，不使用 `latest`。
+Replace the example domain with your own. The key generation commands refuse to overwrite existing files, and existing deployments reuse their original files. Compose fails immediately if the domain, key paths or file owner ID are missing. The Go build image is pinned to `1.26.10`, matching the project declaration, and Caddy is pinned to `2.11.8-alpine`. To upgrade images, change and verify the config. Don't use `latest`.
 
-密钥作为只读 Compose secret 挂载，中继容器以密钥文件所有者的 UID/GID 运行。Docker Compose 对文件来源 secret 使用绑定挂载，不能依赖 secret 的 `uid`、`gid` 或 `mode` 设置替代主机文件权限。[Docker secrets 文档](https://docs.docker.com/compose/how-tos/use-secrets/)
+Keys are mounted as read-only Compose secrets, and the relay container runs as the UID/GID of the key file's owner. For file-based secrets, Docker Compose uses a bind mount, so you can't rely on the secret's `uid`, `gid` or `mode` settings instead of the host file permissions. [Docker secrets documentation](https://docs.docker.com/compose/how-tos/use-secrets/)
 
-中继容器使用只读文件系统、移除所有 Linux capabilities，并且只接入内部网络。Caddy 同时连接外网与内部网络，证书保存在 `caddy_data` 卷中。配置没有启用访问日志，默认结构化日志会移除请求路径和请求头，避免记录房间地址及认证信息。[Caddy 反向代理文档](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy)
+The relay container uses a read-only file system, drops all Linux capabilities, and connects only to the internal network. Caddy connects to both the external network and the internal network, and its certificates are stored in the `caddy_data` volume. Access logging is not enabled. The default structured logs remove request paths and headers, so room addresses and authentication details aren't recorded. [Caddy reverse proxy documentation](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy)
 
-使用不含密钥的健康检查确认 HTTPS 和服务监听正常：
+Check that HTTPS and the service listener work with a health check that doesn't use keys:
 
 ```sh
 curl --fail --silent --show-error "https://${RELAY_DOMAIN}/healthz"
 docker compose -f deploy/relay/compose.yaml ps
 ```
 
-健康检查返回 `ok` 仅表示中继可响应；还需要使用两个持有对端信任信息的测试端点验证加密握手、转发、断线和身份拒绝。它不能证明移动工作台已经可用。
+A health check returning `ok` only means the relay responds. You also need two test endpoints that hold each other's trust information to verify the encrypted handshake, forwarding, disconnects and identity rejection. It doesn't prove that the mobile workbench is ready.
 
-## 本机开发与直接运行
+## Local development and direct runs
 
-在仓库根目录构建并启动：
+Build and start it in the repository root:
 
 ```sh
 go build -o /tmp/cage-relay ./cmd/cage-relay
 /tmp/cage-relay --token-file "$HOME/.config/cage-relay/admin-token"
 ```
 
-程序默认监听 `127.0.0.1:8787`，不主动开放公网。修改监听地址必须显式传入 `--listen`；公网部署应通过可信 TLS 入口，不能直接暴露明文 HTTP。启动日志只记录监听地址，不输出令牌、邀请内容或房间 URL。
+The program listens on `127.0.0.1:8787` by default and does not open the public internet. To change the listen address, you must pass `--listen` explicitly. For public deployments, go through a trusted TLS entry point, and never expose plain HTTP directly. Startup logs only record the listen address, and don't print tokens, invitation content or room URLs.
 
-| 参数 | 默认值 | 含义 |
+| Flag | Default | Meaning |
 | --- | --- | --- |
-| `--listen` | `127.0.0.1:8787` | HTTP 监听地址 |
-| `--token-file` | 必填 | 中继管理令牌文件 |
-| `--max-rooms` | `128` | 等待连接和已连接房间的总上限 |
-| `--pair-timeout` | `2m` | 等待两端到齐的期限 |
-| `--idle-timeout` | `5m` | 连接空闲期限 |
+| `--listen` | `127.0.0.1:8787` | HTTP listen address |
+| `--token-file` | Required | Relay admin token file |
+| `--max-rooms` | `128` | Total limit for waiting and connected rooms |
+| `--pair-timeout` | `2m` | Time limit for both ends to arrive |
+| `--idle-timeout` | `5m` | Connection idle time limit |
 
-令牌需包含 32–4096 字节的无空白可见 ASCII 字符，允许末尾一个 LF 或 CRLF。macOS/Linux 拒绝组或其他用户具有权限的文件，建议使用 `0600`。Windows 文件权限采用 ACL，程序不通过 Unix 权限位推断访问范围；运行前应关闭继承，并仅允许服务账户及必要的系统管理员访问。Windows 和 macOS 可运行同一 Go 入口；容器部署示例以 Linux 服务器为目标。
+A token must contain 32–4096 bytes of visible ASCII characters with no whitespace, and may end with one LF or CRLF. On macOS and Linux, files that group or other users can access are rejected, so `0600` is recommended. Windows file permissions use ACLs, and the program doesn't infer the access scope from Unix permission bits. Before running, turn off inheritance and allow only the service account and necessary system administrators. Windows and macOS can run the same Go entry point. The container deployment example targets a Linux server.
 
-## 协议接入
+## Protocol integration
 
-集成方通过 `POST /v1/rooms` 创建房间，将管理令牌放在 `Authorization: Bearer …` 请求头。返回值包含 `id`、`host_token`、`client_token`、`expires_at`，不得写入日志或公开页面。
+Integrators create a room with `POST /v1/rooms`, and put the admin token in the `Authorization: Bearer …` header. The response contains `id`, `host_token`, `client_token` and `expires_at`. Don't write them to logs or public pages.
 
-主机与客户端分别访问 `GET /v1/rooms/{id}/host` 和 `GET /v1/rooms/{id}/client`，将各自房间令牌放在同一请求头中并升级到 WebSocket。接口不接受查询参数凭据。连接配对完成后进行端到端身份验证，再交换业务数据；房间地址本身也应视为敏感连接信息。
+The host and the client access `GET /v1/rooms/{id}/host` and `GET /v1/rooms/{id}/client` respectively, put their own room tokens in the same header, and upgrade to WebSocket. The endpoints don't accept credentials in query parameters. After pairing completes, they run end-to-end identity verification, then exchange business data. The room address itself should also be treated as sensitive connection information.
 
-需要保存设备连接时，主机用 `lookup_hash` 登记设备专属查询凭据的摘要。手机把原查询凭据放在 Bearer 请求头中访问 `GET /v1/invitation`，取得主机已加入且尚未使用的房间邀请。断线后主机登记新房间，原查询凭据可以继续使用。中继重启后由在线主机重新登记。房间令牌和查询凭据分别管理，每次会话仍校验设备公钥。
+To save a device connection, the host registers a digest of the device's lookup credential with `lookup_hash`. The phone sends the original lookup credential in the Bearer header to `GET /v1/invitation`, and gets a room invitation that the host has already joined and that hasn't been used. After a disconnect, the host registers a new room, and the original lookup credential can still be used. After a relay restart, the online host registers again. Room tokens and lookup credentials are managed separately, and each session still verifies the device public key.
 
-中继不会转发 HTTP 路径到电脑上的管理服务。只有设备侧明确允许的应用操作才能进入 Cage。创建房间成功、WebSocket 成功和端到端握手成功分别代表不同阶段，调用方应保留对应错误反馈。
+The relay does not forward HTTP paths to the management service on the computer. Only app operations that the device side explicitly allows can reach Cage. Successful room creation, a successful WebSocket connection and a successful end-to-end handshake each represent a different stage. Callers should keep the matching error feedback for each.
 
-## 停止与更新
+## Stop and update
 
 ```sh
 docker compose -f deploy/relay/compose.yaml down
 docker compose -f deploy/relay/compose.yaml up -d --build
 ```
 
-停止服务会先关闭所有中继房间，再结束 HTTP 监听；两端需要重新连接。更新保留仓库外的令牌和 Caddy 证书卷。中继不访问电脑的 Cage 个人目录或虚拟机磁盘。
+Stopping the service closes all relay rooms first, then ends the HTTP listener. Both ends need to reconnect. An update keeps the tokens outside the repository and the Caddy certificate volume. The relay does not access the computer's Cage personal folder or the VM disk.
 
-轮换管理令牌后需要重启中继；重启会清除全部房间。只修改管理令牌不能撤销设备间已经保存的信任关系，设备撤销必须由主机端授权层处理。执行更新时保留令牌文件权限，避免通过放宽文件权限解决读取失败。
+After you rotate the admin token, restart the relay. Restarting clears all rooms. Changing only the admin token does not revoke trust that devices have already saved. Device revocation must be handled by the host-side authorization layer. When you update, keep the token file's permissions, and don't loosen file permissions to fix a read failure.

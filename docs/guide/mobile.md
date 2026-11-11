@@ -1,26 +1,26 @@
 ---
-title: 手机连接与远程会话
-description: 用 Android 或 iPhone 配对电脑，查看 Claude Code 对话、批准工具执行，或在左侧栏切换远程浏览器、Claude.ai 和 Claude Desktop 窗口。
-group: 远程使用
+title: Phone connection and remote sessions
+description: Pair an Android or iPhone with your computer to view Claude Code conversations and approve tool runs, or switch between the remote browser, Claude.ai and Claude Desktop windows in the left sidebar.
+group: Remote use
 order: 7
-keywords: 移动端 手机 Android iOS iPhone 扫码 二维码 配对码 审批 中继 远程浏览器 Claude Desktop
+keywords: mobile phone Android iOS iPhone scan QR code pairing code approval relay remote browser Claude Desktop
 ---
-## 获取客户端与使用条件
+## Get the client and requirements
 
-在 Android 或 iPhone 安装 Cage 手机客户端，再与电脑配对。Android 需要 8.0 及更新的 arm64 设备和现代 System WebView；iPhone 需要 iOS 17+ 与 Secure Enclave。手机与电脑应使用匹配版本。
+Install the Cage phone client on an Android or iPhone, then pair it with your computer. Android needs an arm64 device running Android 8.0 or later, with a current System WebView. iPhone needs iOS 17+ and a Secure Enclave. Your phone and computer should use matching versions.
 
-Android 用户在[官网下载入口](https://lee-xeo.github.io/Claude-Cage/#download)选择 Android，下载 APK 后按系统提示允许该下载来源安装应用。后续使用同一签名的新版 APK 覆盖安装，保留手机上的配对记录。
+Android users can choose Android in the [website download section](https://lee-xeo.github.io/Claude-Cage/#download), download the APK, and allow installs from that source when the system prompts. Later, install newer APKs with the same signature over the existing app, and the pairing records on the phone are kept.
 
-iOS 用户在自己的 Mac 上构建并为设备签名，步骤见下文。
+iOS users build the app on their own Mac and sign it for their device. The steps are below.
 
-电脑需运行 Cage、解锁账户并准备好环境。手机负责连接与显示，Claude Code、网络出口、时区和语言由配对电脑上的 Cage 管理。电脑离线或停止环境后，手机无法继续在该环境运行任务。
+The computer must run Cage, have the account unlocked, and have the environment ready. The phone handles the connection and display, while Claude Code, the network exit, time zone and language are managed by Cage on the paired computer. If the computer goes offline or the environment is stopped, the phone can no longer run tasks in that environment.
 
-桌面通过 SSH 切到服务器时，手机接口仍指向原电脑的本机 Cage。请切回本机工作台管理手机配对。
+When the desktop app switches to a server over SSH, the phone interface still points to the original computer's local Cage. Switch back to the local workbench to manage phone pairing.
 
-## iOS 本地构建
+## Build locally for iOS
 
-1. 在 Mac 安装完整 Xcode 和 iOS SDK，首次打开 Xcode 完成组件安装。准备 Node.js 24 与 Go，Go 版本遵循仓库中的 `go.mod`。
-2. 下载 [Cage 源码](https://github.com/Lee-xeo/Claude-Cage)，在仓库根目录执行以下命令，生成手机界面、原生连接库和 iOS 应用。
+1. Install full Xcode and the iOS SDK on your Mac, and open Xcode once to finish installing its components. Prepare Node.js 24 and Go. The Go version follows `go.mod` in the repository.
+2. Download the [Cage source code](https://github.com/Lee-xeo/Claude-Cage), and run the following commands in the repository root to generate the phone interface, the native connection library and the iOS app.
 
    ```sh
    npm ci --prefix ui
@@ -28,86 +28,86 @@ iOS 用户在自己的 Mac 上构建并为设备签名，步骤见下文。
    open mobile/ios/CageMobile.xcodeproj
    ```
 
-3. 在 Xcode 选择 `CageMobile` scheme，在 Signing & Capabilities 中选择自己的开发团队，连接 iPhone 并选择该设备，再点击 Run。按设备提示信任开发签名并启用开发者模式。
+3. In Xcode, select the `CageMobile` scheme, choose your own development team under Signing & Capabilities, connect your iPhone and select it, then click Run. Follow the device prompts to trust the development signature and enable developer mode.
 
-构建产物位于 `mobile/.build/ios/`，设备证书与签名由自己的 Apple 开发账户管理。安装后按照下文配对电脑。需要导出供本人设备安装的开发 IPA，可查看[移动端构建说明](https://github.com/Lee-xeo/Claude-Cage/blob/main/mobile/README.md#ios-本地构建)。
+The build output is in `mobile/.build/ios/`, and device certificates and signing are managed by your own Apple developer account. After installing, pair your computer as described below. To export a development IPA for installing on your own device, see the [mobile build guide](https://github.com/Lee-xeo/Claude-Cage/blob/main/mobile/README.md#build-for-ios-locally).
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/mobile-pairing.jpg" target="_blank" rel="noopener" aria-label="查看原图：电脑端的手机配对入口与中继选择"><img src="../../www/public/docs/screenshots/mobile-pairing.jpg" alt="电脑端的手机配对入口与中继选择" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>电脑端的手机配对入口与中继选择。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/mobile-pairing.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/mobile-pairing.jpg" target="_blank" rel="noopener" aria-label="View original: phone pairing entry and relay choice on the computer"><img src="../../www/public/docs/screenshots/mobile-pairing.jpg" alt="Phone connection entry and relay choice on the computer" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Phone connection entry and relay choice on the computer. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/mobile-pairing.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 扫码或使用配对码
+## Scan a QR code or use a pairing code
 
-1. 电脑进入“设置 → 远程连接 → 手机连接”，点“生成配对二维码”。二维码约两分钟有效，过期后刷新。
-2. 手机首页点“连接电脑 → 扫码连接”，允许相机并扫描完整二维码。
-3. 相机不方便时，在电脑点“复制配对码”，手机选择配对码入口，粘贴这串一次性代码。
-4. 连接成功后会打开左侧栏。点工具即可在主区操作，点左上角的 Cage Logo 可以重新打开侧栏。下次可在“连接电脑”里重新连接已配对设备。
+1. On the computer, go to "Settings → Remote connection → Phone connection" and click "Generate pairing QR code". The QR code is valid for about two minutes. Refresh it after it expires.
+2. On the phone's home page, tap "Connect computer → Scan QR code", allow camera access, and scan the complete QR code.
+3. If the camera is inconvenient, click "Copy pairing code" on the computer, then select the pairing code entry on the phone and paste this one-time code.
+4. After a successful connection, the left sidebar opens. Tap a tool to use it in the main area, and tap the Cage logo in the upper-left corner to reopen the sidebar. Next time, reconnect a paired device from "Connect computer".
 
-连接后，电脑的配对卡片会显示手机型号和平台，移除配对时也会显示型号，方便确认操作对象。如果提示“型号待获取”，请更新手机端 Cage 后重新连接；已有配对会保留，无需重新扫码。
+After connecting, the computer's pairing card shows the phone model and platform. Removing a pairing also shows the model, so you can confirm which device you are acting on. If it shows "Model not available yet", update Cage on your phone and reconnect. Existing pairings are kept, so you do not need to scan again.
 
-配对码授予设备访问，请只交给你要授权的手机。电脑锁定、刷新或超时会使尚未使用的代码失效。电脑重启后先启动 Cage，再重新连接。
+A pairing code grants device access, so give it only to the phone you want to authorize. Locking the computer, refreshing it or a timeout makes unused codes invalid. After the computer restarts, start Cage first, then reconnect.
 
-手机已配对、Cage 主机后台正在提供远程服务时，会请求主机保持运行。屏幕可以照常熄灭，手机暂时断开或主机正在重连中继时也保留待机。关闭窗口或选择“保留运行并退出”仍会保持远程服务及防休眠。移除配对或结束主机后台服务后释放请求，沿用原系统休眠设置。“设置 → 远程连接”显示防休眠是否已申请；系统不允许申请时显示具体原因。
+When a phone is paired and the Cage host is providing remote service in the background, the host is asked to stay awake. The screen can still turn off as usual, and the host stays on standby when the phone is temporarily disconnected or the host is reconnecting to the relay. Closing the window or choosing "Keep running and quit" still keeps the remote service and the keep-awake request active. Removing the pairing or ending the host background service releases the request, and the original system sleep settings apply again. "Settings → Remote connection" shows whether the keep-awake request was granted. If the system does not allow it, the specific reason is shown.
 
-这项能力用于阻止系统自动休眠。合盖、手动强制休眠、关机与系统电源保护仍受操作系统和硬件限制。长时间无人值守远程使用应保持接电，避免系统在电池模式撤销防休眠请求。
+This feature prevents automatic system sleep. Closing the lid, manual forced sleep, shutdown and system power protection are still limited by the operating system and hardware. For long unattended remote use, keep the computer plugged in, so the system does not cancel the keep-awake request in battery mode.
 
-## 创建会话与处理工具审批
+## Create sessions and handle tool approvals
 
-在左侧栏的“Claude Code”分区点项目名，展开后点会话即可进入对话。手机自动连接已有会话或恢复历史，无需再点接续按钮，也无需回电脑确认 Cage 通道。连接准备期间可以先输入消息，发送按钮在连接就绪后可用。也可以在目标项目旁新建会话。手机可查看回复、执行进度与保存的历史，运行时可以停止本轮。没有项目时，先在电脑工作台明确添加一个目录。
+In the "Claude Code" section of the left sidebar, tap a project name, expand it, then tap a session to enter the conversation. The phone automatically connects to existing sessions or restores history, so you do not need to tap a resume button or go back to the computer to confirm the Cage channel. While the connection is being prepared, you can type a message first, and the send button becomes available once the connection is ready. You can also create a new session next to the target project. On the phone, you can view replies, execution progress and saved history, and you can stop the current turn while it runs. If there are no projects, first add a directory explicitly in the computer's workbench.
 
-会话中的标题、列表、引用、代码和表格按 Markdown 排版。宽表格和长代码行可以左右滑动。点开“工具调用”能看到每次调用的名称、状态，以及记录中附带的简短说明。后台任务通知直接显示摘要，展开可看任务编号和输出路径。
+Titles, lists, quotes, code and tables in a session are formatted as Markdown. Wide tables and long code lines can be scrolled sideways. Tap "Tool calls" to see the name and status of each call, plus any short description recorded with it. Background task notifications show a summary directly. Expand them to see the task ID and output path.
 
-当回复用 Markdown 链接、图片语法或行内代码引用当前项目的媒体文件时，点“查看图片”或“加载视频”可在对话里预览。文件通过配对连接从电脑传到手机，单个文件上限为 48 MiB。支持 PNG、JPEG、GIF、WebP，以及手机能够解码的 MP4、M4V、MOV 和 WebM 视频。公网链接在电脑的 Cage 远程浏览器里打开。项目文件预览和工具调用历史需要手机与电脑都使用支持此功能的版本。
+When a reply references media files in the current project with Markdown links, image syntax or inline code, tap "View image" or "Load video" to preview them in the conversation. Files are transferred from the computer to the phone over the paired connection, with a 48 MiB limit per file. PNG, JPEG, GIF and WebP are supported, along with MP4, M4V, MOV and WebM videos that the phone can decode. Public links open in the Cage remote browser on the computer. Project file preview and tool call history require both the phone and the computer to use versions that support this feature.
 
-需要执行工具时，手机显示工具名称和参数，选择“允许一次”或“拒绝”。先检查参数中的命令、文件路径和操作范围。同一项审批若已被另一端处理，重新读取最新状态。
+When a tool needs to run, the phone shows the tool name and parameters, and you choose "Allow once" or "Deny". Check the command, file path and scope of operation in the parameters first. If the same approval has already been handled on the other end, the latest status is read again.
 
-在会话行从右向左滑动，右侧会露出置顶、重命名和归档图标，按钮与会话位于同一行。点击更多操作按钮也可展开，键盘左方向键展开，右方向键或 Escape 收起。名称、置顶和归档状态在电脑与手机同步。归档会关闭关联终端并保留历史。
+Swipe a session row from right to left, and the pin, rename and archive icons appear on the right, in the same row as the session. You can also expand it with the more-actions button. The left arrow key expands it, and the right arrow key or Escape collapses it. Name, pin and archive status sync between the computer and the phone. Archiving closes the associated terminals and keeps the history.
 
-在“设置 → 已归档会话”中，可以搜索会话、按项目筛选，并通过“取消归档”恢复到项目列表。垃圾桶按钮用于永久删除，会要求再次确认，并清理对应 Claude Code 原始对话和子代理记录。删除无法撤销。主机环境离线时可以查看及取消归档，永久删除需要启动主机环境。
+Under "Settings → Archived sessions", you can search sessions, filter by project, and restore them to the project list with "Unarchive". The trash button permanently deletes a session. It asks for confirmation again and removes the corresponding original Claude Code conversation and sub-agent records. Deletion cannot be undone. When the host environment is offline, you can view and unarchive sessions, but permanent deletion requires starting the host environment.
 
-电脑和手机均可勾选会话进行批量处理。列表上方的“全选”选择当前筛选结果，项目名前的复选框选择该项目下当前显示的会话；也可逐项选择，再点击“批量取消归档”或“批量删除”。切换搜索或筛选条件会清空选择。批量删除需要确认；部分操作失败时，成功项从归档列表移除，失败项保持选中，可查看原因后重试。删除未完成的会话只能重试删除，无法取消归档。
+You can select sessions for batch actions on both the computer and the phone. "Select all" above the list selects the current filtered results. The checkbox in front of a project name selects the sessions currently shown under that project. You can also select items one by one, then click "Unarchive selected" or "Delete selected". Changing the search or filter clears the selection. Batch deletion requires confirmation. If some actions fail, successful items are removed from the archived list and failed items stay selected, so you can view the reasons and retry. For sessions whose deletion did not finish, you can only retry the deletion. They cannot be unarchived.
 
-电脑与手机读取同一份会话目录。手机创建的会话也可在电脑直接打开，两端共用历史、消息和审批。后台重启后，历史会话仍在列表中，两端点击会话均可接续。手机切换会话时保留各自草稿，退出页面不关闭主机上的任务。已有历史在接续前会核对原账号与项目；原配置不可验证时保留历史并报告具体问题。
+The computer and the phone read the same session directory. A session created on the phone can also be opened directly on the computer, and both ends share the history, messages and approvals. After a background restart, history sessions remain in the list, and tapping a session on either end lets you resume it. When you switch sessions on the phone, each keeps its own draft, and leaving the page does not close the task on the host. Existing history is checked against the original account and project before resuming. If the original configuration cannot be verified, the history is kept and the specific problem is reported.
 
-连接短暂中断时，手机自动重试五次，间隔逐步拉长。恢复期间显示当前进度，聊天记录与草稿保留。发送结果不明确时，App 先核对消息是否已送达，需要重试时沿用原消息，避免重复执行。主机确认接收后立即显示“消息已送达”，回复随后同步。五次仍未恢复时，提示会说明手机与电脑之间、或电脑与运行环境之间的连接问题；点击“再次连接”可继续恢复，无需手动复制原消息。
+When the connection is briefly interrupted, the phone automatically retries five times, with gradually longer intervals. During recovery, the current progress is shown, and the chat history and drafts are kept. If the send result is unclear, the app first checks whether the message was delivered. If a retry is needed, it reuses the original message to avoid running it twice. Once the host confirms receipt, "Message delivered" is shown right away, and the reply syncs afterwards. If the connection is still not restored after five attempts, the message explains whether the problem is between the phone and the computer, or between the computer and the runtime environment. Tap "Connect again" to continue recovery. You do not need to copy the original message manually.
 
-获授权项目中的既有 Claude Code 历史也会进入列表。打开后自动接续空闲会话；等待审批的任务会在手机重新请求批准。正在执行的任务保持运行，完成后自动连接。共享会话直接复用当前进程。账号失效、主机离线或组织策略禁止连接时，页面显示实际错误。续聊会检查账号与服务地址，身份变化时拒绝继续；无法核实身份的配置只支持首轮，可按提示新建会话。
+Existing Claude Code history in authorized projects also appears in the list. Opening one automatically resumes an idle session. Tasks waiting for approval ask the phone for approval again. Tasks that are running keep running and connect automatically when they finish. Shared sessions reuse the current process directly. When the account has expired, the host is offline, or organization policy blocks the connection, the page shows the actual error. Resuming checks the account and service address, and refuses to continue if the identity has changed. Configurations whose identity cannot be verified only support the first turn. You can start a new session as prompted.
 
 <figure class="guide-shot guide-shot-phone">
-  <a href="../../www/public/docs/screenshots/mobile-ios-preview.jpg" target="_blank" rel="noopener" aria-label="查看原图：手机原生客户端的会话界面预览"><img src="../../www/public/docs/screenshots/mobile-ios-preview.jpg" alt="手机原生客户端的会话界面预览" width="456" height="972" loading="lazy" decoding="async" /></a>
-  <figcaption>手机原生客户端的会话界面预览。截图版本：Cage iOS 0.1（build 1，开发版） · iPhone 17 Pro 模拟器 · iOS 26.5 · 2026-11-07 · 界面预览，示例对话，未连接主机。<a href="../../www/public/docs/screenshots/mobile-ios-preview.jpg" target="_blank" rel="noopener">查看原图（456 × 972） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/mobile-ios-preview.jpg" target="_blank" rel="noopener" aria-label="View original: session interface preview in the native phone client"><img src="../../www/public/docs/screenshots/mobile-ios-preview.jpg" alt="Session interface preview in the native phone client" width="456" height="972" loading="lazy" decoding="async" /></a>
+  <figcaption>Session interface preview in the native phone client. Screenshot version: Cage iOS 0.1 (build 1, development build) · iPhone 17 Pro simulator · iOS 26.5 · 2026-11-07 · Interface preview with a sample conversation, not connected to a host. <a href="../../www/public/docs/screenshots/mobile-ios-preview.jpg" target="_blank" rel="noopener">View original (456 × 972) ↗</a></figcaption>
 </figure>
 
-## 在手机打开远程浏览器
+## Open the remote browser on your phone
 
-1. 电脑启动环境并通过网络检查。
-2. 用电脑生成的二维码或配对码连接。已配对手机可以直接重新连接。
-3. 在手机左侧栏点「浏览器」，会打开电脑 Cage 浏览器设置中的「新标签页地址」。电脑保存新地址后，下次从手机打开浏览器即生效。「Claude.ai」入口始终直达 Claude.ai。
-4. 点击网页输入框，再用“输入文字”调用手机键盘；点勾号插入，需要提交时再点“发送回车”。
+1. Start the environment on the computer and pass the network check.
+2. Connect using the QR code or pairing code generated on the computer. An already paired phone can reconnect directly.
+3. Tap "Browser" in the phone's left sidebar to open the "New tab address" set in the computer's Cage browser settings. Once the computer saves a new address, it takes effect the next time you open the browser from the phone. The "Claude.ai" entry always goes directly to Claude.ai.
+4. Tap the web input box, then use "Enter text" to bring up the phone keyboard. Tap the checkmark to insert, and tap "Send Enter" when you need to submit.
 
-点手机浏览器底部的「收藏夹」，可以按电脑上的文件夹浏览收藏、打开网址，或把当前页存入指定文件夹。两端共用配对主机的收藏。另一端有更改时，重新打开收藏夹，或在手机上点刷新即可看到。
+Tap "Bookmarks" at the bottom of the phone browser to browse bookmarks by the folders on the computer, open URLs, or save the current page to a chosen folder. Both ends share the bookmarks of the paired host. When the other end makes changes, reopen Bookmarks or tap refresh on the phone to see them.
 
-网页在电脑的 Cage 中运行，每部配对手机使用独立浏览资料，首次需要在这份窗口里登录。普通关闭保留该配对的登录资料。移除配对或锁定 Cage 会中止访问。
+Web pages run in the Cage browser on the computer, and each paired phone uses its own browsing data, so you need to sign in once in this window. A normal close keeps the sign-in data for that pairing. Removing the pairing or locking Cage ends access.
 
-手机浏览器显示单个网页，支持公网 IPv4 的 HTTP/HTTPS。需要网页弹窗登录、附件上传下载或声音播放时，请回到电脑工作台操作。
+The phone browser shows one web page at a time and supports HTTP/HTTPS over public IPv4. For web popup sign-ins, attachment upload and download, or sound playback, go back to the computer workbench.
 
-## 在手机操作 Claude Desktop
+## Use Claude Desktop from your phone
 
-在电脑 Cage 环境内安装并登录 Claude Desktop。用已配对手机连接电脑，在手机左侧栏点“Claude Desktop”，即可接续电脑上的同一窗口。两端共用账号、应用数据、页面和输入焦点，手机的操作同步显示在电脑上。应用尚未运行时由主机启动。
+Install and sign in to Claude Desktop inside the Cage environment on the computer. Connect to the computer with a paired phone, then tap "Claude Desktop" in the phone's left sidebar to pick up the same window on the computer. Both ends share the account, app data, page and input focus, and your actions on the phone are shown on the computer in sync. If the app is not running, the host starts it.
 
-新版手机端会自动读取屏幕像素密度，使远程画面匹配当前显示分辨率。共享窗口会按手机宽度重新排版，电脑同步显示该布局。需要看细节时可点“放大阅读”并拖动查看局部。退出手机的 Desktop 页面后恢复电脑尺寸，电脑里的应用和任务继续运行。需要重新登录或使用本机文件选择器时，在电脑上完成。
+The newer phone client automatically reads the screen pixel density, so the remote picture matches the current display resolution. The shared window is re-laid out to the phone's width, and the computer shows that layout in sync. To see details, tap "Zoom to read" and drag to view parts of the screen. When you leave the Desktop page on the phone, the computer's size is restored, and the app and tasks on the computer keep running. When you need to sign in again or use the local file picker, do it on the computer.
 
-Windows 客机的手机 Desktop 已接入共享窗口、焦点和尺寸协议，旧客机组件会提示更新，锁屏后需在电脑解锁绑定账户。当前已通过生产接口与隔离图形协议检查；Windows 官方 Claude 窗口、真实鼠标与锁屏、实体手机 WebView 的完整流程仍待验收。具体可用范围取决于电脑端构建、客机组件和平台验证。
+The phone Desktop on Windows guests is connected to the shared window, focus and size protocol. Older guest components prompt for an update, and after the screen locks you need to unlock the bound account on the computer. It has passed the production interface and isolated graphics protocol checks. The full flow for the official Windows Claude window, real mouse and screen lock, and a physical phone WebView still needs verification. The usable scope depends on the computer build, guest components and platform verification.
 
-## 断网、切换设备与撤销
+## Network drops, switching devices and revoking
 
-短暂断网后先留在当前会话，网络恢复时读取最新进度，会重新核对电脑身份。输入草稿保留；发送或审批时断线，先确认主机记录，避免重复操作。主机已接受的任务可以继续运行。
+After a brief network drop, stay on the current session. When the network comes back, the latest progress is read and the computer's identity is checked again. Input drafts are kept. If the connection drops while sending or approving, check the host record first to avoid repeating the action. A task the host has already accepted keeps running.
 
-点 Cage Logo 打开侧栏，点底部“退出”回到首页，再从“连接电脑”的已连接设备中选另一台电脑。长按设备并确认“取消连接”可关闭该设备的连接，配对记录继续保留。在手机“忘记主机”清除本机保存的连接；要撤销电脑端授权，还要在电脑“设置 → 远程连接”移除对应配对。
+Tap the Cage logo to open the sidebar, tap "Exit" at the bottom to return to the home page, then choose another computer from the connected devices under "Connect computer". Long-press a device and confirm "Cancel connection" to close that device's connection. The pairing record is kept. Choose "Forget host" on the phone to clear the locally saved connection. To revoke the authorization on the computer, you also need to remove the matching pairing under "Settings → Remote connection" on the computer.
 
-## 使用自建中继
+## Use a self-hosted relay
 
-电脑在“设置 → 远程连接”选择自建中继并保存 HTTPS 地址，手机设置也填写同一地址。需管理令牌时只在电脑填写。保存后再生成新配对码，已有配对不会自动搬到另一台中继，迁移需撤销并重新配对。
+On the computer, choose a self-hosted relay under "Settings → Remote connection" and save its HTTPS address, then enter the same address in the phone's settings. Enter the management token only on the computer, if one is required. After saving, generate a new pairing code. Existing pairings are not moved automatically to another relay. To migrate, revoke and pair again.
 
-中继转发连接，不运行你的项目。它可以看到连接地址、时间和流量大小；电脑与手机在转发通道内核对身份并加密通信。自建中继需使用与手机协议匹配的部署程序，部署材料与命令行连接助手见[中继说明](https://github.com/Lee-xeo/Claude-Cage/blob/main/deploy/relay/README.md)。
+The relay only forwards connections and does not run your projects. It can see connection addresses, times and traffic volume. The computer and phone verify identity and encrypt communication inside the forwarding channel. A self-hosted relay requires a deployment program that matches the phone protocol. For deployment materials and the command-line connection helper, see the [relay guide](https://github.com/Lee-xeo/Claude-Cage/blob/main/deploy/relay/README.md).

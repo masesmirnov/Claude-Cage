@@ -1,168 +1,168 @@
 ---
-title: 选择客机系统
-description: 在 Mac 上使用 macOS、在 Windows 上使用 Windows，或选择 Debian、Ubuntu 22.04，沿用同一个 Cage 工作台。
-group: 开始使用
+title: Choose a guest system
+description: Use macOS on a Mac, Windows on Windows, or choose Debian or Ubuntu 22.04, all in the same Cage workbench.
+group: Getting started
 order: 1.5
-keywords: 客机 客户机 克隆 本机 系统选择 macOS Windows Debian Ubuntu Linux Hyper-V Apple Silicon IPSW ISO ESD 原生开发 PowerShell
+keywords: guest client clone host system choice macOS Windows Debian Ubuntu Linux Hyper-V Apple Silicon IPSW ISO ESD native development PowerShell
 ---
-## 在熟悉的系统里开发
+## Develop in a system you know
 
-开发 Mac 应用时，需要 macOS 的工具链；处理 Windows 项目时，也希望使用 PowerShell 和 Windows 程序。Cage 让这些工具运行在独立的虚拟机中，同时把终端、浏览器、编辑器和官方 Claude Desktop 放在同一个工作台里。你可以继续使用熟悉的系统，按项目需要共享文件，并独立管理工作环境的网络。
+Developing a Mac app requires the macOS toolchain, and working on a Windows project means you want PowerShell and Windows programs. Cage runs these tools in an isolated virtual machine, while the terminal, browser, editor and official Claude Desktop stay in the same workbench. You can keep using the system you know, share files with projects as needed, and manage the network of the working environment separately.
 
-运行 Cage 的电脑称为主机，虚拟机里的系统称为客机。两者可以属于同一种系统，具体版本可以不同。例如，Mac 主机可以运行 Apple 为这台设备提供的兼容 macOS 客机，无需与主机版本完全一致。
+The computer that runs Cage is called the host, and the system inside the virtual machine is called the guest. They can be the same kind of system, though the versions can differ. For example, a Mac host can run a compatible macOS guest that Apple provides for this device, without needing to match the host version exactly.
 
-## 这台电脑可以选择什么
+## What this computer can choose
 
-| 你的电脑 | 可选客机 | 适合的工作 |
+| Your computer | Guest options | Suitable work |
 | --- | --- | --- |
-| Apple Silicon Mac，macOS 14+ | macOS、Debian 13 或 Ubuntu 22.04，均为 ARM64 | macOS 原生开发、Mac 版 Claude Desktop，或 Linux 工具与服务。macOS 客机版本需与硬件和主机兼容。 |
-| Windows 11 x64 专业版、企业版或教育版，具备完整 Hyper-V | Windows 11、Debian 13 或 Ubuntu 22.04，均为 x86_64 | PowerShell、Windows 原生编译与调试、Windows 版 Claude Desktop，或 Linux 开发。 |
-| 其他受支持的 Windows 10 22H2 / 11 x64 主机 | Debian 13 或 Ubuntu 22.04 x86_64 | 在独立 Linux 环境中使用 Claude Code、浏览器与开发工具。需要 Windows 虚拟机监控程序平台。 |
-| Debian 12/13、Ubuntu 22.04/24.04 x86_64 主机 | Debian 13、Ubuntu 22.04，或与本机同发行版的 Linux | Linux 开发与服务。需要 KVM 和当前用户的访问权限。 |
+| Apple Silicon Mac, macOS 14+ | macOS, Debian 13 or Ubuntu 22.04, all ARM64 | Native macOS development, Mac Claude Desktop, or Linux tools and services. The macOS guest version must be compatible with the hardware and host. |
+| Windows 11 x64 Pro, Enterprise or Education, with full Hyper-V | Windows 11, Debian 13 or Ubuntu 22.04, all x86_64 | PowerShell, native Windows build and debugging, Windows Claude Desktop, or Linux development. |
+| Other supported Windows 10 22H2 / 11 x64 hosts | Debian 13 or Ubuntu 22.04 x86_64 | Use Claude Code, the browser and development tools in a separate Linux environment. Requires the Windows hypervisor platform. |
+| Debian 12/13, Ubuntu 22.04/24.04 x86_64 hosts | Debian 13, Ubuntu 22.04, or Linux from the same distribution as this computer | Linux development and services. Requires KVM and access for the current user. |
 
-选择与主机同类的系统，可以继续使用对应平台的应用、路径习惯和工具链。Debian 适合希望减少系统安装负担、主要使用命令行与 Linux 服务的用户；三个受支持的桌面平台都可以选择它。Intel Mac、Windows ARM64 和 Linux ARM64 暂不支持。
+Choosing a system of the same kind as the host lets you keep using that platform's apps, path habits and toolchain. Debian suits users who want less system setup and mainly use the command line and Linux services. All three supported desktop platforms can choose it. Intel Macs, Windows ARM64 and Linux ARM64 are not supported yet.
 
-客机系统决定项目中的程序实际在哪里运行。需要额外虚拟机的应用功能还受嵌套虚拟化等条件限制，Claude Desktop 的 Cowork 暂不支持。
+The guest system determines where the program in your project actually runs. Some app features that need an extra virtual machine also depend on conditions such as nested virtualization. Claude Desktop's Cowork is not supported yet.
 
-## 当前开发构建的验证范围
+## Verification scope of the current development build
 
-系统选择和平台接线不代表所有操作已完成实机验收。公开安装包包含的能力，以对应发行说明为准；下面用于核对当前开发构建。
+Choosing a system and platform wiring do not mean that all operations have been verified on real machines. For what the public installer includes, refer to the matching release notes. The table below is for checking the current development build.
 
-| 路线 | 已验证 | 尚待验证 |
+| Route | Verified | Still to verify |
 | --- | --- | --- |
-| Mac 本机版本匹配 | 真实首次创建、系统恢复、权限确认、项目双向读写、编辑器及冷启动持久性 | 官方 Claude 在线登录与完整工作流程；本轮创建验证保持客机外网关闭 |
-| Windows 本机版本匹配 | 官方材料下载与校验、自动建机、首次启动、冷启动和测试文件保留 | 修复后的最终工作台登记与完整首次使用 |
-| Linux 同发行版匹配 | 镜像身份、安装来源和模板；Ubuntu 22.04 容器中的原生窗口、重装与卸载数据保留，以及真实浏览器启动 | 完整 KVM 首装、项目共享、物理桌面输入和官方 Claude 登录 |
-| 独立 Ubuntu 22.04 | Mac ARM64 真实安装、冷启动、项目共享、终端、浏览器、编辑器、中文输入、音频、剪贴板、Desktop 安装及欢迎页、网络暂停与代理中断、原磁盘持久化 | Windows WHPX / Linux KVM 实机首装，官方 Claude 登录和业务会话 |
+| Mac local version match | Real first creation, system recovery, permission confirmation, bidirectional project read and write, editor, and cold-start persistence | Official Claude online sign-in and the full workflow. This round of creation checks kept the guest's internet access off. |
+| Windows local version match | Official material download and verification, automatic machine creation, first launch, cold start and test file retention | Final workbench registration after the fix, and complete first use |
+| Linux same-distribution match | Image identity, install source and template; native window, reinstall and uninstall data retention in an Ubuntu 22.04 container; and real browser startup | Full KVM first install, project sharing, physical desktop input and official Claude sign-in |
+| Standalone Ubuntu 22.04 | Real installation on Mac ARM64, cold start, project sharing, terminal, browser, editor, Chinese input, audio, clipboard, Desktop installation and welcome page, network pause and proxy interruption, original disk persistence | First install on real Windows WHPX / Linux KVM machines, official Claude sign-in and business sessions |
 
-多账号、手机和原生 Desktop 文件操作还需各自的应用级检查，分别见[多账号与额度](accounts.md)、[手机连接](mobile.md)和[Claude Desktop](desktop.md)。
+Multiple accounts, phone and native Desktop file operations still need their own app-level checks. See [Multiple accounts and usage limits](accounts.md), [Phone connection](mobile.md) and [Claude Desktop](desktop.md) respectively.
 
-## 首次创建环境
+## First creation of the environment
 
-1. 按[安装与首次启动](installation.md)安装适合主机的 Cage，创建或解锁 Cage 账户。
-2. 在独立初始化界面的“系统与存储”中选择客机系统和存储位置。
-3. 配置自己的代理。选择“自动匹配本机系统版本”时，Cage 检测主机版本，复用已有镜像或下载匹配的官方镜像。手动选择 macOS 时可使用已有官方 IPSW 或下载 Apple 兼容恢复镜像，Windows 使用 Microsoft 官方 ISO，Debian 由 Cage 下载匹配架构的基础镜像。
-4. Cage 自动准备客机账户和开发组件。macOS 自动配置登录；系统要求的权限提示由你确认。Windows 的首次系统授权见下文。
-5. 安装、必要授权和网络检查完成后，点击“进入工作台”，再打开项目、新建终端，并在 Cage 内完成 Claude 授权。以后启动复用原系统、工具、文件和登录资料。初始化中断后重新打开仍回到原流程。
+1. Install Cage for your host following [Installation and first launch](installation.md), then create or unlock your Cage account.
+2. On the separate initialization screen, choose the guest system and storage location under "System and storage".
+3. Set up your own proxy. When you choose "Match this computer's system version automatically", Cage detects the host version and reuses an existing image or downloads the matching official image. When you choose macOS manually, you can use an existing official IPSW or download an Apple-compatible recovery image. Windows uses the official Microsoft ISO, and for Debian, Cage downloads a base image for the matching architecture.
+4. Cage prepares the guest account and development components automatically. macOS sign-in is configured automatically, and you confirm the permission prompts that the system requires. For first-time system authorization on Windows, see below.
+5. After installation, required authorization and the network checks are complete, click "Enter the workbench". Then open a project, start a new terminal, and complete Claude authorization inside Cage. From then on, startup reuses the original system, tools, files and sign-in data. If initialization is interrupted, reopening it still returns to the original flow.
 
-同一主机平台使用一个 Cage 安装包，无需为不同客机另装一套 Cage。macOS 与 Windows 的系统介质从厂商获取，按各自许可使用；Cage 不附赠操作系统授权，也不会自动导入主机的系统账户、Claude 登录、浏览器资料或 SSH 密钥。
+The same host platform uses one Cage installer, so you do not need a separate Cage installation for each guest. The system media for macOS and Windows come from the vendors and are used under their own licenses. Cage does not include operating system licenses, and it does not automatically import the host's system account, Claude sign-in, browser data or SSH keys.
 
-安装卡片会显示当前阶段。下载镜像时可查看已下载大小、总量、百分比和实时采样速度；校验镜像单独显示进度。系统恢复和安装工具期间，卡片显示正在处理的步骤；这些步骤没有可测总量时不显示百分比。中断后可点击“继续安装”，复用原安装记录和已保存的下载。
+The install card shows the current stage. During image download, you can see the downloaded size, total, percentage and sampled speed in real time, and image verification shows its progress separately. During system recovery and tool installation, the card shows the step in progress. Steps without a measurable total do not show a percentage. After an interruption, click "Continue installation" to reuse the original install record and saved downloads.
 
-### 直接安装 Ubuntu 22.04
+### Install Ubuntu 22.04 directly
 
-首次创建时，从“客户机系统”选择 **Ubuntu 22.04**。此选项独立于主机发行版：Mac 下载 ARM64 镜像，Windows 和 Linux x86_64 主机下载 amd64 镜像。无需提供 ISO 或输入镜像摘要，Cage 使用固定版本的 Canonical 官方云镜像并校验 SHA-256。
+On first creation, select **Ubuntu 22.04** from "Guest system". This option is independent of the host distribution: a Mac downloads the ARM64 image, and Windows and Linux x86_64 hosts download the amd64 image. You do not need to provide an ISO or enter an image digest. Cage uses a fixed-version official Canonical cloud image and verifies its SHA-256.
 
-镜像约 669–697 MiB，创建前至少预留 17 GiB；虚拟磁盘按实际写入增长，后续项目和工具仍需额外空间。安装后使用同一工作台中的终端、Chrome for Testing、编辑器和按需安装的 Claude Desktop。
+The image is about 669–697 MiB, and you should reserve at least 17 GiB before creating it. The virtual disk grows with what is actually written, and later projects and tools still need extra space. After installation, use the terminal, Chrome for Testing, the editor and Claude Desktop (installed on demand) in the same workbench.
 
-安装中断后继续使用原镜像、安装身份和磁盘。完成后普通启动仍为 Ubuntu；来源资料缺失或不一致时提示恢复原资料，不自动改用 Debian。已有环境不能通过这个选项直接覆盖或转换系统。当前开发构建的实机范围见本页上方的验证范围表，旧安装包仍以其发行说明为准。
+If installation is interrupted, continue with the original image, install identity and disk. After completion, normal startup is still Ubuntu. If the source material is missing or inconsistent, Cage asks you to restore the original material and does not switch to Debian automatically. Existing environments cannot be overwritten or converted to another system directly through this option. For the real-machine scope of the current development build, see the verification table above on this page. Older installers are still governed by their release notes.
 
-<a id="克隆本机系统"></a>
+<a id="clone-this-computers-system"></a>
 
-### 自动匹配本机系统版本
+### Match this computer's OS version automatically
 
-首次创建时可选择“自动匹配本机系统版本”。Cage 检测本机系统版本，优先复用缓存或下载目录中的匹配镜像，缺少时自动从系统厂商下载，再安装到独立、可长期保存的客机中。主机的应用、个人文件和登录状态不会复制到客机。自动识别覆盖匹配 IPSW、同名官方 ESD 和 Linux 镜像，已有 Windows ISO 可在“Windows 11”选项中选择。
+On first creation, you can choose "Match this computer's system version automatically". Cage detects the host's system version, prefers reusing a matching image from the cache or download folder, downloads it from the system vendor if it is missing, and then installs it into an independent, long-lived guest. The host's apps, personal files and sign-in state are not copied into the guest. Automatic detection covers matching IPSW files, official ESD files of the same name, and Linux images. An existing Windows ISO can be selected under the "Windows 11" option.
 
-选择后会显示目标系统、本机与客机构建号、预计系统下载量和可用空间要求。macOS 匹配相同版本和构建号。Windows 匹配发行版本、版本类型和语言，官方介质的补丁号可以与本机不同，两个构建号会同时显示。Windows 使用压缩系统文件，Linux 使用对应发行版的最小云镜像，虚拟磁盘按实际写入增长。
+After you choose, the page shows the target system, the host and guest build numbers, the expected system download size and the space requirement. macOS matches the same version and build number. Windows matches the release version, edition and language. The patch number of official media can differ from the host, and both build numbers are shown. Windows uses compressed system files, Linux uses the minimal cloud image of the matching distribution, and the virtual disk grows with what is actually written.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/host-system-clone.png" target="_blank" rel="noopener"><img src="../../www/public/docs/screenshots/host-system-clone.png" alt="本机系统匹配的版本、已有材料与空间预览" width="1280" height="720" loading="lazy" decoding="async" /></a>
-  <figcaption>本机版本、安装材料与空间预览。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-09 · 独立首装验收；所示构建使用“克隆本机系统”名称，当前入口为“自动匹配本机系统版本”。<a href="../../www/public/docs/screenshots/host-system-clone.png" target="_blank" rel="noopener">查看原图（1280 × 720） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/host-system-clone.png" target="_blank" rel="noopener"><img src="../../www/public/docs/screenshots/host-system-clone.png" alt="Preview of the matching version, existing materials and space for the host system" width="1280" height="720" loading="lazy" decoding="async" /></a>
+  <figcaption>Preview of the host version, installation materials and space. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-09 · standalone first-install verification. The build shown uses the name "Clone host system", while the current entry is "Match this computer's system version automatically". <a href="../../www/public/docs/screenshots/host-system-clone.png" target="_blank" rel="noopener">View original (1280 × 720) ↗</a></figcaption>
 </figure>
 
-在 macOS 上使用此选项需要 Apple Silicon 和 macOS 26.4 或更新版本，当前工作台的文件系统扩展依赖该版本提供的只读挂载能力。Windows 需要 Windows 11 x64 和完整 Hyper-V。Linux 支持 Debian 12/13、Ubuntu 22.04/24.04 x86_64。
+Using this option on macOS requires Apple Silicon and macOS 26.4 or later, because the workbench's file system extension depends on the read-only mount capability provided in that version. Windows requires Windows 11 x64 and full Hyper-V. Linux supports Debian 12/13 and Ubuntu 22.04/24.04 x86_64.
 
-Ubuntu 22.04 主机选择“自动匹配本机系统版本”时，从官方校验过的云镜像创建全新的 Ubuntu 22.04 客机；不会复制主机的账户、文件或登录状态。Ubuntu 客机使用独立安装的 Chrome for Testing 和 noVNC，版本及摘要由 Cage 固定，浏览器保留沙箱、扩展和受控网络。
+When an Ubuntu 22.04 host selects "Match this computer's system version automatically", Cage creates a brand-new Ubuntu 22.04 guest from the officially verified cloud image. It does not copy the host's accounts, files or sign-in state. The Ubuntu guest uses an independently installed Chrome for Testing and noVNC. Versions and digests are pinned by Cage, and the browser keeps its sandbox, extensions and controlled network.
 
-Windows 在确认系统提权后自动创建磁盘、安装系统和建立客机账户。macOS 恢复完成后继续进入 Cage 的首次权限引导。工作台组件按需获取，完整离线安装需要系统材料和开发组件均已在本机准备好。
+Windows automatically creates the disk, installs the system and sets up the guest account after you confirm the system elevation prompt. After macOS recovery completes, it continues into Cage's first-time permission guide. Workbench components are fetched on demand. A full offline install requires the system materials and development components to be prepared on this computer in advance.
 
-下载中断时点击“继续安装”，程序复用原安装身份和已下载部分。找不到匹配版本时会说明缺少的材料，可选择已有官方镜像。创建过程及恢复材料缓存位于所选环境存储位置。
+If a download is interrupted, click "Continue installation", and the program reuses the original install identity and the part already downloaded. If no matching version is found, it explains which materials are missing, and you can choose an existing official image. The creation process and the cache of recovery materials are located in the selected environment storage location.
 
-### Mac 的首次系统授权
+### First system authorization on Mac
 
-先注册 Cage 用户名和密码，再选择 macOS 客机。Cage 用同一套账密创建客机普通账户，并加密保管安装凭据。用户名需以小写英文字母开头，使用 1–31 个小写字母、数字或下划线，不能使用系统保留名称；密码使用 8–256 个英文键盘可输入的字符。安装中断后点击「继续安装」复用原安装身份和凭据，原磁盘和文件保留。
+Register a Cage username and password first, then choose the macOS guest. Cage uses the same credentials to create a regular guest account, and stores the install credentials encrypted. The username must start with a lowercase English letter and use 1–31 lowercase letters, digits or underscores. It cannot use a reserved system name. The password uses 8–256 characters that can be typed on an English keyboard. If installation is interrupted, click "Continue installation" to reuse the original install identity and credentials, while the original disk and files are kept.
 
-在「设置 → 账户」修改共用密码时，会同步客机账户、登录钥匙串、首次授权密码和自动登录记录。客机关闭或同步中断时，Cage 保留待同步记录，下次启动继续处理；完成前客机可能仍需原密码，暂时不能再次改密。已有客机保留用户名与用户目录，设置共用账密时 Cage 使用该用户名。用户名用于客机后会固定。
+When you change the shared password under "Settings → Account", the guest account, login keychain, first-authorization password and auto sign-in record are synced together. If the guest is shut down or the sync is interrupted, Cage keeps the pending sync record and continues at the next launch. Until it completes, the guest may still need the original password, so you cannot change the password again yet. An existing guest keeps its username and home directory, and when a shared credential is set, Cage uses that username. The username is fixed once it is used for the guest.
 
-安装完成后，Cage 自动启动和登录虚拟 Mac，跳过可选的首次设置页面，并显示需要确认的系统权限：
+After installation, Cage starts and signs in to the virtual Mac automatically, skips the optional first-time setup page, and shows the system permissions that need confirmation:
 
-1. 在客机的「窗口录制」「辅助功能」设置里允许 Cage Guest Window；若系统要求「退出并重新打开」，按提示完成。引导逐项显示「已验证」「等待确认」和「稍后确认」，当前步骤提供打开设置页的按钮。若页面被关闭，可重新打开；权限读取中断时保留上次结果，并显示重新检查入口。
-2. Cage 自动打开「文件系统扩展」面板，打开 `macFUSE` 和 `macFUSE (local)` 两个开关即可。若页面被关闭，点击 Cage 的「打开文件系统扩展」按钮直接重新打开。Cage 自动检查只读测试卷能否挂载和卸载；只打开其中一项不能完成验证。三项权限通过后，Cage 先完成系统设置收尾，再继续工作区授权和联网检查。
+1. In the guest's "Screen & System Audio Recording" and "Accessibility" settings, allow Cage Guest Window. If the system asks you to "Quit and Reopen", follow the prompt. The guide shows "Verified", "Waiting for confirmation" and "Confirm later" item by item, and the current step provides a button to open the settings page. If the page is closed, you can reopen it. If reading permissions is interrupted, the last result is kept and a recheck entry is shown.
+2. Cage automatically opens the "File System Extensions" panel. Turn on both switches, `macFUSE` and `macFUSE (local)`. If the page is closed, click Cage's "Open file system extensions" button to reopen it directly. Cage automatically checks whether a read-only test volume can be mounted and unmounted, and turning on only one of the switches cannot complete verification. After all three permissions pass, Cage finishes the system settings first, then continues with workspace authorization and the network check.
 
-如果「安装与检查」页提示默认工作区需要授权，点击「打开工作区授权」，核对文件夹后，在客机对话框中点击 `Use Project`，让终端和编辑器使用这个目录。可以取消，也可以在请求过期后重新申请。
+If the "Install and check" page says the default workspace needs authorization, click "Open workspace authorization", verify the folder, then click `Use Project` in the guest dialog so that the terminal and editor use this directory. You can cancel, or request it again after the request expires.
 
-如果系统没有自动展开面板，可手动进入「General（通用）→ Login Items & Extensions（登录项与扩展）→ By Category（按类别）→ File System Extensions（文件系统扩展）」。如果进入「macFUSE Extensions」后开关点击无反应，点击 Done 返回，改用上述入口。macOS 的 By Application（按应用）入口存在开关无法启用的问题，见 [macFUSE 维护者说明](https://github.com/macfuse/macfuse/issues/1194)。
+If the system does not expand the panel automatically, go to "General → Login Items & Extensions → By Category → File System Extensions" manually. If the switches do not respond after you open "macFUSE Extensions", click Done to return and use the entry above instead. The "By Application" entry in macOS has a problem where the switches cannot be turned on. See the [macFUSE maintainer note](https://github.com/macfuse/macfuse/issues/1194).
 
-这些权限都在虚拟 Mac 内确认，首次设置期间客机断网。Apple 询问管理员身份时，用户名填 `cagesetup`，密码与 Cage 账户相同；也可点选密码框后使用「填写授权密码」。已经允许辅助功能后，后续系统授权弹窗仍可使用该按钮；密码填入后，由你点击弹窗中的按钮确认授权。设置画面的提示和操作按钮保留在客机画面之外，可以随时返回指引。启动、密码同步、读取权限或收尾失败时，引导显示具体原因与对应的重试入口。
+All these permissions are confirmed inside the virtual Mac, and the guest is offline during first-time setup. When Apple asks for administrator identity, enter `cagesetup` as the username and use the same password as the Cage account. You can also click the password field and use "Fill in authorization password". Once Accessibility is allowed, this button stays available for later system authorization pop-ups. After the password is filled in, you click the button in the pop-up to confirm authorization. The prompts and action buttons on the settings screen stay outside the guest screen, so you can return to the guide at any time. When startup, password sync, reading permissions or finishing fails, the guide shows the specific reason and the matching retry entry.
 
-系统设置收尾时，Cage 会撤销临时管理员并关闭这台客机的首次设置入口。初始化页面随后提供「连接工作区并继续检查」；需要文件夹授权时，点击「打开工作区授权」，在 Cage 显示的授权窗口中核对目录并点击 Use Project（使用项目），验证通过后继续联网检查。操作详情显示失败原因及各项检查证据；只有全部关键检查通过，才能点击「进入工作台」。
+When finishing the system settings, Cage revokes the temporary administrator and closes the first-time setup entry for this guest. The initialization page then offers "Connect to the workspace and continue checks". If folder authorization is needed, click "Open workspace authorization", verify the directory in the authorization window that Cage shows, click Use Project, and after verification passes, continue the network check. Operation details show the reasons for failure and the evidence for each check. Only when all critical checks pass can you click "Enter the workbench".
 
-以后启动自动登录；主动锁屏或注销时，从「登录客机账户」登录，必要时点击「查看客机密码」。FileVault 或其他系统设置阻止自动登录时，保留手动入口。账户、权限和文件随客机磁盘保留。客机系统自动登录使开机后账户直接可用，主机账户和 Cage 的解锁负责保护访问入口。
+Later launches sign in automatically. When you lock the screen or log out manually, sign in from "Sign in to the guest account", and click "Show guest password" if needed. If FileVault or other system settings block automatic sign-in, keep the manual entry. Accounts, permissions and files are kept on the guest disk. Automatic sign-in on the guest means the account is ready as soon as the system starts. The host account and Cage's unlock protect the access entry.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/macos-first-permissions.png" target="_blank" rel="noopener"><img src="../../www/public/docs/screenshots/macos-first-permissions.png" alt="Mac 客机首次权限引导与文件系统扩展设置，授权已通过" width="1280" height="720" loading="lazy" decoding="async" /></a>
-  <figcaption>Mac 客机首次权限引导与文件系统扩展设置，画面显示授权已通过。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · macOS 26.5 客机 · 2026-11-09 · 独立首装验收，未登录 Claude。<a href="../../www/public/docs/screenshots/macos-first-permissions.png" target="_blank" rel="noopener">查看原图（1280 × 720） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/macos-first-permissions.png" target="_blank" rel="noopener"><img src="../../www/public/docs/screenshots/macos-first-permissions.png" alt="Mac guest first-permission guide and file system extension settings, with authorization passed" width="1280" height="720" loading="lazy" decoding="async" /></a>
+  <figcaption>Mac guest first-permission guide and file system extension settings, showing authorization passed. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · macOS 26.5 guest · 2026-11-09 · standalone first-install verification, not signed in to Claude. <a href="../../www/public/docs/screenshots/macos-first-permissions.png" target="_blank" rel="noopener">View original (1280 × 720) ↗</a></figcaption>
 </figure>
 
-### Windows 的首次系统授权
+### First system authorization on Windows
 
-安装 Windows 客机时，系统会询问是否允许 Cage 完成虚拟机设置和安装管理助手。确认这一系统提权提示后，日常打开 Cage 继续使用普通权限；助手只管理登记给当前用户的 Cage 客机，不把你加入具有全部虚拟机管理权的宿主组。取消授权会保留已有安装进度和磁盘，可以之后继续。
+When installing a Windows guest, the system asks whether to allow Cage to complete the virtual machine setup and install the management helper. After you confirm this system elevation prompt, daily use of Cage continues with regular permissions. The helper only manages the Cage guest registered to the current user, and does not add you to the host group that has full virtual machine management rights. Cancelling the authorization keeps existing install progress and the disk, so you can continue later.
 
-Windows 客机的系统账户和应用登录独立保存。管理助手未连接或原客机配置变化时，Cage 会提示核对原环境；恢复助手或更新 Cage 不应重建账户、替换原系统盘或初始化个人目录。
+The Windows guest's system account and app sign-ins are stored separately. If the management helper is not connected or the original guest configuration has changed, Cage asks you to verify the original environment. Restoring the helper or updating Cage should not rebuild the account, replace the original system disk or initialize the personal directory.
 
-### 使用 Windows 本机 ISO
+### Use a local Windows ISO
 
-选择 Microsoft 官方 Windows 11 x64 ISO 后，在系统授权打开的安装窗口中设置客机初始本地管理员。默认名称为 `CageAdmin`，可以修改。请保存这个账户的密码，后续登录客机和继续安装时都需要使用。
+After you select the official Microsoft Windows 11 x64 ISO, set the guest's initial local administrator in the installation window that opens after system authorization. The default name is `CageAdmin`, and you can change it. Save this account's password, because you need it later to sign in to the guest and to continue installation.
 
-Cage 将账户信息写入具有私有权限的安装应答盘，Windows 首次设置据此创建本地管理员并跳过联网账户引导。客机保持零常规 Hyper-V 网卡，完成组件置备后使用 Cage 网络通道。应答盘在确认客机已完成首次设置、可以通过管理员账户连接后清理。
+Cage writes the account information to an installation answer disk with private permissions. Windows first-time setup uses it to create the local administrator and skip the online account step. The guest keeps zero regular Hyper-V network adapters, and after component provisioning it uses the Cage network channel. The answer disk is removed after confirming that the guest has completed first-time setup and can be reached through the administrator account.
 
-1. 在“虚拟机连接”（VMConnect）窗口选择 Windows 版本、目标磁盘，确认许可并完成区域设置。本轮 PowerShell 创建窗口会自动关闭。
-2. 使用安装前设置的本地管理员登录客机桌面，回到 Cage 点击“已进入桌面，继续安装”。
-3. 确认系统授权，在 PowerShell 安装窗口再次输入客机管理员账户。保持该窗口开启，等待组件下载、安装和配置结束。Cage 会创建用于工作台的专用普通账户，并重启客机完成首次登录。
-4. 回到 Cage 完成网络检查，再进入工作台。
+1. In the "Virtual Machine Connection" (VMConnect) window, select the Windows version and target disk, accept the license, and complete the region setup. The PowerShell creation window closes automatically in this round.
+2. Sign in to the guest desktop with the local administrator set before installation, then return to Cage and click "At the desktop, continue installation".
+3. Confirm the system authorization, then enter the guest administrator account again in the PowerShell installation window. Keep that window open and wait for the components to finish downloading, installing and configuring. Cage creates a dedicated regular account for the workbench and restarts the guest to complete the first sign-in.
+4. Return to Cage to complete the network check, then enter the workbench.
 
-已有客机继续使用原账户和系统盘。若安装由旧版本创建，使用当时创建的客机管理员继续。若仍停在 Windows 首次设置的强制联网页面，可以在 VMConnect 中按 `Shift+F10`，先检查 `%WINDIR%\System32\OOBE\BypassNRO.cmd` 是否存在。仅在该脚本存在时运行它，重启后选择离线继续并创建本地账户。各 Windows 构建提供的入口不同，缺少该脚本时应保留虚拟磁盘并记录 Windows 构建号，进一步核查该版本的离线设置方式。
+Existing guests continue to use their original accounts and system disks. If the installation was created by an older version, continue with the guest administrator that was created at the time. If you are still on the forced online sign-in page of Windows first-time setup, you can press `Shift+F10` in VMConnect and first check whether `%WINDIR%\System32\OOBE\BypassNRO.cmd` exists. Run it only if that script exists. After a restart, choose to continue offline and create a local account. Each Windows build provides different entries. If the script is missing, keep the virtual disk, record the Windows build number, and check the offline setup method for that version further.
 
-安装卡片区分等待 Windows 首次设置、组件下载和组件配置。原用户注册助手失败时，操作详情会保留 `enrollment_pipe_listen_failed` 或 `enrollment_pipe_accept_failed` 及 Win32 错误码，便于定位继续安装的问题。
+The install card distinguishes waiting for Windows first-time setup, component download and component configuration. When the original user registration helper fails, the operation details keep `enrollment_pipe_listen_failed` or `enrollment_pipe_accept_failed` and the Win32 error code, to help locate the problem when continuing the installation.
 
-## 下载量与磁盘空间
+## Download size and disk space
 
-系统镜像的下载大小和虚拟磁盘容量是两件事。Debian 基础镜像约 320–325 MiB，初始虚拟磁盘容量上限为 24 GiB；macOS 和 Windows 的安装介质与系统占用更大，具体以所选版本为准。创建前请为镜像、系统盘、开发工具、项目产物和更新备份留足空间。
+The download size of a system image and the capacity of the virtual disk are two different things. The Debian base image is about 320–325 MiB, and the initial virtual disk is capped at 24 GiB. macOS and Windows installation media and system footprints are larger, so check the selected version for specifics. Before creating, reserve enough space for the image, system disk, development tools, project outputs and update backups.
 
-环境可以放在独立数据盘。应用安装目录、Cage 配置目录和环境存储分别管理；共享项目仍在你选择的原目录。选盘和换盘步骤见[环境存储](maintenance.md#迁移环境到另一块磁盘)。
+The environment can be placed on a separate data disk. The app's install directory, the Cage configuration directory and environment storage are managed separately, and shared projects remain in the original folders you choose. For steps on choosing and changing disks, see [Environment storage](maintenance.md#move-the-environment-to-another-disk).
 
-## 打开项目与使用原生工具
+## Open projects and use native tools
 
-选择项目后，在工作台里使用客机对应的终端和工具：macOS 程序在虚拟 Mac 内编译运行，Windows 程序在 Windows 客机内编译运行，Debian 与 Ubuntu 使用 Linux 工具链。Windows 客机提供 PowerShell 7，并保留系统自带的 Windows PowerShell 5.1 供旧脚本使用。
+After you select a project, use the terminal and tools that match the guest in the workbench. macOS programs are compiled and run inside the virtual Mac, Windows programs are compiled and run inside the Windows guest, and Debian and Ubuntu use Linux toolchains. The Windows guest provides PowerShell 7 and keeps the built-in Windows PowerShell 5.1 for older scripts.
 
-浏览器、编辑器和 Claude Desktop 继续从 Cage 工作台进入。Claude Desktop 使用客机对应的官方应用，安装和登录资料保存在客机内；系统首次登录和必要授权完成后，日常操作无需切换到另一个完整桌面。
+The browser, editor and Claude Desktop are still opened from the Cage workbench. Claude Desktop uses the official app for the guest, and its install and sign-in data are stored inside the guest. After the first system sign-in and the necessary authorization are complete, daily use does not require switching to another full desktop.
 
-共享目录中的修改和删除直接作用于主机原文件，重要项目应使用版本控制或备份。只共享默认工作区和明确授权的目录，项目内的 Git 元数据可读写；切换项目继续使用同一环境，不会创建另一台虚拟机。操作方法见[项目、终端与文件](workbench.md)。
+Changes and deletions in shared directories act directly on the original host files, so important projects should use version control or backups. Only the default workspace and explicitly authorized directories are shared, and Git metadata inside a project can be read and written. Switching projects continues in the same environment and does not create another virtual machine. For how to operate, see [Projects, terminal and files](workbench.md).
 
-macOS 默认工作区使用与其他项目相同的文件夹授权。主界面提示项目尚未连接时，点击该项目下的“连接项目”，在 Cage 显示的客机授权窗口中确认，再点“验证授权”。连接完成后，普通终端、Claude Code 和编辑器使用同一共享目录。
+The macOS default workspace uses the same folder authorization as other projects. If the main interface shows that a project is not connected yet, click "Connect project" under that project, confirm in the guest authorization window that Cage shows, then click "Verify authorization". After connecting, the regular terminal, Claude Code and the editor use the same shared directory.
 
-如果无法显示授权窗口，在虚拟 Mac 的「系统设置 → 隐私与安全性 → 屏幕与系统音频录制」中允许 Cage Guest Window，并按系统提示重新打开助手。如果能看到窗口但无法点击，在同一设置页的「辅助功能」中允许 Cage Guest Window，再重新点击。
+If the authorization window cannot be shown, allow Cage Guest Window in the virtual Mac's "System Settings → Privacy & Security → Screen & System Audio Recording", then reopen the helper as the system prompts. If you can see the window but cannot click it, allow Cage Guest Window under "Accessibility" on the same settings page, then click again.
 
-较早创建的 macOS 默认工作区会话可能仍绑定客机私有目录。恢复此类会话时，Cage 会显示原目录提示，保留其中的历史和文件。需要与主机共享文件时，从默认工作区新建会话。
+Default workspace sessions on macOS created earlier may still be bound to the guest's private directory. When you restore such a session, Cage shows a notice about the original directory and keeps the history and files in it. To share files with the host, create a new session from the default workspace.
 
-## 已有环境与更换系统
+## Existing environments and changing the system
 
-更新 Cage、重装应用或重新启动不会更换客机系统，也不会清空原磁盘。已经使用 Debian 的环境继续保留原来的工具、文件和登录资料。
+Updating Cage, reinstalling the app or restarting does not change the guest system or erase the original disk. Environments already using Debian keep their original tools, files and sign-in data.
 
-更换客机系统需要独立安装，新系统有自己的账户、应用和登录状态。保留原环境的完整备份，并为新系统准备存储空间；不要把选择系统当作对原磁盘的就地转换。备份 macOS 时需一并保留虚拟硬件身份和辅助存储，Windows 则需保留虚拟机配置、系统盘及关联的虚拟 TPM 状态。完整步骤见[备份、重装与卸载](maintenance.md#备份重装与卸载)。
+Changing the guest system requires a separate install, and the new system has its own account, apps and sign-in state. Keep a full backup of the original environment and prepare storage space for the new system. Do not treat choosing a system as an in-place conversion of the original disk. When backing up macOS, keep the virtual hardware identity and auxiliary storage too. For Windows, keep the VM configuration, system disk and associated virtual TPM state. For full steps, see [Back up, reinstall and uninstall](maintenance.md#back-up-reinstall-and-uninstall).
 
-## 云端和手机如何配合
+## How cloud and phone work together
 
-云端模式运行在自己的 Linux 服务器上，使用容器，无需服务器提供 KVM；它与本机客机系统的选择分开。通过侧栏 SSH 进入远端后，项目、程序和网络出口都属于所选服务器，本机虚拟机可以保持关闭。见[云端部署与 SSH](cloud.md)。
+Cloud mode runs on your own Linux server, using containers, without requiring KVM on the server. It is separate from the choice of local guest system. After you enter the remote host through the sidebar SSH, projects, programs and network exit all belong to the chosen server, and the local virtual machine can stay off. See [Cloud deployment and SSH](cloud.md).
 
-手机用于连接电脑上的 Cage，接续 Claude Code 会话、处理工具审批和操作远程窗口，任务仍在电脑上运行。手机不会安装上述桌面客机系统；连接方式见[手机连接与远程会话](mobile.md)。
+The phone is used to connect to Cage on the computer, resume Claude Code sessions, approve tools and operate remote windows, while tasks still run on the computer. The phone does not install the desktop guest systems above. For connection methods, see [Phone connection and remote sessions](mobile.md).
 
-macOS 客机的手机 Desktop 共享电脑 Cage 中的同一个 Claude 窗口和登录状态。需要通过外部浏览器登录 Claude 时，在电脑 Cage 中完成登录，手机随后继续使用该登录状态。虚拟 Mac 锁屏或切换系统账户后，原手机图形会话结束，需要登录原客机账户后重新打开。
+The phone Desktop for a macOS guest shares the same Claude window and sign-in state as Cage on the computer. When you need to sign in to Claude through an external browser, complete the sign-in in Cage on the computer, and the phone then continues using that sign-in state. When the virtual Mac locks the screen or switches system accounts, the original phone graphics session ends, and you need to sign in to the original guest account and reopen it.
 
-## 环境存储与项目恢复
+## Environment storage and project recovery
 
-环境存储所在磁盘未连接或迁移尚未完成时，工作台会提示“环境存储需要恢复”。连接原磁盘后，在设置的项目与环境页面点击“重试恢复”；Windows 如提示系统助手需要修复，使用“修复系统助手并恢复”，完成系统授权后继续。恢复完成前不要另建环境或删除原虚拟磁盘。
+When the disk holding environment storage is not connected, or migration has not finished, the workbench shows "Environment storage needs recovery". After you connect the original disk, click "Retry recovery" on the projects and environment page in settings. On Windows, if it says the system helper needs repair, use "Repair system management helper and recover", and continue after completing system authorization. Before recovery completes, do not create another environment or delete the original virtual disk.
 
-macOS 项目连接遇到权限问题时，按提示打开对应的文件共享、屏幕录制或辅助功能授权入口。完成授权并关闭维护窗口后，Cage 会重新检查项目连接。需要客机登录时，先登录并解锁普通账户，再重试项目。
+When a macOS project connection hits a permission problem, follow the prompt to open the corresponding file sharing, screen recording or accessibility authorization entry. After completing authorization and closing the maintenance window, Cage rechecks the project connection. If guest sign-in is needed, sign in and unlock the regular account first, then retry the project.
 
-旧版默认项目若位于 Cage 配置目录中，升级后保留该目录中的文件与环境身份。请按设置页显示的旧目录找到项目，将其移至配置目录之外的专用项目文件夹后，再从工作台打开。
+If an old default project is in the Cage configuration directory, the files and environment identity in that directory are kept after the upgrade. Find the project in the old directory shown on the settings page, move it to a dedicated project folder outside the configuration directory, then open it from the workbench.

@@ -1,169 +1,169 @@
-# 常见问题与恢复
+# Troubleshooting and recovery
 
-先找到你当前遇到的现象。修复后优先使用页面中的重试、重检或恢复入口；删除配置会丢失诊断线索，也可能影响虚拟磁盘，不作为常规排障步骤。
+Start by finding the symptom you are seeing. After a fix, use the retry, recheck or recovery options on the page first. Deleting the config loses diagnostic clues and may affect the virtual disk, so it is not a routine troubleshooting step.
 
-## 任务退出 137 或重任务后内部断网
+## Task exits with 137, or internal network drops after heavy tasks
 
-137 通常表示进程被强制终止，单凭退出码不能判断是否内存不足。到“设置 → 环境与恢复 → 计算资源”查看本次环境启动后的 OOM 计数、内存上限和用量，再导出诊断日志。OOM 计数增加可确认客机曾因内存不足终止进程；没有增加时还需排查超时、任务取消或其他强制终止来源。
+137 usually means the process was forcibly killed. The exit code alone can't show whether memory ran out. Go to "Settings → Environment and recovery → Compute resources" to check the OOM count, memory limit and usage since this environment started. Then export a diagnostic log. If the OOM count went up, the guest killed a process for lack of memory. If it didn't, check for timeouts, task cancellation or other sources of forced termination.
 
-自动资源管理会在启动容量内增长和回收内存。运行中的旧环境如仍使用较小上限，可以先保存内容，再点击“重启并应用自动资源配置”；重启会结束运行中的命令。达到上限后应降低渲染或编译并行量，自动管理无法让有限内存承载无限任务。
+Automatic resource management grows and reclaims memory within the startup capacity. If a running older environment still uses a smaller limit, save your content first, then click "Restart and apply automatic resource settings". The restart stops running commands. When you hit the limit, reduce parallel rendering or build jobs. Automatic management cannot make limited memory handle unlimited work.
 
-重任务可能让客机或浏览器无法及时响应联网检查，触发 Cage 收回内部外网授权。恢复任务会自动进行完整复检，检查全部通过才恢复；手动暂停不会自动解除。网络仍未恢复时，查看具体失败项、所选代理和出口规则，不要仅凭断网现象判断主机网络故障。资源指标与平台范围见[维护与资源](guide/maintenance.md)。
+Heavy tasks can stop the guest or browser from responding to network checks in time. That makes Cage revoke internal internet access authorization. When the task recovers, a full recheck runs automatically, and access is restored only if all checks pass. A manual pause is not lifted automatically. If the network still does not recover, check the failed items, the selected proxy and the exit rules. Don't assume a host network failure just from the disconnection. For resource metrics and platform scope, see [Maintenance and resources](guide/maintenance.md).
 
-## 下载或安装受阻
+## Download or installation problems
 
-**GitHub 显示 404，或看不到安装包。** 仓库与公开发布的附件无需仓库授权。从[项目主页](https://lee-xeo.github.io/Claude-Cage/#download)点击“下载应用”并选择平台，检查网络与链接是否完整。macOS 使用 `.dmg`，Windows 使用 `.exe` 安装器，Debian/Ubuntu Linux 使用 `.deb`。Release 中的源码压缩包用于开发，不能当作安装包使用；尚无公开安装包的平台会提供安装与构建说明。
+**GitHub shows a 404, or the installer is missing.** The repository and public release attachments don't require repository access. On the [project homepage](https://lee-xeo.github.io/Claude-Cage/#download), click "Download the app" and choose your platform. Check that your network and the link are complete. macOS uses `.dmg`, Windows uses the `.exe` installer, and Debian/Ubuntu Linux uses `.deb`. Source archives in a Release are for development and can't be used as installers. Platforms without a public installer have install and build instructions instead.
 
-**Mac 提示应用损坏、无法验证或不支持。** 确认使用 Apple Silicon、macOS 14+，重新下载对应 Release 的完整安装包，并核对该 Release 的签名、公证说明和校验文件。保留系统提示的原文反馈问题；不要通过关闭 Gatekeeper 或删除隔离属性来掩盖发行问题。
+**The Mac says the app is damaged, can't be verified, or isn't supported.** Confirm you have Apple Silicon and macOS 14+. Download the complete installer for the matching Release again, and check that Release's signing and notarization notes and checksum files. When you report the problem, keep the system message exactly as shown. Don't hide a release problem by turning off Gatekeeper or removing the quarantine attribute.
 
-**Windows 显示未知发布者，或 Linux 无法安装。** Windows 未签名预览包的身份限制与实测范围见 [Windows 指南](windows.md)和对应发行说明；不要把它当作已签名版本。Linux 先确认使用 Debian 12 / Ubuntu 24.04 x86_64，通过 APT 安装 `.deb` 的依赖，并按 [Linux 指南](linux.md)检查 KVM 权限。
+**Windows shows an unknown publisher, or Linux won't install.** For the publisher limits and tested scope of unsigned Windows preview builds, see the [Windows guide](windows.md) and the matching release notes. Don't treat it as a signed version. On Linux, first confirm you're using Debian 12 / Ubuntu 24.04 x86_64. Install the `.deb` dependencies through APT, then check KVM permissions as described in the [Linux guide](linux.md).
 
-**提示缺少代理核心。** 完整应用随附 Mihomo。重新安装对应平台的完整安装包，不要只拷贝其中的命令行文件。请使用对应平台的完整安装包。
+**The proxy core is missing.** The full app includes Mihomo. Reinstall the full installer for your platform, and don't copy only the command-line files from it. Use the full installer for your platform.
 
-## 已有账户却再次显示创建账户
+## Existing account shows the create-account page again
 
-创建页面表示当前配置目录没有账户文件。先确认是否通过另一套配置启动：macOS、Windows 和 Linux 默认读取用户主目录下的 `.claude-cage/config.json`；`CLAUDE_CAGE_CONFIG` 可以指定另一套独立配置。开发启动与已安装应用使用不同目录时，原账户和数据可能仍在原目录。
+The create-account page means the current config folder has no account file. First check whether you started with a different config. On macOS, Windows and Linux, the default is `.claude-cage/config.json` in your home folder. `CLAUDE_CAGE_CONFIG` can point to a different, separate config. If a development start and the installed app use different folders, your original account and data may still be in the original folder.
 
-保留当前目录和原目录，检查原目录是否同时包含 `account.json`、`favorites.json` 及 `state/`。不要创建新账户、清空配置或仅复制账户文件；浏览器历史、网站登录状态及其他环境文件还依赖同一套虚拟磁盘。迁移前保存工作并停止两套环境与后台，完整备份后再迁移；账户文件中的快捷登录绑定与原路径关联，迁移后可能需要用原密码解锁并重新开启快捷登录。找不到原文件时，应从备份恢复并排查删除原因。
+Keep the current folder and the original folder. Check whether the original folder contains `account.json`, `favorites.json` and `state/`. Don't create a new account, clear the config, or copy only the account file. Browser history, website sign-in state and other environment files also depend on the same virtual disk. Before migrating, save your work, stop both environments and background processes, and make a full backup. The quick sign-in binding in the account file is tied to the original path, so after migration you may need to unlock with the original password and turn quick sign-in on again. If you can't find the original files, restore from a backup and check what deleted them.
 
-## 迁移后快捷登录需要重新开启
+## Quick sign-in needs to be turned on again after migration
 
-快捷登录凭据绑定账户所在目录。目录迁移后，若新路径没有对应的系统钥匙串记录，登录页会提示凭据缺失并保留密码入口；“设置 → 账户 → 登录与解锁”中的对应开关显示为未开启，可直接开启，无需先关闭。原目录的凭据和个人数据保持不变。
+Quick sign-in credentials are bound to the account's folder. After the folder is moved, if the new path has no matching system keychain record, the sign-in page says the credentials are missing and keeps the password option. The matching switch in "Settings → Account → Sign-in and unlock" shows as off. You can turn it on directly without turning it off first. Credentials and personal data in the original folder stay unchanged.
 
-若显示“暂时无法检查系统钥匙串”，先用密码解锁，待系统钥匙串恢复可用后点击“重新检查快捷登录”。这类检查失败会保留授权记录，不会要求重建账户。
+If you see "The system keychain cannot be checked right now", unlock with your password first. When the system keychain is available again, click "Check quick sign-in again". Failed checks like this keep the authorization record and don't require you to rebuild the account.
 
-## 启动前的 Git 检查未通过
+## Git check before startup failed
 
-点击“启动 Cage 环境”后，Cage 会先检查本机的 Git。确认未安装 Git 时会继续，不要求为使用 Cage 安装开发工具；已安装的 Git 需要启用裸仓库保护。
+After you click "Start Cage environment", Cage first checks Git on this computer. If Git is not installed, it continues. You don't need to install developer tools to use Cage. If Git is installed, bare repository protection needs to be turned on.
 
-如果弹窗显示“启动前，保护本机 Git”，阅读影响后点击“启用保护并继续”。应用仅在确认后设置 `git config --global safe.bareRepository explicit`，重新检查通过才继续启动。普通项目的提交和拉取不受影响；本机其他 Git 工具也会采用这项设置，裸仓库需要通过 `--git-dir` 明确指定。
+If a dialog shows "Protect Git on this computer before installing", read the impact, then click "Enable protection and continue". The app only sets `git config --global safe.bareRepository explicit` after you confirm, and it starts only after the re-check passes. Commits and pulls in regular projects are not affected. Other Git tools on this computer also use this setting, so bare repositories need to be specified explicitly with `--git-dir`.
 
-| 提示 | 处理方式 |
+| Message | What to do |
 |---|---|
-| Git 版本过旧 | 将本机 Git 升级到 2.38 或更新版本，再点击“重新检查”。 |
-| 暂时无法检查 Git | 确认本机 Git 安装完整；macOS 也可检查 Xcode Command Line Tools，再点击“重新检查”。Cage 不会自动打开安装器。 |
-| 未能保存 Git 安全设置 | 检查当前用户全局 Git 配置的写入权限，关闭其他正在修改 Git 设置的操作，再重试。 |
-| 设置已写入，但检查尚未通过 | 检查全局 Git 配置是否存在冲突或覆盖，再点击“重新检查”。 |
+| Git version is too old | Upgrade Git on this computer to 2.38 or later, then click "Recheck". |
+| Can't check Git right now | Make sure Git is fully installed on this computer. On macOS, you can also check Xcode Command Line Tools, then click "Recheck". Cage doesn't open the installer automatically. |
+| Couldn't save the Git safety setting | Check write permissions for the current user's global Git config, close other operations that are changing Git settings, then try again. |
+| Setting saved, but the check hasn't passed yet | Check the global Git config for conflicts or overrides, then click "Recheck". |
 
-暂时不处理时选择“暂不启动”，代理配置仍会保留。
+If you don't want to deal with it now, choose "Not now". Your proxy config is kept.
 
-## 第一次启动提示代理连接失败
+## First start shows a proxy connection failure
 
-Cage 需要先选择自己的代理。首次首页点击“配置网络与代理”，或从“设置 → 网络与代理”确认已导入来源、已选择节点且显示“已应用”，再返回启动。本机浏览器能联网，不代表 Cage 已配置好代理；Cage 不会自动采用本机 Clash 当前选择。
+Cage needs its own proxy selected first. On the first home page, click "Set up network and proxy", or go to "Settings → Network and proxy" and confirm that a source is imported, a node is selected and it shows "Applied". Then go back and start. If your browser on this computer can reach the internet, that doesn't mean Cage's proxy is set up. Cage does not automatically use the node your local Clash has selected.
 
-如果尚未导入来源，使用本地 YAML，或在添加 HTTPS 订阅时明确勾选“通过主机网络下载这份订阅”。自动更新始终使用当前配置的代理；订阅下载失败不会静默改成主机直连。
+If you haven't imported a source yet, use a local YAML file, or check "Download this subscription over the host network" when you add an HTTPS subscription. Automatic updates always use the current proxy config. If a subscription download fails, it does not silently switch to a direct host connection.
 
-## 浏览器时区与语言检查失败
+## Browser time zone and language check failed
 
-点击提示旁的“查看检查清单”，展开失败项查看期望值与实际值。语言不一致时，保存浏览器和编辑器中的工作，再到“设置 → 环境与恢复”更新环境组件；更新会补齐缺失的 Chromium 语言包，并将浏览器首选语言同步为已保存配置。依赖安装使用所选代理提供的受限通道，关键检查通过前业务外网保持关闭，无需手动解除网络限制。
+Click "View checklist" next to the notice, then expand the failed items to see expected and actual values. If the language doesn't match, save your work in the browser and editor, then go to "Settings → Environment and recovery" and update the environment components. The update adds missing Chromium language packs and syncs the browser's preferred language with the saved config. Dependency installs use the restricted channel provided by the selected proxy. Business internet access stays off until critical checks pass, and you don't need to remove network restrictions manually.
 
-若语言包下载失败，检查代理和操作详情后重试。更新完成仍失败时，导出诊断包，保留具体失败字段的期望值和实际值；不要清空浏览器资料、重建账户或反复重启环境来绕过检查。
+If a language pack download fails, check the proxy and operation details, then try again. If it still fails after the update, export a diagnostics bundle and keep the expected and actual values for the failing fields. Don't clear browser data, rebuild the account or keep restarting the environment to get around the check.
 
-## 订阅导入失败，或导入后没有节点
+## Subscription import fails, or no nodes appear after import
 
-支持含 `proxies` 或 `payload` 的 Clash/Mihomo YAML。Base64 列表、节点分享链接、仅含远程 provider 的配置不属于当前支持格式。检查是否拿到了节点订阅地址；不要把网站登录页地址当作订阅地址，也不要将私人订阅提交给在线转换网站或 Issue。
+Clash/Mihomo YAML that contains `proxies` or `payload` is supported. Base64 lists, node share links, and configs with only remote providers are not supported formats. Check that you have the node subscription URL. Don't use a website login page as the subscription URL, and don't submit a private subscription to an online converter or to an Issue.
 
-代理链需要引用同一来源内的具体节点，选择分组和 DIRECT 链路会被拒绝。具体协议字段还需通过随附 Mihomo 核心的校验，错误详情可用于确认缺失字段。
+A proxy chain must reference specific nodes from the same source. Selecting groups and DIRECT links is rejected. Protocol-specific fields must also pass validation by the bundled Mihomo core. The error details can help you find missing fields.
 
-## 启动停留在准备环境
+## Startup stuck at preparing the environment
 
-第一次会下载 Linux 镜像并安装开发工具，速度取决于网络。点击“操作详情”查看当前阶段和错误；如果仍在下载或安装，保留窗口等待。失败后先检查代理节点和磁盘空间，再重新启动。
+The first start downloads the Linux image and installs developer tools. Speed depends on your network. Click "Operation details" to see the current stage and errors. If it's still downloading or installing, keep the window open and wait. After a failure, check the proxy node and disk space first, then start again.
 
-固定摘要的 Linux 镜像，以及 code-server、mise、Claude Code 原生包，会保留未完成下载并有限重试。再次启动时会尝试续传；服务器不支持续传时重新下载该文件。完整校验通过后才使用文件。APT 使用自己的软件包缓存与下载重试机制。不要清空个人数据目录或重建账户来处理下载失败。
+Linux images with pinned digests, plus the code-server, mise and Claude Code native packages, keep unfinished downloads and retry a limited number of times. On the next start, Cage tries to resume. If the server doesn't support resume, the file is downloaded again. A file is used only after full verification passes. APT uses its own package cache and download retry mechanism. Don't clear the personal data folder or rebuild the account to fix a download failure.
 
-Debian 13 的 APT 3.0.3 在下载重试时可能积存大量 `Tried to start delayed item` 警告并耗尽内存。Cage 在依赖安装前将旧版 APT 升级到至少 3.0.4；官方安全源暂不可达时会停止后续安装，检查代理后重试。重复日志显示为首条和重复次数，任务完成以安装进程退出为准。镜像连续失败时会跳过不可达来源；需要固定官方源时，按[下载来源说明](getting-started.md#首次启动下载什么)设置客机镜像偏好。
+APT 3.0.3 on Debian 13 can pile up many `Tried to start delayed item` warnings during download retries and run out of memory. Before installing dependencies, Cage upgrades older APT to at least 3.0.4. If the official security source is temporarily unreachable, later installs stop, so check the proxy and try again. Repeated log lines are shown as the first line plus a repeat count. A task is complete when the install process exits. If mirrors keep failing, unreachable sources are skipped. To pin the official source, set the guest mirror preference as described under [What is downloaded on first start](getting-started.md#what-is-downloaded-on-first-start).
 
-镜像和开发工具下载以最后一次收到文件数据的时刻为起点，连续 60 秒没有新数据才视为超时；持续收到数据时继续等待，不设最低下载速度或下载总时限。连接建立仍有独立超时。自动重试用尽后，安装页面保留失败信息，点击“继续安装”可重新尝试，并复用已保存的下载；重复失败后仍可手动继续。
+For images and developer tools, the timeout starts from the last time file data was received. It only counts as a timeout after 60 seconds with no new data. While data keeps arriving, the download keeps waiting. There is no minimum download speed or total download time limit. Connection setup still has its own timeout. After automatic retries run out, the install page keeps the error. Click "Continue installation" to try again and reuse the saved download. You can keep continuing manually after repeated failures.
 
-| 操作详情中的错误 | 处理方式 |
+| Error in operation details | What to do |
 | --- | --- |
-| `Guest DNS could not resolve the Debian download sources` | Linux 环境未能解析 Debian 下载源。检查“网络与代理”的节点与 DNS 设置，应用后重试。 |
-| `Download interrupted; partial data is saved` 或 `partial data retained` | 未完成文件已保留，网络恢复后重试。操作详情会显示重试次数或已保存的字节数。 |
-| `checksum mismatch` | 文件未通过完整性校验，安装被拒绝，损坏的未完成文件会移除。重试会重新下载，不应跳过校验。 |
-| NodeSource 公钥下载失败 | 下载会有限重试，成功前保留已有公钥。持续失败时检查节点到 `deb.nodesource.com` 的连接后重试。 |
-| `APT failed`，后面有 `oom_kill before` / `after` | 安装器记录了失败前后的 OOM 计数、失败时的内存摘要与内核 OOM 日志。导出诊断包供维护者判断；计数增加表示该时段客机发生过 OOM，具体被终止的进程以内核日志为准。 |
+| `Guest DNS could not resolve the Debian download sources` | The Linux environment could not resolve the Debian download sources. Check the nodes and DNS settings under "Network and proxy", apply them, then try again. |
+| `Download interrupted; partial data is saved` or `partial data retained` | The unfinished file is kept. Try again after the network recovers. Operation details show the retry count or the number of bytes saved. |
+| `checksum mismatch` | The file failed the integrity check, so the install was rejected, and the damaged unfinished file is removed. A retry downloads it again. Don't skip the check. |
+| NodeSource public key download failed | The download retries a limited number of times, and any existing public key is kept until it succeeds. If it keeps failing, check the connection from the node to `deb.nodesource.com`, then try again. |
+| `APT failed`, followed by `oom_kill before` / `after` | The installer records the OOM counts before and after the failure, a memory summary at that point, and the kernel OOM log. Export a diagnostics bundle for maintainers to review. An increased count means the guest hit an OOM during that period. The killed process is shown in the kernel log. |
 
-正在启动或检查时可以停止环境。网络设置需要重启时，先保存文件；不要同时运行多个安装副本或手动修改运行中的私有配置。
+You can stop the environment while it is starting or checking. If a network setting needs a restart, save your files first. Don't run several installer copies at once, or edit the private config while it is running.
 
-## 节点已经应用，但外网仍然离线
+## Node is applied, but internet access is still offline
 
-“已应用”表示代理核心的节点选择成功，工作台的网络检查还需要通过。点击底部网络状态，查看失败或未知的关键项：
+"Applied" means the proxy core selected the node successfully. The workbench's network checks still need to pass. Click the network status at the bottom to see failed or unknown critical checks:
 
-| 看到的结果 | 下一步 |
+| What you see | Next step |
 |---|---|
-| 出口 IP 或地区不符合规则 | 选择符合原规则的节点；确实要更换出口时，在“IP 变化规则”中明确修改基准。重检不会自动接受新 IP。 |
-| 命中大陆网段或定位为中国大陆 | 切换到非大陆出口；静态 IP 和不限地区均不能绕过。若怀疑归属错误，保留检查报告及出口信息供核查。 |
-| 代理不可用、核心未就绪 | 在代理页重新应用节点，或到“诊断”查看核心状态并重启 Cage 核心。 |
-| 端口已占用 | 在代理“诊断”中为 Cage 选择未占用的独立端口。无需终止本机其他代理。修改端口需要重启环境。 |
-| 已测得出口 IP，但位置查询失败 | Cage 会依次尝试 ipwho.is 和 IP.SB；请重试或更换节点。所有模式都须确认非大陆出口；手动时区、语言、静态 IP 和不限地区均不能跳过国家或地区检查。 |
-| 代理基础设施 DNS 不可用 | 确认主机能访问 Cloudflare 或阿里 DoH；Cage 会并行尝试二者。业务 DNS 设置不改变节点域名的启动解析。 |
-| 已暂停或检查报告过期 | 确认配置后重新检查。关键项通过才会恢复外网。 |
-| 主机网络切换后暂时离线 | 等待 Cage 重新绑定当前物理网卡并完成检查；若曾手动暂停，仍需主动重检。 |
+| Exit IP or region doesn't match the rule | Choose a node that matches the original rule. If you really want to change the exit, explicitly edit the baseline under "IP change rules". A recheck does not accept the new IP automatically. |
+| Matches a mainland China network range, or is located in mainland China | Switch to a non-mainland exit. Static IP and any-region settings can't bypass this. If you think the location is wrong, keep the check report and exit details for review. |
+| Proxy unavailable, or core not ready | Apply the node again on the proxy page, or go to "Diagnostics" to check the core status and restart the Cage core. |
+| Port already in use | In the proxy's "Diagnostics", choose an unused, separate port for Cage. You don't need to stop other proxies on this computer. Changing the port requires restarting the environment. |
+| Exit IP detected, but location lookup failed | Cage tries ipwho.is and then IP.SB. Try again or switch nodes. Every mode must confirm a non-mainland exit. Manual time zone, language, static IP and any-region settings can't skip the country or region check. |
+| Proxy infrastructure DNS unavailable | Make sure the host can reach Cloudflare or Alibaba DoH. Cage tries both in parallel. Business DNS settings don't change how node domains are resolved at startup. |
+| Paused, or the check report has expired | Confirm the config, then recheck. Internet access is restored only after critical checks pass. |
+| Temporarily offline after the host network changed | Wait for Cage to rebind to the current physical network adapter and finish its checks. If you paused it manually before, you still need to recheck it yourself. |
 
-离线时可以继续使用终端、共享文件和 Linux 环境中的本地服务。绿色盾牌表示当前状态与检查通过，不能推导账户资格或平台风险。
+While offline, you can still use the terminal, shared files and local services in the Linux environment. The green shield means the current state and checks have passed. It does not show account eligibility or platform risk.
 
-反复出现“检查或监测授权已到期”时，记录离线、完整重检开始与恢复的时间。节点仍可联网也可能遇到续期等待或检查过慢；当前诊断补丁记录各阶段耗时，用于定位原因，尚不能认定调度问题已修复。处理步骤见[联网许可反复到期](guide/troubleshooting.md#联网许可反复到期)。
+If "Check or monitoring authorization expired" keeps appearing, record when it goes offline, when the full recheck starts, and when access is restored. A node can still reach the internet and still hit a renewal wait or slow checks. The current diagnostic patch records how long each stage takes to help find the cause. It does not yet mean the scheduling problem is fixed. For steps, see [Network authorization keeps expiring](guide/troubleshooting.md#network-permission-keeps-expiring).
 
-## 浏览器空白或提示待恢复
+## Blank browser, or a pending recovery message
 
-点击“恢复浏览器”。这会尝试恢复画面连接，已有终端仍可运行。若整个工作台提示连接中断，先重新打开 App；仍失败时查看“操作详情”。
+Click "Restore browser". This tries to restore the display connection, and existing terminals keep running. If the whole workbench says the connection was interrupted, reopen the app first. If it still fails, check "Operation details".
 
-在 Cage 浏览器访问 `localhost`，连接的是当前所选客机。开发服务需要在 Cage 终端中启动；主机上运行的同名端口不属于同一地址空间。公网 UDP、IPv6 或局域网直连受限时，相关工具也可能无法连接；主动启用的私网连接见[Tailscale 排障](guide/troubleshooting.md#tailscale-登录或-ssh-失败)。
+Visiting `localhost` in the Cage browser connects to the currently selected guest. Dev servers must be started in a Cage terminal. A port with the same number running on the host is in a different address space. When public UDP, IPv6 or direct LAN connections are restricted, related tools may also fail to connect. For private network connections you turn on yourself, see [Tailscale troubleshooting](guide/troubleshooting.md#tailscale-sign-in-or-ssh-failure).
 
-## 上传窗口仍显示 Cage 内部目录
+## Upload window still shows Cage's internal folder
 
-先更新 Cage 环境组件；Claude Desktop 还需保存工作、关闭应用后重新打开，使文件选择服务生效。点击上传后应看到“上传本机文件”，再通过“选择本机文件”打开本机系统窗口。拖入或复制文件粘贴要求目标支持附件。Claude Desktop 的 Code 页选择工作文件夹时，应显示 Cage 的“选择工作项目”，可直接使用列表里的项目，或通过“添加本机项目…”调用本机窗口。列表中的连接异常项目可重新选择以重试共享。若出现“The file picker didn’t open”，请更新 Cage 后保存并关闭 Claude Desktop，再重新打开，让文件夹选择服务生效。网站自身的格式和大小限制仍然有效。
+First update Cage's environment components. For Claude Desktop, also save your work, close the app and reopen it so the file picker service takes effect. After you click upload, you should see "Upload local file". Then click "Choose local file" to open the system window on this computer. To drag or paste files, the target must accept attachments. On the Code page of Claude Desktop, when you choose a working folder, Cage should show "Choose a working project". You can use a project from the list directly, or call the local window with "Add a local project…". For a project in the list with a connection error, choose it again to retry sharing. If you see "The file picker didn’t open", update Cage, then save and close Claude Desktop and reopen it so the folder picker service takes effect. The website's own format and size limits still apply.
 
-## Desktop 的文字过大或画面比例不一致
+## Desktop text is too large, or the display ratio is off
 
-先将右上角“显示大小”设为 100%，窗口和侧栏变化时画面会自动适配。若需要更多内容空间，可选择 90% 或 75%。出现“画面尺寸未能同步”时点击“重试调整”；仍未恢复时保存工作、关闭 Claude Desktop 后重新打开，使当前环境的应用缩放参数生效。
+First set "Display size" in the top right to 100%. The display adjusts automatically when the window or sidebar changes. If you need more space for content, choose 90% or 75%. If you see "The view size could not be synced", click "Retry resizing". If it still doesn't recover, save your work, close Claude Desktop and reopen it so the current environment's app scaling settings take effect.
 
-旧构建的尺寸控制脚本可能受到客机 zsh 中 mise 初始化的影响，持续返回尺寸调整失败。此时需要使用包含控制脚本修正的 Cage 构建。该修正兼容已有客机配置，在控制入口明确选择脚本解释器。
+Older builds' size control scripts can be affected by mise initialization in the guest's zsh and keep returning a resize failure. In that case, use a Cage build that includes the fix to the control script. The fix works with existing guest configs and explicitly chooses the script interpreter at the control entry point.
 
-Desktop 中的 Google 登录和外部链接会在 Cage 浏览器中打开，界面应自动切换到对应标签页；登录回调完成后会返回 Desktop。旧版本若只在后台打开页面，可先点击侧栏“浏览器”继续。
+Google sign-in and external links in Desktop open in the Cage browser, and the interface should switch to the matching tab automatically. After the sign-in callback completes, you return to Desktop. In older versions that open the page only in the background, first click "Browser" in the sidebar to continue.
 
-## Claude 登录或请求失败
+## Claude sign-in or request failed
 
-Cage 不自动读取主机上的 Claude 登录。请在 Cage 终端运行 `claude`，按提示在 Cage 浏览器中完成授权；需要手动打开时复制完整授权链接到 Cage 地址栏。
+Cage does not read the Claude sign-in on the host automatically. Run `claude` in a Cage terminal, then complete authorization in the Cage browser as prompted. If you need to open the link manually, copy the full authorization link into the Cage address bar.
 
-确认工作台的关键检查通过，再核对账户本身的使用资格与 Claude 返回的错误。能打开登录页只证明页面可访问，完成授权和一次真实模型请求才算这条使用路径成功。反馈时保留错误类型，遮盖邮箱、授权链接、令牌和会话信息。
+Confirm that the workbench's critical checks pass, then check the account's own eligibility and the error Claude returns. Being able to open the sign-in page only proves the page is reachable. This usage path succeeds only after authorization completes and one real model request works. When you report it, keep the error type, and hide the email, authorization link, tokens and session information.
 
-历史列表读取失败时，已读取的会话保留，旧活跃标记会清除。先按重试按钮读取最新状态，再根据配置、配对、连接、通信或桌面状态的具体原因处理，避免直接重新登录。账号交接被阻止时，核对原任务、审批、分组与额度；详细步骤见[会话与账号异常](guide/troubleshooting.md#claude-登录与账号异常)。
+If the history list fails to load, the sessions already loaded are kept, and old active markers are cleared. First press the retry button to read the latest status. Then deal with the specific cause: config, pairing, connection, communication or desktop status. Avoid signing in again right away. If an account handoff is blocked, check the original task, approvals, group and usage limit. For detailed steps, see [Session and account problems](guide/troubleshooting.md#claude-sign-in-and-account-problems).
 
-## 文件改了，本机也跟着变；Git 提交失败
+## Files change on this computer too; Git commit fails
 
-这是共享项目的预期行为：Cage 直接读写你打开的本机文件夹。项目内的 `.git` 可读写，代码修改后可在 Cage 中查看差异并提交。
+This is expected for shared projects. Cage reads and writes the local folder you opened directly. The `.git` folder in a project is readable and writable, so after you change code, you can review the diff and commit it in Cage.
 
-所有项目在同一环境中共享工具和账户。切换项目不会撤销之前打开目录的共享，也不会停止已有终端。
+All projects share tools and accounts in the same environment. Switching projects does not revoke sharing for folders opened earlier, and it does not stop existing terminals.
 
-## 终端、剪贴板或退出行为与预期不同
+## Terminal, clipboard or quit behavior differs from what you expect
 
-| 现象 | 处理方式 |
+| Symptom | What to do |
 |---|---|
-| `Ctrl+C` 没有复制 | 终端中它表示中断命令。选中文本后，macOS 用 `⌘C`，Windows/Linux 用 `Ctrl+Shift+C` 复制。 |
-| 在终端里拖选后复制，主机仍粘贴出旧内容 | 有些终端程序会接管鼠标。macOS 按住 `Option` 拖选，松开后按 `⌘C`。Windows/Linux 按住 `Shift` 拖选，松开后按 `Ctrl+Shift+C`。 |
-| 已经浏览多个页面，前进或后退仍是灰色 | 更新 Cage 并同步环境组件。旧版本的实时推送未携带导航历史状态；新版本会随跳转和标签切换更新。新标签没有历史记录时，箭头保持灰色是正常的。 |
-| 粘贴无效 | 先点击目标输入框，再粘贴。普通浏览器可使用“文本传递”面板；只支持纯文本。 |
-| 网页复制按钮显示成功，本机粘贴仍是旧内容 | 保持网页和 Cage 窗口在前台重试。已有页面若改写了复制 API，可刷新后再试；复杂 DOM 选区、图片、富文本或超长文字可使用复制快捷键及“文本传递”面板。 |
-| 停止后旧终端不见了 | 停止虚拟机会结束进程。磁盘和登录态保留，但需要新建终端。 |
-| 关掉窗口后任务还在运行 | 关闭窗口保留环境；需要结束时选择“停止环境并退出”。 |
-| 已在命令行关闭 Cage 后台，桌面窗口还开着 | 从应用菜单选择“退出 Cage”（Windows 也可使用托盘菜单）。若提示无法确认环境状态，选择“仅退出桌面应用”。重新连接后可查看环境和任务状态。 |
-| 修改设置后无法正常使用 | “设置 → 环境与恢复”可恢复上一份配置；此操作需要停止并重启环境，已结束的终端不能恢复。 |
+| `Ctrl+C` doesn't copy | In the terminal, it interrupts the command. After you select text, copy with `⌘C` on macOS, or `Ctrl+Shift+C` on Windows and Linux. |
+| Copy after selecting in the terminal, but this computer still pastes old content | Some terminal programs take over the mouse. On macOS, hold `Option` while selecting, release it, then press `⌘C`. On Windows and Linux, hold `Shift` while selecting, release it, then press `Ctrl+Shift+C`. |
+| You've visited several pages, but back or forward is still grey | Update Cage and sync the environment components. Older versions' live updates didn't include navigation history. Newer versions update it with navigation and tab switches. On a new tab with no history, grey arrows are normal. |
+| Paste doesn't work | Click the target input box first, then paste. In a regular browser, you can use the "Text transfer" panel. Only plain text is supported. |
+| The web page copy button shows success, but this computer still pastes old content | Try again with the web page and Cage window in front. If an existing page has changed the copy API, refresh it and try again. For complex DOM selections, images, rich text or very long text, use the copy shortcut and the "Text transfer" panel. |
+| Old terminals are gone after stopping | Stopping the VM ends its processes. The disk and sign-in state are kept, but you need to create new terminals. |
+| Tasks keep running after closing the window | Closing the window keeps the environment running. To end it, choose "Stop environment and quit". |
+| Cage's backend was stopped from the command line, but the desktop window is still open | Choose "Quit Cage" from the app menu (on Windows, you can also use the tray menu). If it says the environment state can't be confirmed, choose "Quit the desktop app only". After reconnecting, you can check the environment and task status. |
+| Something doesn't work after changing settings | "Settings → Environment and recovery" can restore the previous config. This needs the environment to be stopped and restarted, and ended terminals can't be restored. |
 
-## 页面与出口状态
+## Page and exit status
 
-节点列表、当前选择和实际出口统一由 Cage 的代理管理器维护。未配置、未应用或核心停止时，外网保持关闭。若列表与实际联网状态不一致，请在诊断页重新应用当前节点并检查报告；不要修改生成的本地出口地址或启动其他代理程序占用 Cage 端口。
+The node list, the current selection and the actual exit are all maintained by Cage's proxy manager. If the config isn't set, isn't applied, or the core is stopped, internet access stays off. If the list doesn't match the actual connection status, reapply the current node on the diagnostics page and check the report. Don't change the generated local exit address, or start another proxy program that takes Cage's port.
 
-## 导出诊断包
+## Export a diagnostics bundle
 
-打开“设置 → 环境与恢复 → 日志与诊断”，点击“导出诊断包”，选择本机保存位置。macOS、Windows 和 Linux 使用相同入口；环境停止时也能导出本机日志。诊断包不会自动上传。
+Open "Settings → Environment and recovery → Logs and diagnostics", click "Export diagnostics bundle", and choose a save location on this computer. macOS, Windows and Linux use the same entry point. You can export local logs even when the environment is stopped. The bundle is not uploaded automatically.
 
-日志写入前自动遮盖常见密码、令牌、认证头、网址、邮箱、IP 和本机路径；主机日志最多 40 MiB，客机 Cage 服务日志预算 10 MiB，最多保留 14 天。诊断包包含脱敏日志、版本和收集状态，不收集终端内容、项目文件或完整配置。已有环境的客机日志配置随环境组件更新生效。
+Logs automatically mask common passwords, tokens, auth headers, URLs, emails, IPs and local paths before they are written. Host logs are capped at 40 MiB. The guest Cage service log budget is 10 MiB, and logs are kept for up to 14 days. The bundle includes redacted logs, versions and collection status. It does not collect terminal content, project files or the full config. For existing environments, the guest log settings take effect with the environment component update.
 
-若应用界面无法打开，可运行 `cage diagnostics --json /absolute/path/cage-diagnostics.zip`。macOS 应用内的命令位于 `Cage.app/Contents/Resources/cage`，Windows 位于安装目录的 `resources\cage.exe`，Linux 位于应用目录的 `cage`。控制服务无法连接时仍可导出本机日志；文件必须保存到本机的绝对路径。技术细节见[故障排查与诊断](guide/troubleshooting.md)。
+If the app window won't open, run `cage diagnostics --json /absolute/path/cage-diagnostics.zip`. Inside the macOS app, the command is at `Cage.app/Contents/Resources/cage`. On Windows, it's at `resources\cage.exe` in the install folder. On Linux, it's `cage` in the app folder. You can still export local logs when the control service can't be reached. The file must be saved to an absolute path on this computer. For technical details, see [Troubleshooting and diagnostics](guide/troubleshooting.md).
 
-## 提交问题时提供什么
+## What to include when you report a problem
 
-在 [GitHub Issues](https://github.com/Lee-xeo/Claude-Cage/issues) 提供 Cage 版本、操作系统版本、处理器架构、操作步骤、期望结果、实际错误及发生阶段。可以附裁剪后的状态截图或经过检查的诊断包。
+In [GitHub Issues](https://github.com/Lee-xeo/Claude-Cage/issues), include the Cage version, OS version, processor architecture, steps, expected result, actual error and the stage where it happened. You can attach a cropped status screenshot or a diagnostics bundle you have checked.
 
-不要上传整个 `~/.claude-cage/`、完整代理配置、订阅链接、账户令牌、授权 URL、项目内容或未检查的诊断输出。网络报告可能包含出口 IP，截图也可能包含项目路径，分享前请按需要遮盖。涉及凭据泄露或隔离绕过的问题，请先使用仓库提供的私密安全报告入口。
+Don't upload the whole `~/.claude-cage/` folder, full proxy config, subscription links, account tokens, authorization URLs, project content, or unchecked diagnostic output. Network reports may include exit IPs, and screenshots may include project paths. Hide what's needed before sharing. For issues involving credential leaks or isolation bypass, use the private security report entry provided by the repository first.

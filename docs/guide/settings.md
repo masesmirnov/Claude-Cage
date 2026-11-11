@@ -1,84 +1,84 @@
 ---
-title: 设置参考
-description: 按设置菜单找到每项功能，了解保存、重启、账号归属和当前客户端设置的区别。
-group: 设置与维护
+title: Settings reference
+description: Find each feature in the settings menu, and understand the difference between saving, restarting, account ownership and settings that apply only to the current client.
+group: Settings and maintenance
 order: 9
-keywords: 设置 账户 保险箱 记住登录 Touch ID 主题 外观 字体 无障碍 流畅画质 时区 语言
+keywords: settings account vault remember sign-in Touch ID theme appearance font accessibility smooth image quality time zone language
 ---
-## 打开设置与保存
+## Open settings and save
 
-点击左下角头像菜单中的“设置”。网络与系统配置修改后按页面的“保存设置”应用；需要重启时会提醒先保存文件，重启会结束终端命令。代理节点用“应用代理”单独应用。
+Click "Settings" in the avatar menu in the lower-left corner. Network and system configuration changes are applied with "Save settings" on the page. When a restart is needed, you are reminded to save your files first, because restarting ends terminal commands. Proxy nodes are applied separately with "Apply proxy".
 
-外观调整即时生效并自动保存，保存失败可“重试保存”。远程客户端的键盘与布局偏好保存在当前电脑，不代表更改服务器运行环境。
+Appearance changes take effect immediately and are saved automatically. If saving fails, click "Retry save". Keyboard and layout preferences on a remote client are saved on the current computer and do not change the server's runtime environment.
 
-## 设置菜单总览
+## Settings menu overview
 
-| 入口 | 可以设置什么 | 何时生效 |
+| Entry | What you can set | When it takes effect |
 | --- | --- | --- |
-| 账户 | 头像、用户名、密码、支持时的记住登录与 Touch ID | 按账户页保存；锁定后仍需验证 |
-| 密码保险箱 | 网站账号、密码记录和保存提示 | 记录操作后生效；查看复制需验证 |
-| Claude 账号 | 登录多个订阅、备注、检查额度、参与调度 | 分配选项影响新建 Claude 终端 |
-| 通用 | 键盘习惯、Claude 终端启动命令、浏览器默认网站、流畅画质 | 依具体项，新终端、新页面或下次环境启动 |
-| 外观 | 明暗主题、颜色、字体、字号、终端与交互偏好 | 即时预览并自动保存 |
-| 远程连接 | 本机手机配对、远程浏览器授权、官方或自建中继 | 保存后生效；中继迁移需重新配对 |
-| 网络与代理 | 来源、节点、代理链、DNS、出口规则及核心诊断 | 应用代理或保存，部分更改需重启 |
-| 时区与语言 | 自动跟随出口，或手动指定系统与浏览器语言 | 应用并按提示重启 |
-| 环境与恢复 | 存储、资源、组件工具版本、配置恢复、诊断 | 具体影响见[维护说明](maintenance.md) |
+| Account | Avatar, username, password, remember sign-in and Touch ID where supported | Saved on the account page; verification is still needed after locking |
+| Password vault | Website accounts, password records and save prompts | Takes effect after a record is changed; viewing or copying requires verification |
+| Claude accounts | Sign in to multiple subscriptions, notes, check usage, include in scheduling | Assignment options affect new Claude terminals |
+| General | Keyboard habits, Claude terminal startup command, default browser website, smooth image quality | Depends on the item: new terminals, new pages or the next environment start |
+| Appearance | Light and dark theme, colors, font, font size, terminal and interaction preferences | Previewed immediately and saved automatically |
+| Remote connection | Phone pairing for this computer, remote browser authorization, official or self-hosted relay | Takes effect after saving; relay migration requires pairing again |
+| Network and proxy | Sources, nodes, proxy chains, DNS, exit rules and core diagnostics | Apply proxy or save; some changes need a restart |
+| Time zone and language | Automatically follow the exit, or set the system and browser language manually | Apply, then restart as prompted |
+| Environment and recovery | Storage, resources, component and tool versions, configuration recovery, diagnostics | For specific effects, see [Maintenance](maintenance.md) |
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/account-settings.jpg" target="_blank" rel="noopener" aria-label="查看原图：账户资料、密码与登录解锁设置"><img src="../../www/public/docs/screenshots/account-settings.jpg" alt="账户资料、密码与登录解锁设置" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>账户资料、密码与登录解锁设置。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/account-settings.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/account-settings.jpg" target="_blank" rel="noopener" aria-label="View original: account profile, password and sign-in unlock settings"><img src="../../www/public/docs/screenshots/account-settings.jpg" alt="Account profile, password and sign-in unlock settings" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Account profile, password and sign-in unlock settings. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/account-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 账户与登录
+## Account and sign-in
 
-Cage 账户只用于当前环境解锁，没有在线找回。在云端工作台修改的是服务器账户。macOS 支持的记住登录和 Touch ID 与系统钥匙串绑定；迁移配置目录后可能需要用原密码重新授权。
+The Cage account is only used to unlock the current environment, and there is no online recovery. Changes made in the cloud workbench apply to the server's account. Remember sign-in and Touch ID on macOS are bound to the system keychain. After you move the configuration directory, you may need to authorize again with the original password.
 
-“锁定 Cage”保留后台任务，“退出账户”会停止环境。账户密码不等于项目磁盘加密密码。不要为了处理更新或目录问题重新创建账户。
+"Lock Cage" keeps background tasks running, while "Sign out" stops the environment. The account password is not the password that encrypts the project disk. Do not recreate the account to deal with updates or directory problems.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/password-add.jpg" target="_blank" rel="noopener" aria-label="查看原图：手动添加网站密码的表单"><img src="../../www/public/docs/screenshots/password-add.jpg" alt="手动添加网站密码的表单" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>手动添加网站密码的表单。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/password-add.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/password-add.jpg" target="_blank" rel="noopener" aria-label="View original: form for manually adding a website password"><img src="../../www/public/docs/screenshots/password-add.jpg" alt="Form for manually adding a website password" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Form for manually adding a website password. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/password-add.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 密码保险箱
+## Password vault
 
-网页登录成功后选择保存或更新。也可在保险箱内手动添加、搜索、编辑、删除，恢复某网站的保存提示。填充后由你提交网页表单；查看和复制密码需要再次输入 Cage 密码。
+After a website sign-in succeeds, choose to save or update. You can also add, search, edit and delete entries manually in the vault, and restore the save prompt for a website. After filling in, you submit the web form yourself. Viewing and copying passwords requires entering your Cage password again.
 
-当前支持 HTTPS 顶层页面常见登录表单，嵌入框架、验证码、Passkey 等不会自动处理。无痕页面不提示保存。旧环境提示不可用时，先更新环境组件。
+It currently supports common sign-in forms on top-level HTTPS pages. Embedded frames, CAPTCHAs, passkeys and the like are not handled automatically. Incognito pages do not show save prompts. If an older environment reports that it is unavailable, update the environment components first.
 
-密码记录保存在当前主机的 Cage 配置中，不跨设备自动同步；云端实例的保险箱位于服务器。备份时账户文件与密码库需一起保留。Cage 锁定时保险箱随之锁定，记住登录解锁时也可随之解锁。
+Password records are saved in the current host's Cage configuration and do not sync automatically across devices. The vault for a cloud instance is on the server. When backing up, keep the account file and the password vault together. When Cage is locked, the vault is locked too, and it can also be unlocked along with the sign-in when remember-sign-in unlock is used.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/general-settings.jpg" target="_blank" rel="noopener" aria-label="查看原图：终端启动命令、画质与快捷键设置"><img src="../../www/public/docs/screenshots/general-settings.jpg" alt="终端启动命令、画质与快捷键设置" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>终端启动命令、画质与快捷键设置。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/general-settings.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/general-settings.jpg" target="_blank" rel="noopener" aria-label="View original: terminal startup command, image quality and shortcut settings"><img src="../../www/public/docs/screenshots/general-settings.jpg" alt="Terminal startup command, image quality and shortcut settings" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Terminal startup command, image quality and shortcut settings. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/general-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 通用与键盘
+## General and keyboard
 
-“Claude 终端启动命令”用于新建的 Claude 终端，例如 `claude --continue`，保存不会改变现有终端。自定义命令需与你安装的 CLI 兼容。
+"Claude terminal startup command" applies to newly created Claude terminals, for example `claude --continue`. Saving does not change existing terminals. A custom command must be compatible with the CLI you installed.
 
-“按键习惯”决定工作台与客机输入的映射。使用 Debian 客机时，Mac 模式把网页与编辑器的常见 Command 组合映射到 Linux 控件；macOS、Windows 客机采用对应系统的按键行为。终端 Ctrl+C 仍用于中断，Windows/Linux 终端复制粘贴使用 Ctrl+Shift+C/V。
+"Keyboard habits" decide how the workbench and guest input are mapped. With a Debian guest, Mac mode maps common Command combinations in web pages and the editor to Linux controls. macOS and Windows guests use the keyboard behavior of their own systems. Terminal Ctrl+C still interrupts, and on Windows/Linux terminals, copy and paste use Ctrl+Shift+C/V.
 
-“浏览器默认网站”用于之后新建的网页。“流畅画质”降低绘图密度以改善滚动，保存后在下次环境启动生效。浏览器本身的标签布局与网站数据在独立浏览器设置中管理。
+"Default browser website" applies to web pages opened later. "Prefer smoothness" lowers drawing density to improve scrolling, and takes effect at the next environment start after saving. The browser's own tab layout and site data are managed in the separate browser settings.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/appearance.jpg" target="_blank" rel="noopener" aria-label="查看原图：浅色、深色与自定义主题"><img src="../../www/public/docs/screenshots/appearance.jpg" alt="浅色、深色与自定义主题" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>浅色、深色与自定义主题。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/appearance.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/appearance.jpg" target="_blank" rel="noopener" aria-label="View original: light, dark and custom themes"><img src="../../www/public/docs/screenshots/appearance.jpg" alt="Light, dark and custom themes" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Light, dark and custom themes. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/appearance.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 外观、主题与无障碍
+## Appearance, themes and accessibility
 
-可跟随系统或固定浅色、深色。预设包含编辑器、阅读与无障碍等系列；选择预设会应用界面与终端配色，保留字体，替换当前元素颜色覆盖。
+It can follow the system, or be fixed to light or dark. Presets include series for editors, reading and accessibility. Selecting a preset applies interface and terminal colors, keeps the font, and replaces current element color overrides.
 
-自定义可调整强调色、背景、文字、侧栏、边框、按钮、焦点、状态，以及终端 ANSI 配色。字体、字号、对比度、指针和动态效果也在这里调整。蓝橙色觉友好和高对比预设减少对红绿区分的依赖，可结合状态图标与文字检查效果。
+Custom settings can adjust the accent color, background, text, sidebar, borders, buttons, focus, status, and the terminal ANSI palette. Fonts, font size, contrast, pointer and motion effects are also adjusted here. The colorblind-friendly blue-orange and high-contrast presets reduce reliance on telling red from green. Check the result together with status icons and text.
 
-“我的主题”可另存、更新或恢复已保存配色，最多 50 个。导入导出使用 `.cage-theme.json`，不包含账户、节点、项目和本机路径；明暗切换模式、字号及交互偏好不随主题文件迁移。文件上限 256 KB，格式无效会保留当前设置。
+"My themes" can save as new, update or restore saved color schemes, up to 50. Import and export use `.cage-theme.json`, which does not include accounts, nodes, projects or local paths. Light/dark switching mode, font size and interaction preferences do not migrate with the theme file. The file limit is 256 KB. If the format is invalid, the current settings are kept.
 
-支持时可“从本机 Codex 同步”外观偏好，导入后由 Cage 独立保存。虚拟环境中的网页和编辑器保留它们各自的主题。
+When supported, you can "Sync from local Codex" to import appearance preferences, and Cage saves them independently after import. Web pages and editors in the virtual environment keep their own themes.
 
-## 时区、语言与远程连接
+## Time zone, language and remote connection
 
-自动时区和语言使用代理出口定位，手动选择不会被主机位置代替。应用后可能重启环境，详见[时区与出口规则](network.md#时区语言与出口规则)。联网检查的“系统时区与语言”项在 Linux 客机上除核对变量与配置文件外，还分别核对进程和系统时区文件的实际 UTC 偏移；`/etc/localtime` 为链接时，同时核对其目标。文件缺失、无法读取或结果不一致时，外网保持关闭，检查详情说明原因及读到的差异。
+Automatic time zone and language use the proxy exit for location lookup, and a manual choice is not replaced by the host location. Applying may restart the environment. For details, see [Time zone and exit rules](network.md#time-zone-language-and-exit-rules). On Linux guests, the "System time zone and locale" network check verifies, in addition to variables and configuration files, the actual UTC offset of the process and of the system time zone file. When `/etc/localtime` is a link, its target is verified too. If a file is missing or cannot be read, or the results are inconsistent, internet access stays off, and the check details explain the cause and the differences that were read.
 
-“远程连接”中的手机配对针对本机 Cage。先切回本机，再生成配对码或移除配对手机。SSH 主机在工作台侧栏管理；手机中继和云端运行环境是不同的服务，分别见[手机连接](mobile.md)与[云端部署](cloud.md)。
+Phone pairing in "Remote connection" applies to this computer's Cage. Switch back to this computer first, then generate a pairing code or remove a paired phone. SSH hosts are managed in the workbench sidebar. The phone relay and the cloud runtime environment are separate services. See [Phone connection](mobile.md) and [Cloud deployment](cloud.md) respectively.

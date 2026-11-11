@@ -1,82 +1,82 @@
 ---
-title: 项目、终端与文件
-description: 在同一工作台运行 Claude Code、编辑代码、传递附件，并弄清关闭和退出对任务的影响。
-group: 日常工作
+title: Projects, terminal and files
+description: Run Claude Code, edit code and pass attachments in one workbench, and understand how closing and signing out affect your tasks.
+group: Daily use
 order: 3
-keywords: 项目 Claude Code 编辑器 code-server 文件 复制 粘贴 快捷键 分屏 标签 localhost
+keywords: projects Claude Code editor code-server files copy paste shortcuts split view tabs localhost
 ---
-## 打开项目与编辑文件
+## Open projects and edit files
 
-终端和工具运行在你选择的客机系统里。macOS 使用 Mac 工具链，Windows 使用 PowerShell 与 Windows 工具，Debian 使用 Linux 工具；浏览器、编辑器和 Claude Desktop 都从同一个工作台进入。系统组合与安装方式见[选择客机系统](guest-systems.md)。
+Terminals and tools run in the guest system you chose. macOS uses the Mac toolchain, Windows uses PowerShell and Windows tools, and Debian uses Linux tools. The browser, editor and Claude Desktop all open from the same workbench. For system combinations and install methods, see [Choose a guest system](guest-systems.md).
 
-点击左侧“项目”旁的加号，选择已有项目，或点“添加本机项目…”打开主机目录。没有项目时也可使用默认工作区。项目列表会保存，下次启动继续可用。
+Click the plus next to "Projects" in the left sidebar to select an existing project, or click "Add a local project..." to open a host directory. You can also use the default workspace without a project. The project list is saved and stays available the next time you start.
 
-在项目选择窗口选中已添加的目录，点击“从 Cage 移除此项目”并确认，可解除共享并从列表移除。请先保存文件并关闭该项目的终端、运行中会话和编辑器。原文件与会话历史保留，重新添加相同目录后可继续使用历史。移除当前项目后选中默认工作区，默认工作区始终保留。环境停止时也可打开项目选择窗口移除目录。
+In the project selection window, select an added directory and click "Remove this project from Cage", then confirm to end sharing and remove it from the list. Save your files and close this project's terminals, running sessions and editor first. The original files and session history are kept, and adding the same directory again lets you continue using the history. After you remove the current project, the default workspace is selected, and it is always kept. You can also open the project selection window to remove a directory while the environment is stopped.
 
-项目旁的打开图标（↗）在 code-server 中编辑该目录，终端图标（>_）用于选择终端类型。文件会直接写入共享目录，重要项目请先备份；项目内的 `.git` 可读写，可直接在 Cage 中暂存、提交和切换分支。
+The open icon (↗) next to a project edits that directory in code-server, and the terminal icon (>_) selects the terminal type. Files are written directly to the shared directory, so back up important projects first. The `.git` inside a project is readable and writable, so you can stage, commit and switch branches directly in Cage.
 
-所有项目共用一个环境、工具和账户。切换项目不会改变已有终端的目录，也不会关闭网页或撤销之前的共享。云端的目录与权限见[云端部署与 SSH](cloud.md)。
+All projects share one environment, tools and accounts. Switching projects does not change the directory of existing terminals, close web pages or revoke earlier sharing. For cloud directories and permissions, see [Cloud deployment and SSH](cloud.md).
 
-共享文件在环境内显示为当前用户所有，Git 可正常读取已打开项目的状态与历史。文件内容仍属于原来的主机目录，Git 元数据与项目一起共享，环境中的 Git 操作会直接更新主机仓库。授权目录内的隐藏文件、工具配置、Git 配置和钩子均按普通项目文件共享。Cage 不按文件名额外隐藏文件或禁止写入；云端共享的整目录只读授权仍然生效。
+Shared files appear as owned by the current user inside the environment, and Git can read the status and history of the open project normally. File contents still belong to the original host directory. Git metadata is shared with the project, and Git operations in the environment update the host repository directly. Hidden files, tool configuration, Git configuration and hooks inside the authorized directory are shared as ordinary project files. Cage does not hide extra files or block writes by filename. Read-only authorization for a whole directory shared from the cloud still applies.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener"><img src="../../www/public/docs/screenshots/first-start.jpg" alt="工作台侧栏、默认项目与终端入口（环境未启动）" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>工作台侧栏、默认项目与终端入口（环境未启动）。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener"><img src="../../www/public/docs/screenshots/first-start.jpg" alt="Workbench sidebar, default project and terminal entry (environment not started)" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Workbench sidebar, default project and terminal entry (environment not started). Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/first-start.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 新建 Claude 终端
+## Start a new Claude terminal
 
-1. 点击项目旁的终端图标，选“新建 Claude 终端”。Cage 会在该目录启动 `claude`。
-2. 首次使用按官方提示登录，授权页面在 Cage 浏览器中完成。主机已有的 Claude 登录不会自动导入。
-3. 有多个订阅时，先按[多账号与额度](accounts.md)登记；新建的 Claude 终端标签会显示分配的账号。
+1. Click the terminal icon next to a project and choose "New Claude terminal". Cage starts `claude` in that directory.
+2. The first time you use it, sign in following the official prompts. The authorization page is completed in the Cage browser. Claude sign-ins already on the host are not imported automatically.
+3. If you have several subscriptions, register them first following [Multiple accounts and usage limits](accounts.md). The new Claude terminal tab shows the assigned account.
 
-Claude Code 标签使用 Agent 图标，带编号时表示该会话绑定的账号编号；普通终端继续使用终端图标。账号分配与跨账号接续由[账号设置](accounts.md#在同一会话中换账号)管理，图标本身不切换身份。
+Claude Code tabs use an agent icon. When numbered, the number shows the account the session is bound to. Regular terminals keep the terminal icon. Account assignment and resuming across accounts are managed in [Account settings](accounts.md#switch-accounts-within-the-same-session). The icon itself does not switch identity.
 
-Cage 的共享 Claude 会话会先显示“正在准备 Claude 会话…”，在后台确认自身通道的启动提示，再显示会话画面。需要查看登录或排错信息时，点击“显示启动过程”；准备超过 8 秒会自动显示终端，避免卡住的提示被隐藏。普通终端仍直接显示输出。
+Cage's shared Claude sessions first show "Preparing the Claude session…", check the startup prompts of their own channel in the background, and then show the session screen. To see sign-in or troubleshooting information, click "Show startup progress". If preparation takes more than 8 seconds, the terminal is shown automatically so a stuck prompt is not hidden. Regular terminals still show output directly.
 
-也可创建普通终端，自行运行 shell 命令。在“设置 → 通用 → Claude 终端启动命令”添加参数，例如 `claude --continue`。只对以后新建的 Claude 终端生效，退出 Claude 后 shell 仍可使用。
+You can also create a regular terminal and run shell commands yourself. Add arguments under "Settings → General → Claude terminal startup command", for example `claude --continue`. This only applies to Claude terminals created later. The shell remains usable after you exit Claude.
 
-移动端的结构化会话与普通终端分别管理，详见[手机会话范围](mobile.md#创建会话与处理工具审批)。
+Structured sessions on mobile and regular terminals are managed separately. See [Mobile session scope](mobile.md#create-sessions-and-handle-tool-approvals) for details.
 
-历史列表提示读取失败时，已经显示的历史继续保留，旧的活跃标记会清除。点击重试按钮核对最新状态；正在读取时按钮禁用，原因仍可复制。持续失败请按[会话读取故障](troubleshooting.md#claude-登录与账号异常)检查环境连接与诊断信息。
+When the history list shows a read failure, the history already displayed stays, and old active markers are cleared. Click the retry button to check the latest status. The button is disabled while reading, but the reason can still be copied. If failures persist, check the environment connection and diagnostics following [Session read failures](troubleshooting.md#claude-sign-in-and-account-problems).
 
-## 管理标签与分屏
+## Manage tabs and split view
 
-鼠标移入终端行或用键盘聚焦后，可置顶、重命名或删除。网页标签可右键或按 Shift+F10 打开菜单；拖动可在同一列表排序，Esc 取消拖动，刷新保留顺序。页面过多时用向下箭头搜索已打开的网页。
+Hover over a terminal row or focus it with the keyboard to pin, rename or delete it. For web tabs, right-click or press Shift+F10 to open the menu. Drag to reorder within the same list, press Esc to cancel dragging, and refreshing keeps the order. When there are many pages, use the down arrow to search open web pages.
 
-工作台支持网页与终端组合使用；普通网页也支持双页分屏。无痕网页可与终端分屏，双网页分屏仅支持普通标签。浏览器右上角 × 返回之前的工作区，已打开的网页和登录状态保留。
+The workbench supports combining web pages and terminals. Regular web pages also support two-page split view. Incognito pages can be split with a terminal, but two-page split view only supports regular tabs. The × at the upper right of the browser returns you to the previous workspace, and open pages and sign-in state are kept.
 
-macOS 用 `⌘1–9` 切换当前网页或当前目录的终端；Windows/Linux 工作台对应使用 Ctrl。终端中的 Ctrl+C 始终用于中断命令。
+On macOS, `⌘1–9` switches between web pages and terminals in the current directory. On Windows and Linux, use Ctrl in the workbench. Ctrl+C in a terminal always interrupts the command.
 
-## 上传、下载与附件
+## Uploads, downloads and attachments
 
-网页选择上传文件时，会显示“上传本机文件”，点击“选择本机文件”调用系统窗口。一次最多 100 个文件，单文件最多 2 GB；网站还可能有更小限制。只传递选中的文件，不会因此共享整个文件夹。取消、刷新或关闭原网页后需重新选择。
+When you choose files to upload on a web page, "Upload local files" is shown. Click "Choose local file" to open the system window. Up to 100 files at a time, each up to 2 GB; websites may have smaller limits. Only the files you select are passed, and the whole folder is not shared. If you cancel, refresh or close the original page, you need to select the files again.
 
-可以把图片、视频、文档拖到支持附件的目标，或在文件管理器复制后到 Cage 粘贴。终端会把附件存入客机目录并插入带引号的路径，供 Claude Code 读取，不自动执行。截图粘贴最多 20 MB、4000 万像素；文件传输不使用外部存储中转。
+You can drag images, videos or documents onto a target that accepts attachments, or copy them in the file manager and paste into Cage. The terminal saves attachments to a guest directory and inserts a quoted path for Claude Code to read. It does not run them automatically. Pasted screenshots are limited to 20 MB and 40 million pixels. File transfers do not use external storage as a relay.
 
-下载在 Cage 环境内完成。本机模式的完整文件先保留在默认工作区 `Downloads`，同名自动换名；工作台观察到完成后弹出“另存为”。取消仍保留默认位置的文件。在左侧“下载”或浏览器下载按钮可查看进度、打开、显示文件位置或另存。
+Downloads are completed inside the Cage environment. In local mode, the complete file is first kept in the default workspace `Downloads`, with automatic renaming for duplicate names. After the workbench sees that the download is complete, a "Save as" dialog appears. Cancelling keeps the file at the default location. The "Downloads" item on the left or the browser download button shows progress, opens files, shows file locations, or saves them elsewhere.
 
-云端文件和已经另存到本机的副本分开记录。要在其他应用打开远端文件，先明确保存到本机。
+Cloud files and copies already saved to this computer are recorded separately. To open a remote file in another app, first save it to this computer explicitly.
 
-## 输入法与剪贴板
+## Input methods and clipboard
 
-先点击目标输入位置，再复制或粘贴。macOS 终端用 `⌘C/V`，Windows/Linux 终端用 `Ctrl+Shift+C/V`。Cage 桌面应用中的 Claude 终端还支持 `Ctrl+V` 粘贴本机剪贴板里的截图或文字。图片会保存到客机并插入可供 Claude Code 读取的路径；传递完成前按 Enter 会等待，传递失败则取消这次待发送操作。普通网页、编辑器和本机输入框按所选键盘习惯操作；“设置 → 通用”可调整。
+Click the target input first, then copy or paste. In macOS terminals, use `⌘C/V`; in Windows/Linux terminals, use `Ctrl+Shift+C/V`. Claude terminals in the Cage desktop app also support `Ctrl+V` to paste a screenshot or text from the local clipboard. Images are saved to the guest and inserted as a path Claude Code can read. Pressing Enter before the transfer completes waits; if the transfer fails, the pending send is cancelled. Regular web pages, the editor and local input fields follow your chosen keyboard habits, which you can adjust under "Settings → General".
 
-Claude Code 自己管理的选区和 `/copy` 发出的文字复制会写入本机剪贴板，并参与现有共享剪贴板同步。终端重连时只恢复历史画面，不重复执行旧的复制。终端程序接管鼠标时，也可在 Mac 按住 Option 拖选，Windows/Linux 按住 Shift 拖选，再复制。Ctrl+C 保持终端中断行为。普通浏览器因权限限制无法使用剪贴板时，可用“文本传递”面板传纯文本。
+Selections managed by Claude Code itself and text copied with `/copy` are written to the local clipboard and take part in the existing shared-clipboard sync. When a terminal reconnects, it only restores the history screen and does not run old copies again. When a terminal program takes over the mouse, you can also hold Option and drag on a Mac, or hold Shift and drag on Windows/Linux, then copy. Ctrl+C keeps its terminal interrupt behavior. If a regular browser cannot use the clipboard because of permission limits, use the "Text transfer" panel to pass plain text.
 
-Cage 桌面应用运行 Linux 客机时，本机、Cage 浏览器和 Claude Desktop 双向共享文字、图片、文件和文件夹的剪贴板。点击应用内的复制按钮后可直接在另一端粘贴；切换画面与窗口失焦继续共享。拖选文字仅改变选区，复制后才更新共享内容。范围、大小限制与文件保留规则见 [Claude Desktop：复制与粘贴](desktop.md#复制与粘贴)。
+When the Cage desktop app runs a Linux guest, this computer, the Cage browser and Claude Desktop share the clipboard for text, images, files and folders in both directions. After you click a copy button in the app, you can paste the content on the other side. Sharing continues when you switch views or the window loses focus. Dragging to select text only changes the selection, and the shared content is updated after you copy. For scope, size limits and file retention rules, see [Claude Desktop: Copy and paste](desktop.md#copy-and-paste).
 
-普通网页工作台中的复制按钮支持把纯文本同步到本机，保持网页和窗口在前台，等待“已复制到本机”。切换标签或输入位置可能取消尚未完成的传递，重新复制即可。
+The copy button in the regular web workbench can sync plain text to this computer. Keep the web page and window in front and wait for "Copied to this computer". Switching tabs or input positions may cancel a transfer that has not finished. Just copy again.
 
-## 关闭、锁定与退出
+## Close, lock and sign out
 
-| 操作 | 对任务的影响 |
+| Action | Effect on tasks |
 | --- | --- |
-| 关闭或隐藏窗口 | 环境、终端、网页和下载继续运行。不可见时暂停画面显示连接，返回后重连。 |
-| 锁定 Cage | 隐藏工作台并要求验证，已运行的任务继续。手机的受保护操作暂停。 |
-| 退出应用时选择保留环境 | 后台任务继续，下次打开重新连接。 |
-| 停止环境或退出账户 | 结束运行中的终端，项目、磁盘和登录资料保留。 |
-| 刷新工作台 | 可重连后台仍存活的终端。 |
-| 重启控制服务或环境 | 旧终端进程不能恢复，需要新建。 |
+| Close or hide the window | The environment, terminals, web pages and downloads keep running. While hidden, the screen display is paused, and it reconnects when you return. |
+| Lock Cage | Hides the workbench and requires verification. Running tasks continue. Protected actions on the phone are paused. |
+| Quit the app and keep the environment | Background tasks continue, and they reconnect when you open the app again. |
+| Stop the environment or sign out of the account | Ends running terminals. Projects, disk and sign-in data are kept. |
+| Refresh the workbench | Lets you reconnect to terminals still alive in the background. |
+| Restart the control service or environment | Old terminal processes cannot be restored and need to be created again. |
 
-停止前保存编辑器内容。磁盘里保存的文件与 Claude 历史，不等于能恢复已结束的进程和终端临时输出。
+Save editor contents before stopping. Files and Claude history saved on disk do not mean that ended processes and temporary terminal output can be recovered.

@@ -1,112 +1,112 @@
 ---
-title: 网络与代理
-description: 导入节点与订阅、配置多次中转，理解联网检查、时区和出口变化规则。
-group: 开始使用
+title: Network and proxy
+description: Import nodes and subscriptions, set up multi-hop relays, and understand the rules for network checks, time zone and exit changes.
+group: Getting started
 order: 2
-keywords: Clash Mihomo YAML SOCKS5 住宅 IP DNS DoH 暂停 断网 代理链 订阅
+keywords: Clash Mihomo YAML SOCKS5 residential IP DNS DoH pause offline proxy chain subscription
 ---
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/proxy-subscription.jpg" target="_blank" rel="noopener" aria-label="查看原图：添加订阅链接与首次主机下载选项"><img src="../../www/public/docs/screenshots/proxy-subscription.jpg" alt="添加订阅链接与首次主机下载选项" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>添加订阅链接与首次主机下载选项。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/proxy-subscription.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/proxy-subscription.jpg" target="_blank" rel="noopener" aria-label="View original: adding a subscription link and the first-time host download option"><img src="../../www/public/docs/screenshots/proxy-subscription.jpg" alt="Adding a subscription link and the first-time host download option" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Adding a subscription link and the first-time host download option. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/proxy-subscription.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 导入自己的代理
+## Import your own proxy
 
-入口是首页“配置网络与代理”，或“设置 → 网络与代理”。点击“添加来源”，选择导入方式：
+Open it from "Set up network and proxy" on the home page, or go to "Settings → Network and proxy". Click "Add source" and choose an import method:
 
-| 来源 | 怎么填 |
+| Source | How to fill it in |
 | --- | --- |
-| 订阅链接 | 输入名称和 HTTPS 节点订阅地址。首次没有可用节点时，可明确勾选“通过主机网络下载这份订阅”。 |
-| 本地 YAML | 拖入或点击选择导出的 YAML、YML、JSON 文件（单个不超过 8 MiB），也可直接粘贴 Clash/Mihomo YAML 内容。读取后可编辑，点击“导入并验证”完成导入。 |
-| 手动节点 | 填写 HTTP 或 SOCKS5 服务器、端口和对应认证字段。 |
+| Subscription link | Enter a name and an HTTPS node subscription URL. If there are no usable nodes the first time, you can explicitly tick "Download this subscription over the host network". |
+| Local YAML | Drag in or click to select an exported YAML, YML or JSON file (up to 8 MiB each), or paste Clash/Mihomo YAML content directly. After it is read, you can edit it. Click "Import and verify" to finish the import. |
+| Manual node | Enter the HTTP or SOCKS5 server, port and matching authentication fields. |
 
-点击“导入并验证”，进入“节点”，选最终出口，再点“应用代理”。“保存设置”用于其他设置，不能替代应用代理。未应用的选择只是草稿。
+Click "Import and verify", then go to "Nodes", choose the final exit, and click "Apply proxy". "Save settings" is for other settings and cannot replace applying the proxy. Selections that have not been applied are only drafts.
 
-订阅必须包含 `proxies` 或 `payload` 节点。Base64 列表、单个节点分享链接、只引用远程 provider 的配置暂不支持。导入只采用支持的节点与代理链，不采用订阅中的主机系统代理、TUN、监听端口或直连规则。
+A subscription must contain `proxies` or `payload` nodes. Base64 lists, single-node share links, and configurations that only reference remote providers are not supported yet. Import only adopts supported nodes and proxy chains, and does not adopt the host system proxy, TUN, listening ports or direct rules from the subscription.
 
-普通节点参数保留并交给 Cage 随附的 Mihomo 核心校验。例如，从 FlClash 复制的 VLESS 节点可以保留 `xudp: true`，无需手动改成其他字段。内核可能忽略未知字段；配置校验通过后，仍需应用节点并检查实际出口。客机公网 UDP 的阻断规则不受这些协议选项影响。
+Ordinary node parameters are kept and passed to the Mihomo core bundled with Cage for validation. For example, a VLESS node copied from FlClash can keep `xudp: true` without changing it to another field by hand. The core may ignore unknown fields. After configuration validation passes, you still need to apply the node and check the actual exit. The guest's public UDP blocking rule is not affected by these protocol options.
 
-VMess、VLESS 和 Trojan 的 WebSocket 节点可以导入旧字段 `ws-path`、`ws-headers`。节点须明确设置 `network: ws`，Cage 会将路径和请求头转换为 `ws-opts.path`、`ws-opts.headers`，已保存的旧节点在应用代理时也会转换。新旧字段可同时存在，路径须一致，请求头按名称合并并忽略名称的字母大小写。相同请求头的值冲突、字段写法重复或旧字段用于其他传输方式时，来源会显示具体原因，需要修改该节点后重新导入。
+VMess, VLESS and Trojan WebSocket nodes can import the legacy fields `ws-path` and `ws-headers`. The node must explicitly set `network: ws`. Cage converts the path and headers to `ws-opts.path` and `ws-opts.headers`, and saved legacy nodes are converted when the proxy is applied. The new and legacy fields may coexist, but the paths must match, and headers are merged by name, ignoring letter case in names. If the values of the same header conflict, the field is written twice, or a legacy field is used for another transport, the source shows the specific reason, and you need to edit that node and import it again.
 
-Hysteria2 节点可使用 `mport` 指定端口跳跃范围、`pinSHA256` 指定证书指纹，导入时会转换为核心支持的字段并保留功能。若节点使用不支持的协议、引用本机文件或网卡、管理字段重复、别名参数冲突或代理链不可用，会跳过该节点，并在来源下显示导入数量、跳过数量和原因。点击「查看原因」可展开具体节点；依赖失败节点的代理链也会跳过。若所有节点均被跳过，导入失败；更新影响当前出口或中转节点时保留原配置，请先应用其他节点再更新。其余节点还须整体通过核心配置校验，校验失败时原配置保持不变，可在设置的「日志与诊断」中导出诊断包查看校验记录。
+Hysteria2 nodes can use `mport` to specify a port-hopping range and `pinSHA256` to specify a certificate fingerprint. On import, these are converted to fields the core supports, and the features are kept. If a node uses an unsupported protocol, references a local file or network interface, has duplicate management fields, has conflicting alias parameters, or a proxy chain is unavailable, the node is skipped, and the source shows the number imported, the number skipped and the reasons. Click "See reasons" to expand the specific nodes. Proxy chains that depend on failed nodes are also skipped. If all nodes are skipped, the import fails. When an update affects the current exit or a relay node, the original configuration is kept, so apply another node first and then update. The remaining nodes must also pass the core configuration validation as a whole. If validation fails, the original configuration stays unchanged, and you can export a diagnostics bundle from "Logs and diagnostics" in settings to see the validation record.
 
-同一个订阅地址可能按请求的客户端身份返回不同格式。Cage 下载时使用 Clash 客户端身份，服务商返回 YAML 时可以导入；若返回 Base64 或分享链接列表，仍需向服务商获取 Clash/Mihomo YAML。
-
-<figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/proxy-manual.jpg" target="_blank" rel="noopener" aria-label="查看原图：手动填写 HTTP / SOCKS5 节点"><img src="../../www/public/docs/screenshots/proxy-manual.jpg" alt="手动填写 HTTP / SOCKS5 节点" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>手动填写 HTTP / SOCKS5 节点。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/proxy-manual.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
-</figure>
-
-## 通过中转连接住宅出口
-
-如果住宅节点无法直接连接，在“节点”页切换到“链式代理”。按连接顺序选择中转，将住宅节点设为“最终出口”；需要多次中转时点“添加中转”。节点可以来自不同来源。
-
-应用前检查预览，例如：`Cage → 中转节点 → 住宅代理 → 目标网站`。目标网站看到的是最终出口。订阅更新不会覆盖已保存的组合；使用中的节点被移除时会保留原配置并显示错误，需要你重新选择。
+The same subscription URL may return different formats depending on the client identity it requests. Cage downloads with a Clash client identity, so YAML from the provider can be imported. If the provider returns a Base64 or share-link list, you still need to get a Clash/Mihomo YAML from the provider.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/network-settings.jpg" target="_blank" rel="noopener" aria-label="查看原图：网络与代理页面及出口变化规则"><img src="../../www/public/docs/screenshots/network-settings.jpg" alt="网络与代理页面及出口变化规则" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>网络与代理页面及出口变化规则。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/network-settings.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/proxy-manual.jpg" target="_blank" rel="noopener" aria-label="View original: entering an HTTP / SOCKS5 node manually"><img src="../../www/public/docs/screenshots/proxy-manual.jpg" alt="Entering an HTTP / SOCKS5 node manually" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Entering an HTTP / SOCKS5 node manually. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/proxy-manual.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 为什么应用了节点仍然离线
+## Reach a residential exit through a relay
 
-代理核心就绪和工作环境获准联网是两个步骤。环境启动后先保持业务外网关闭，执行出口、DNS、系统与浏览器配置、共享目录、宿主管理接口和网络阻断等关键检查。Linux 客机的 DNS 项同时要求解析器只指向环境内地址，且到公共 DNS 的 UDP/53、TCP/53 与 DoT/853 直连未绕过网关；宿主管理接口项还探测链路本地元数据地址和已配置的用户代理端口。IPv6 项要求客机全局 IPv6 地址为零，并核对路由或拒绝记录。缺少探针结果时显示未知；任一关键项失败或证据缺失都会继续关闭外网。
+If a residential node cannot connect directly, switch to "Chained proxy" on the "Nodes" page. Choose the relays in connection order, set the residential node as the "Final exit", and click "Add relay" when you need multiple relays. Nodes can come from different sources.
 
-出口检测通过所选代理读取公网 IPv4 地址，依次使用 `https://ipv4.icanhazip.com/` 和备用服务 `https://api.ipify.org/`。双栈节点使用其 IPv4 出口完成检查；宿主、客机终端和浏览器使用相同的检测方式。启动检查无法取得有效地址时，业务外网保持关闭，可稍后重试或检查节点。
-
-点击底部网络状态查看失败项，修复后重新检查。核心运行但环境未启动时会显示“待启动环境”。关键检查通过、联网授权有效时才显示“已联网”。
-
-“出口采样不完整”会列出未取得结果的路径：宿主、虚拟机终端或浏览器，以及超时、检测通道返回的 HTTP 状态或缺少地址等原因。终端代理检查通过只证明该次终端采样成功，宿主和浏览器仍须分别取得结果。动态 IP 规则决定哪些出口地址可以接受，采样失败时仍须重新检测。
-
-浏览器的出口采样没有响应或返回 HTTP 503 时，Cage 会等待一秒并重试一次。重试期间外网保持关闭；持续失败时保留最后一次检测结果。浏览器配置不符或响应缺少出口地址时，须先处理对应失败项。环境已经就绪、仅联网检查未通过时，页面会显示“环境已启动，联网检查未通过”，可直接重检网络。
-
-离线时仍可使用终端、共享文件及环境内的本地服务。浏览器地址栏中的 `localhost` 指当前 Cage 客机；开发服务应在 Cage 终端里启动。
+Check the preview before applying, for example: `Cage → Relay node → Residential proxy → Target website`. The target website sees the final exit. Subscription updates do not overwrite saved combinations. If a node in use is removed, the original configuration is kept and an error is shown, and you need to choose again.
 
 <figure class="guide-shot">
-  <a href="../../www/public/docs/screenshots/region-settings.jpg" target="_blank" rel="noopener" aria-label="查看原图：跟随出口 IP 的时区与语言设置"><img src="../../www/public/docs/screenshots/region-settings.jpg" alt="跟随出口 IP 的时区与语言设置" width="2560" height="1764" loading="lazy" decoding="async" /></a>
-  <figcaption>跟随出口 IP 的时区与语言设置。截图版本：0.1.6-alpha-preview（开发构建） · macOS 原生应用 · 2026-11-07。<a href="../../www/public/docs/screenshots/region-settings.jpg" target="_blank" rel="noopener">查看原图（2560 × 1764） ↗</a></figcaption>
+  <a href="../../www/public/docs/screenshots/network-settings.jpg" target="_blank" rel="noopener" aria-label="View original: network and proxy page and exit change rules"><img src="../../www/public/docs/screenshots/network-settings.jpg" alt="Network and proxy page and exit change rules" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Network and proxy page and exit change rules. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/network-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 系统镜像的下载网络
+## Why the node is applied but still offline
 
-系统镜像、镜像版本目录以及在主机上预备的 macOS 应用和开发工具包使用主机网络，与 Cage 客机的代理节点分开。Clash 等软件只开启“系统代理”也可以接管这些下载，无需开启 TUN；下载连接不绑定物理网卡，也不会修改代理软件的节点或规则。下载网站若被主机代理规则设为直连，Cage 遵循该规则；主机未配置代理时使用直连。
+Proxy core readiness and the working environment being allowed to connect to the internet are two separate steps. After the environment starts, internet access for the business stays off while the critical checks run: exit, DNS, system and browser configuration, shared directories, host management interfaces and network blocking. For Linux guests, the DNS item also requires the resolver to point only to an address inside the environment, and direct UDP/53, TCP/53 and DoT/853 connections to public DNS must not bypass the gateway. The host management interface item also probes link-local metadata addresses and the configured user proxy port. The IPv6 item requires the guest to have zero global IPv6 addresses, and checks routing or reject records. If a probe result is missing, the state shows unknown. If any critical item fails or evidence is missing, internet access stays off.
 
-- macOS：读取系统 HTTP、HTTPS、SOCKS 代理及 PAC，每次请求和重定向按目标地址解析。
-- Windows：读取当前用户的系统代理；PAC 与自动检测通过 WinHTTP 按目标地址解析。
-- Linux：支持代理环境变量、GNOME 手动桌面代理及主机 TUN。此构建遇到 GNOME 自动 PAC 会停止并提示改用 TUN 或代理环境变量；其他桌面环境请设置代理环境变量或开启 TUN。
+Exit detection reads the public IPv4 address through the selected proxy, using `https://ipv4.icanhazip.com/` first and the backup service `https://api.ipify.org/` next. Dual-stack nodes use their IPv4 exit to complete the check. The host, guest terminal and browser use the same detection method. If the startup check cannot get a valid address, internet access for the business stays off. You can retry later or check the node.
 
-从终端启动时，目标协议对应的 `HTTP_PROXY`、`HTTPS_PROXY` 优先于系统设置，`ALL_PROXY` 作为缺省代理，并遵循对应的 `NO_PROXY` 例外。这些主机设置不会传入客机。代理连不上或已配置的 PAC 解析失败时，下载停止，不因失败切换直连；修复主机代理后，在初始化界面继续安装，已有下载会尝试续传。
+Click the network status at the bottom to see the failed items, fix them, then check again. When the core is running but the environment has not started, it shows "Waiting to start environment". "Connected" is shown only when the critical checks pass and the network access authorization is valid.
 
-系统镜像和开发工具优先使用官方源。Debian 镜像下载失败后尝试提供同一固定版本的国内镜像；Debian 软件源和 Linux 工具在官方源不可用时尝试备用镜像。各下载路径保留原有的摘要、软件包签名或应用签名检查，自定义 Debian 软件源保持原样。
+"Exit sampling is incomplete" lists the paths that did not get a result, namely the host, the virtual machine terminal or the browser, along with reasons such as a timeout, the HTTP status returned by the detection channel, or a missing address. A passing terminal proxy check only proves that this terminal sample succeeded. The host and browser must each still get results. The dynamic IP rule decides which exit addresses are acceptable. When sampling fails, you still need to detect again.
 
-客机进程和在客机内下载的开发工具继续走 Cage 的独立代理。系统镜像下载成功不代表客机网络检查通过，进入工作台仍需完成客机的网络与隔离检查。
+If the browser's exit sampling gets no response or returns HTTP 503, Cage waits one second and retries once. Internet access stays off during the retry. If it keeps failing, the last detection result is kept. If the browser configuration does not match, or the response lacks an exit address, first fix the corresponding failed item. When the environment is ready but only the network check failed, the page shows "Environment started, but the network check did not pass", and you can recheck the network directly.
 
-## 时区、语言与出口规则
+While offline, you can still use terminals, shared files and local services inside the environment. In the browser address bar, `localhost` refers to the current Cage guest. Start development servers in the Cage terminal.
 
-在“设置 → 时区与语言”选择跟随出口或手动设置。自动模式通过代理查询出口位置，不使用主机位置替代。位置服务失败时可重试或切换节点；手动设置时区和语言仍须确认出口国家或地区。
+<figure class="guide-shot">
+  <a href="../../www/public/docs/screenshots/region-settings.jpg" target="_blank" rel="noopener" aria-label="View original: time zone and language settings that follow the exit IP"><img src="../../www/public/docs/screenshots/region-settings.jpg" alt="Time zone and language settings that follow the exit IP" width="2560" height="1764" loading="lazy" decoding="async" /></a>
+  <figcaption>Time zone and language settings that follow the exit IP. Screenshot version: 0.1.6-alpha-preview (development build) · macOS native app · 2026-11-07. <a href="../../www/public/docs/screenshots/region-settings.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
+</figure>
 
-网络页的“IP 变化规则”支持静态 IP，以及动态 IP 的同一城市、同一国家／地区或不限地区。城市模式还检查国家与州省。已保存的出口基准只有明确修改后才改变，重新检查不会自动接受新地址。
+## Download network for system images
 
-中国大陆出口禁止放行。检测地址命中内置大陆网段库，或定位结果为中国大陆时，业务外网保持关闭；静态 IP 和“不限地区”均不能豁免。无法确认出口国家或地区时也保持关闭，离线终端和文件仍可使用。地区定位和网段库可能存在误差；后台按周期采样，无法保证第三方代理每条连接都使用同一出口。
+System images, the image version catalog, and the macOS app and development toolkit prepared on the host use the host network, separate from the proxy nodes of the Cage guest. Software such as Clash can take over these downloads with only "System proxy" turned on, without TUN. Download connections are not bound to a physical network interface, and they do not change the nodes or rules of the proxy software. If the host proxy rules set a download site to direct, Cage follows that rule. When no proxy is configured on the host, direct connections are used.
 
-保存影响系统环境的配置可能要求重启。先保存文件；运行中不会因后台发现位置变化而静默重启任务。
+- macOS: reads the system HTTP, HTTPS and SOCKS proxies and PAC. Each request and redirect is resolved by its target address.
+- Windows: reads the current user's system proxy. PAC and auto-detection are resolved by target address through WinHTTP.
+- Linux: supports proxy environment variables, the GNOME manual desktop proxy and host TUN. In this build, if GNOME automatic PAC is encountered, it stops and asks you to switch to TUN or proxy environment variables. For other desktop environments, set proxy environment variables or turn on TUN.
 
-## 暂停、恢复和网络切换
+When started from a terminal, the `HTTP_PROXY` and `HTTPS_PROXY` for the target protocol take precedence over system settings, `ALL_PROXY` acts as the default proxy, and the matching `NO_PROXY` exceptions apply. These host settings are not passed into the guest. If the proxy cannot connect or the configured PAC fails to resolve, the download stops and does not switch to a direct connection because of the failure. After you fix the host proxy, continue the installation from the initialization screen, and existing downloads try to resume.
 
-点击底部状态可手动暂停外网。暂停会切断已有外部连接，保留本地任务和文件操作；关闭、重开 Cage 或刷新订阅不会解除手动暂停。
+System images and development tools prefer official sources. If the Debian image download fails, Cage tries a mirror in mainland China of the same fixed version. Debian package sources and Linux tools try backup mirrors when official sources are unavailable. Each download path keeps its original digest, package signature or app signature checks, and custom Debian package sources are kept as they are.
 
-后台会定期核对出口与环境配置。两个出口检测服务均超时时，Cage 在现有联网许可到期前继续重试，不延长许可；到期仍未确认时关闭外网，并尝试完整复检。发现出口或环境配置不符合规则时立即暂停。主机切换网络后会尝试恢复并完整复检；原先人为暂停的状态仍需主动恢复。控制服务失联后，已有网络授权到期关闭。固定出口还需要代理服务本身保证，周期采样不能证明所有连接都走同一 IP。
+Guest processes and development tools downloaded inside the guest still go through Cage's own proxy. A successful system image download does not mean that the guest network check has passed. Entering the workbench still requires the guest's network and isolation checks to complete.
 
-自动完整复检首次在 15 秒后尝试，失败后依次等待 30、60、120、240 秒，之后每次等待 300 秒；实际开始时间还取决于环境就绪、当前操作和内存压力。网络状态会显示剩余等待时间或等待原因。重新检查必须取得全部关键证据，自动恢复不会修改已保存的出口规则。
+## Time zone, language and exit rules
 
-## DNS 与诊断
+Under "Settings → Time zone and language", choose to follow the exit or set it manually. Automatic mode looks up the exit location through the proxy and does not use the host location instead. If location lookup fails, you can retry or switch nodes. When you set the time zone and language manually, you still need to confirm the exit country or region.
 
-业务 DNS 通过所选代理转发。节点域名的启动解析属于准备通信，与客机业务 DNS 的设置分开。Cage 不修改主机系统代理或 TUN，也不改变本机其他代理软件的节点。
+The "IP change rules" on the network page support a static IP, and a dynamic IP within the same city, the same country or region, or any region. City mode also checks the country and state or province. The saved exit baseline changes only after an explicit edit. Rechecking does not automatically accept a new address.
 
-代理页“诊断”可检查核心状态、重启 Cage 核心或选择独立监听端口。端口占用时选择未占用端口即可，修改后按提示重启环境。具体症状见[故障排查](troubleshooting.md#节点已应用但无法联网)。
+Exits in mainland China are not allowed. When the detected address matches the built-in mainland China network list, or the location result is mainland China, internet access for the business stays off. Neither a static IP nor "any region" can be exempted. If the exit country or region cannot be confirmed, it also stays off, while offline terminals and files remain usable. Location and the network list may have errors. Sampling runs periodically in the background, and it cannot guarantee that every connection of a third-party proxy uses the same exit.
 
-## 通过 Tailscale 私网使用 SSH
+Saving settings that affect the system environment may require a restart, so save your files first. A running task is not silently restarted just because the backend detects a location change.
 
-从侧栏「浏览器」下方打开「Tailscale」，在 Cage 浏览器授权后，可让本机与 Cage 环境通过私网双向 SSH。连接步骤、公钥和本机 SSH 服务要求见 [Tailscale 与 SSH 私网](tailscale.md)。
+## Pause, resume and network switching
 
-私网访问由用户主动启用，并受设备和 SSH 授权约束。外层通信继续经过 Cage 受控出口，暂停外网或代理中断会影响连接。这个入口与默认阻断的主机、局域网直连分别处理，不开放主机公网监听或子网路由。
+Click the status at the bottom to pause internet access manually. Pausing cuts existing external connections and keeps local tasks and file operations. Closing and reopening Cage, or refreshing a subscription, does not lift a manual pause.
+
+The backend periodically checks the exit and environment configuration. When both exit detection services time out, Cage keeps retrying before the current network permission expires, without extending it. If it is still unconfirmed when it expires, internet access is turned off and a full recheck is attempted. If the exit or environment configuration is found to break the rules, it pauses immediately. After the host switches networks, Cage tries to restore the connection and run a full recheck. A state that was paused manually still needs to be resumed manually. If the control service loses contact, existing network authorization expires and internet access is turned off. A fixed exit also depends on the proxy service itself, since periodic sampling cannot prove that every connection uses the same IP.
+
+The first automatic full recheck is attempted 15 seconds later. After a failure, it waits 30, 60, 120 and 240 seconds in turn, and then 300 seconds each time. The actual start time also depends on environment readiness, the current operation and memory pressure. The network state shows the remaining wait time or the reason for waiting. A recheck must obtain all critical evidence, and automatic recovery does not change the saved exit rules.
+
+## DNS and diagnostics
+
+Business DNS is forwarded through the selected proxy. The startup resolution of node domains belongs to communication preparation and is separate from the guest's business DNS setting. Cage does not change the host's system proxy or TUN, nor does it change the nodes of other proxy software on this computer.
+
+On the proxy page, "Diagnostics" can check the core status, restart the Cage core, or choose an independent listening port. If a port is in use, select an unused port, then restart the environment as prompted. For specific symptoms, see [Troubleshooting](troubleshooting.md#node-applied-but-no-internet-access).
+
+## Use SSH over the Tailscale private network
+
+Open "Tailscale" below "Browser" in the sidebar. After authorizing in the Cage browser, you can make SSH work in both directions over the private network between this computer and the Cage environment. For connection steps, public keys and local SSH service requirements, see [Tailscale and private-network SSH](tailscale.md).
+
+Private-network access is enabled by you and is limited by device and SSH authorization. Outer traffic still goes through Cage's controlled exit, and pausing internet access or a proxy interruption affects the connection. This entry is handled separately from the host and LAN direct connections that are blocked by default, and it does not open public listening on the host or subnet routing.
