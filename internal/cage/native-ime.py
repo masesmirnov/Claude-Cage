@@ -312,7 +312,8 @@ class Handler(socketserver.StreamRequestHandler):
                 engine = active
                 desktop_probe = (os.environ.get('CAGE_PHONE_DESKTOP_INPUT') == '1' and
                                  value.get('mode') in ('phone-status', 'phone-text', 'phone-char'))
-                ordinary_probe = value.get('mode') in ('status', 'begin') and engine is not None and engine.purpose not in (8, 9)
+                ordinary_probe = (engine is not None and engine.purpose not in (8, 9) and
+                                  (value.get('mode') == 'status' or value.get('mode') == 'begin' and not engine.reachable))
                 if probe_ready and engine is not None and (desktop_probe or ordinary_probe):
                     engine.probing = True
                     engine.probe_seen = False
