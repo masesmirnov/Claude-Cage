@@ -42,7 +42,7 @@ internal sealed class NativeInput : TextBox
         if (operation == "activate")
         {
             if (owner != requestedOwner) { Cancel(); owner = requestedOwner; }
-            Visible = true; BringToFront();
+            Visible = true; SendToBack();
         }
         else if (owner != requestedOwner) return false;
         if (operation is "activate" or "caret")
