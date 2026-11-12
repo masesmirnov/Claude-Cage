@@ -24,12 +24,12 @@ class PolicyTests(unittest.TestCase):
     def test_rate_follows_time_since_input(self):
         self.assertEqual(governor.target_rate(0), 60)
         self.assertEqual(governor.target_rate(2.9), 60)
-        self.assertEqual(governor.target_rate(3), 30)
-        self.assertEqual(governor.target_rate(179), 30)
+        self.assertEqual(governor.target_rate(3), 60)
+        self.assertEqual(governor.target_rate(179), 60)
         self.assertEqual(governor.target_rate(180), 20)
 
     def test_wakes_exactly_at_the_next_change(self):
-        self.assertAlmostEqual(governor.next_change(1), 2)
+        self.assertAlmostEqual(governor.next_change(1), 179)
         self.assertAlmostEqual(governor.next_change(10), 170)
         self.assertIsNone(governor.next_change(500))
 
@@ -93,7 +93,7 @@ class DisplayTests(unittest.TestCase):
         script = (f'import importlib.util, sys\n'
                   f'spec = importlib.util.spec_from_file_location("g", {str(Path(__file__).with_name("display-governor.py"))!r})\n'
                   f'g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)\n'
-                  f'g.ACTIVE_HOLD, g.IDLE_AFTER = .5, 1.5\nsys.exit(g.main())\n')
+                  f'g.IDLE_AFTER = 1.5\nsys.exit(g.main())\n')
         process = subprocess.Popen([sys.executable, '-c', script], env=self.env)
         self.addCleanup(process.wait)
         self.addCleanup(process.terminate)
@@ -134,14 +134,13 @@ class DisplayTests(unittest.TestCase):
 
     def test_unattended_display_slows_and_input_restores_it(self):
         original = self.current()[0]
-        self.assertEqual(self.wait(30), 'fps30-800x600')
         self.assertEqual(self.wait(20), 'fps20-800x600')
         started = time.monotonic()
         xtest.fake_input(self.conn, X.MotionNotify, x=40, y=40)
         self.conn.sync()
         self.assertEqual(self.wait(60), original)
         self.assertLess(time.monotonic() - started, .5)
-        self.wait(30)
+        self.wait(20)
         code = self.conn.keysym_to_keycode(0x61)
         xtest.fake_input(self.conn, X.KeyPress, code)
         xtest.fake_input(self.conn, X.KeyRelease, code)
@@ -159,27 +158,26 @@ class DisplayTests(unittest.TestCase):
             self.assertEqual(self.current()[1], 20)
 
     def test_resize_keeps_its_size_and_removes_earlier_modes(self):
-        self.wait(30)
+        self.wait(20)
         self.resize(1024, 700)
         self.assertEqual(self.wait(60, (1024, 700)), 'cage-1024x700')
-        self.assertEqual(self.wait(30, (1024, 700)), 'fps30-1024x700')
-        self.assertNotIn('fps30-800x600', self.modes())
+        self.assertEqual(self.wait(20, (1024, 700)), 'fps20-1024x700')
         self.assertNotIn('fps20-800x600', self.modes())
         # A viewer attaching at the same size restores the full rate as well.
         self.resize(1024, 700)
         self.assertEqual(self.wait(60, (1024, 700)), 'cage-1024x700')
         # Each step of a drag stays at the size its owner selected.
-        self.wait(30, (1024, 700))
+        self.wait(20, (1024, 700))
         for width in range(1030, 1100, 10):
             self.resize(width, 700)
             time.sleep(.05)
             self.assertEqual(self.current()[1:], (60, (width, 700)))
-        self.assertEqual(self.wait(30, (1090, 700)), 'fps30-1090x700')
+        self.assertEqual(self.wait(20, (1090, 700)), 'fps20-1090x700')
         self.assertIsNone(self.process.poll())
 
     def test_stopping_restores_the_full_rate(self):
         original = self.current()[0]
-        self.wait(30)
+        self.wait(20)
         self.process.terminate()
         self.assertEqual(self.process.wait(timeout=3), 0)
         self.assertEqual(self.current()[:2], (original, 60))

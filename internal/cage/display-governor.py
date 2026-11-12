@@ -14,9 +14,7 @@ import sys
 import time
 
 ACTIVE_RATE = 60
-PASSIVE_RATE = 30
 IDLE_RATE = 20
-ACTIVE_HOLD = 3.0
 IDLE_AFTER = 180.0
 # Size owners name their modes cage-<w>x<h> and cage-phone-<w>x<h>, and remove
 # only those. This prefix keeps the two sets of modes apart.
@@ -25,17 +23,13 @@ PROBE_KEYSYM = 0xffd5  # F24, injected by the input bridge to refresh a caret.
 
 
 def target_rate(idle):
-    if idle < ACTIVE_HOLD:
-        return ACTIVE_RATE
     if idle < IDLE_AFTER:
-        return PASSIVE_RATE
+        return ACTIVE_RATE
     return IDLE_RATE
 
 
 def next_change(idle):
     """Seconds until the target rate changes without further input."""
-    if idle < ACTIVE_HOLD:
-        return ACTIVE_HOLD - idle
     if idle < IDLE_AFTER:
         return IDLE_AFTER - idle
     return None
