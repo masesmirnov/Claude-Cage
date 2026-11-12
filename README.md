@@ -1,3 +1,5 @@
+> **English fork.** This is an English translation of [Claude Cage](https://github.com/Lee-xeo/Claude-Cage). The Windows installers on this fork's [releases page](https://github.com/masesmirnov/Claude-Cage/releases) are not code-signed, so Windows may warn before running them. The in-app update button installs new releases from this fork after checking the installer against its SHA-256 checksum. A daily workflow merges each new stable upstream release into the `english` branch and publishes a build when nothing is left to translate; otherwise it opens a pull request and the translation is done by hand.
+
 <div align="center">
 
 <h1>Claude Cage</h1>
