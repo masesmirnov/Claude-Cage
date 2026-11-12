@@ -24,7 +24,7 @@ Chat and Code run in the same official app. Cowork, which needs an extra virtual
 
 "Display size" in the upper-right corner defaults to 100%. Lower it to show more content, or raise it to enlarge text and controls. The picture adapts automatically when the window or sidebar changes, and the setting is saved on this computer. If you see "The view size could not be synced", click "Retry resizing".
 
-On Linux environments, the Desktop picture automatically lowers its refresh rate when nobody is interacting, and returns to 60 Hz as soon as you act. Sharpness stays the same. The picture renders at the pixel density of the screen it is on. Adjusting "Display size" only changes the size of text and controls, not the number of picture pixels. For details, see [Browser notes](browser.md#open-web-pages-and-browser-settings).
+On Linux environments, the Desktop picture automatically lowers its refresh rate when nobody is interacting, and returns to 120 Hz as soon as you act. Sharpness stays the same. The picture renders at the pixel density of the screen it is on. Adjusting "Display size" only changes the size of text and controls, not the number of picture pixels. For details, see [Browser notes](browser.md#open-web-pages-and-browser-settings).
 
 If scrolling feels choppy, go to "Settings → General" and turn on "Prefer smoothness". It takes effect after you save and start the environment next time. It lowers the drawing pixel density on high-DPI screens, and the logical size of controls stays the same. Performance also depends on the host CPU, memory and remote network.
 

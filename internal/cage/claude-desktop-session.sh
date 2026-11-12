@@ -30,7 +30,7 @@ for i in $(seq 1 100); do
 done
 xdpyinfo -display "$DISPLAY" >/dev/null
 openbox --config-file /etc/claude-cage/desktop-openbox.xml &
-X0tigervnc -display "$DISPLAY" -rfbport -1 -rfbunixpath "$XDG_RUNTIME_DIR/vnc.sock" -rfbunixmode 0600 -SecurityTypes VncAuth -PasswordFile "$XDG_RUNTIME_DIR/vnc-password" -AlwaysShared &
+X0tigervnc -display "$DISPLAY" -rfbport -1 -rfbunixpath "$XDG_RUNTIME_DIR/vnc.sock" -rfbunixmode 0600 -SecurityTypes VncAuth -PasswordFile "$XDG_RUNTIME_DIR/vnc-password" -AlwaysShared -FrameRate 120 &
 # Lower the refresh rate of unattended animation. Optional on older guests.
 if [ -x /usr/local/bin/cage-display-governor ]; then
   /usr/local/bin/cage-display-governor &

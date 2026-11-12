@@ -298,7 +298,7 @@ fi
 xrandr --output VNC-0 --mode "$name"
 for old in $(xrandr --query | awk '/^ +cage-/ {print $1}'); do
   if [ "$old" != "$name" ]; then xrandr --delmode VNC-0 "$old"; xrandr --rmmode "$old"; fi
-done`, scale, wid, hei, wid, hei, float64((wid+32)*(hei+8)*60)/1000000, wid, wid+8, wid+16, wid+32, hei, hei+1, hei+2, hei+8)
+done`, scale, wid, hei, wid, hei, float64((wid+32)*(hei+8)*120)/1000000, wid, wid+8, wid+16, wid+32, hei, hei+1, hei+2, hei+8)
 }
 
 func (s *Server) claudeDesktopVNC(w http.ResponseWriter, r *http.Request) {
