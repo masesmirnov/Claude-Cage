@@ -65,6 +65,7 @@ export const RemoteView = forwardRef(function RemoteView(
     if (!container) return;
     let disposed = false,
       client,
+      typing,
       resizeObserver,
       unwatchDensity,
       sizeSync,
@@ -179,14 +180,20 @@ export const RemoteView = forwardRef(function RemoteView(
             insertText: (text) => {
               if (desktop) {
                 if (!window.cageSharedClipboardActive) return client.cagePasteText(text);
-                return client.cageRunInput(async () => {
+                if (typing && client._cageInputChain === typing.done) {
+                  typing.text += text;
+                  return typing.done;
+                }
+                const batch = typing = { text };
+                return batch.done = client.cageRunInput(async () => {
                   const valid = () => !disposed && current.current.visible;
                   const state = await api("/input", { target: "desktop", id: "desktop", mode: "status" });
                   if (!state.available || !valid()) throw new Error("The input position lost focus. Click the input box again.");
                   const session = crypto.randomUUID().replaceAll("-", "");
                   const begun = await api("/input", { target: "desktop", id: "desktop", mode: "begin", context: state.context, session, sequence: 0 });
                   if (!begun.available || !valid()) throw new Error("The input position lost focus. Click the input box again.");
-                  const result = await api("/input", { target: "desktop", id: "desktop", mode: "commit", session, sequence: 1, text });
+                  if (typing === batch) typing = undefined;
+                  const result = await api("/input", { target: "desktop", id: "desktop", mode: "commit", session, sequence: 1, text: batch.text });
                   if (!result.available) throw new Error("Text input was not completed. Click the input box again.");
                 });
               }
