@@ -2016,7 +2016,8 @@ svg {
   font-size: 0.9286rem;
   font-weight: 500;
 }
-.project-form .folder-input input {
+.project-form .folder-input input,
+.project-form > input {
   border: 1px solid var(--line);
   background: var(--paper);
   border-radius: 7px;
@@ -2712,7 +2713,7 @@ svg {
 .cookie-heading > span, .cookie-pagination > span { color: var(--muted); margin-right: auto; }
 .cookie-toolbar { flex-wrap: wrap; align-items: flex-start; }
 .cookie-toolbar > .inline-select { min-width: 130px; }
-.cookie-toolbar > input { flex: 1; min-width: 140px; width: 0; }
+.cookie-toolbar > input { flex: 1; min-width: 140px; width: 0; min-height: 34px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--input); color: var(--ink); }
 .browser-cookies button { font-size: inherit; }
 .cookie-toolbar > button, .cookie-confirm > button, .cookie-pagination > button, .cookie-record-heading > button { display: inline-flex; align-items: center; gap: 4px; padding: 6px 8px; flex: none; }
 .cookie-list { max-height: min(25vh, 220px); overflow: auto; margin-top: 8px; }

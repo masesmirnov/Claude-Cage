@@ -212,7 +212,23 @@ button.primary:hover:not(:disabled) {
   height: 20px;
   padding: 0;
   border: 0;
-  accent-color: var(--accent);
+  appearance: none;
+  background: transparent;
+}
+.settings-content .theme-options input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(to right, var(--accent) var(--range-level), var(--line) var(--range-level));
+}
+.settings-content .theme-options input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 22px;
+  margin-top: -9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+  box-shadow: 0 1px 4px #00000030;
 }
 .settings-content
   .theme-options

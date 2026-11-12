@@ -311,6 +311,7 @@ function ThemeCard({ variant, value, active, onChange }) {
               min="0"
               max="100"
               value={value.contrast}
+              style={{ "--range-level": `${value.contrast}%` }}
               onChange={(e) => patch({ contrast: Number(e.target.value) })}
             />
           </label>
