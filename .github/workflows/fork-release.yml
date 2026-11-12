@@ -75,6 +75,10 @@ jobs:
         with:
           path: _output/windows-deps
           key: cage-windows-deps-${{ hashFiles('packaging/windows/dependencies.json', 'patches/qemu/**', 'scripts/build-qemu-windows.*') }}
+      - name: Collect the sources of the bundled QEMU runtime
+        env:
+          CAGE_MSYS2_ROOT: ${{ steps.msys2.outputs.msys2-location }}
+        run: ./scripts/prepare-qemu-release.ps1
       - name: Build the unsigned installer
         env:
           CAGE_MSYS2_ROOT: ${{ steps.msys2.outputs.msys2-location }}
@@ -89,8 +93,11 @@ jobs:
           $name = "Cage-$version-windows-amd64-setup.exe"
           $publish = New-Item -ItemType Directory -Path '_output/fork-release' -Force
           Move-Item -LiteralPath "$source/Cage-$version-windows-amd64-setup-unsigned.exe" -Destination (Join-Path $publish $name)
-          $hash = (Get-FileHash -LiteralPath (Join-Path $publish $name) -Algorithm SHA256).Hash.ToLowerInvariant()
-          [IO.File]::WriteAllText((Join-Path $publish 'SHA256SUMS'), "$hash  $name`n")
+          Move-Item -Path "$source/*-source.tar.gz" -Destination $publish
+          $qemu = (Get-Content -LiteralPath 'packaging/windows/dependencies.json' -Raw | ConvertFrom-Json).qemu.version
+          Copy-Item -LiteralPath '_output/windows-qemu-sources/full-source.tar.gz' -Destination (Join-Path $publish "qemu-$qemu-windows-full-source.tar.gz")
+          $sums = Get-ChildItem -LiteralPath $publish -File | Sort-Object Name | ForEach-Object { (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant() + '  ' + $_.Name }
+          [IO.File]::WriteAllLines((Join-Path $publish 'SHA256SUMS'), [string[]]$sums)
       - uses: actions/upload-artifact@v4
         with:
           name: fork-release
@@ -122,6 +129,8 @@ jobs:
           printf '%s\n' \
             "English build of upstream Cage [v$upstream](https://github.com/Lee-xeo/Claude-Cage/releases/tag/v$upstream)." \
             "" \
-            "The Windows installer is not code-signed, so Windows may warn before running it. Check it against \`SHA256SUMS\`." > notes.md
+            "The Windows installer is not code-signed, so Windows may warn before running it. Check it against \`SHA256SUMS\`." \
+            "" \
+            "The \`*-source.tar.gz\` files are the sources of the QEMU and mihomo builds inside the installer." > notes.md
           gh release create "$TAG" release/* -R "$GITHUB_REPOSITORY" --verify-tag --draft --title "Cage $version" --notes-file notes.md
           if [ "$DRAFT" != "true" ]; then gh release edit "$TAG" -R "$GITHUB_REPOSITORY" --draft=false --latest; fi
