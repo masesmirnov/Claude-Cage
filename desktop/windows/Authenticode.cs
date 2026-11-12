@@ -24,6 +24,7 @@ internal static class Authenticode
             var action = new Guid("00AAC56B-CD44-11D0-8CC2-00C04FC295EE");
             var result = WinVerifyTrust(new IntPtr(-1), ref action, ref data);
             data.StateAction = 2; _ = WinVerifyTrust(new IntPtr(-1), ref action, ref data);
+            if (result == unchecked((int)0x800B0100)) return "";
             if (result != 0) throw new IOException("Windows could not verify the installer signature; the original app was kept. Check the system certificate trust status.");
 #pragma warning disable SYSLIB0057
             using var signed = X509Certificate.CreateFromSignedFile(path);

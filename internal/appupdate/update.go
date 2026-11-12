@@ -29,7 +29,7 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-const repository = "Lee-xeo/Claude-Cage"
+const repository = "masesmirnov/Claude-Cage"
 const releasesURL = "https://api.github.com/repos/" + repository + "/releases?per_page=100"
 const maxArchive = 512 << 20
 const maxMetadata = 4 << 20

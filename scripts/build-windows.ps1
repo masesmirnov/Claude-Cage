@@ -174,7 +174,7 @@ try {
         $signTool = Get-SigningTool
         foreach ($file in @('Cage.exe', 'resources/cage.exe', 'resources/mihomo.exe')) { Sign-CageFile (Join-Path $app $file) $signTool }
     } else {
-        [IO.File]::WriteAllText((Join-Path $app 'DEVELOPMENT-BUILD.txt'), "Unsigned development build. Automatic update installation is disabled. Windows 10/11 runtime acceptance is still required.`n")
+        [IO.File]::WriteAllText((Join-Path $app 'DEVELOPMENT-BUILD.txt'), "Unsigned development build. Automatic updates install only unsigned installers whose SHA-256 matches the release checksum. Windows 10/11 runtime acceptance is still required.`n")
     }
     Assert-WindowsWorkbench $app
     $previousOutput = $null
