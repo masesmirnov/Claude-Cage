@@ -815,6 +815,7 @@ button.large {
 }
 .modal-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 9px;
   padding: 15px 22px;
@@ -2364,7 +2365,6 @@ svg {
   }
   .modal-footer {
     padding: 12px;
-    flex-wrap: wrap;
   }
   .modal-footer .save-note {
     flex-basis: 100%;
