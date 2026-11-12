@@ -81,6 +81,7 @@ def prepare_probe():
                 continue
             symbols = match[2].split()
             if symbols and symbols[0] == 'F24':
+                subprocess.run(['xset', '-r', match[1]], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 return True
             if int(match[1]) >= 128 and not symbols:
                 empty.append(int(match[1]))
@@ -88,6 +89,7 @@ def prepare_probe():
             return False
         subprocess.run(['xmodmap', '-e', f'keycode {max(empty)} = F24'],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(['xset', '-r', str(max(empty))], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return True
     except (OSError, subprocess.SubprocessError):
         return False
