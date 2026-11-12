@@ -201,7 +201,7 @@ export function installRemoteInput(
     if (disposed || !isActive() || !text) return;
     // X0tigervnc cannot map arbitrary Unicode to its finite X11 keycode pool.
     // The browser inserts committed text directly, without clipboard mutation.
-    insertText(text).catch(() => {
+    insertText(text, caretState?.target === getTargetId() && Date.now() - caretState.time < caretFreshFor ? caretState.context : undefined).catch(() => {
       if (!disposed) onStatus("Text input was not completed. Reconnect the view and try again.");
     });
   };

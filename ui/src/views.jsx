@@ -177,7 +177,7 @@ export const RemoteView = forwardRef(function RemoteView(
                     : sendImage(payload, desktop ? "desktop" : "browser", id, { prepared });
                 }, valid, !desktop && !current.current.systemClipboard ? text => prepared.send({ text }) : undefined);
             },
-            insertText: (text) => {
+            insertText: (text, context) => {
               if (desktop) {
                 if (!window.cageSharedClipboardActive) return client.cagePasteText(text);
                 if (typing && client._cageInputChain === typing.done) {
@@ -187,10 +187,14 @@ export const RemoteView = forwardRef(function RemoteView(
                 const batch = typing = { text };
                 return batch.done = client.cageRunInput(async () => {
                   const valid = () => !disposed && current.current.visible;
-                  const state = await api("/input", { target: "desktop", id: "desktop", mode: "status" });
-                  if (!state.available || !valid()) throw new Error("The input position lost focus. Click the input box again.");
                   const session = crypto.randomUUID().replaceAll("-", "");
-                  const begun = await api("/input", { target: "desktop", id: "desktop", mode: "begin", context: state.context, session, sequence: 0 });
+                  const begin = (context) => api("/input", { target: "desktop", id: "desktop", mode: "begin", context, session, sequence: 0 });
+                  let begun = context && await begin(context).catch(() => undefined);
+                  if (!begun?.available) {
+                    const state = await api("/input", { target: "desktop", id: "desktop", mode: "status" });
+                    if (!state.available || !valid()) throw new Error("The input position lost focus. Click the input box again.");
+                    begun = await begin(state.context);
+                  }
                   if (!begun.available || !valid()) throw new Error("The input position lost focus. Click the input box again.");
                   if (typing === batch) typing = undefined;
                   const result = await api("/input", { target: "desktop", id: "desktop", mode: "commit", session, sequence: 1, text: batch.text });
