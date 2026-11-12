@@ -34,7 +34,7 @@
 .claude-scheduling > label + label { margin-top: 10px; }
 .claude-scheduling > label { display: grid; gap: 5px; font-size: .85rem; }
 .claude-account-order { max-height: 7rem; overflow: auto; }
-.claude-account-order > div { display: flex; gap: 8px; align-items: center; margin-top: 5px; }
+.claude-account-order > div { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
 .claude-account-order span { flex: 1; overflow-wrap: anywhere; }
 .claude-handoff-group { display: flex; align-items: end; gap: 8px; margin: 12px 0; }
 .claude-handoff-group label { display: grid; flex: 1; min-width: 0; font-size: .8rem; gap: 4px; margin: 0 !important; }
@@ -137,6 +137,7 @@
   font-weight: 550;
 }
 .claude-profile-meta { gap: 7px; margin-top: 2px; }
+.claude-profile-rename + .claude-profile-meta { margin-top: 6px; }
 .claude-profile-email { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .claude-profile-status { flex: none; }
 .claude-profile-heading .claude-participation {

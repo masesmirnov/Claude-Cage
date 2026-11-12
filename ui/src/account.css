@@ -272,6 +272,9 @@
 .account-settings > .account-error {
   margin-top: 18px;
 }
+.account-entry > .account-error + button {
+  margin-top: 10px;
+}
 .account-settings-note {
   display: flex;
   gap: 8px;

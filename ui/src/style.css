@@ -725,6 +725,9 @@ button.large {
   padding: 7px;
   z-index: 6;
 }
+.connection-banner button {
+  margin-left: 10px;
+}
 .boot-screen {
   height: 100vh;
   display: flex;

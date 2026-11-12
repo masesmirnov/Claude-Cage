@@ -443,7 +443,8 @@
 .proxy-metrics small {
   opacity: 0.6;
 }
-.proxy-metrics + .field-help {
+.proxy-metrics + .field-help,
+.error-message + .field-help {
   margin-top: 10px;
 }
 .proxy-summary + .field-help,
