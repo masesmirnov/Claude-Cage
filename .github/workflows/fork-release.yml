@@ -1,0 +1,127 @@
+name: Fork release of the unsigned Windows installer
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing fork tag to build, for example v0.1.7-en.1
+        required: true
+        type: string
+      draft:
+        description: Keep the release as a draft
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: fork-release-${{ inputs.tag }}
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      TAG: ${{ inputs.tag }}
+    steps:
+      - name: Check the tag name
+        run: |
+          if ($env:TAG -notmatch '^v\d+\.\d+\.\d+-en\.[0-9A-Za-z.-]+$') { throw "Invalid fork tag: $env:TAG" }
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.403
+      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: msys2/setup-msys2@v2
+        id: msys2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            make patch diffutils git findutils curl
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-glib2
+            mingw-w64-ucrt-x86_64-pixman
+            mingw-w64-ucrt-x86_64-libslirp
+            mingw-w64-ucrt-x86_64-dtc
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-python
+            mingw-w64-ucrt-x86_64-pkgconf
+      - uses: actions/cache/restore@v4
+        id: qemu_cache
+        with:
+          path: _output/windows-deps
+          key: cage-windows-deps-${{ hashFiles('packaging/windows/dependencies.json', 'patches/qemu/**', 'scripts/build-qemu-windows.*') }}
+          restore-keys: cage-windows-deps-
+      - name: Build and verify the QEMU runtime
+        env:
+          CAGE_MSYS2_ROOT: ${{ steps.msys2.outputs.msys2-location }}
+        run: ./scripts/build-qemu-windows.ps1
+      - name: Preserve only the completed verified runtime cache
+        if: steps.qemu_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: _output/windows-deps
+          key: cage-windows-deps-${{ hashFiles('packaging/windows/dependencies.json', 'patches/qemu/**', 'scripts/build-qemu-windows.*') }}
+      - name: Build the unsigned installer
+        env:
+          CAGE_MSYS2_ROOT: ${{ steps.msys2.outputs.msys2-location }}
+        run: |
+          $version = $env:TAG.Substring(1)
+          [IO.File]::WriteAllText('VERSION', "$version`n")
+          & ./scripts/install-nsis.ps1 -Destination $env:RUNNER_TEMP
+          $env:PATH = (Join-Path $env:RUNNER_TEMP 'nsis-3.13') + [IO.Path]::PathSeparator + $env:PATH
+          ./scripts/build-windows.ps1
+          ./scripts/package-windows.ps1 -SkipBuild
+          $source = "_output/releases/$version/windows"
+          $name = "Cage-$version-windows-amd64-setup.exe"
+          $publish = New-Item -ItemType Directory -Path '_output/fork-release' -Force
+          Move-Item -LiteralPath "$source/Cage-$version-windows-amd64-setup-unsigned.exe" -Destination (Join-Path $publish $name)
+          $hash = (Get-FileHash -LiteralPath (Join-Path $publish $name) -Algorithm SHA256).Hash.ToLowerInvariant()
+          [IO.File]::WriteAllText((Join-Path $publish 'SHA256SUMS'), "$hash  $name`n")
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fork-release
+          path: _output/fork-release/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+  publish:
+    needs: windows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag }}
+      DRAFT: ${{ inputs.draft }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: fork-release
+          path: release
+      - name: Publish the release
+        run: |
+          set -euo pipefail
+          version=${TAG#v}
+          upstream=${version%%-en.*}
+          (cd release && sha256sum -c SHA256SUMS)
+          printf '%s\n' \
+            "English build of upstream Cage [v$upstream](https://github.com/Lee-xeo/Claude-Cage/releases/tag/v$upstream)." \
+            "" \
+            "The Windows installer is not code-signed, so Windows may warn before running it. Check it against \`SHA256SUMS\`." > notes.md
+          gh release create "$TAG" release/* -R "$GITHUB_REPOSITORY" --verify-tag --draft --title "Cage $version" --notes-file notes.md
+          if [ "$DRAFT" != "true" ]; then gh release edit "$TAG" -R "$GITHUB_REPOSITORY" --draft=false --latest; fi

@@ -1,0 +1,68 @@
+name: Fork sync with upstream releases
+on:
+  schedule:
+    - cron: '23 5 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+concurrency:
+  group: fork-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: english
+          fetch-depth: 0
+          token: ${{ secrets.FORK_SYNC_TOKEN || github.token }}
+      - name: Merge the newest upstream release
+        env:
+          GH_TOKEN: ${{ secrets.FORK_SYNC_TOKEN || github.token }}
+          UPSTREAM: Lee-xeo/Claude-Cage
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch --no-tags "https://github.com/$UPSTREAM.git" '+refs/tags/v*:refs/upstream/v*'
+          tag=""
+          for candidate in $(git for-each-ref --format='%(refname:lstrip=2)' refs/upstream | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V -r); do
+            if git merge-base --is-ancestor "refs/upstream/$candidate" HEAD; then break; fi
+            if [ "$(gh release view "$candidate" -R "$UPSTREAM" --json isDraft,isPrerelease -q '.isDraft or .isPrerelease' 2>/dev/null)" = "false" ]; then tag=$candidate; break; fi
+          done
+          if [ -z "$tag" ]; then echo "No new upstream release to merge."; exit 0; fi
+          echo "Newest unmerged upstream release: $tag"
+          branch="upstream-sync/$tag"
+          if [ -n "$(gh pr list --head "$branch" --state all --json number -q '.[].number')" ]; then
+            echo "A pull request for $tag already exists."; exit 0
+          fi
+          conflicts=""
+          chinese=""
+          if ! git merge --no-ff --no-edit -m "Merge $tag from upstream." "refs/upstream/$tag"; then
+            conflicts=$(git diff --name-only --diff-filter=U)
+            git merge --abort
+          else
+            chinese=$(git grep -I -n -P '[\x{3000}-\x{303F}\x{3400}-\x{4DBF}\x{4E00}-\x{9FFF}\x{F900}-\x{FAFF}\x{FF00}-\x{FFEF}]' -- . ':!README.zh-CN.md' ':!README.zh-TW.md' \
+              | grep -v -E '^README[^:/]*\.md:[0-9]+:.*\]\(README\.zh-CN\.md\)' | cut -d: -f1 | sort -u || true)
+          fi
+          if [ -n "$conflicts" ] || [ -n "$chinese" ]; then
+            if [ -n "$conflicts" ]; then
+              git push --force origin "$(git rev-parse "refs/upstream/$tag^{commit}"):refs/heads/$branch"
+              { echo "Merging upstream $tag into english has conflicts in these files:"; echo; printf -- '- `%s`\n' $conflicts; } > "$RUNNER_TEMP/body.md"
+            else
+              git push --force origin "HEAD:refs/heads/$branch"
+              { echo "Upstream $tag merges cleanly, but these files still contain Chinese text to translate:"; echo; printf -- '- `%s`\n' $chinese; } > "$RUNNER_TEMP/body.md"
+            fi
+            gh pr create --base english --head "$branch" --title "Merge upstream $tag" --body-file "$RUNNER_TEMP/body.md"
+            exit 0
+          fi
+          git push origin HEAD:english
+          release="$tag-en.1"
+          git tag "$release"
+          git push origin "refs/tags/$release"
+          gh workflow run fork-release.yml --ref english -f tag="$release"
+          echo "Merged $tag, tagged $release and started the release build."
