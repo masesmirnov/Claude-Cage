@@ -127,6 +127,8 @@ class Engine(IBus.Engine):
     def do_focus_in_id(self, path, client):
         # A single engine can be reused for different application fields.
         global active
+        if client == 'fake':
+            return
         if self.context_path != str(path):
             self.clear()
             self.context = secrets.token_hex(16)
