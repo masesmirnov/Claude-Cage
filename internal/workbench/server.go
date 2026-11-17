@@ -98,6 +98,7 @@ type Server struct {
 	windowsNetwork                                   *windowsHostNetwork
 	op                                               sync.Mutex
 	profile, configPath, exe, origin, token, session string
+	publicOrigin, proxyToken                         string
 	mu                                               sync.Mutex
 	preferences                                      Preferences
 	jobs                                             jobManager
@@ -196,6 +197,13 @@ func serve(configPath string, clientOnly bool, fullConfigPath string) (returned 
 	defer listener.Close()
 	s := &Server{profile: profile, configPath: configPath, exe: exe, clientOnly: clientOnly, origin: fmt.Sprintf("http://localhost:%d", port), token: randomToken(), session: randomToken(), preferences: Preferences{Keyboard: defaultKeyboard(), AutoTimezone: true, AutoLanguage: true, BalancedDisplay: true, ProjectFileCache: true}}
 	s.desktopEntry = fullConfigPath != ""
+	if file := os.Getenv("CAGE_PROXY_TOKEN_FILE"); file != "" {
+		secret, err := os.ReadFile(file)
+		if err != nil {
+			return err
+		}
+		s.publicOrigin, s.proxyToken = os.Getenv("CAGE_PUBLIC_ORIGIN"), strings.TrimSpace(string(secret))
+	}
 	s.appUpdateConfigPath = configPath
 	if fullConfigPath != "" {
 		s.appUpdateConfigPath = fullConfigPath
@@ -505,7 +513,11 @@ func (s *Server) handler() http.Handler {
 	web, _ := fs.Sub(assets, "web")
 	mux.Handle("GET /", http.FileServer(http.FS(web)))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		origin, err := url.Parse(s.origin)
+		expected := s.origin
+		if s.proxied(r) {
+			expected = s.publicOrigin
+		}
+		origin, err := url.Parse(expected)
 		if err != nil || r.Host != origin.Host {
 			http.Error(w, "Host refused", 403)
 			return
@@ -514,9 +526,9 @@ func (s *Server) handler() http.Handler {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "no-referrer")
 		w.Header().Set("X-Frame-Options", "DENY")
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws://"+origin.Host+"; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' "+strings.Replace(expected, "http", "ws", 1)+"; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
 		if (r.Method != "GET" && r.Method != "HEAD") || strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
-			if r.Header.Get("Origin") != s.origin {
+			if r.Header.Get("Origin") != expected {
 				http.Error(w, "Origin refused", 403)
 				return
 			}
@@ -537,7 +549,7 @@ func (s *Server) handler() http.Handler {
 		}
 		if strings.HasPrefix(r.URL.Path, "/api/") && r.URL.Path != "/api/session" && r.URL.Path != "/api/launch" && r.URL.Path != "/api/handoff" {
 			c, e := r.Cookie(s.cookieName())
-			if e != nil || !equalSecret(c.Value, s.session) {
+			if !s.proxied(r) && (e != nil || !equalSecret(c.Value, s.session)) {
 				http.Error(w, "Reopen the workbench from the Cage app.", 401)
 				return
 			}
@@ -960,6 +972,11 @@ func (s *Server) requestStop(w http.ResponseWriter, logout bool) {
 		kind = "logout"
 	}
 	s.launch(w, kind, s.stopEnvironment)
+}
+
+func (s *Server) proxied(r *http.Request) bool {
+	public, err := url.Parse(s.publicOrigin)
+	return err == nil && s.proxyToken != "" && public.Host != "" && r.Host == public.Host && equalSecret(r.Header.Get("X-Cage-Proxy-Token"), s.proxyToken)
 }
 
 func (s *Server) cookieName() string { u, _ := url.Parse(s.origin); return cookieName + "_" + u.Port() }
