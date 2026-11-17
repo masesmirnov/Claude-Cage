@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { api } from "./api";
 import { AccountProvider, AccountGate } from "./account";
 import { AppearanceProvider } from "./appearance";
+import { ClientRoot } from "./remote-hosts";
 import { TerminalView } from "./views";
 import "./style.css";
 
@@ -26,5 +27,5 @@ function Console() {
 }
 
 createRoot(document.getElementById("root")).render(
-  <AccountProvider><AppearanceProvider><AccountGate><Console /></AccountGate></AppearanceProvider></AccountProvider>,
+  <ClientRoot><AccountProvider><AppearanceProvider><AccountGate><Console /></AccountGate></AppearanceProvider></AccountProvider></ClientRoot>,
 );
