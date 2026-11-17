@@ -1822,7 +1822,7 @@ function App() {
                   )}
                   {running && status.ready && (
                     <p className="welcome-hint">
-                      {status.guest_system === "windows-remote" ? "PowerShell and the browser need no Claude sign-in. You only need to sign in to an account when using Claude." : <>After opening a project, enter <code>claude</code>in the terminal and sign in to your account as prompted.</>}
+                      {status.guest_system === "windows-remote" ? "PowerShell and the browser need no Claude sign-in. You only need to sign in to an account when using Claude." : <>After opening a project, enter <code>claude</code> in the terminal and sign in to your account as prompted.</>}
                       <br />
                       {status.guest_system === "windows-remote" ? "Files are saved in the isolated cloud working folder, and your local folders are not mounted." : isRemoteClient() ? "Opened projects are in the cloud, and edits and deletions act directly on the cloud files." : "Opened projects are shared with this computer, and edits and deletions of files are synced."}
                     </p>

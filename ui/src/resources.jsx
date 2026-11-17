@@ -86,7 +86,7 @@ export function ResourceSettings({ status, onConfirm, onDirtyChange }) {
   </section>;
   return <section className="environment-versions resource-settings" aria-label="Compute resources">
     <h4>Compute resources</h4>
-    <p className="field-help resource-intro">Uses half of the host's resources by default; you can adjust them below.{macOS ? "macOS guests use a fixed boot memory size: while running, memory is not returned to the host, and the usage in the host's Activity Monitor gradually approaches the limit you set. This is not a memory leak; to leave more memory for the host, lower the limit and restart the guest." : "Memory is used as needed and returned to the host gradually after staying idle."}CPU is used according to actual tasks.</p>
+    <p className="field-help resource-intro">Uses half of the host's resources by default; you can adjust them below. {macOS ? "macOS guests use a fixed boot memory size: while running, memory is not returned to the host, and the usage in the host's Activity Monitor gradually approaches the limit you set. This is not a memory leak; to leave more memory for the host, lower the limit and restart the guest." : "Memory is used as needed and returned to the host gradually after staying idle."}CPU is used according to actual tasks.</p>
     {draft ? <form className="resource-allocation" onSubmit={save}>
       <fieldset disabled={busy} className="resource-fields">
         <legend className="sr-only">Resource settings</legend>

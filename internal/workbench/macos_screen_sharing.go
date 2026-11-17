@@ -137,7 +137,7 @@ func (s *Server) openMacOSScreenSharing(w http.ResponseWriter, r *http.Request) 
 			requestError(w, err)
 			return
 		}
-		status.Summary = "Re-enabled the guest Screen Sharing service." + status.Summary
+		status.Summary = "Re-enabled the guest Screen Sharing service. " + status.Summary
 		jsonReply(w, status)
 	case "open":
 		// Daily connect only creates a host-local SSH forward to guest

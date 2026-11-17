@@ -119,7 +119,7 @@ export function AppUpdateButton({ updates }) {
   const hint = coolingDown ? `${state.message || "The update source is rate-limited"}. You can retry after ${new Date(state.retryAt).toLocaleString()}`
     : failed ? `${state.message || "The update was not completed"}. Click to retry`
     : busy ? label
-    : manual ? `New version ${state.latestVersion} is out. ${state.message || ""}Click to open the releases page.`
+    : manual ? `New version ${state.latestVersion} is out. ${state.message ? state.message + " " : ""}Click to open the releases page.`
     : `Update to ${state.latestVersion}. Save your work first; after clicking, the environment stops, the update installs and the app restarts automatically.`;
   const circumference = 2 * Math.PI * 15;
   return (

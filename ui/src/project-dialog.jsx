@@ -285,7 +285,7 @@ export function ProjectDialog({
             <button type="button" disabled={browsing || !directories.selectable} onClick={() => { appendFolder(directories.path); setDirectories(null); }}>Choose this cloud folder</button>
           </section>}
         </>}
-        {adding && <p className="field-help">Claude starts from the default folder and can read and write the other bound folders. After changing bindings, the change takes effect for new or reopened sessions.{editing && "The default folder links session history and must be kept. Before unbinding, close the project's terminals, running sessions and editor."}</p>}
+        {adding && <p className="field-help">Claude starts from the default folder and can read and write the other bound folders. After changing bindings, the change takes effect for new or reopened sessions. {editing && "The default folder links session history and must be kept. Before unbinding, close the project's terminals, running sessions and editor."}</p>}
         <p className="field-help project-picker-note">
           <span>{remote ? "Cloud projects are stored on the server." : "Changes in bound folders are written directly to this computer."}</span>
           <span>All projects share the Cage environment, and existing terminals and web pages keep running.</span>

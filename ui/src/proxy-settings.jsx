@@ -357,7 +357,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                   then click Import and verify. You can export the config from an existing proxy client.
                 </li>
                 <li>
-                  <strong>Manual node:</strong>Supports HTTP CONNECT, SOCKS5 and SSH. Enter the node name, server address, port and authentication; SSH can use password or private key authentication. Then click "Import and verify".
+                  <strong>Manual node:</strong> Supports HTTP CONNECT, SOCKS5 and SSH. Enter the node name, server address, port and authentication; SSH can use password or private key authentication. Then click "Import and verify".
                 </li>
               </ul>
             </li>

@@ -447,7 +447,7 @@ function RecoveryKeyScreen() {
   return <main className="account-gate">
     <section className="account-entry account-recovery" aria-label="Save the recovery key">
       <h1>{recovery.reset ? "Password reset" : "Save your recovery key"}</h1>
-      <p className="account-entry-intro">{recovery.reset && "Save the new recovery key."}Account: {recovery.username}. This key can reset the password and access your existing data. Store it in a password manager or a safe offline place, and do not share it with anyone.</p>
+      <p className="account-entry-intro">{recovery.reset && "Save the new recovery key. "}Account: {recovery.username}. This key can reset the password and access your existing data. Store it in a password manager or a safe offline place, and do not share it with anyone.</p>
       <label className="account-field">Recovery key<textarea aria-label="Recovery key" readOnly value={recovery.key} rows={4} spellCheck={false} autoComplete="off" onFocus={(event) => event.target.select()} /></label>
       <div className="account-recovery-actions">
         <button className="quiet-button" onClick={async () => {
@@ -468,7 +468,7 @@ function RecoveryKeyScreen() {
         }}>Download key file</button>
       </div>
       {notice && <p className="field-help" role="status">{notice}</p>}
-      <p className="field-help">The full key is shown only here. After closing or refreshing, you can verify the account password to generate a new one; the old key stops working once a new one is generated.{recovery.reset && "Your existing data and Claude sign-in state were kept. Cage's Remember me and quick unlock were turned off; sign in with the new password and set them up again."}</p>
+      <p className="field-help">The full key is shown only here. After closing or refreshing, you can verify the account password to generate a new one; the old key stops working once a new one is generated. {recovery.reset && "Your existing data and Claude sign-in state were kept. Cage's Remember me and quick unlock were turned off; sign in with the new password and set them up again."}</p>
       <label className="account-device-option check-line"><input type="checkbox" checked={saved} onChange={(event) => setSaved(event.target.checked)} /><span>I have safely saved the full recovery key</span></label>
       <button className="primary account-submit" disabled={!saved} onClick={dismissRecovery}>{recovery.reset ? "Back to sign-in" : "Continue to Cage"}</button>
     </section>
@@ -802,7 +802,7 @@ export function AccountSettings({ busy: environmentBusy, onDirty }) {
         <fieldset disabled={busy || environmentBusy}>
           <h4>Account password</h4>
           <p className="field-help">
-            Changing the password does not clear Claude's sign-in state.{account.macos_credentials_ready ? "Cage and the macOS guest share the password; when the guest is off, it syncs after the next start." : "If you forget the password, you can reset it on the sign-in page with the saved recovery key."}
+            Changing the password does not clear Claude's sign-in state. {account.macos_credentials_ready ? "Cage and the macOS guest share the password; when the guest is off, it syncs after the next start." : "If you forget the password, you can reset it on the sign-in page with the saved recovery key."}
           </p>
           {!account.trusted_local && <PasswordField
             label="Current password"
