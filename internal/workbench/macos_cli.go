@@ -4,16 +4,18 @@ import (
 	"path"
 
 	"al.essio.dev/pkg/shellescape"
+	"github.com/sylvinus/agent-vm/internal/cage"
 )
 
 const macCLIInstall = "/usr/local/libexec/cage-cli"
 
-const macOSLegacyWorkspaceNotice = "This earlier session still uses its original guest directory, and its files stay inside the virtual Mac. To use the default workspace shared with the host, create a new session from the default workspace."
+const macOSLegacyWorkspaceNotice = "此历史会话仍使用原来的客机目录，文件保留在虚拟 Mac 内。要使用共享项目，请添加项目文件夹后新建会话。"
 
 // Only a persisted terminal already bound to the old default workspace keeps
 // that directory. New sessions and other host projects use approved mounts.
 func (s *Server) macOSLegacyWorkspace(record *mobileRecord) string {
-	if s.macosGuest == nil || record == nil || !record.Terminal || record.Workspace != s.environmentDir() {
+	if s.macosGuest == nil || record == nil || !record.Terminal ||
+		record.Workspace != s.environmentDir() && record.Workspace != cage.EnvironmentIdentityDir(s.profile) {
 		return ""
 	}
 	root := path.Join("/Users", s.macosGuest.User, ".local/share/cage/workspace")

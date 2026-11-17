@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { api, writeClipboard } from "./api";
 import { Modal } from "./views";
+import { DeviceChecks } from "./device-checks";
 import { networkState, reportForSharing } from "./safety-state.mjs";
 
 const diagnostics = [
@@ -24,9 +25,18 @@ const diagnostics = [
   },
   {
     name: "Browser information",
-    source: "fuck-claude.com",
-    url: "https://fuck-claude.com/",
+    source: "fuck-claude.vercel.app",
+    url: "https://fuck-claude.vercel.app/",
     description: "View the community's assessment of browser signals such as time zone, language and fonts.",
+    attribution: "原项目 FuckClaude 由 LinXiaoTao 创建并持续维护。",
+    links: [
+      { label: "原项目官网", url: "https://fuck-claude.vercel.app/" },
+      { label: "开源仓库", url: "https://github.com/LinXiaoTao/FuckClaude" },
+      {
+        label: "初始提交",
+        url: "https://github.com/LinXiaoTao/FuckClaude/commit/420c79bb0531b12ea2788e726ffbf81075111737",
+      },
+    ],
   },
 ];
 
@@ -223,6 +233,7 @@ export function SafetyPanel({
             The checks cover outbound rules, proxy fail-closed behavior, DNS, shared directories, host management interfaces, and the actual system and browser configuration. When a critical item fails or is unknown, internet access stays off.
           </p>
         )}
+        <DeviceChecks disabled={busy || !status.vm_running} />
         {report?.checks?.some((check) => !check.critical) && (
           <div className="safety-advisories">
             {report.checks
@@ -252,6 +263,24 @@ export function SafetyPanel({
                 Open in Cage
                 <ArrowUpRight size={14} />
               </button>
+              {site.attribution && (
+                <div className="safety-scope">
+                  <p>{site.attribution}</p>
+                  <div className="safety-sources">
+                    {site.links.map((link) => (
+                      <button
+                        key={link.url}
+                        className="text-button"
+                        disabled={!online || busy}
+                        onClick={() => open(link.url)}
+                      >
+                        {link.label}
+                        <ArrowUpRight size={12} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

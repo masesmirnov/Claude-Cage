@@ -140,13 +140,7 @@ try {
   await page
     .getByRole("dialog", { name: "Upload local files" })
     .waitFor({ state: "hidden" });
-  state.status.ready = false;
-  state.status.vm_running = false;
-  await page.waitForFunction(
-    () =>
-      document.querySelector('[aria-label="Open browser"]')?.disabled === true,
-  );
-  await page.getByRole("button", { name: "Downloaded files", exact: true }).click();
+  await page.getByRole("button", { name: "Browser downloads", exact: true }).click();
   await page
     .getByText("/Users/test/Downloads/Видео.mp4", { exact: true })
     .waitFor();

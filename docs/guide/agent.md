@@ -8,7 +8,7 @@ keywords: Agent CLI JSON automation configuration interface install diagnostics 
 
 You can give the paragraph below to your own agent, and it will prepare Cage for your goal. You only need to provide your own proxy source, choose the working environment, and complete authorization when the operating system requires it. You decide the Cage account password, the Claude sign-in, license confirmations and the project sharing scope.
 
-> Read https://lee-xeo.github.io/Claude-Cage/agent.md and help me install, configure and verify Cage. First check the local installation and interface capabilities, then act based on the actual state. When done, tell me whether the environment is ready, whether the network check passed, and what I still need to do. Keep all existing accounts, projects and virtual machine data.
+> 请阅读 https://claude-cage.com/agent.md ，协助我安装、配置并验证 Cage。先检查本机安装和接口能力，再按实际状态操作；完成后告诉我环境是否就绪、网络是否通过检查，以及还需要我完成什么。保留所有现有账户、项目和虚拟机数据。
 
 This page describes the interfaces of the current source code and development build. The public release may not include `cage agent` yet. After installation, you must run a capability probe first. If you hit an unknown command, use that version's interface and release notes, or install a newer build the user has authorized. Do not infer that an interface exists from the version string alone.
 
@@ -34,7 +34,7 @@ On macOS and Linux, you can also fetch `/cage-install.sh` and run it. Its argume
 
 ```sh
 curl --proto '=https' --proto-redir '=https' -fL \
-  https://lee-xeo.github.io/Claude-Cage/agent-bootstrap.mjs -o agent-bootstrap.mjs
+  https://claude-cage.com/agent-bootstrap.mjs -o agent-bootstrap.mjs
 node agent-bootstrap.mjs plan --platform darwin-arm64
 node agent-bootstrap.mjs download --platform darwin-arm64 \
   --version v0.1.6-alpha-preview --destination /absolute/path/downloads
@@ -84,7 +84,7 @@ cage agent call account.unlock --input -
 
 ### Import a proxy and confirm the exit
 
-First read `proxy.status`. If a usable source already exists, reuse it to avoid importing twice. For the first import, you can use a subscription link the user provides, or a Clash/Mihomo configuration or share link from a private file.
+先读 `proxy.status`。已有可用来源时复用，避免重复导入。首次导入可用用户提供的 HTTPS Clash/Mihomo 节点订阅，或私有文件中的 Clash/Mihomo YAML；内容必须包含 `proxies` 或 `payload` 节点。Base64 列表、单个 `vless://` 等分享链接、Xray/v2rayN 原生 JSON 和仅引用远程 provider 的配置不能直接导入，改文件后缀也不能完成转换。只有分享链接时，先从原客户端导出兼容 YAML；协议或握手不兼容时，可按[通过本机代理客户端转发](network.md#通过本机代理客户端转发)配置 SOCKS5 上游，再验证预期出口。
 
 ```json
 {"name":"My proxy","url":"https://the-user-subscription-url","interval_hours":0,"host_download":true}
@@ -97,6 +97,22 @@ cage agent call proxy.status
 
 `host_download:true` explicitly allows the host to download this subscription over the network, only to fetch the subscription. The guest does not get a direct-connection fallback because of it. If a Cage proxy already exists, you can omit it so that the subscription goes through the existing proxy. Do not automatically extract subscriptions from the local browser, proxy software or another agent's credential files.
 
+从本地 YAML 文件导入时，CLI 仍接收 JSON，YAML 原文放入 `content` 字段。可用 Node.js 读取私有文件并直接通过管道传入，避免将节点内容拼到命令行参数中：
+
+```sh
+node --input-type=module -e '
+import { readFileSync } from "node:fs";
+process.stdout.write(JSON.stringify({
+  name: "我的代理",
+  content: readFileSync(process.argv[1], "utf8")
+}));
+' /private/path/nodes.yaml |
+  cage agent call proxy.import --input - --wait 2m
+cage agent call proxy.status
+```
+
+节点内容使用网络指南中的[完整 SOCKS5 YAML 示例](network.md#通过本机代理客户端转发)或用户自己的兼容配置；不要将 YAML 文件直接作为 `--input` 的 JSON 输入。两种导入方式择一使用，避免重复创建来源。
+
 Choose the exit the user asked for from the returned sources and node list. Do not treat the first node in the subscription as an exit the user has agreed to.
 
 ```json
@@ -108,7 +124,11 @@ cage agent call proxy.select --input /private/path/selection.json --wait 2m
 cage agent call proxy.status
 ```
 
-For chained proxies, use `proxy.route` with the input `{"node_ids":["entry ID","final exit ID"]}`, in order from entry to exit. To update a subscription, use `proxy.refresh` and the existing source `id`. `proxy.import` creates a new source each time, so do not retry it blindly. A successful proxy apply only means the proxy is ready. The guest's safety checks after startup still need to be verified separately.
+链式代理使用 `proxy.route`，输入 `{"node_ids":["入口ID","最终出口ID"]}`，顺序为入口到出口。`proxy.select` 总是把路由替换为所选的单个节点：已有链会被清除，所选节点即使原本在链中也可以。节点无效、配置验证或核心启动失败时保留原路由；路由保存后的网络检查仍可能失败，应以 `proxy.status` 返回的当前路由为准。要保留或重建多跳链，请重新调用 `proxy.route`。更新订阅使用 `proxy.refresh` 和已有来源 `id`；`proxy.import` 每次创建来源，不能盲目重试。
+
+`proxy.import` 成功表示节点格式和核心配置通过校验。应用节点后，用 `settings.get` 读取完整设置，再将设置对象作为 `settings.probe` 的输入，通过所选代理发起真实 HTTPS 请求，核对返回的出口 IP 和位置。报告时分别说明导入校验、实际连通性与出口验证结果；主机上其他代理客户端可用或核心进程正在运行，都不能代替实际出口验证。客机启动后，仍需按下文核对 `network.check` 和当前网络授权，确认终端与浏览器等路径通过检查。
+
+VLESS + TCP + REALITY 节点若在语法校验通过后报 `REALITY authentication failed`，先对照原客户端与服务端参数，再按[网络指南的 REALITY 排查步骤](network.md#vless-reality-握手失败)检查 `reality-opts.support-x25519mlkem768`。按节点要求只调整这一项，重新导入、应用并重复相同的 HTTPS 与出口验证；不要批量改写所有 REALITY 节点、关闭证书校验或绕过出口规则。节点地址、UUID、公钥、short-id 和原始日志仍应留在私有排查材料中。
 
 ### Prepare the environment and open a project
 
@@ -151,7 +171,9 @@ Judge availability together from `status.ready`, `vm_running`, and the network c
 
 Open a project with `project.open`: `{"workspace":"user-authorized absolute path","add":true,"activate":true}`. It lets the guest access this directory, and changes affect the host files. A returned `approval` means it is waiting for system authorization. The agent can call the same `/api/macos/project-approval` to view and act on that window. Claude's service sign-in is still completed in the official tools inside Cage. This interface does not import host Claude credentials.
 
-To remove an added project, use `project.remove` with `{"workspace":"path from the project list"}`. After you close this directory's terminals, running sessions and editor, sharing is removed, and the original files and session history are kept. The default workspace is kept, and after removing the current project, it switches back to the default workspace.
+移除已添加项目使用 `project.remove`，传入 `{"workspace":"项目列表中的路径"}`。关闭该目录的终端、运行中会话和编辑器后可解除共享，原文件与会话历史保留。移除当前项目后切换到剩余项目；移除最后一个项目后没有当前项目。
+
+Linux 环境默认缓存项目文件的名称与属性，主机上的改动最多 20 秒后可见。刚在主机上改过文件、需要环境立即看到时调用 `project.refresh`，无需参数；macOS 和 Windows 环境始终直接读取，调用会返回 409。
 
 ## JSON results and asynchronous jobs
 
@@ -243,7 +265,6 @@ cage agent call settings.get --scope selected --connection current-connection-ge
 | Name, avatar, password, lock, sign out | account.profile: username/avatar; account.password: old_password/password/confirm_password; account.lock/logout/suspend. |
 | Local trust, remember sign-in, set password protection | desktop scope client.trusted-login: action is create/resume/enable/disable/protect. Provide password and connection_id under the same rules. |
 | Touch ID and quick sign-in | native.submit with accountDevice, where operation is status/enable/disable/unlock and kind is automatic/biometric. Device keys are managed by native secure storage. Operations that Windows/Linux do not support return the same limits as the user interface. |
-| Git protection on first launch | Read with host.git. Enable with host.git.enable and input confirm:true. This changes the host's global Git protection configuration, the same as the interface action. |
 | Appearance, fonts, color schemes, custom themes | appearance.get/set reads and writes the full object. appearance.codex reads the local Codex appearance for import. Unchanged fields are kept after reading. |
 | Exit location detection, speed test, connections and logs | settings.probe takes the complete settings draft as input. proxy.delay takes node_id as input. proxy.connections/logs. dry_run only performs static validation. |
 | Reselect the system before installation starts | guest.reselect takes guest.options.pending.id as input, and is still constrained by the original installation state. |

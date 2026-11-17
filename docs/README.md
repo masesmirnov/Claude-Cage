@@ -1,10 +1,10 @@
 # Cage documentation
 
-New to Cage? Start with installation and proxy setup. If an existing environment has a problem, go straight to troubleshooting and recovery. For public installers and the tested version scope, see [GitHub Releases](https://github.com/Lee-xeo/Claude-Cage/releases). For an overview, see the [project homepage](https://lee-xeo.github.io/Claude-Cage/).
+首次使用 Cage，从安装与代理配置开始；已有环境遇到问题时，直接查故障恢复。公开安装包与版本验收范围见 [GitHub Releases](https://github.com/Lee-xeo/Claude-Cage/releases)，产品介绍见[项目主页](https://claude-cage.com/)。
 
 ## Usage and feedback
 
-The [website user guide](https://lee-xeo.github.io/Claude-Cage/docs/) is for daily use. It has a categorized index, full-text search and section links. Its source is in [guide/](guide/index.md), covering multiple accounts, the browser, mobile, cloud, settings and troubleshooting. The table below lists direct links to installation, platform notes and maintenance docs.
+面向日常使用的[官网使用文档](https://claude-cage.com/docs/)提供分类目录、全文搜索和章节链接。内容源位于 [guide/](guide/index.md)，包括多账号、浏览器、手机、云端、设置与排障；下表保留安装、平台说明与维护资料的直接入口。
 
 | What you want to do | Start here |
 |---|---|
@@ -19,5 +19,6 @@ The [website user guide](https://lee-xeo.github.io/Claude-Cage/docs/) is for dai
 | Troubleshoot downloads, startup, internet access and authorization | [Troubleshooting and recovery](troubleshooting.md) |
 | Export a diagnostics bundle and learn about automatic cleanup | [Export a diagnostics bundle](troubleshooting.md#export-a-diagnostics-bundle) |
 | Report an isolation or credential security issue | [Security report](../SECURITY.md) |
+| 贡献修复、功能或文档，了解 Issue 审核、协作者邀请与 PR 流程 | [贡献指南](../.github/CONTRIBUTING.md) |
 
 License materials: [LICENSE](../LICENSE), [NOTICE](../NOTICE) and [third-party licenses](../THIRD_PARTY_LICENSES).

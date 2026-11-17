@@ -36,6 +36,8 @@ apt_get() {
   else
     status=$?
   fi
+  # Report the failing command and packages for the host to interpret.
+  printf 'APT_FAILED exit=%s command=apt-get %s\n' "$status" "$*" >&2
   if [[ "${CLAUDE_CAGE:-}" == 1 ]]; then
     printf 'APT failed (exit %s); guest memory evidence follows. oom_kill before=%s\n' "$status" "$before" >&2
     apt-get --version | head -n 1 >&2 || true
@@ -228,7 +230,7 @@ sudo chsh -s /usr/bin/zsh "$(whoami)"
 #
 # PATH additions go in ~/.zshenv only: every zsh reads it, and nothing in
 # Debian 13's /etc/zsh/{zprofile,zshrc} resets PATH afterwards.
-echo 'export PS1="vm:%1~%% "' >> ~/.zshrc
+echo 'export PS1="%1~%% "' >> ~/.zshrc
 
 # Shell history, kept across sessions and restarts: zsh saves none unless told
 # where (#20). It lives on the VM's disk, where the agent can read it, like
@@ -300,8 +302,10 @@ if [[ "$INSTALL_CHROMIUM" == "1" ]]; then
   # sans-serif and serif to Liberation Mono.
   # Disposable browser contexts use the application locale's language defaults.
   # Debian ships the non-English locale resources in this separate package.
+  chromium_binary=/usr/bin/chromium
   if [[ "${CLAUDE_CAGE:-}" == 1 ]] && cage_is_ubuntu; then
     cage_install_chromium
+    chromium_binary=/usr/local/lib/workbench-browser/chromium
   else
     chromium_packages=(chromium chromium-l10n fonts-liberation fonts-dejavu-core xvfb xauth)
     if [[ "${CLAUDE_CAGE:-}" == 1 ]]; then
@@ -309,10 +313,12 @@ if [[ "$INSTALL_CHROMIUM" == "1" ]]; then
     fi
     apt_get install -y --no-install-recommends "${chromium_packages[@]}"
   fi
-  sudo ln -sf /usr/bin/chromium /usr/bin/google-chrome
-  sudo ln -sf /usr/bin/chromium /usr/bin/google-chrome-stable
   sudo mkdir -p /opt/google/chrome
-  sudo ln -sf /usr/bin/chromium /opt/google/chrome/chrome
+  for alias in /usr/bin/google-chrome /usr/bin/google-chrome-stable /opt/google/chrome/chrome; do
+    if [[ ! -e $alias && ! -L $alias ]]; then
+      sudo ln -s "$chromium_binary" "$alias"
+    fi
+  done
 fi
 
 if [[ "$INSTALL_GH" == "1" ]]; then
@@ -724,7 +730,7 @@ if [[ "$INSTALL_MCP_PLAYWRIGHT" == "1" ]] && any_agent_installed; then
   if [[ "$INSTALL_NODE" == "1" && "$INSTALL_CHROMIUM" == "1" ]]; then
     configure_mcp playwright env PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
       npx -y @playwright/mcp@latest --headless --isolated \
-      --executable-path /usr/bin/chromium
+      --executable-path "$chromium_binary"
   else
     echo "Skipping Playwright MCP config: requires Node.js and Chromium." >&2
   fi

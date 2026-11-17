@@ -25,6 +25,7 @@ param(
     [string]$ImageLanguage,
     [string]$ImageBuild,
     [pscredential]$GuestAdministrator,
+    [ValidatePattern('^(?:\*|[A-Za-z](?:[A-Za-z0-9-]{0,13}[A-Za-z0-9])?)\z')][string]$ComputerName = '*',
     [ValidateRange(2, 2048)][int]$CpuCount = 2,
     [ValidateRange(4, 65536)][int]$MemoryGiB = 4,
     [ValidateRange(64, 65536)][int]$DiskGiB = 64,
@@ -84,12 +85,12 @@ if ([IO.DriveInfo]::new($parent.Root.FullName).AvailableFreeSpace -lt $requiredF
 if (!$PSCmdlet.ShouldProcess($directory, "Create offline Hyper-V VM '$Name' (start: $([bool]$Start))")) { return }
 
 if ($fromHost) {
-    $answer = New-CageCloneAnswer $GuestAdministrator $ImageLanguage
+    $answer = New-CageCloneAnswer $GuestAdministrator $ImageLanguage $ComputerName
 } else {
     if (!$GuestAdministrator) {
         $GuestAdministrator = Get-Credential -UserName 'CageAdmin' -Message 'Set the initial local administrator and password for the virtual Windows. Sign in to the guest with this account after installation, and enter it again when Cage continues the installation.'
     }
-    $answer = New-CageISOAnswer $GuestAdministrator
+    $answer = New-CageISOAnswer $GuestAdministrator $ComputerName
 }
 
 # Create with a protected ACL, then claim the requested name using a same-volume

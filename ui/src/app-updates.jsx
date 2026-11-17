@@ -49,7 +49,7 @@ export function useAppUpdates() {
       const interval = ["failed", "waiting"].includes(phase) ? retryInterval : checkInterval;
       const deadline = phase === "failed" && Number.isFinite(Date.parse(current.current.retryAt || ""))
         ? Date.parse(current.current.retryAt) : lastCheck.current + interval;
-      if (["idle", "current", "failed", "waiting", "available"].includes(phase) && Date.now() >= deadline) void run("check");
+      if (["idle", "current", "failed", "waiting", "available", "manual"].includes(phase) && Date.now() >= deadline) void run("check");
     };
     window.addEventListener("cage-app-update", receive);
     window.addEventListener("focus", check);
@@ -61,7 +61,7 @@ export function useAppUpdates() {
         if (!live) return;
         if (next?.phase === "failed") setStartupFailure(next.message || "The last app update was not completed");
         if (next?.phase) { current.current = next; setState(next); }
-        if (!next || ["idle", "current", "failed", "waiting"].includes(next.phase)) void run("check");
+        if (!next || ["idle", "current", "failed", "waiting", "manual"].includes(next.phase)) void run("check");
       } catch (error) {
         if (live) setState({ phase: "failed", message: error.message, retryable: true });
       }
@@ -88,7 +88,10 @@ export function AppUpdateButton({ updates }) {
   const { state, run, available, startupFailure, coolingDown } = updates;
   const busy = activePhases.has(state.phase);
   const failed = state.phase === "failed";
-  const visible = state.latestVersion && ["available", "ready", "failed", ...activePhases].includes(state.phase);
+  // A platform that installs packages itself reports "manual" with the newer
+  // version; the button then opens the release page instead of installing.
+  const manual = state.phase === "manual";
+  const visible = state.latestVersion && ["available", "ready", "failed", "manual", ...activePhases].includes(state.phase);
   const announcedFailure = useRef("");
   const [failure, setFailure] = useState("");
   useEffect(() => {
@@ -112,10 +115,12 @@ export function AppUpdateButton({ updates }) {
     : state.phase === "verifying" || state.phase === "downloaded" ? "Verifying update"
     : state.phase === "installing" ? "Installing update; the app restarts automatically when done"
     : state.phase === "checking" ? "Preparing update"
-    : coolingDown ? "Waiting to retry update" : failed ? "Retry update" : "Download update";
+    : coolingDown ? "等待重试更新" : failed ? "重试更新" : manual ? "查看新版本" : "下载更新";
   const hint = coolingDown ? `${state.message || "The update source is rate-limited"}. You can retry after ${new Date(state.retryAt).toLocaleString()}`
     : failed ? `${state.message || "The update was not completed"}. Click to retry`
-    : busy ? label : `Update to ${state.latestVersion}. Save your work first; clicking stops the environment, installs and restarts automatically.`;
+    : busy ? label
+    : manual ? `新版本 ${state.latestVersion} 已发布。${state.message || ""}点击打开发布页面。`
+    : `更新至 ${state.latestVersion}。请先保存工作，点击后将自动停止环境、安装并重启。`;
   const circumference = 2 * Math.PI * 15;
   return (
     <>
@@ -124,7 +129,11 @@ export function AppUpdateButton({ updates }) {
         aria-label={label}
         title={hint}
         disabled={busy || coolingDown}
-        onClick={() => { setFailure(""); void run("install"); }}
+        onClick={() => {
+          setFailure("");
+          if (manual) void native("appReference", { kind: "releases" }).catch(error => setFailure(error.message));
+          else void run("install");
+        }}
       >
         {busy ? (
           <>

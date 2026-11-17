@@ -45,7 +45,7 @@ func RequiredNativeComponents(kit, system string) (NativeComponentManifest, erro
 	}
 	essential := []string{"payload/Cage.GuestClipboard.exe", "payload/cage-guest-files.exe", "payload/cage-guest-boot.exe", "payload/Cage.HyperVManager.exe", "payload/windows-browser.mjs"}
 	if system == MacOS {
-		essential = []string{"Cage Guest Window.app/Contents/MacOS/CageGuestWindow", "Cage Guest Clipboard.app/Contents/MacOS/CageGuestClipboard", "project/cage-sshfs", "project/cage-macos-terminal", "native-browser/macos-native-browser.mjs", "native-browser/macos-browser-service.mjs", "register-macos-browser.sh", "macos-cli.py", "cli_channel.py"}
+		essential = []string{"Cage Guest Window.app/Contents/MacOS/CageGuestWindow", "Cage Guest Clipboard.app/Contents/MacOS/CageGuestClipboard", "project/cage-sshfs", "project/cage-macos-terminal", "native-browser/macos-native-browser.mjs", "native-browser/macos-browser-service.mjs", "native-browser/macos-browser-window.mjs", "register-macos-browser.sh", "macos-cli.py", "cli_channel.py"}
 	}
 	for _, relative := range essential {
 		info, err := os.Lstat(filepath.Join(kit, filepath.FromSlash(relative)))
@@ -167,16 +167,19 @@ func nativeComponentTarget(source, system string) string {
 		return MacOSBrowserTools + "/controller/" + strings.TrimPrefix(source, "native-browser/")
 	}
 	targets := map[string]string{
+		"cage-guest-check":                "/usr/local/libexec/cage-guest-check",
 		"project/cage-sshfs":              "/usr/local/libexec/cage-sshfs",
 		"project/cage-macos-terminal":     "/usr/local/libexec/cage-macos-terminal",
 		"cage-finish-initial-setup":       "/usr/local/libexec/cage-finish-initial-setup",
 		"cage-macos-ipv6-check":           "/usr/local/libexec/cage-macos-ipv6-check",
 		"macos-browser.mjs":               "/usr/local/libexec/cage-macos-browser.mjs",
 		"cage-macos-editor":               "/usr/local/libexec/cage-macos-editor",
+		"enable-macos-screensharing.sh":   "/usr/local/libexec/cage-enable-screensharing",
 		"register-macos-claude-window.sh": "/usr/local/libexec/cage-register-claude-window",
 		"register-macos-clipboard.sh":     "/usr/local/libexec/cage-register-clipboard",
 		"register-macos-browser.sh":       "/usr/local/libexec/cage-register-browser",
 		"macos-cli.py":                    "/usr/local/libexec/cage-cli/macos-cli.py",
+		"client_runtime.py":               "/usr/local/libexec/cage-cli/client_runtime.py",
 		"cli_channel.py":                  "/usr/local/libexec/cage-cli/cli_channel.py",
 		"cli_channel.resume.md":           "/usr/local/libexec/cage-cli/cli_channel.resume.md",
 		"claude_account_resume.md":        "/usr/local/libexec/cage-cli/cli_channel.account-resume.md",

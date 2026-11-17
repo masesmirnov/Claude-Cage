@@ -3,7 +3,7 @@ title: Troubleshooting
 description: Start from what you see, check the cause, restore use, then collect enough diagnostic information.
 group: Settings and maintenance
 order: 11
-keywords: errors failures white screen offline 137 OOM proxy account pairing SSH corrupted timeout download logs
+keywords: 错误 失败 白屏 断网 137 OOM 代理 账号 配对 SSH 损坏 超时 下载 日志 macFUSE
 ---
 First check the current host, the Cage version and the exact error text. If the result of an operation is uncertain, read the latest status before deciding whether to retry. Do not use clearing the personal directory, deleting the virtual disk or rebuilding the account as routine troubleshooting steps.
 
@@ -20,6 +20,7 @@ An error first states the operation that failed, then the cause that can be conf
 | Windows unknown publisher | Confirm whether it is a preview clearly labeled as unsigned, and read the matching release notes. Do not treat it as a signed release. |
 | Windows fails to start the virtual machine | Check virtualization in BIOS/UEFI and "Windows Hypervisor Platform", enable it, then restart. Keep the original WHPX error text for diagnosis. |
 | Linux won't start | Confirm x86_64, a supported distribution and KVM permission, and use APT to install the missing dependencies. |
+| macOS 27 客机安装 macFUSE 报 `PKInstallErrorDomain Code=120` 或 `shove deny /Library/Filesystems/macfuse.fs` | 属预期现象：macOS 27 不允许后台安装写入系统配置文件，需在恢复画面完成授权。在初始化页面启动恢复客机，用 Cage 账户登录客机普通账户，点击「打开 Apple Installer」继续；管理员认证填 `cagesetup` 和 Cage 账户密码，系统提示时选择允许。取消或失败不会丢失安装进度和磁盘，可重新进入恢复流程重试。 |
 | Proxy core missing | Reinstall the complete app for the matching platform. Do not copy a single command-line file only. |
 
 ## Environment setup stuck or downloading repeatedly
@@ -31,10 +32,11 @@ Open "Operation details" to tell apart what is still downloading, what is instal
 | `Download interrupted` / `partial data retained` | The incomplete file is kept. Fix the network and retry to resume. |
 | `checksum mismatch` | The file digest does not match. Download it again, and do not skip the check. |
 | `Guest DNS could not resolve` | Check the node and DNS settings, then retry after applying. |
-| NodeSource / APT failure | Check the failing source and proxy access. Save the specific error and the diagnostics. |
+| NodeSource / APT 失败 | 提示会列出失败的 APT 命令、涉及的软件包和已脱敏的错误输出末尾；域名解析失败先查 DNS，连接超时先查代理，找不到软件包说明软件源不可用。没有可识别原因时，保留这些信息并导出诊断包。 |
 | APT repeats `Tried to start delayed item` | Update to a build that includes the APT fix. If the older dependency manager fails to upgrade, fix the network first. Do not continue the dependency installation. |
+| Debian 客机更新环境组件时报 `chromium-l10n` 依赖冲突 | 检查操作详情中的 Chromium 版本和 Debian 安全仓库索引。若索引为空，使用包含索引修复的构建重试“更新环境组件”，让 APT 重新下载索引并安装兼容的语言包。 |
 
-When the Git pre-check fails, follow the prompt to update Git on this computer to 2.38+, check write permission for the global configuration, or check again. You do not need to reconfigure nodes. Enabling protection affects the host's global Git, so read the confirmation card first.
+安装和启动不要求启用主机 Git 裸仓库保护。已有 Git 设置不会随更新自动撤销；调整方法见[主机 Git 设置与裸仓库](https://github.com/Lee-xeo/Claude-Cage/blob/main/docs/troubleshooting.md#主机-git-设置与裸仓库)。
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/proxy-diagnostics.jpg" target="_blank" rel="noopener" aria-label="View original: proxy core status and independent port diagnostics"><img src="../../www/public/docs/screenshots/proxy-diagnostics.jpg" alt="Proxy core status and independent port diagnostics" width="2560" height="1764" loading="lazy" decoding="async" /></a>
@@ -85,6 +87,8 @@ Existing sign-ins on the host are not imported automatically. Complete the offic
 
 When "No account available for assignment" appears, check whether the sign-in is valid, whether the account is included in automatic assignment, and the usage limit and reset time, then click "Check status". After a regular terminal switches identity, the new account must be added again. When a usage reading is missing or too old, do not treat the old percentage as a live guarantee.
 
+同一账号通过“登录新账号”授权后仍要求登录时，先等待该账号的手机任务结束，关闭使用它的终端，再从原账号卡片点击“打开登录终端”或“重新登录”。自动恢复仅适用于 macOS、Linux 中缺少文件凭据的独立账号；已有凭据、钥匙串登录、Windows 环境或检查失败时需要从原入口完成授权。原目录、会话和设置会保留，无需删除账号或重建环境。
+
 If the model still rejects requests, record the official error type, and check the usage eligibility and the critical network checks. Being able to open the authorization page only shows that the web page is reachable. Success is confirmed only after authorization is complete and one real request succeeds.
 
 When the history list shows "Could not read", sessions already read are kept, and the active markers are cleared temporarily. Click the retry button and wait for reading to finish. On Windows, prompts distinguish configuration, pairing verification, connection, communication and request timeouts. Only explicit desktop status errors require signing in again or unlocking the guest. Do not sign in to Claude again just because reading failed. If failures persist, copy the full reason and export a diagnostics bundle.
@@ -98,6 +102,8 @@ If the browser shows a white screen or is waiting to be restored, click "Restore
 If the Desktop picture has the wrong proportions, first set "Display size" to 100%, then click "Retry resizing". After updating components, save your work, then close and reopen Desktop. If uploads still show an internal directory or "The file picker didn’t open", sync the components first in the same way, then reopen the app.
 
 When the Desktop file service exits or the connection breaks, Cage tells you the reason and lowers the retry frequency. After recovery, it resumes reading file requests automatically. If it keeps reporting that the service exited, reopen Desktop and check the app's exit reason in the resource settings and diagnostics log.
+
+Windows 客机的官方 Desktop 在 Code 模式选择共享项目后提示“Claude 无法打开该文件夹”，或界面像是卡住时，对话框可能只出现在客机桌面。共享项目请在 Cage 终端中使用，需要 Desktop 时改选客机本地磁盘上的文件夹，详见 [选择项目与传文件](desktop.md#windows-客机官方-desktop-提示claude-无法打开该文件夹)。
 
 When a shared project shows Git file owner errors, update Cage and reconnect the project. The new connection shows files using the user ID inside the environment. If a Git remote operation shows host key or authentication errors, complete the matching Git authentication and host identity verification in the guest.
 

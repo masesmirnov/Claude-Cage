@@ -170,7 +170,7 @@ export function BrowserFavorites({ current, ready, onOpen, shortcuts = true, men
   return (
     <>
       <div className="favorites-actions">
-        <button
+        {current && <button
           className={`${menu ? "browser-menu-item" : "icon-button"} favorite-star ${favorite ? "saved" : ""}`}
           role={menu ? "menuitem" : undefined}
           aria-label={favorite ? "Edit favorite for this page" : "Favorite this page"}
@@ -183,7 +183,7 @@ export function BrowserFavorites({ current, ready, onOpen, shortcuts = true, men
         >
           <Star size={17} fill={favorite ? "currentColor" : "none"} />
           {menu && <span>{favorite ? "Edit favorite for this page" : "Favorite this page"}</span>}
-        </button>
+        </button>}
         <button
           ref={toggle}
           className={menu ? "browser-menu-item" : "icon-button"}

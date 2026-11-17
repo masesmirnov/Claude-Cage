@@ -145,6 +145,9 @@ func (s *Server) attach() error {
 	if s.macosGuest != nil {
 		return s.attachMacOSGuest()
 	}
+	if err := s.requireCurrentLinuxTransferMount(); err != nil {
+		return err
+	}
 	ctx, cancel := s.controlContext()
 	defer cancel()
 	if containerenv.Configured(s.profile) {
@@ -164,7 +167,9 @@ func (s *Server) attach() error {
 			s.ready = false
 			s.mu.Unlock()
 			if !state.MountsReady {
-				return errors.New("Container project sharing needs setup. Save your work, fully stop the environment, and start it again.")
+				failure := &projectShareError{Recovery: "environment-restart", Message: "容器文件共享需要重新连接，请保存工作后完整停止并重新启动环境；文件和登录状态会保留。"}
+				_ = s.closeProxyGate(failure.Message)
+				return failure
 			}
 			if !state.ResourcesVerified {
 				return errors.New("The container resource limits have not been verified. Check the server resource configuration.")
@@ -266,6 +271,11 @@ func (s *Server) monitor(ctx context.Context) {
 }
 
 func (s *Server) runCage(args ...string) error {
+	if len(args) > 0 && args[0] == "up" {
+		if err := s.requireCurrentLinuxTransferMount(); err != nil {
+			return err
+		}
+	}
 	ctx := s.operationContext()
 	// Setup and startup can both install dependencies. Downloads own their
 	// inactivity timeouts; the operation context still permits an explicit stop.
@@ -279,6 +289,10 @@ func (s *Server) runCage(args ...string) error {
 	cmd.Dir = s.environmentDir()
 	if cmd.Dir == "" {
 		cmd.Dir = s.profile
+	} else if len(args) > 0 && args[0] == "stop" {
+		if info, err := os.Stat(cmd.Dir); err != nil || !info.IsDir() {
+			cmd.Dir = s.profile
+		}
 	}
 	cmd.Env = append(os.Environ(), cage.ConfigEnv+"="+s.configPath)
 	execution := s.jobs.execution()
@@ -305,6 +319,9 @@ func (s *Server) runCage(args ...string) error {
 				return fmt.Errorf("%s failed: the virtual machine could not start. QEMU failed to start: %s. See the operation details. If it still cannot start, export a diagnostics bundle in Settings.", action, reason)
 			}
 		}
+		if packageErr := packageInstallFailure(action, errors.Join(ctx.Err(), err), s.jobs.snapshot().Log); packageErr != nil {
+			return packageErr
+		}
 		diagnostics.Log("error", "environment-operation", fmt.Sprintf("operation=%s error=%v context=%v", args[0], err, ctx.Err()))
 		return executionFailure(action, errors.Join(ctx.Err(), err), s.jobs.snapshot().Log)
 	}
@@ -314,6 +331,7 @@ func (s *Server) startEnvironment(syncTimezone bool) error {
 	s.desktopViews.reset()
 	s.browserViews.reset()
 	s.controlSession.close()
+	s.nativeControl.close()
 	s.desktopStatus.invalidate()
 	defer s.desktopStatus.invalidate()
 	if err := s.requireStorageReady(); err != nil {
@@ -324,6 +342,9 @@ func (s *Server) startEnvironment(syncTimezone bool) error {
 	}
 	if s.windowsGuest != nil {
 		return s.startWindowsGuest()
+	}
+	if err := s.requireCurrentLinuxTransferMount(); err != nil {
+		return err
 	}
 	pending, err := guestos.LoadInstallation(s.profile)
 	if err != nil || (pending != nil && !hostimage.IsLinux(pending.System)) {
@@ -338,11 +359,6 @@ func (s *Server) startEnvironment(syncTimezone bool) error {
 		if err != nil || pending.Media == "" || prepared != pending.Source {
 			return errors.New("Finish preparing the local system files from the first-time setup entry.")
 		}
-	}
-	// Check before proxy activation or the first image download. The UI cannot
-	// bypass this gate by calling /start or applying settings directly.
-	if err := requireHostGit(s.operationContext()); err != nil {
-		return err
 	}
 	if _, err := validateWorkspace(s.environmentDir(), s.profile); err != nil {
 		return err
@@ -360,7 +376,9 @@ func (s *Server) startEnvironment(syncTimezone bool) error {
 			s.mu.Lock()
 			s.ready = false
 			s.mu.Unlock()
-			return errors.New("Container project sharing needs setup. Save your work, stop the environment first, then start it again. Projects and sign-in data are kept.")
+			failure := &projectShareError{Recovery: "environment-restart", Message: "容器文件共享需要重新连接，请保存工作后完整停止并重新启动环境；文件和登录状态会保留。"}
+			_ = s.closeProxyGate(failure.Message)
+			return failure
 		}
 	}
 	cfg, err := loadConfig(s.configPath)
@@ -505,7 +523,7 @@ func (s *Server) stopEnvironment() (returned error) {
 	}
 	s.setMessage("Stopping the Cage environment…")
 	if (explicitStop || s.jobs.snapshot().Kind == "storage") && cage.InstanceJobID(filepath.Join(s.profile, "state"), "base-building") != "" {
-		if err := s.runCage("stop", "base-building"); err != nil {
+		if err := s.runCage("stop", "--keep-proxy", "base-building"); err != nil {
 			return err
 		}
 	}
@@ -519,19 +537,19 @@ func (s *Server) stopEnvironment() (returned error) {
 	s.credentials = guestCredentials{}
 	s.guestManifest = nil
 	s.guestUpdateRequired = false
+	s.macComponentsChecked = false
 	s.guestUpdateError = ""
 	s.safety.Error = ""
 	s.mu.Unlock()
 	s.terminals.closeAll()
 	s.mobileCLI.stopAll()
 	s.closeProjectShares()
-	if s.workspace() == "" {
-		return nil
-	}
 	if _, err := os.Stat(filepath.Join(s.instanceDir(), "lima.yaml")); !containerenv.Configured(s.profile) && os.IsNotExist(err) {
 		return nil
 	}
-	if err := s.runCage("stop"); err != nil {
+	// Internal restarts keep the already validated core alive. Explicit stop
+	// releases it above only after the environment has stopped successfully.
+	if err := s.runCage("stop", "--keep-proxy"); err != nil {
 		return err
 	}
 	return nil
@@ -553,7 +571,7 @@ func (s *Server) apply(v savedProfile, validate bool) error {
 	if s.windowsGuest != nil {
 		wasReady = s.windowsState.Running
 	} else if s.macosGuest != nil {
-		wasReady = macOSInstanceRunning(s.instanceDir())
+		wasReady = macOSInstanceRunning(s.instanceDir(), s.macosGuest.Backend)
 	}
 	s.mu.Unlock()
 	changed := old != v.Config || oldPrefs.AutoTimezone != v.Preferences.AutoTimezone || oldPrefs.AutoLanguage != v.Preferences.AutoLanguage
@@ -728,7 +746,7 @@ func (s *Server) vmRunning() bool {
 		return s.windowsState.Running
 	}
 	if s.macosGuest != nil {
-		return macOSInstanceRunning(s.instanceDir())
+		return macOSInstanceRunning(s.instanceDir(), s.macosGuest.Backend)
 	}
 	return vmAlive(s.profile, s.environmentDir())
 }

@@ -18,7 +18,7 @@ import (
 // Saving it in the account record makes password changes and the guest retry
 // record one atomic write. Website vault APIs never see this data.
 type macAccountEnvelope struct{ Nonce, Data []byte }
-type macGuestCredential struct{ Username, Password string }
+type macGuestCredential struct{ Username, Password, PendingPassword string }
 type macAccountData struct {
 	Password string
 	Guests   map[string]macGuestCredential
@@ -60,16 +60,20 @@ func sealMacAccount(record *accountRecord, key []byte, login macAccountData) err
 
 // Caller holds a.mu.
 func (a *localAccount) openMacAccount() (macAccountData, error) {
+	return openMacAccountKey(a.record, a.key)
+}
+
+func openMacAccountKey(record *accountRecord, key []byte) (macAccountData, error) {
 	var login macAccountData
-	if len(a.key) != 32 || a.record == nil {
+	if len(key) != 32 || record == nil {
 		return login, errors.New("Unlock Cage first.")
 	}
-	if a.record.MacLogin == nil {
+	if record.MacLogin == nil {
 		return login, errors.New("Confirm the Cage username and password before installing the macOS guest.")
 	}
-	block, _ := aes.NewCipher(a.key)
+	block, _ := aes.NewCipher(key)
 	aead, _ := cipher.NewGCM(block)
-	sealed := a.record.MacLogin
+	sealed := record.MacLogin
 	if len(sealed.Nonce) != aead.NonceSize() {
 		return login, errors.New("The guest shared credentials are corrupted. Restore the account backup.")
 	}
@@ -78,7 +82,7 @@ func (a *localAccount) openMacAccount() (macAccountData, error) {
 		return login, errors.New("The guest shared credentials cannot be decrypted. Restore the account backup.")
 	}
 	defer clear(plain)
-	if json.Unmarshal(plain, &login) != nil || validMacAccount(a.record.Username, login.Password) != nil {
+	if json.Unmarshal(plain, &login) != nil || validMacAccount(record.Username, login.Password) != nil {
 		return login, errors.New("The guest shared credentials are invalid. Restore the account backup.")
 	}
 	return login, nil
@@ -212,49 +216,65 @@ func (a *localAccount) legacyMacGuestPassword(ctx context.Context, id uuid.UUID)
 func (a *localAccount) syncMacPassword(ctx context.Context, id uuid.UUID, user string, apply func(context.Context, string, string) error) error {
 	a.macSync.Lock()
 	defer a.macSync.Unlock()
+	// A recovery during an interrupted password update must first confirm that
+	// update, then apply the recovered password. Persist each confirmation so a
+	// restart can retry either step without losing a keychain password.
+	for {
+		changed, err := a.syncMacPasswordStep(ctx, id, user, apply)
+		if err != nil || !changed {
+			return err
+		}
+	}
+}
+
+func (a *localAccount) syncMacPasswordStep(ctx context.Context, id uuid.UUID, user string, apply func(context.Context, string, string) error) (bool, error) {
 	a.mu.Lock()
 	if a.record == nil || a.record.MacLogin == nil || len(a.key) != 32 {
 		a.mu.Unlock()
-		return nil
+		return false, nil
 	}
 	login, err := a.openMacAccount()
 	if err != nil {
 		a.mu.Unlock()
-		return err
+		return false, err
 	}
 	guest, ok := login.Guests[id.String()]
-	if !ok || guest.Password == login.Password {
+	if !ok || guest.Password == login.Password && guest.PendingPassword == "" {
 		a.mu.Unlock()
-		return nil
+		return false, nil
 	}
 	if guest.Username != user {
 		a.mu.Unlock()
-		return errors.New("The guest sync account does not match the installation record. The original account was kept.")
+		return false, errors.New("客机同步账户与安装记录不一致，原账户已保留")
 	}
 	target := login.Password
+	if guest.PendingPassword != "" {
+		target = guest.PendingPassword
+	}
 	a.mu.Unlock()
 	if err = apply(ctx, guest.Password, target); err != nil {
-		return errors.New("The Cage password was saved, but the guest password is still waiting to sync. Start the guest and try again. Until then the guest may still need the old password.")
+		return false, errors.New("Cage 密码已保存；客机密码尚待同步，请启动客机后重试，期间客机仍可能需要原密码")
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	login, err = a.openMacAccount()
 	if err != nil {
-		return err
+		return false, err
 	}
 	current, ok := login.Guests[id.String()]
-	if !ok || current != guest || login.Password != target {
-		return errors.New("The guest password sync record has changed. Try again.")
+	if !ok || current != guest || guest.PendingPassword == "" && login.Password != target {
+		return false, errors.New("客机密码同步记录已变化，请重试")
 	}
 	current.Password = target
+	current.PendingPassword = ""
 	login.Guests[id.String()] = current
 	record := *a.record
 	if err = sealMacAccount(&record, a.key, login); err != nil {
-		return err
+		return false, err
 	}
 	if err = writePrivate(a.path, &record); err != nil {
-		return errors.New("The guest password was updated, but the confirmation record is waiting to be saved. The next start will retry the confirmation.")
+		return false, errors.New("客机密码已更新，确认记录待保存；下次启动会重试确认")
 	}
 	a.record = &record
-	return nil
+	return true, nil
 }

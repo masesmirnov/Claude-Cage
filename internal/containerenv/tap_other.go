@@ -8,6 +8,6 @@ import (
 	"io"
 )
 
-func RunTAP(context.Context, io.Reader, io.Writer) error {
+func RunTAP(context.Context, io.Reader, io.Writer, ...string) error {
 	return errors.New("The Cage container runtime environment is only supported on Linux servers.")
 }

@@ -8,10 +8,14 @@ import (
 )
 
 func (s *Server) macAccountHost() bool {
-	return runtime.GOOS == "darwin" && runtime.GOARCH == "arm64" && s.localVMStorage()
+	return runtime.GOOS == "darwin" && (runtime.GOARCH == "arm64" || runtime.GOARCH == "amd64") && s.localVMStorage()
 }
 
 func (s *Server) accountStatus(w http.ResponseWriter, r *http.Request) {
+	jsonReply(w, s.accountView(r))
+}
+
+func (s *Server) accountView(r *http.Request) accountView {
 	v := s.account.viewFor(s.hasTrustedView(r))
 	v.MacOSAccountHost = s.macAccountHost()
 	v.BackgroundRunning = s.vmRunning()
@@ -22,6 +26,9 @@ func (s *Server) accountStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	if s.windowsGuest != nil {
 		v.GuestSystem = "windows-11"
+		if s.windowsGuest.Remote() {
+			v.GuestSystem = "windows-remote"
+		}
 	}
 	if v.MacOSAccountHost && v.Unlocked && !v.MacOSCredentialsReady && v.MacOSGuestUser == "" {
 		if install, err := guestos.LoadInstallation(s.profile); err == nil && install != nil {
@@ -30,7 +37,7 @@ func (s *Server) accountStatus(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	jsonReply(w, v)
+	return v
 }
 
 func (s *Server) accountAction(w http.ResponseWriter, r *http.Request) {
@@ -39,12 +46,12 @@ func (s *Server) accountAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	action := r.PathValue("action")
-	if action != "prepare-macos" && action != "create" && action != "unlock" && action != "profile" && action != "password" && action != "lock" && action != "logout" && action != "suspend" && action != "device-enroll" && action != "device-revoke" && action != "device-unlock" {
+	if action != "prepare-macos" && action != "create" && action != "unlock" && action != "profile" && action != "password" && action != "lock" && action != "logout" && action != "suspend" && action != "device-enroll" && action != "device-revoke" && action != "device-unlock" && action != "recovery-generate" && action != "recovery-reset" {
 		http.NotFound(w, r)
 		return
 	}
-	if action != "create" && action != "unlock" && action != "device-unlock" {
-		if _, ok := s.account.accessFor(s.hasTrustedView(r)); !ok {
+	if action != "create" && action != "unlock" && action != "device-unlock" && action != "recovery-reset" {
+		if _, ok := s.account.accessFor(s.hasTrustedView(r), false); !ok {
 			http.Error(w, "Unlock Cage first.", http.StatusLocked)
 			return
 		}
@@ -58,6 +65,7 @@ func (s *Server) accountAction(w http.ResponseWriter, r *http.Request) {
 		Password        string           `json:"password"`
 		ConfirmPassword string           `json:"confirm_password"`
 		OldPassword     string           `json:"old_password"`
+		RecoveryKey     string           `json:"recovery_key"`
 		Avatar          string           `json:"avatar"`
 		Kind            string           `json:"kind"`
 		Credential      deviceCredential `json:"credential"`
@@ -69,7 +77,8 @@ func (s *Server) accountAction(w http.ResponseWriter, r *http.Request) {
 	vaultLease := s.account.vaultLease
 	s.account.mu.Unlock()
 	var err error
-	if action == "password" || action == "prepare-macos" {
+	var recoveryKey string
+	if action == "password" || action == "prepare-macos" || action == "recovery-reset" {
 		if !s.op.TryLock() {
 			http.Error(w, "An environment operation is still running. Wait for it to finish, then set the password.", http.StatusConflict)
 			return
@@ -86,7 +95,15 @@ func (s *Server) accountAction(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "The two passwords do not match.", 400)
 			return
 		}
-		err = s.account.createAccount(input.Username, input.Password, input.Avatar, s.macAccountHost())
+		recoveryKey, err = s.account.createAccount(input.Username, input.Password, input.Avatar, s.macAccountHost())
+	case "recovery-generate":
+		recoveryKey, err = s.account.generateRecovery(input.Password)
+	case "recovery-reset":
+		if input.Password != input.ConfirmPassword {
+			http.Error(w, "两次密码不一致", http.StatusBadRequest)
+			return
+		}
+		recoveryKey, err = s.account.resetPassword(input.RecoveryKey, input.Password)
 	case "prepare-macos":
 		if !s.macAccountHost() || !s.hasTrustedView(r) {
 			http.Error(w, "Set the shared credentials in the Cage window on this computer.", http.StatusForbidden)
@@ -162,13 +179,20 @@ func (s *Server) accountAction(w http.ResponseWriter, r *http.Request) {
 		requestError(w, err)
 		return
 	}
-	if action == "lock" || action == "suspend" {
+	if action == "lock" || action == "suspend" || action == "recovery-reset" {
 		s.clearBrowserVault(vaultLease)
 	}
 	if (action == "password" || action == "prepare-macos") && s.macosGuest != nil && s.vmRunning() {
 		// The account write already succeeded. A failed guest update remains a
 		// durable pending state, rather than reporting that the old Cage password works.
 		_ = s.syncMacGuestPassword(r.Context())
+	}
+	if recoveryKey != "" {
+		jsonReply(w, struct {
+			accountView
+			RecoveryKey string `json:"recovery_key"`
+		}{s.accountView(r), recoveryKey})
+		return
 	}
 	s.accountStatus(w, r)
 }

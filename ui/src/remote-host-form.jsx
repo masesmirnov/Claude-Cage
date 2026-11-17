@@ -8,6 +8,7 @@ const emptyHost = () => ({
   host: "",
   port: 22,
   user: "",
+  platform: "linux",
   auth: { kind: "key_file", identity_file: "" },
   executable: "cage",
   config_path: "",
@@ -90,6 +91,18 @@ export function HostForm({ initial, platform, onSaved, onClose }) {
             </label>
           </div>
           <label>
+            远程系统
+            <InlineSelect
+              inline
+              aria-label="远程系统"
+              value={form.platform || "linux"}
+              onValueChange={(value) => update("platform", value)}
+            >
+              <option value="linux">Linux</option>
+              <option value="windows">Windows（已部署服务）</option>
+            </InlineSelect>
+          </label>
+          <label>
             SSH username
             <input
               required
@@ -161,7 +174,7 @@ export function HostForm({ initial, platform, onSaved, onClose }) {
                   onChange={(event) =>
                     update("config_path", event.target.value)
                   }
-                  placeholder="Defaults to ~/.claude-cage/config.json of the cloud account"
+                  placeholder={form.platform === "windows" ? "例如 C:\\ProgramData\\Cage Remote\\config.json" : "默认使用云端账户的 ~/.claude-cage/config.json"}
                   spellCheck="false"
                 />
                 <small>For a custom path, enter the absolute cloud path.</small>

@@ -2,6 +2,7 @@ import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef, useStat
 import { DesktopToolbar, useDesktopZoom } from "./claude-desktop";
 import { MacOSLogin } from "./macos-login";
 import { api, native, nativeAvailable } from "./api";
+import { BrowserFavorites } from "./browser-favorites";
 import { BrowserUploads } from "./browser-uploads";
 import { sendFiles } from "./file-transfer";
 import { prepareClipboardPaste, sendImage } from "./image-transfer";
@@ -17,17 +18,17 @@ const messages = {
   requires_gui_login: "Sign in to and unlock the virtual Mac's graphical account first.",
   screen_recording_permission: "In the virtual Mac's system authorization, allow Cage Guest Window to record the screen.",
   accessibility_permission: "To control the window, allow Cage Guest Window in the virtual Mac to use accessibility features.",
-  not_running: "Open Claude Desktop in the virtual Mac.",
-  no_visible_window: "Claude has no visible window yet. Reopen the app.",
-  identity_error: "The app in the virtual Mac did not pass the Anthropic signature check.",
-  window_changed: "Claude's active window has changed. Open the app and try again in the new view.",
+  not_running: "请打开虚拟 Mac 中的应用。",
+  no_visible_window: "应用尚未显示窗口，请重新打开应用。",
+  identity_error: "虚拟 Mac 中的应用未通过签名检查。",
+  window_changed: "活动窗口已变化，请在新画面中重试。",
   unknown_action: "The guest window input component needs an update. Update the components in environment settings, then try again.",
   input_connection_required: "Window input needs to reconnect. Restore the view and try again.",
   input_owned_by_another_view: "Another connection is controlling this window. Wait for it to release its key or drag.",
 };
 
-async function windowRequest(action, fields = {}, connection) {
-  const result = connection ? await connection.request(action, fields) : await api("/macos/claude/window", { action, ...fields });
+async function windowRequest(base, action, fields = {}, connection) {
+  const result = connection ? await connection.request(action, fields) : await api(base + "/window", { action, ...fields });
   if (result.error) {
     const error = new Error(messages[result.error] || "Could not read or control the app window in the virtual Mac.");
     error.code = result.error;
@@ -58,13 +59,15 @@ function matchWindowBackground(img, pane, canvasRef) {
   pane.style.backgroundColor = uniform && pixels[3] === 255 ? `rgb(${pixels[0]}, ${pixels[1]}, ${pixels[2]})` : "";
 }
 
-export function MacOSClaudeWindow({ visible, keyboard = "mac", remoteRef, sidebarCollapsed, onExpand, onConfirm, uploads = [], onStatus = () => {}, onFallback = () => {} }) {
+export function MacOSAppWindow({ browser = false, onOpenPage, visible, keyboard = "mac", remoteRef, sidebarCollapsed, onExpand, onConfirm, uploads = [], onStatus = () => {}, onFallback = () => {} }) {
+  const appName = browser ? "Google Chrome" : "Claude Desktop";
+  const base = browser ? "/macos-browser" : "/macos/claude";
   const windowVisible = useWindowVisibility();
   const screenVisible = visible && windowVisible;
   const connection = useRef(null);
   const [inputChannel, setInputChannel] = useState(null);
   const frameConnection = useRef(null);
-  const request = (action, fields) => windowRequest(action, fields, connection.current);
+  const request = (action, fields) => windowRequest(base, action, fields, connection.current);
   const [zoom, setZoom] = useDesktopZoom();
   const [state, setState] = useState(null);
   const [error, setError] = useState("");
@@ -103,6 +106,7 @@ export function MacOSClaudeWindow({ visible, keyboard = "mac", remoteRef, sideba
 
   useEffect(() => {
     if (!screenVisible) return;
+    if (browser) launched.current = false;
     const epoch = ++generation.current;
     let timer;
     let current, nextStatus = 0, after = "", captureSize = "", checkFrame = true;
@@ -123,10 +127,11 @@ export function MacOSClaudeWindow({ visible, keyboard = "mac", remoteRef, sideba
       try {
         if (!current || Date.now() >= nextStatus) {
           current = await request("status");
+          if (browser && current.surface !== "browser") throw new Error("请更新 macOS 环境组件以显示 Chrome 窗口。");
           checkFrame = true;
           nextStatus = Date.now() + 2200;
           if (live() && current.persistent && !connection.current) {
-            connection.current = createMacWindowConnection();
+            connection.current = createMacWindowConnection(base);
             setInputChannel(connection.current);
           }
         }
@@ -151,7 +156,7 @@ export function MacOSClaudeWindow({ visible, keyboard = "mac", remoteRef, sideba
                 frame.current = null;
                 setImage(null);
                 setError(messages[reason] || "Could not read the virtual Mac's window view. Reconnect.");
-              });
+              }, base);
             }
             frameConnection.current.resize(viewport.current);
             return;
@@ -186,7 +191,7 @@ export function MacOSClaudeWindow({ visible, keyboard = "mac", remoteRef, sideba
       setInputChannel(null);
       frameConnection.current?.close(); frameConnection.current = null;
     };
-  }, [screenVisible, revision]);
+  }, [screenVisible, revision, base]);
 
   async function action(name) {
     try { if (name === "stop") launched.current = true; await request(name); setError(""); refresh((n) => n + 1); }
@@ -194,6 +199,11 @@ export function MacOSClaudeWindow({ visible, keyboard = "mac", remoteRef, sideba
   }
   useImperativeHandle(remoteRef, () => ({
     focus: () => controls.current?.transport.focus(),
+    closeNativeTab: () => controls.current?.transport.runKeyAction(async send => {
+      for (const [symbol, code, down] of [[0xffeb, "MetaLeft", true], [119, "KeyW", true], [119, "KeyW", false], [0xffeb, "MetaLeft", false]]) {
+        await send(symbol, code, down);
+      }
+    }).catch(e => setError(e.message)),
     edit: command => controls.current?.input.focused() ? controls.current.input.edit(command) : false,
     copy: () => controls.current?.input.copy(),
     paste: () => controls.current?.input.readAndPaste(),
@@ -203,7 +213,7 @@ export function MacOSClaudeWindow({ visible, keyboard = "mac", remoteRef, sideba
 
   useEffect(() => {
     if (!screenVisible || !state?.input || !surface.current || !pane.current || (state.persistent && !inputChannel)) return;
-    const inputRequest = (action, fields) => windowRequest(action, fields, inputChannel);
+    const inputRequest = (action, fields) => windowRequest(base, action, fields, inputChannel);
     const transport = createMacWindowInput({
       element: surface.current,
       frame: () => frame.current,
@@ -221,7 +231,7 @@ export function MacOSClaudeWindow({ visible, keyboard = "mac", remoteRef, sideba
       systemClipboard: () => true,
       copyText: (sendCopy, valid) => copyGuestText({ request: value => api("/clipboard/copy", value), sendCopy, valid }),
       surface: () => surface.current,
-      inputLabel: "Type into Claude Desktop",
+      inputLabel: "向 " + appName + " 输入",
       tabId: () => frame.current ? `${frame.current.pid}:${frame.current.window}:${frame.current.geometry}` : "",
       isActive: () => Boolean(current.current.screenVisible && current.current.input && frame.current),
       onStatus: text => current.current.onStatus(text),
@@ -255,7 +265,7 @@ export function MacOSClaudeWindow({ visible, keyboard = "mac", remoteRef, sideba
     return transport.run(async () => {
       const { value, error } = await ready;
       if (error) throw error;
-      if (!valid()) throw new Error("The Claude window has changed. Go back to the original window and transfer the attachments again.");
+      if (!valid()) throw new Error("窗口已切换，请回到原窗口重新粘贴");
       setFileError(""); setTransferring(true);
       if (value.files || value.fileSelection) {
         await sendFiles(value, "desktop", "", { valid, windowTarget: target, onProgress: (loaded, total) => onStatus(total ? `Transferring attachments · ${Math.floor(loaded * 100 / total)}%` : "Transferring attachments…") });
@@ -264,7 +274,7 @@ export function MacOSClaudeWindow({ visible, keyboard = "mac", remoteRef, sideba
       } else if (value.text) {
         await request("text", { ...target, text: value.text });
       }
-      if (valid()) onStatus(value.text ? "Pasted" : "The attachments were handed to Claude Desktop. Confirm the upload result in the app.");
+      if (valid()) onStatus(value.text ? "已粘贴" : `附件已交给 ${appName}，请在应用中确认上传结果`);
     }).finally(() => { prepared?.dispose(); setTransferring(false); });
   }
   const fileFailure = error => { setFileError(error.message); onStatus(error.message); };
@@ -277,31 +287,32 @@ export function MacOSClaudeWindow({ visible, keyboard = "mac", remoteRef, sideba
     } catch (error) { fileFailure(error); }
   }
   if (!visible) return null;
-  return <section className="claude-desktop-view mac-claude" aria-label="Claude Desktop in the virtual Mac">
-    <BrowserUploads requests={uploads} onStatus={onStatus} />
-    <DesktopToolbar desktop={state} platform="macOS" zoom={zoom} setZoom={setZoom} onConfirm={onConfirm}
-      onStop={() => action("stop")} refresh={() => refresh(n => n+1)} sidebarCollapsed={sidebarCollapsed} onExpand={onExpand}>
+  return <section className="claude-desktop-view mac-claude" aria-label={"虚拟 Mac 中的 " + appName}>
+    {(browser || !nativeAvailable()) && <BrowserUploads requests={uploads} onStatus={onStatus} />}
+    <DesktopToolbar title={appName} desktop={state} platform="macOS" zoom={zoom} setZoom={setZoom} onConfirm={onConfirm}
+      onStop={browser ? undefined : () => action("stop")} refresh={() => refresh(n => n+1)} sidebarCollapsed={sidebarCollapsed} onExpand={onExpand}>
+      {browser && <BrowserFavorites ready={Boolean(state?.installed)} onOpen={onOpenPage} />}
       <MacOSLogin />
-      <button disabled={!state?.input || !image || transferring} onClick={() => void chooseFiles()}>Add attachment</button>
-      <input ref={picker} type="file" multiple hidden aria-label="Choose Claude attachments" onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ""; if (files.length) void receive({ files, kind: "paste" }, pickerTarget.current || undefined).catch(fileFailure); }} />
+      {!browser && <button disabled={!state?.input || !image || transferring} onClick={() => void chooseFiles()}>添加附件</button>}
+      {!browser && <input ref={picker} type="file" multiple hidden aria-label="选择 Claude 附件" onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ""; if (files.length) void receive({ files, kind: "paste" }, pickerTarget.current || undefined).catch(fileFailure); }} />}
       {(!state?.running || error) && <button onClick={() => action("launch")} disabled={!state?.installed}>{state?.running ? "Reconnect app" : "Open app"}</button>}
       {state?.installed && !state.screen && <button onClick={() => action("request-screen")}>Authorize window view</button>}
       {state?.installed && !state.input && <button onClick={() => action("request-input")}>Authorize keyboard and mouse</button>}
     </DesktopToolbar>
     {error && <p role="alert">{error}</p>}
     {fileError && <p role="alert">{fileError}</p>}
-    {state && !state.installed && <p>The official Claude Desktop is not installed in this virtual Mac.</p>}
+    {state && !state.installed && <p>此虚拟 Mac 尚未安装 {appName}。</p>}
     {state?.running && !state.screen && <p>{messages.screen_recording_permission}</p>}
     {state?.running && state.screen && !state.input && <p>{messages.accessibility_permission}</p>}
     <div ref={pane} className="mac-claude-frame" style={{ "--desktop-zoom": zoom }}>
-      {image && <img ref={surface} key={image.geometry || `${image.pid}-${image.window}`} alt="Claude Desktop guest window" src={image.src} draggable={false}
+      {image && <img ref={surface} key={image.geometry || `${image.pid}-${image.window}`} alt={appName + " 客机窗口"} src={image.src} draggable={false}
         onLoad={e => {
           const img = e.currentTarget;
           const width = image.width || img.naturalWidth;
           const height = image.height || img.naturalHeight;
           img.style.setProperty("--frame-width", width + "px");
           img.style.setProperty("--frame-aspect", width / height);
-          frame.current = { window: image.window, pid: image.pid, geometry: image.geometry };
+          frame.current = { window: image.window, pid: image.pid, geometry: image.geometry, surface: browser ? "browser" : undefined };
           matchWindowBackground(img, pane.current, backgroundSample);
           image.acknowledge?.();
         }}

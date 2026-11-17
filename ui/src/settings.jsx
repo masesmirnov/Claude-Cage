@@ -18,10 +18,11 @@ import {
   Settings,
   Palette,
   UserRound,
-  UsersRound,
   Archive,
+  Info,
 } from "lucide-react";
 import { api } from "./api";
+import "./settings.css";
 import { SafetyMessage } from "./safety-message";
 import { AppearanceSettings } from "./appearance-settings";
 import { ProxySettings } from "./proxy-settings";
@@ -29,15 +30,16 @@ import { ExitPolicyFields } from "./exit-policy";
 import { canonicalExitPolicy } from "./safety-state.mjs";
 import { EnvironmentVersions } from "./environment-versions";
 import { EnvironmentStorage } from "./environment-storage";
+import { EnvironmentCache } from "./environment-cache";
 import { ResourceSettings } from "./resources";
 import { DiagnosticSettings } from "./diagnostics.jsx";
 import { MacOSLogin } from "./macos-login";
+import { ScreenSharingChecks } from "./macos-screen-sharing";
 import { AccountSettings } from "./account";
-import { ClaudeAccountsPanel } from "./claude-accounts";
+import { AboutSettings } from "./about-settings";
 const sections = [
   ["account", "Account", UserRound],
   ["vault", "Password vault", KeyRound],
-  ["claude-accounts", "Claude accounts", UsersRound],
   ["archived-sessions", "Archived sessions", Archive],
   ["keyboard", "General", Settings],
   ["appearance", "Appearance", Palette],
@@ -45,6 +47,7 @@ const sections = [
   ["network", "Network and proxy", Globe2],
   ["region", "Time zone and language", Clock3],
   ["project", "Environment and recovery", RotateCcw],
+  ["about", "关于", Info],
 ];
 export function SettingsPanel({
   current,
@@ -52,9 +55,6 @@ export function SettingsPanel({
   onClose,
   onSaved,
   onConfirm,
-  claudeProfiles,
-  terminalTabs,
-  onClaudeLogin,
   initialSection = "keyboard",
 }) {
   const [localKeyboard, setLocalKeyboard] = useState(() => clientKeyboard(current.keyboard));
@@ -96,6 +96,8 @@ export function SettingsPanel({
   );
   const busy =
     Boolean(status.job?.running) || Boolean(status.storage_recovery?.required) || probing || submitting || Boolean(jobId);
+  // Project folders of the other guest systems are always read directly.
+  const linuxGuest = !/^(windows|macos)/.test(status.guest_system || "");
   const update = (key, value) => {
     setDraft((p) => ({ ...p, [key]: value }));
     if (["dns_url"].includes(key)) setProbe(null);
@@ -242,18 +244,12 @@ export function SettingsPanel({
         </nav>
       </aside>
       <div className="settings-main">
-        <div className={section === "archived-sessions" ? "settings-content settings-content--archives" : section === "claude-accounts" ? "settings-content settings-content--accounts" : section === "mobile" ? "settings-content settings-content--remote" : "settings-content"} ref={contentRef}>
+        <div className={section === "archived-sessions" ? "settings-content settings-content--archives" : section === "mobile" ? "settings-content settings-content--remote" : "settings-content"} ref={contentRef}>
           {section === "appearance" && <AppearanceSettings />}
+          {section === "about" && <AboutSettings />}
           {section === "archived-sessions" && <ArchivedSessions ready={status.ready && !busy} />}
           {section === "vault" && <PasswordVaultSettings onConfirm={onConfirm} onDirty={setAccountDirty} />}
           {section === "account" && <AccountSettings busy={busy} onDirty={setAccountDirty} />}
-          {section === "claude-accounts" && <ClaudeAccountsPanel store={claudeProfiles} tabs={terminalTabs} onConfirm={onConfirm}
-            running={status.vm_running} environmentBusy={busy} login={async (id) => {
-              if (changed && !(await onConfirm({ title: "Discard unsaved settings and sign in?",
-                body: "Opening the sign-in terminal leaves the settings page.", confirm: "Open sign-in terminal" }))) return;
-              await onClaudeLogin(id);
-              onClose();
-            }} />}
           <fieldset className="settings-fields" disabled={busy && !(section === "project" && status.storage_recovery?.required)}>
             {section === "mobile" && (isRemoteClient()
               ? <section className="section-title"><h3>Connect to this computer</h3><p>Switch to this computer's local environment first, then generate or manage phone pairing codes.</p></section>
@@ -494,6 +490,20 @@ export function SettingsPanel({
                   <p>Manage the workbench's key conventions and everyday actions.</p>
                 </div>
                 <label>
+                  时间显示格式
+                  <InlineSelect inline
+                    aria-label="时间显示格式"
+                    value={draft.clock_12_hour ? "12" : "24"}
+                    onValueChange={(next) => update("clock_12_hour", next === "12")}
+                  >
+                    <option value="24">24 小时制</option>
+                    <option value="12">12 小时制（AM/PM）</option>
+                  </InlineSelect>
+                </label>
+                <p className="field-help">
+                  默认使用 24 小时制。保存后更新工作台底部时钟，无需重启环境；12 小时制使用 AM/PM 区分上午和下午。
+                </p>
+                <label>
                   Claude terminal startup command
                   <input
                     value={draft.claude_terminal_command ?? "claude"}
@@ -511,10 +521,18 @@ export function SettingsPanel({
                 {typeof current.balanced_display === "boolean" && <label className="toggle-row">
                   <span>
                     <strong>Prefer smoothness</strong>
-                    <small>Lowers the sharpness of the browser and Claude Desktop. Takes effect the next time the environment starts.</small>
+                    <small>降低浏览器和 Claude Desktop 的清晰度，Linux 环境同时减少 Claude Desktop 的动效。下次启动环境时生效。</small>
                   </span>
                   <input type="checkbox" role="switch" checked={draft.balanced_display}
                     onChange={(event) => update("balanced_display", event.target.checked)} />
+                </label>}
+                {typeof current.project_file_cache === "boolean" && linuxGuest && <label className="toggle-row">
+                  <span>
+                    <strong>项目文件缓存</strong>
+                    <small>减少读取项目文件时与本机的往返。在本机上所做的改动最多 20 秒后在环境中可见，也可以在项目栏点“刷新项目文件”立即同步。下次启动环境时生效。</small>
+                  </span>
+                  <input type="checkbox" role="switch" checked={draft.project_file_cache}
+                    onChange={(event) => update("project_file_cache", event.target.checked)} />
                 </label>}
                 <h4>Keyboard style</h4>
                 <div className="choice-list">
@@ -585,9 +603,7 @@ export function SettingsPanel({
                 <div className="setting-summary-row">
                   <span>Current project</span>
                   <strong title={current.workspace}>
-                    {status.environment_workspace
-                      ? "Cage default workspace"
-                      : current.workspace || "No project selected yet"}
+                    {current.workspace || "尚未选择项目"}
                   </strong>
                 </div>
                 <p className="field-help">
@@ -600,7 +616,7 @@ export function SettingsPanel({
                     <p>
                       Project folders you explicitly open are shared into the same environment. The host's Claude
                       sign-in, SSH keys and personal configuration are not imported automatically. Browser downloads are all saved to the
-                      Downloads folder of the Cage default workspace.
+                      独立的下载暂存目录，可从下载面板查看或另存为。
                     </p>
                   </div>
                 </div>
@@ -608,6 +624,7 @@ export function SettingsPanel({
                   Switching projects only changes where new terminals and the file editor start; existing terminals, web pages and sign-in state are kept.
                 </p>
                 {!status.storage_recovery?.required && <EnvironmentVersions status={status} onConfirm={onConfirm} />}
+                {!status.storage_recovery?.required && <EnvironmentCache status={status} onConfirm={onConfirm} />}
                 {status.guest_system === "macos" && <section aria-label="Guest system permissions">
                   <h4>Guest system permissions</h4>
                   <p className="field-help">Finish the authorization in the restricted guest System Settings window, and Cage checks automatically and reconnects the project.</p>
@@ -617,6 +634,7 @@ export function SettingsPanel({
                     <MacOSLogin maintenance="input" label="Accessibility permission" disabled={!status.ready || busy} />
                   </div>
                 </section>}
+                {status.guest_system === "macos" && !isRemoteClient() && <MacOSScreenSharingSettings disabled={!status.ready || busy} onError={setError} />}
                 {!status.storage_recovery?.required && <ResourceSettings status={status} onConfirm={onConfirm} onDirtyChange={setResourceDirty} />}
  <DiagnosticSettings />
                 {status.can_restore && (
@@ -671,7 +689,7 @@ export function SettingsPanel({
             </div>
           )}
         </div>
-        {(!["appearance", "browser", "account", "claude-accounts", "vault", "mobile", "archived-sessions", "project"].includes(section) || changed) && (
+        {(!["appearance", "browser", "account", "vault", "mobile", "archived-sessions", "project", "about"].includes(section) || changed) && (
           <footer className="settings-footer">
             {" "}
             <>
@@ -704,6 +722,60 @@ export function SettingsPanel({
             </>
           </footer>
         )}
+      </div>
+    </section>
+  );
+}
+
+function MacOSScreenSharingSettings({ disabled, onError }) {
+  const [sharingBusy, setSharingBusy] = useState("");
+  const [sharingStatus, setSharingStatus] = useState(null);
+  async function run(action) {
+    setSharingBusy(action);
+    onError("");
+    try {
+      const result = await api("/environment/macos-screen-sharing", { action });
+      if (action !== "open") setSharingStatus(result);
+    } catch (error) {
+      onError(error.message);
+    } finally {
+      setSharingBusy("");
+    }
+  }
+  return (
+    <section aria-label="客机屏幕共享">
+      <h4>客机屏幕共享</h4>
+      <p className="field-help">日常「打开客机屏幕共享」只在本机建立 SSH 环回转发，不给客机增加外网出口，因此不要求先断网。首次安装会在置备阶段启用服务，并在系统授权引导中检查是否真正可用；macOS 26 还需在「系统设置 → 通用 → 共享」中手动打开一次。之后若要重新启用服务或再次打开该设置页，必须先在工作台暂停外网。</p>
+      <ScreenSharingChecks status={sharingStatus} />
+      <div className="project-recovery-actions">
+        <button
+          type="button"
+          className="text-button"
+          disabled={disabled || Boolean(sharingBusy)}
+          onClick={() => run("check")}
+        >
+          {sharingBusy === "check" ? <LoaderCircle size={14} /> : null}
+          检查屏幕共享状态
+        </button>
+        <button
+          type="button"
+          className="text-button"
+          disabled={disabled || Boolean(sharingBusy)}
+          onClick={() => run("open")}
+        >
+          {sharingBusy === "open" ? <LoaderCircle size={14} /> : null}
+          打开客机屏幕共享
+        </button>
+        <button
+          type="button"
+          className="text-button"
+          disabled={disabled || Boolean(sharingBusy)}
+          onClick={() => run("enable")}
+        >
+          {sharingBusy === "enable" ? <LoaderCircle size={14} /> : null}
+          重新启用屏幕共享服务
+        </button>
+        <MacOSLogin maintenance="sharing" label="打开屏幕共享设置" disabled={disabled || Boolean(sharingBusy)} />
       </div>
     </section>
   );

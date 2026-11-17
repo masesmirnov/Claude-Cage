@@ -10,10 +10,12 @@ keywords: multiple accounts account pool sign in add to scheduling automatic ass
 | Account or sign-in | Purpose and ownership |
 | --- | --- |
 | Cage account | Unlocks the Cage workbench on this host. |
-| Claude Code account | Lets terminals in the environment use a Claude subscription after authorization. Managed and scheduled under "Settings → Claude accounts". |
+| Claude Code 账号 | 授权环境内终端使用 Claude 订阅，由侧栏“Claude 账号管理”管理与调度。 |
 | Web and Claude Desktop sign-ins | Each keeps its own sign-in state and is not added to Claude Code scheduling automatically. |
 
-Start the environment first, wait for the tools to be ready, then open the accounts panel. Account features depend on the build you are using. If the panel is missing, check the version first.
+点击侧栏“Claude 账号管理”查看账号列表；登录和查询额度前，先启动环境并等待工具就绪。账号功能以所用构建为准；没有该面板时先核对版本。
+
+官方客户端启动时会筛除管理用环境变量，状态栏、登录回调和手机渠道只接收运行所需的信息。账户、凭据、历史和项目保留原位；配置和辅助程序通过临时引用访问。客户端仍拥有正常的终端和项目访问能力，这些处理无法保证供应商不能识别运行环境。
 
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/claude-accounts.jpg" target="_blank" rel="noopener" aria-label="View original: Claude accounts panel with the environment not started and no accounts registered"><img src="../../www/public/docs/screenshots/claude-accounts.jpg" alt="Claude accounts panel with the environment not started and no accounts registered" width="2560" height="1764" loading="lazy" decoding="async" /></a>
@@ -30,12 +32,16 @@ If the regular terminal was first signed in as A and later signed in as B, Cage 
 
 ## Add another subscription
 
-1. In "Settings → Claude accounts", click "Sign in to a new account".
+1. 在侧栏“Claude 账号管理”点“登录新账号”。
 2. Complete the official sign-in by following the prompts in the sign-in terminal and the temporary authorization browser that open. Each separate sign-in uses its own configuration directory.
 3. After success, the account is registered by email. You can edit its note and check that "Include in automatic assignment" is turned on.
 4. Click the terminal icon next to a project to open a new Claude terminal, then check which account the tab shows.
 
 Cancelling a sign-in does not add an account to scheduling. The same subscription is not added to scheduling twice. If a separate account needs to sign in again, close the terminals still using it first, then follow the panel's prompts.
+
+通过“登录新账号”再次授权已有独立账号时，Cage 会按邮箱和组织匹配原账号。macOS 和 Linux 环境中，原目录缺少文件凭据，且该账号没有运行中的终端、手机任务或登录操作时，可以用本次授权恢复原登录；账号目录、已有会话、备注和参与设置保持不变。恢复后需由官方 CLI 确认身份，已有凭据不会被覆盖。
+
+Windows 环境、钥匙串登录、已有凭据或恢复检查失败时，请等待该账号的手机任务结束，关闭使用原账号的终端，再从原账号卡片点击“打开登录终端”或“重新登录”。检查失败会保留已经发布的凭据，避免影响同时进行的其他登录；面板只有在确认身份后才会报告恢复成功。
 
 ## When automatic assignment happens
 

@@ -6,7 +6,7 @@ import { createWorkbench } from "./workbench-fixture.mjs";
 
 const output = process.env.CAGE_WORKSPACE_QA_OUTPUT || await mkdtemp(join(tmpdir(), "cage-default-workspace-ui-"));
 await mkdir(output, { recursive: true });
-const notice = "This earlier session still uses its original guest directory, and its files stay inside the virtual Mac. To use the default workspace shared with the host, create a new session from the default workspace.";
+const notice = "此历史会话仍使用原来的客机目录，文件保留在虚拟 Mac 内。要使用共享项目，请添加项目文件夹后新建会话。";
 let allowed = false;
 let screenAllowed = false, frameReads = 0, frameReadsAtClick = 0;
 const actions = [];

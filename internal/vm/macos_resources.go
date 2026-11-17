@@ -29,6 +29,11 @@ func (requirements MacOSResourceRequirements) Limits(allocation cage.ResourceAll
 	if err != nil {
 		return 0, 0, err
 	}
+	if allocation.Automatic && memory < requirements.MemoryGiB {
+		// The automatic cap must not push a guest below its own minimum while the host can still afford it.
+		memory, _ = cage.ResourceLimits()
+		memory = min(memory, requirements.MemoryGiB)
+	}
 	if memory < requirements.MemoryGiB || cpus < requirements.CPUs {
 		return 0, 0, fmt.Errorf("This macOS guest needs at least %d GiB of memory and %d logical CPU cores. Adjust the resource configuration.", requirements.MemoryGiB, requirements.CPUs)
 	}

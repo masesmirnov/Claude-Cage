@@ -1,21 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Copy, ExternalLink, KeyRound, LoaderCircle, Monitor, Network, RefreshCw, Search, Smartphone, Terminal, Trash2 } from "lucide-react";
 import { api, writeClipboard } from "./api";
-import { Modal } from "./modal";
 import "./tailscale.css";
 
 const labels = { Running: "Connected", NeedsLogin: "Waiting for sign-in", NeedsMachineAuth: "Waiting for administrator approval", Starting: "Connecting", Stopped: "Disconnected", NotInstalled: "Not installed" };
 const descriptions = {
   Stopped: "Sign in to Tailscale to let Cage join your private network. Other devices that join the same network will show up here.",
-  NeedsLogin: "Finish signing in on the Tailscale page that opened and authorize this device, then come back here.",
+  NeedsLogin: "在内置浏览器中登录并授权当前设备。",
   NeedsMachineAuth: "Sign-in is done. Ask the network's administrator to approve the Cage device in the Tailscale admin console.",
   Starting: "Connecting to Tailscale. The device list updates automatically once connected.",
 };
 const deviceName = peer => peer.hostname || peer.name?.split(".")[0] || peer.ip;
 function DeviceIcon({ os }) { return ["android", "iOS"].includes(os) ? <Smartphone size={20} /> : <Monitor size={20} />; }
 
-export function TailscalePanel({ status, onClose, onOpenBrowser, onInstall, onConfirm }) {
+export function TailscalePanel({ status, onOpenLogin, onOpenBrowser, onInstall, onConfirm }) {
   const [state, setState] = useState(null), [error, setError] = useState(""), [busy, setBusy] = useState(false);
+  const [loginError, setLoginError] = useState("");
   const [key, setKey] = useState(""), [notice, setNotice] = useState(""), [query, setQuery] = useState("");
   const [sshOpen, setSSHOpen] = useState(false), [selected, setSelected] = useState(""), [username, setUsername] = useState("");
   const [port, setPort] = useState("80"), [appsOpen, setAppsOpen] = useState(false);
@@ -25,10 +25,11 @@ export function TailscalePanel({ status, onClose, onOpenBrowser, onInstall, onCo
   const address = state?.ips?.find(ip => !ip.includes(":"));
   const peers = [...(state?.peers || [])].sort((a, b) => Number(b.online) - Number(a.online) || deviceName(a).localeCompare(deviceName(b)));
   const visible = peers.filter(peer => [deviceName(peer), peer.name, peer.ip, peer.os].some(value => value?.toLowerCase().includes(query.trim().toLowerCase())));
-  const openLogin = async url => {
+  const openLogin = async value => {
     loginRequested.current = false;
-    try { if (await onOpenBrowser(url) === false && mounted.current) setError("The sign-in page could not be opened. Click Open sign-in page to retry."); }
-    catch { if (mounted.current) setError("The sign-in page could not be opened. Click Open sign-in page to retry."); }
+    setLoginError("");
+    try { if (await onOpenLogin(value) === false && mounted.current) setLoginError("登录页面未能打开，请点击“打开登录页面”重试。"); }
+    catch { if (mounted.current) setLoginError("登录页面未能打开，请点击“打开登录页面”重试。"); }
   };
   const refresh = async () => {
     if (inflight.current || !ready) return;
@@ -38,22 +39,22 @@ export function TailscalePanel({ status, onClose, onOpenBrowser, onInstall, onCo
       const value = await api("/tailscale");
       if (mounted.current && current === revision.current) {
         setState(value); setError("");
-        if (loginRequested.current && value.auth_url) await openLogin(value.auth_url);
+        if (loginRequested.current && value.auth_url) await openLogin(value);
         if (value.backend === "Running") loginRequested.current = false;
       }
       return value;
-    } catch (e) { if (mounted.current) setError(e.message); }
-    finally { inflight.current = false; }
+    } catch (e) { if (mounted.current && current === revision.current) setError(e.message); }
+    finally { if (current === revision.current) inflight.current = false; }
   };
   useEffect(() => {
     mounted.current = true;
     void refresh();
     const timer = setInterval(() => void refresh(), 3000);
-    return () => { mounted.current = false; revision.current++; clearInterval(timer); };
+    return () => { mounted.current = false; revision.current++; inflight.current = false; loginRequested.current = false; clearInterval(timer); };
   }, [ready]);
   const act = async (action, body = {}) => {
     if (busy) return;
-    setBusy(true); setError(""); setNotice(""); revision.current++;
+    setBusy(true); setError(""); setLoginError(""); setNotice(""); revision.current++;
     try {
       inflight.current = true;
       const value = await api(`/tailscale/${action}`, body);
@@ -65,7 +66,7 @@ export function TailscalePanel({ status, onClose, onOpenBrowser, onInstall, onCo
   const login = async () => {
     loginRequested.current = true;
     const result = await act(state?.enabled ? "login" : "connect");
-    if (result?.auth_url) await openLogin(result.auth_url);
+    if (mounted.current && result?.auth_url) await openLogin(result);
     else if (!result || result.backend === "Running") loginRequested.current = false;
   };
   const copy = async (text, message = "Copied") => {
@@ -77,17 +78,16 @@ export function TailscalePanel({ status, onClose, onOpenBrowser, onInstall, onCo
     loginRequested.current = false;
     if (await act(logout ? "logout" : "disconnect")) { setSelected(""); setSSHOpen(false); }
   };
-  return <Modal title="Tailscale" onClose={onClose} wide>
-    <div className="modal-body tailscale-panel">
+  return <div className="tailscale-panel">
       <div className={`tailscale-overview${connected ? " connected" : ""}`}>
         <div className="tailscale-state" role="status">
           <div className="tailscale-network-icon"><Network size={24} /></div>
           <div><strong>{!ready ? "Waiting for the Cage environment to be ready" : labels[state?.backend] || (state ? "Connection status unconfirmed" : "Reading status…")}</strong>
-            <span>{connected ? (state.tailnet || "Tailscale private network") : "Your devices, connected together"}</span>
+            {connected && <span>{state.tailnet || "Tailscale 私网"}</span>}
           </div>
           <button className="icon-button" aria-label="Refresh Tailscale status" disabled={!ready || busy} onClick={refresh}><RefreshCw size={16} /></button>
         </div>
-        <p className="field-help">{!ready ? "Start the Cage environment to sign in and connect to the private network." : connected ? "Cage has joined the private network. Pick a device to see its address and use its services." : descriptions[state?.backend] || "Reading the Tailscale status of the current environment."}</p>
+        <p className="field-help">{!ready ? "启动 Cage 环境后，即可登录并连接私网。" : connected ? "Cage 已加入私网。选择设备，查看地址并使用它的服务。" : state?.backend === "NeedsLogin" && !state.auth_url ? "正在向 Tailscale 获取登录链接。若长时间没有打开浏览器，请检查环境联网后重新发起登录。" : descriptions[state?.backend] || "正在读取当前环境的 Tailscale 状态。"}</p>
         {state?.account && connected && <p className="tailscale-account">Signed in as · {state.account}</p>}
         {ready && state && <div className="tailscale-actions">
           {!state.installed ? <button className="primary-button" disabled={busy} onClick={async () => {
@@ -96,14 +96,14 @@ export function TailscalePanel({ status, onClose, onOpenBrowser, onInstall, onCo
             finally { if (mounted.current) setBusy(false); }
           }}>{["macos", "windows-11"].includes(status.guest_system) ? "Update environment components to install" : "Install Tailscale"}</button> : <>
             {!connected && !["NeedsMachineAuth", "Starting"].includes(state.backend) && <button className="primary-button" disabled={busy} onClick={login}>{busy ? <LoaderCircle size={15} className="spin" /> : <ExternalLink size={15} />}{state.enabled ? "Sign in again" : "Connect and sign in"}</button>}
-            {state.auth_url && !connected && <button className="quiet-button" disabled={busy} onClick={() => openLogin(state.auth_url)}>Open sign-in page</button>}
+            {state.auth_url && !connected && <button className="quiet-button" disabled={busy} onClick={() => openLogin(state)}>打开登录页面</button>}
             {state.enabled && <button className="quiet-button" disabled={busy} onClick={() => stop(false)}>Disconnect</button>}
             {connected && <button className="quiet-button" disabled={busy} onClick={() => stop(true)}>Sign out</button>}
           </>}
         </div>}
       </div>
-      {error && <p className="error-message" role="alert">{error}</p>}
-      {connected && state.health?.length > 0 && <div className="tailscale-health" role="status"><strong>The network needs attention</strong>{state.health.map((message, i) => <p key={i}>{message}</p>)}</div>}
+      {(error || loginError && !connected) && <p className="error-message" role="alert">{error || loginError}</p>}
+      {ready && state?.health?.length > 0 && <div className="tailscale-health" role="status"><strong>网络需要留意</strong>{state.health.map((message, i) => <p key={i}>{message}</p>)}</div>}
       {connected && <section className="tailscale-self" aria-label="This Cage device">
         <DeviceIcon os={state.os} />
         <div><strong>{state.hostname || state.name?.split(".")[0] || "Cage"} <span className="tailscale-badge">Current environment</span></strong><span className="tailscale-address">{address || "Assigning an address…"}{state.os ? ` · ${state.os}` : ""}</span></div>
@@ -127,7 +127,7 @@ export function TailscalePanel({ status, onClose, onOpenBrowser, onInstall, onCo
               <label className="field-label" htmlFor="tailnet-service-port">Access a service on the device</label>
               <p className="field-help">Enter the service port to create a local connection address for the browser, database clients or other apps inside Cage.</p>
               <div className="tailscale-connect-form"><input id="tailnet-service-port" aria-label="Service port" type="number" min="1" max="65535" inputMode="numeric" value={port} onChange={e => setPort(e.target.value)} /><button className="quiet-button" disabled={busy || !Number.isInteger(Number(port)) || Number(port) < 1 || Number(port) > 65535} onClick={async () => { if (await act("open-service", { host: peer.ip, port: Number(port) })) setNotice("The local connection address is ready. Use it inside the Cage environment."); }}>Create connection address</button></div>
-              {(state.forwards || []).filter(entry => entry.host === peer.ip).map(entry => <div className="tailscale-forward" key={`${entry.host}:${entry.port}`}><span><strong>Port {entry.port}</strong><code>{entry.address}</code></span><button className="icon-button" aria-label={`Copy the connection address for port ${entry.port}`} onClick={() => copy(entry.address, "Connection address usable inside Cage copied")}><Copy size={14} /></button><button className="quiet-button" onClick={async () => { try { if (await onOpenBrowser(`http://${entry.address}`) === false) setError("The service page could not be opened. Try again."); } catch { setError("The service page could not be opened. Try again."); } }}>Open HTTP page</button></div>)}
+              {(state.forwards || []).filter(entry => entry.host === peer.ip).map(entry => <div className="tailscale-forward" key={`${entry.host}:${entry.port}`}><span><strong>端口 {entry.port}</strong><code>{entry.address}</code></span><button className="icon-button" aria-label={`复制端口 ${entry.port} 的连接地址`} onClick={() => copy(entry.address, "已复制 Cage 内可用的连接地址")}><Copy size={14} /></button><button className="quiet-button" onClick={async () => { try { if (!await onOpenBrowser(`http://${entry.address}`)) setError("服务页面未能打开，请重试。"); } catch { setError("服务页面未能打开，请重试。"); } }}>打开 HTTP 页面</button></div>)}
               <label className="field-label" htmlFor="tailnet-ssh-user"><Terminal size={14} />SSH connection</label>
               <p className="field-help">Enter the system username on this device. SSH must be enabled on the target device and allow the current account to sign in.</p>
               <div className="tailscale-connect-form"><input id="tailnet-ssh-user" value={username} onChange={e => setUsername(e.target.value)} placeholder="The device's system username" autoComplete="off" maxLength={128} /><button className="quiet-button" disabled={!username.trim() || !/^[a-zA-Z0-9_.@\\-]+$/.test(username.trim())} onClick={() => copy(`ssh -l '${username.trim()}' ${peer.ip}`, "SSH command copied. Run it in a Cage terminal.")}>Copy SSH command</button></div>
@@ -152,6 +152,5 @@ export function TailscalePanel({ status, onClose, onOpenBrowser, onInstall, onCo
       </section>}
       <p className="field-help tailscale-footer">Other devices must install Tailscale and join the same network. Device access is governed by network permissions; pausing Cage's internet access or stopping the environment interrupts the private network connection.</p>
       {notice && <p className="tailscale-notice" role="status"><Check size={14} />{notice}</p>}
-    </div>
-  </Modal>;
+    </div>;
 }

@@ -28,12 +28,17 @@ export function rememberClientProjectName(share) {
   catch { /* The mount is usable without browser storage. */ }
 }
 
-export function projectName(path, defaultWorkspace) {
+export function projectGroups(status) {
+  return status?.project_groups || (status?.projects || []).map(path => ({ workspace: path, name: projectName(path), folders: [path] }));
+}
+
+export function projectName(path, groups = []) {
   if (clientMount.test(path)) {
     try { return sessionStorage.getItem(path) || "Local shared project"; }
     catch { return "Local shared project"; }
   }
-  if (path === defaultWorkspace && path?.endsWith("-workspace")) return "Default workspace";
+  const group = groups.find(item => item.workspace === path || item.folders.includes(path));
+  if (group?.name) return group.name;
   return folderName(path) || "New project";
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"errors"
+	"github.com/sylvinus/agent-vm/internal/guestos"
 	"strings"
 	"time"
 )
@@ -14,7 +15,11 @@ var macOSProbeFSKit string
 func (s *Server) checkMacOSSetupProjects(parent context.Context) error {
 	ctx, cancel := context.WithTimeout(parent, 15*time.Second)
 	defer cancel()
-	cmd := s.macOSSSHCommand(ctx, "-T", s.sshTarget(), "--", "exec /usr/bin/perl -")
+	probe := "exec /usr/bin/perl -"
+	if s.macosGuest != nil && s.macosGuest.Backend == guestos.MacOSQEMU {
+		probe += " server-readonly"
+	}
+	cmd := s.macOSSSHCommand(ctx, "-T", s.sshTarget(), "--", probe)
 	cmd.Stdin = strings.NewReader(macOSProbeFSKit)
 	err := cmd.Run()
 	s.mu.Lock()
@@ -25,7 +30,7 @@ func (s *Server) checkMacOSSetupProjects(parent context.Context) error {
 	}
 	s.mu.Unlock()
 	if err != nil {
-		return errors.New("File sharing permission has not passed. Click \"File system extension\" to reopen the authorization panel and make sure both the macFUSE and macFUSE (local) switches are on. Cage will check automatically.")
+		return errors.New("文件共享权限尚未通过。请点击「文件系统扩展」，按引导完成 macFUSE 安装，并打开 macFUSE 和 macFUSE (local) 两个开关，Cage 会自动检查")
 	}
 	return nil
 }

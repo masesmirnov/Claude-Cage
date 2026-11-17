@@ -45,7 +45,11 @@ func newWindowsBrowserClient(parent context.Context, profile string) *windowsBro
 		if binding == nil {
 			return nil, errors.New("This configuration is not bound to a guest yet.")
 		}
-		return exec.CommandContext(ctx, binding.RelayExecutable, "--relay-profile", guestos.WindowsProfilePath(profile), "browser"), nil
+		operation := "browser"
+		if binding.Remote() {
+			operation = "headless-browser"
+		}
+		return guestos.WindowsRelayCommand(ctx, profile, operation)
 	}}
 }
 
@@ -68,7 +72,7 @@ var windowsBrowserRoutes = map[string]bool{
 	"insert-text": true, "copy-context": true, "ime": true, "copy": true, "cut": true, "paste": true, "select-all": true,
 	"key": true, "pointer": true, "click": true, "wheel": true, "input": true, "editor": true, "editor-restart": true,
 	"upload-start": true, "upload-finish": true, "upload-cancel": true, "download-retry": true, "info": true, "cookies": true,
-	"settings": true, "internal-page": true, "extensions": true, "split": true, "audit": true, "vault": true, "login-open": true, "login-finish": true,
+	"settings": true, "profile": true, "internal-page": true, "extensions": true, "split": true, "audit": true, "audit-recheck": true, "vault": true, "login-open": true, "login-finish": true,
 	"file-open": true, "file-chunk": true, "file-finish": true, "file-read": true, "file-close": true,
 	"image-start": true, "image-chunk": true, "image-finish": true, "image-cancel": true,
 	"paste-start": true, "paste-chunk": true, "paste-finish": true, "paste-cancel": true,
@@ -292,6 +296,7 @@ func (c *windowsBrowserClient) request(ctx context.Context, method, path string,
 			"action_unavailable":          "The guest browser does not support this operation yet",
 			"target_changed":              "The page receiving the operation has switched. Go back to the original page and try again",
 			"browser_target_changed":      "The guest browser window has changed. Try again in the new display",
+			"browser_window_unavailable":  "暂时无法确定当前网页窗口，请等待窗口切换完成",
 			"browser_focus_required":      "The guest browser could not get foreground focus. Activate the browser or close any pop-up blocking the operation first",
 			"desktop_target_changed":      "The pop-up is switching. Reading the display again",
 			"desktop_capture_busy":        "The pop-up display is being prepared",

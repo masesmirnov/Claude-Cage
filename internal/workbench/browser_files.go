@@ -349,7 +349,7 @@ func (s *Server) nativeDownloadForHost(item browserDownloadInfo) browserDownload
 		}
 	}
 	item.State, item.Retryable = "failed", true
-	item.Error = usererror.Display("Saving the download to this computer", err, "Restore the environment connection or check the space in the default workspace, then click retry.").Error()
+	item.Error = usererror.Display("保存下载到本机", err, "请恢复环境连接或检查下载目录空间，再点击重试。").Error()
 	return item
 }
 
@@ -387,7 +387,7 @@ func (s *Server) saveNativeDownload(ctx context.Context, item browserDownloadInf
 	}
 	directory, err := root.Lstat("Downloads")
 	if err != nil || !directory.IsDir() {
-		return errors.New("The default download directory is invalid. Choose a regular folder in the default workspace.")
+		return errors.New("默认下载目录无效，请选择有效的下载暂存文件夹")
 	}
 	downloads, err := root.OpenRoot("Downloads")
 	if err != nil {

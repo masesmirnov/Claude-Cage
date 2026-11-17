@@ -1,11 +1,16 @@
 export function operationName(path = "", method = "GET") {
   const reading = method === "GET";
+  if (path === "/client/about") return reading ? "读取软件版本" : "检测应用更新";
   if (path.startsWith("/api/mobile/cli")) return reading ? "Reading session messages" : "Submitting a session action";
   if (path.startsWith("/api/mobile/browser")) return "Connecting to the browser on your computer";
   if (path.startsWith("/api/mobile/desktop")) return "Connecting to Claude Desktop on your computer";
   if (path.startsWith("/environment/resources")) return reading ? "Reading resource settings" : "Applying resource settings";
   if (path === "/environment/initialization") return reading ? "Reading setup progress" : "Saving setup state";
   if (path.startsWith("/environment/versions")) return "Reading environment component versions";
+  if (path.startsWith("/environment/macos-screen-sharing")) return "客机屏幕共享";
+  if (path === "/environment/cache/inventory") return "盘点当前环境缓存";
+  if (path === "/environment/cache/clean") return "清理所选缓存";
+  if (path === "/environment/cache/restore") return "恢复缓存";
   if (path.startsWith("/environment/")) return "Updating the environment";
   if (path.startsWith("/input/files") || path.startsWith("/browser/files")) return "Transferring files";
   if (path.startsWith("/tailscale")) return reading ? "Reading Tailscale status" : "Running a Tailscale action";

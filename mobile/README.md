@@ -2,7 +2,13 @@
 
 Cage on your phone is a remote client. Tap "Connect computer" in the middle of the home screen, then connect to your host with a QR code or pairing code. You can view projects, continue Claude Code sessions and handle tool approvals. After pairing, you can also operate the browser and Claude Desktop on your host from the phone. Proxy, time zone and language are set in Cage on the remote host. The settings at the top right offer themes and computer connection options.
 
-The Android arm64 APK is available from the [website download page](https://lee-xeo.github.io/Claude-Cage/#download). It supports Android 8.0 and later. For iOS 17+ devices, you build and sign the app locally with Xcode and install it yourself.
+Android arm64 APK 可从[官网下载入口](https://claude-cage.com/#download)获取，支持 Android 8.0+。iOS 17+ 设备版由用户通过 Xcode 在本地构建并签名安装。
+
+## Android 应用更新
+
+打开 Cage 或切回前台时，手机每隔至少 12 小时自动检查一次更新，也可以随时在「设置 → 应用更新 → 检查更新」手动检查。正式版只提示更新到更高的正式版，预发行版也会提示更新到更高的预发行版。
+
+发现新版后点「下载更新」。手机校验安装包后会打开系统安装界面。首次更新时，按提示允许 Cage 安装来自此来源的应用，返回后点「更新」。覆盖安装会保留主题、设备身份和电脑配对记录。旧版设置里没有「检查更新」时，先从官网下载新版 APK 并覆盖安装一次。
 
 ## Build for iOS locally
 

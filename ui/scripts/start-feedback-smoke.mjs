@@ -2,8 +2,7 @@ import assert from "node:assert/strict";
 import { createWorkbench } from "./workbench-fixture.mjs";
 
 const { browser, page, state, errors } = await createWorkbench();
-let releaseGit, releaseStart;
-const gitGate = new Promise(resolve => { releaseGit = resolve; });
+let releaseStart;
 const startGate = new Promise(resolve => { releaseStart = resolve; });
 let starts = 0;
 const loading = page.getByRole("button", { name: "Working…", exact: true });
@@ -14,21 +13,13 @@ const assertLoading = async () => {
   await page.getByRole("heading", { name: "Preparing the Cage environment", exact: true }).waitFor({ timeout: 500 });
 };
 try {
-  await page.route("**/api/host/git", async route => {
-    await gitGate;
-    await route.fulfill({ json: state.hostGit });
-  });
   await page.route("**/api/start", async route => {
     starts++;
     await startGate;
     await route.fulfill({ json: { id: "delayed-start" } });
   });
-  const gitRequested = page.waitForRequest("**/api/host/git");
-  await page.getByRole("button", { name: "Start Cage environment", exact: true }).click();
-  await gitRequested;
-  await assertLoading();
   const startRequested = page.waitForRequest("**/api/start");
-  releaseGit();
+  await page.getByRole("button", { name: "启动 Cage 环境", exact: true }).click();
   await startRequested;
   await assertLoading();
   const startResponse = page.waitForResponse("**/api/start");
@@ -49,15 +40,10 @@ try {
   await page.getByText("Test request failed", { exact: true }).waitFor();
   assert.equal(await page.getByRole("button", { name: "Start Cage environment", exact: true }).isEnabled(), true);
 
-  await page.route("**/api/host/git", route => route.fulfill({ status: 503, contentType: "text/plain; charset=utf-8", body: "Test check failed" }));
-  await page.getByRole("button", { name: "Start Cage environment", exact: true }).click();
-  await page.getByRole("alert").filter({ hasText: "Test check failed" }).waitFor();
-  await page.getByRole("button", { name: "Not now", exact: true }).click();
-  assert.equal(await page.getByRole("button", { name: "Start Cage environment", exact: true }).isEnabled(), true);
+  assert.equal(state.requests.some(request => request.path === "/host/git"), false);
   assert.deepEqual(errors, []);
-  console.log("PASS: immediate feedback; no Git dialog flash; continuous loading across delayed requests and stale polling; job handoff; failures and cancellation allow retry.");
+  console.log("PASS: immediate feedback; direct start without Git checks; continuous loading across delayed requests and stale polling; job handoff; failure allows retry.");
 } finally {
-  releaseGit();
   releaseStart();
   await browser.close();
 }

@@ -27,7 +27,7 @@ This Windows feature needs one-time administrator approval. Daily Cage use and a
 
 ## Install and get started
 
-1. On the [project homepage](https://lee-xeo.github.io/Claude-Cage/#download), click "Download the app" and choose Windows. Check the `SHA256SUMS` for the matching release entry. The signed installer is named `Cage-<version>-windows-amd64-setup.exe`. Development preview builds marked as unsigned are named `Cage-<version>-windows-amd64-setup-unsigned.exe`. Unsigned builds may show an unknown publisher warning, and you need to install and update them manually.
+1. 在[项目主页](https://claude-cage.com/#download)点击“下载应用”并选择 Windows，核对对应发行条目的 `SHA256SUMS`。签名安装包名为 `Cage-<版本>-windows-amd64-setup.exe`；单独标明未签名的开发预览包名为 `Cage-<版本>-windows-amd64-setup-unsigned.exe`。未签名包可能触发未知发布者提示，需手动安装和更新。
 2. Run the installer and choose an install location. On the first install, `D:\Cage` on a local D drive is selected by default. If there is no local D drive, the current user's `%LOCALAPPDATA%\Programs\Cage` is used. An existing install keeps its original folder, but you can choose another location manually. The installer includes the .NET desktop runtime, the WebView2 installer, QEMU, the OpenSSH client and the proxy core. You don't need to install Go, Node.js or Clash separately.
 3. On the "Shortcuts" page, choose "Add a desktop shortcut" and "Add to the Start menu". Both are checked by default on the first install. An overwrite install keeps your last choice, and an older install restores its choice from its existing shortcuts. Uninstalling removes the shortcuts Cage created.
 4. Start Cage from the shortcut you chose, then choose a guest system. If drive C has limited space, click "Choose environment storage location" in the workbench, choose an empty folder on another drive, then import your proxy and start the environment. The image, tools and virtual disk are prepared for the system you chose. Existing environments can also be migrated from Settings. See [Choose a disk and migrate](getting-started.md#choose-the-environment-storage-location) and the [Guest system guide](guide/guest-systems.md).
@@ -36,9 +36,11 @@ The installer does not set the system proxy, does not install an SSH service, an
 
 The installer extracts files one by one into a staging folder on the drive of the install location, then replaces the app after success. This avoids creating a full extracted copy in the system temp folder. The Windows temp folder may still hold a few installer helper files. If WebView2 is missing, the Microsoft installer manages where its shared runtime components go.
 
-"Open project" accepts Windows folders. With a Debian guest, for example `C:\Users\Name\Projects\demo` corresponds to `/c/Users/Name/Projects/demo` inside Linux. With a Windows guest, the terminal and tools use Windows paths. Project files stay in their original folder on the host, so edits and deletions affect the original files directly. The `.git` folder in a project is readable and writable, and you can stage, commit and switch branches in Cage. Only the default workspace and folders you open explicitly are shared.
+“打开项目”接受 Windows 文件夹。使用 Debian 客机时，例如 `C:\Users\姓名\Projects\demo` 在 Linux 内对应 `/c/Users/姓名/Projects/demo`；使用 Windows 客机时，终端与工具采用 Windows 路径。项目文件仍保存在原来的主机文件夹中，编辑和删除直接影响原文件；项目内的 `.git` 可读写，可在 Cage 中暂存、提交和切换分支。项目共享只限明确打开的目录，下载使用独立的暂存目录。
 
 Windows shortcuts mainly use `Ctrl`: `Ctrl+O` opens a project, `Ctrl+T` opens a new web page, `Ctrl+L` focuses the address bar, `Ctrl+W` closes a tab, and `Ctrl+Shift+Enter` opens a new terminal. Terminals use `Ctrl+Shift+C/V` to copy and paste, and `Ctrl+C` interrupts commands. Web pages and editors follow the key behavior of the guest system.
+
+网页输入框短暂失焦时，工作台会尝试恢复同一标签和窗格的键盘输入。恢复期间的点击、按键、切换标签、打开设置或切换窗口会取消这次自动恢复，保留用户选择的焦点。如果网页仍不接收按键，可重新点击输入框；尚未确认的输入法组合文字会在失焦时取消。
 
 The window keeps only the system title bar, and the workbench fills the area below it. Use the workbench entries and shortcuts for file, project and settings actions. You can check for app updates and view version info from the right-click menu on the tray icon. When the window first opens, it is centered in the usable area of the current screen and adapts to Windows display scaling. Manually adjusted window size and maximized state are saved. When you switch screens or lower the resolution, the window stays on the current screen. Background startup and version checks don't show a command-line window.
 
@@ -48,13 +50,13 @@ Browser uploads use the local file selection window to pick files. After a downl
 
 ## Updates and uninstalling
 
-In-app updates select the Windows x64 installer from the fixed public GitHub Releases source, and follow the pre-release and stable channel rules. Checks and downloads go through the Cage proxy that is already applied and running, and do not fall back to a direct host connection. After downloading the installer, Cage verifies the SHA-256, version, product name and Authenticode signature. The current app and the new installer must have the same publisher public key. Unsigned development packages cannot install updates automatically.
+应用内更新从固定的公开 GitHub Releases 来源选择 Windows x64 安装器，并沿用预发行与正式版通道规则。检查与下载优先使用主机网络，遵循系统代理与主机代理环境变量；连接失败或等待响应超时后尝试 Cage 所选代理。下载安装器后校验 SHA-256、版本、产品名称和 Windows 信任的 Authenticode 签名。新安装器与当前应用的发布者公钥相同，或证书主体的国家与组织均相同，才允许自动安装；后一个条件允许发布者续期证书时更换密钥。未签名开发包不能自动安装更新。
 
 The update button is hidden when there is no new version. When there is one, a gold round button appears. Save your files and end running tasks first, then click it once. The button shows circular download progress and a percentage. After verification passes, the update installs automatically without a second confirmation. The updater first backs up the app, then stops the environment, proxy and control service through the workbench's single entry point. After the current window exits, it runs a silent install. The update counts as successful only after the new app confirms the workbench starts. If installation or startup fails, it tries to restore the old program and keeps the failure reason and necessary backups. Low disk space, or files in use by other software, may prevent automatic recovery. Handle these according to the error message.
 
 Before a manual update, also save your files, stop the environment and quit Cage, then run the new installer. If the old backend is still running, the installer refuses to overwrite it. Guest tools are updated separately in "Settings → Environment and recovery". Replacing the app keeps the original system and data.
 
-Before uninstalling, stop the environment and quit. Then uninstall Cage from Windows "Settings → Apps". Uninstalling keeps user data. The default config, proxy and environment data root is `%USERPROFILE%\.claude-cage`, and any other environment storage location you chose is kept. The default workspace is usually in `%USERPROFILE%\.claude-cage-workspace`, and projects you opened yourself remain in their original folders. WebView2 may be shared with other programs, so it is not uninstalled automatically with Cage. If you want to delete data separately, back it up first. Deleting the virtual disk removes files and sign-in state that exist only in the guest.
+卸载前停止环境并退出，在 Windows“设置 → 应用”中卸载 Cage。卸载保留用户数据：默认配置、代理和环境数据根目录为 `%USERPROFILE%\.claude-cage`，另选的环境存储位置继续保留；下载暂存通常位于 `%USERPROFILE%\.claude-cage-downloads\Downloads`，原 `%USERPROFILE%\.claude-cage-workspace` 中的文件也保留，自行打开的项目仍在原目录。WebView2 可能由其他程序共用，不随 Cage 自动卸载。需要另行删除数据时先备份，删除虚拟磁盘会丢失只保存在客机中的文件与登录状态。
 
 ## Common startup problems
 

@@ -348,16 +348,15 @@ export function ClaudeAccountsPanel({ store, running, environmentBusy, tabs, log
   };
   return <section className="claude-profiles" aria-label="Claude account management">
     <div className="section-title">
-      <h3>Claude accounts</h3>
       <p>Add subscriptions already signed in on the regular terminal to scheduling, or sign in to a new account separately. Accounts are assigned automatically to new Claude terminals.</p>
     </div>
     <details className="claude-scheduling">
       <summary>Scheduling settings · {store.scheduling.mode === "sequential" ? "Sequential first" : "Balanced"}</summary>
-      <label>New session assignment<InlineSelect aria-label="New session assignment" value={store.scheduling.mode} disabled={busy}
+      <label>新会话分配<InlineSelect inline aria-label="新会话分配" value={store.scheduling.mode} disabled={busy}
         onValueChange={mode => perform(() => load({action:"scheduling",scheduling:{...store.scheduling,mode}}))}>
         <option value="balanced">Balanced</option><option value="sequential">In list order</option>
       </InlineSelect></label>
-      <label>New session switch authorization<InlineSelect aria-label="New session switch authorization" value={store.scheduling.switch_policy} disabled={busy}
+      <label>新会话切换授权<InlineSelect inline aria-label="新会话切换授权" value={store.scheduling.switch_policy} disabled={busy}
         onValueChange={switch_policy => perform(() => load({action:"scheduling",scheduling:{...store.scheduling,switch_policy}}))}>
         <option value="ask">Ask every time</option><option value="allow">Continue automatically when the usage limit runs out</option><option value="wait">Always wait for the original account</option>
       </InlineSelect></label>

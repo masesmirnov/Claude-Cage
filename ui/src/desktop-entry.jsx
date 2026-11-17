@@ -6,6 +6,7 @@ import { ClientRoot } from "./remote-hosts";
 import { native } from "./api";
 import { WindowControls } from "./window-controls";
 import "./style.css";
+import { IconHints } from "./icon-hints.jsx";
 
 const Workbench = lazy(() => import("./main.jsx"));
 
@@ -19,6 +20,7 @@ createRoot(document.getElementById("root")).render(
   <>
     <WindowControls />
     <DiagnosticBoundary>
+      <IconHints />
       <ClientRoot>
         <Suspense
           fallback={

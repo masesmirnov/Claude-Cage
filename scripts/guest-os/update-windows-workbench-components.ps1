@@ -14,7 +14,7 @@ $archive=Join-Path $Stage 'update.zip'
 if ((Get-FileHash -LiteralPath $archive).Hash -ne $ArchiveSHA256) { throw 'The component package passed into the guest failed verification.' }
 & (Join-Path $env:SystemRoot 'System32/tar.exe') -xf $archive -C $Stage
 if ($LASTEXITCODE) { throw 'Could not expand the verified component package.' }
-$manifest=Get-Content -LiteralPath (Join-Path $Stage 'native-components.json') -Raw | ConvertFrom-Json
+$manifest=Get-Content -LiteralPath (Join-Path $Stage 'native-components.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 if ($manifest.protocol -ne 1 -or $manifest.system -cne 'windows-11' -or $manifest.revision -notmatch '^[a-f0-9]{64}$' -or @($manifest.files).Count -notin 1..10000) { throw 'The guest component manifest is invalid.' }
 $roots=@{bridge=(Join-Path $env:ProgramFiles ('Cage Guest Bridge\'+$VMId));network=(Join-Path $env:ProgramFiles ('Cage Guest Network\'+$VMId))}
 foreach ($root in $roots.Values) { Assert-LocalFile $root }
@@ -135,5 +135,15 @@ try {
         if ($bootStopped) { Start-Service -Name $bootName -ErrorAction Continue }
     }
     if ($runtime -and (Test-Path -LiteralPath $runtime)) { Move-Item -LiteralPath $runtime -Destination (Join-Path $Stage 'runtime-staging') }
+}
+# Guests set up before file indexing and program preloading were turned off
+# stop them here. Nobody searches or starts programs from this guest's own
+# shell; either service can be re-enabled from services.msc.
+foreach ($name in @('WSearch','SysMain')) {
+    try {
+        if (!(Get-Service -Name $name -ErrorAction SilentlyContinue)) { continue }
+        Set-Service -Name $name -StartupType Disabled
+        Stop-Service -Name $name -Force -ErrorAction SilentlyContinue
+    } catch { }
 }
 Write-Output 'Guest components were synced. The original pairing key and user directory were kept.'

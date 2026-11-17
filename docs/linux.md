@@ -28,7 +28,7 @@ Cage normally runs as a regular user. Don't start the workbench with `sudo cage-
 
 ## Install and get started
 
-On the [project homepage](https://lee-xeo.github.io/Claude-Cage/#download), click "Download the app" and choose Linux. Download `Cage-<version>-linux-amd64.deb` and `SHA256SUMS` from the matching Release, and check the file's SHA-256 before you install it. Run the install command below only if the matching Release provides the installer:
+在[项目主页](https://claude-cage.com/#download)点击“下载应用”并选择 Linux。从对应 Release 下载 `Cage-<版本>-linux-amd64.deb` 与 `SHA256SUMS`，核对该文件的 SHA-256 后安装。只有对应 Release 提供安装包时，才执行下面的安装命令：
 
 ```sh
 sudo apt install ./Cage-<version>-linux-amd64.deb
@@ -36,21 +36,11 @@ sudo apt install ./Cage-<version>-linux-amd64.deb
 
 The installer includes the Cage background service, the workbench and the Mihomo proxy core. APT installs graphics dependencies such as WebKitGTK. If you only connect to SSH hosts, you can open the app directly. To use a local environment, also run `sudo apt install qemu-system-x86 qemu-utils ovmf openssh-client iproute2 git` and confirm KVM is available. The first local environment start downloads the Linux image and guest tools.
 
-Local Git must be **version 2.38 or later**. When Cage first starts a local environment or you authorize a shared project, it asks you to explicitly turn on Git safety protection. If your Git version is too old, Cage blocks this step and asks you to upgrade, so the host doesn't accidentally run bare repository config from a project. You can check with `git --version`. Git in the default Ubuntu 22.04 repositories is too old. You can use the Ubuntu PPA provided by the maintainers, as described in the [official Git Linux install guide](https://git-scm.com/install/linux):
-
-```sh
-sudo apt install software-properties-common
-sudo add-apt-repository -y ppa:git-core/ppa
-sudo apt update
-sudo apt install git
-git --version
-```
-
-After upgrading, return to the workbench, run the check again, and explicitly authorize Git safety protection as prompted. This requirement doesn't block installing the app or opening the workbench. Just opening the window doesn't prove that the local environment meets the startup requirements.
+安装和启动 Cage 不要求启用主机 Git 裸仓库保护，也不因这项设置要求升级 Git。Cage 不修改主机的全局 Git 配置。
 
 When used as a remote host for the phone, Cage asks the system to keep running through `systemd-inhibit` and logind. The screen can still turn off. The full installer depends on systemd. If the service or user permissions aren't enough, "Settings → Remote connection" shows why sleep prevention failed. It does not change the system power policy automatically.
 
-Open **Cage** from the application menu, or run `cage-desktop`. The system package name and background command are `claude-cage`, which avoids a conflict with a same-named Wayland program that ships with the distribution. Import your proxy, choose a node, then open a project as described in [Getting started](getting-started.md#2-import-and-choose-a-proxy). For example, a project path might be `/home/alice/Projects/demo`. Only the default workspace and folders you explicitly choose are shared. Changes and deletions in a project sync to the host. Git metadata in an authorized project is readable and writable, and commits made in the guest update the host repository directly. Sharing is still limited to authorized folders.
+从应用菜单打开 **Cage**，也可运行 `cage-desktop`。系统包名和后台命令为 `claude-cage`，避免与发行版自带的同名 Wayland 程序冲突。导入自己的代理、选择节点，再按[开始使用](getting-started.md#2-导入并选择代理)打开项目。项目路径例如 `/home/alice/Projects/demo`，项目共享只限明确选择的目录，下载使用独立的暂存目录；项目中的修改和删除会同步到主机。已授权项目中的 Git 元数据可读写，客机提交直接更新主机仓库；共享范围仍限于授权目录。
 
 Linux uses Ctrl shortcuts: `Ctrl+O` opens a project, `Ctrl+T` opens a new web page, `Ctrl+L` focuses the address bar, `Ctrl+W` closes a tab, and `Ctrl+Shift+Enter` opens a new terminal. Terminals use `Ctrl+Shift+C/V` to copy and paste, and `Ctrl+C` interrupts commands.
 
@@ -62,7 +52,7 @@ Browser uploads use the local file picker. Downloads can use the GTK "Save as" w
 
 The Linux version is updated manually with the system installer package. The in-app update entry shows the update method and does not replace system files automatically. Save your files, stop the environment and quit Cage first, then install the new `.deb`. If the installer finds that Cage, the control service or a proxy process is still running, it refuses to overwrite and asks you to quit.
 
-Updating and uninstalling keep the config, proxy and virtual disk in `~/.claude-cage`. The default workspace `~/.claude-cage-workspace` and project folders you opened yourself are also kept. The uninstall command is:
+更新和卸载保留 `~/.claude-cage` 中的配置、代理与虚拟磁盘，下载暂存、原 `~/.claude-cage-workspace` 及自行打开的项目目录也保留。卸载命令为：
 
 ```sh
 sudo apt remove claude-cage

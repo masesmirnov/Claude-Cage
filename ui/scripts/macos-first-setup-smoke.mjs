@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createWorkbench } from "./workbench-fixture.mjs";
 for (const failure of ["http", "native"]) {
   const user = "cage";
-  const permissions = { screen:false, input:false, projects:false, managed_credential:true };
+  const permissions = { screen:false, input:false, projects:false, sharing:false, managed_credential:true };
   const calls = []; let finishFailed = false;
   const {page, browser, errors} = await createWorkbench({
     async beforeNavigate(page, state) {
@@ -28,8 +28,12 @@ for (const failure of ["http", "native"]) {
           assert.equal(q.password,undefined,"browser sent a credential");
           assert.equal(q.session,"setup-fixture");
         }
+        if (q.action === "confirm-sharing") {
+          permissions.sharing = true;
+          return r.fulfill({json:permissions});
+        }
         if (q.action === "finish") {
-          assert.ok(permissions.screen && permissions.input && permissions.projects);
+          assert.ok(permissions.screen && permissions.input && permissions.projects && permissions.sharing);
           if (!finishFailed) {
             finishFailed=true;
             return failure === "http"
@@ -68,6 +72,12 @@ for (const failure of ["http", "native"]) {
     await page.getByRole("dialog",{name:"First-run setup of the virtual Mac"}).getByText(/Turn on both the macFUSE and macFUSE \(local\) switches/).waitFor();
     assert.ok(!calls.includes("finish"),"finished before filesystem permission");
     permissions.projects=true;
+    await waitCall("sharing");
+    const sharingConfirm = tools.getByRole("button", {name:"已开启，重新检查", exact:true});
+    await sharingConfirm.waitFor();
+    assert.ok(!calls.includes("finish"), "opening the settings pane cannot confirm screen sharing");
+    await sharingConfirm.click();
+    await waitCall("confirm-sharing");
     await page.getByRole("button",{name:"Back to setup guide"}).click();
     const retry=page.getByRole("button",{name:"Retry finishing setup"});
     await retry.waitFor();

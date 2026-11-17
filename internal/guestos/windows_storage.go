@@ -47,6 +47,9 @@ func (runtime *windowsStorageRuntime) Snapshot(ctx context.Context, source strin
 	if binding == nil {
 		return snapshot, errors.New("The Windows guest is not bound yet.")
 	}
+	if binding.Remote() {
+		return snapshot, errors.New("云端 Windows 不使用 Hyper-V 虚拟磁盘迁移")
+	}
 	state, err := runtime.call(ctx, binding.VMID, windowsHostStorageRequest{Action: "status"})
 	if err != nil {
 		return snapshot, fmt.Errorf("Choose \"Sync environment components\" on the Environment page of Settings and finish the Windows system authorization before migrating: %w", err)

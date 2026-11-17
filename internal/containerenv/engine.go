@@ -47,8 +47,9 @@ type engineContainer struct {
 		Pid     int
 	}
 	Config struct {
-		Labels map[string]string
-		Image  string
+		Hostname string
+		Labels   map[string]string
+		Image    string
 	}
 	HostConfig struct {
 		Privileged   bool
@@ -179,6 +180,9 @@ func (r *Runtime) State(ctx context.Context) (State, error) {
 			state.Ready = state.ResourcesVerified && state.MountsReady
 			state.BrowserAddress = record.BrowserAddress
 			state.VNCAddress = record.VNCAddress
+		} else if errors.Is(err, errSharedDirectoryChanged) {
+			state.MountsReady = false
+			state.MountError = err.Error()
 		}
 	}
 	return state, nil
@@ -247,6 +251,14 @@ func (r *Runtime) engineSecurity(ctx context.Context) (rootless, limited bool, e
 }
 
 func checkContainerConfiguration(container *engineContainer) error {
+	identity, err := containerIdentity(container)
+	if err != nil {
+		return err
+	}
+	hostname := "cage"
+	if identity != nil {
+		hostname = identity.Hostname
+	}
 	config := container.HostConfig
 	if config.Privileged || config.NetworkMode != "none" || (config.PidMode != "" && config.PidMode != "private") || config.IpcMode != "private" || config.CgroupnsMode != "private" {
 		return errors.New("The container must use its own namespaces and have the default network disabled; privileged mode cannot be enabled.")
@@ -255,8 +267,8 @@ func checkContainerConfiguration(container *engineContainer) error {
 		return errors.New("The container cannot mount host directories directly.")
 	}
 	for _, entry := range config.ExtraHosts {
-		if entry != "cage:127.0.1.1" {
-			return errors.New("The container only allows the fixed loopback address for the Cage host name.")
+		if entry != hostname+":127.0.1.1" {
+			return errors.New("容器只允许当前主机名的固定回环地址")
 		}
 	}
 	for _, mount := range container.Mounts {
@@ -327,6 +339,9 @@ func (r *Runtime) Inspect(ctx context.Context) (Inspection, error) {
 			result.NetworkConfined = true
 			result.FilesystemConfined = mounts.Ready()
 			result.Evidence = "The actual rootless container has no default network or host directory mounts; the current external network gate identity is verified, the host receives the only TAP channel; the default project is shared over restricted SFTP and read/write was verified on both ends"
+		} else if errors.Is(err, errSharedDirectoryChanged) {
+			result.State.MountsReady = false
+			result.State.MountError = err.Error()
 		}
 	}
 	return result, nil

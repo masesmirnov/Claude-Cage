@@ -73,6 +73,12 @@ try {
         await page.getByLabel("Set password", { exact: true }).fill(password);
         await page.getByLabel("Confirm password", { exact: true }).fill(password);
         await page.getByRole("button", { name: "Create local account", exact: true }).click();
+        await page.getByRole("heading", { name: "保存你的恢复密钥", exact: true }).waitFor();
+        const recoveryKey = await page.getByLabel("恢复密钥", { exact: true }).inputValue();
+        assert.ok(recoveryKey.trim(), "new accounts must receive a recovery key");
+        await fs.writeFile(path.join(root, "recovery-key.txt"), recoveryKey, { mode: 0o600 });
+        await page.getByRole("checkbox", { name: "我已安全保存完整恢复密钥", exact: true }).check();
+        await page.getByRole("button", { name: "继续使用 Cage", exact: true }).click();
       } else {
         await page.getByLabel("Account password", { exact: true }).fill(password);
         await page.getByRole("button", { name: "Unlock Cage", exact: true }).click();

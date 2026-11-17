@@ -40,8 +40,9 @@ try {
   const chooser = page.getByRole("region", { name: "Cloud folders" });
   await chooser.getByRole("button", { name: "research", exact: true }).click();
   await chooser.getByRole("button", { name: "Choose this cloud folder", exact: true }).click();
-  assert.equal(await page.getByLabel("New project folder", { exact: true }).inputValue(), "/srv/projects/research");
-  await page.getByRole("dialog").getByRole("button", { name: "Open project", exact: true }).click();
+  const createProject = page.getByRole("dialog", { name: "创建项目", exact: true });
+  await createProject.getByText("/srv/projects/research", { exact: true }).waitFor();
+  await createProject.getByRole("button", { name: "创建项目", exact: true }).click();
   await page.getByRole("dialog").waitFor({ state: "hidden" });
   assert.equal(state.settings.workspace, "/srv/projects/research");
   assert.equal(directoryRequests, 2);
@@ -50,7 +51,7 @@ try {
   const macKeyboard = page.getByRole("radio", { name: /Mac shortcuts/ });
   assert.equal(await macKeyboard.isChecked(), true, "Mac client defaults must not follow Linux server keyboard mode");
   const savesBefore = state.requests.filter((item) => item.path === "/settings" && item.method === "POST").length;
-  await page.getByRole("radio", { name: /Guest-native shortcuts/ }).check();
+  await page.getByRole("radio", { name: /客机原生快捷键/ }).check();
   assert.equal(await page.evaluate((instance) => localStorage.getItem(`cage-keyboard:remote:${instance}`), instance), "native");
   assert.equal(state.requests.filter((item) => item.path === "/settings" && item.method === "POST").length, savesBefore, "client keyboard changes must not write cloud settings");
   await macKeyboard.check();
@@ -81,7 +82,8 @@ try {
   await page.route("**/api/input/files/desktop/requests", (route) => route.fulfill({ json: { uploads: [], downloads: [{ id: downloadID, name: "report.pdf", path: "/srv/cage/Downloads/report.pdf", state: "saved", target: "desktop" }] } }));
   await page.route("**/api/browser/files/saved", (route) => route.fulfill({ json: saved }));
   await page.reload();
-  await page.getByRole("button", { name: "Downloaded files", exact: true }).click();
+  await page.getByRole("button", { name: "Open browser", exact: true }).click();
+  await page.getByRole("button", { name: "Browser downloads", exact: true }).click();
   const downloads = page.getByRole("dialog", { name: "Downloaded files" });
   await downloads.getByText("Saved to the cloud", { exact: true }).waitFor();
   assert.equal(await downloads.getByRole("button", { name: "Open file", exact: true }).count(), 0, "cloud path must not offer a local open action");
