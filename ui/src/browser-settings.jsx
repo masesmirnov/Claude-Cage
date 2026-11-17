@@ -61,7 +61,7 @@ export function BrowserSettingsPage({ tab, tabs, currentHome, layout, onLayoutCh
             <div className="browser-settings-links"><button onClick={() => onInternal('permissions')}><ExternalLink size={15} />Site permissions</button><button onClick={() => onInternal('clear')}><ExternalLink size={15} />Clear regular session browsing data</button></div>
           </>}
           {item.id === 'extensions' && <><p>Add and manage the extensions used by the Cage browser.</p><BrowserExtensions onInternal={onInternal} onOpenPage={onOpenPage} onConfirm={onConfirm} /></>}
-          {item.id === 'about' && <><p>Cage 浏览器由环境内的 Chromium 承载。网页、扩展和网站数据随当前 Cage 环境保存。</p><div className="browser-setting-row"><div><h3>浏览器引擎</h3><p>{info?.product || (info?.error ? '版本信息暂时不可用' : '正在读取版本…')}</p></div></div><p>下载文件通过 Cage 保存到下载暂存目录，可从下载面板另存为。</p></>}
+          {item.id === 'about' && <><p>The Cage browser runs on Chromium inside the environment. Web pages, extensions and site data are saved with the current Cage environment.</p><div className="browser-setting-row"><div><h3>Browser engine</h3><p>{info?.product || (info?.error ? 'Version information is unavailable right now' : 'Reading version…')}</p></div></div><p>Downloaded files are saved through Cage to the download staging folder, and you can use Save as from the download panel.</p></>}
 
         </section>)}
       </div>

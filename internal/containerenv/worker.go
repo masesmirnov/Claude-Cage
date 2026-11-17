@@ -38,7 +38,7 @@ type networkRecord struct {
 	SharedDirectory string `json:"shared_directory"`
 }
 
-var errSharedDirectoryChanged = errors.New("下载目录与运行中的文件共享不一致，请保存工作后完整停止并重新启动环境；文件和登录状态会保留")
+var errSharedDirectoryChanged = errors.New("The download folder does not match the running file share; save your work, stop the environment completely and start it again; files and sign-in state are kept")
 
 func (r *Runtime) networkState(ctx context.Context, containerID string) (networkRecord, error) {
 	path := filepath.Join(r.InstanceDir(), "network.json")

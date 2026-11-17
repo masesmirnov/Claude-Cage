@@ -153,7 +153,7 @@ class ChannelTests(unittest.TestCase):
         self.assertEqual(args[args.index("--add-dir") + 1], str(directory))
         self.assertFalse(any(key.upper().startswith("CAGE_") for key in execute.call_args.args[2]))
         with patch.object(channel, "migrate_cage_policy"), patch.object(channel.os, "execvpe") as execute:
-            with self.assertRaisesRegex(ValueError, "项目文件夹未连接"):
+            with self.assertRaisesRegex(ValueError, "The project folder is not connected"):
                 channel.launch({"id": str(uuid.uuid4()), "prefix": ["claude"], "additional_directories": [str(directory / "missing")]})
             execute.assert_not_called()
 

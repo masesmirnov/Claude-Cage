@@ -18,7 +18,7 @@ try {
   await page.route("**/api/cli/sessions", route => route.fulfill({ json: { sessions } }));
   state.status.ready = state.status.vm_running = true;
   state.terminals = [{ id: "layout-live", workspace, title: "Opened session" }];
-  const project = page.getByRole("region", { name: "项目 .claude-cage-workspace", exact: true });
+  const project = page.getByRole("region", { name: "Project .claude-cage-workspace", exact: true });
   const history = project.locator(".sidebar-session");
   await history.last().waitFor();
   await project.getByRole("tab", { name: "Opened session", exact: true }).waitFor();

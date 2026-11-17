@@ -206,12 +206,12 @@ export async function createWorkbench({
     else if (path === "/status")
       result = { ...state.status, workspace: state.settings.workspace };
     else if (path === "/projects/refresh") {
-      if (state.failRefresh) return route.fulfill({ status: 502, contentType: "text/plain; charset=utf-8", body: "项目文件未能刷新，请稍后重试" });
+      if (state.failRefresh) return route.fulfill({ status: 502, contentType: "text/plain; charset=utf-8", body: "Project files could not be refreshed; please try again later" });
       state.projectRefreshes = (state.projectRefreshes || 0) + 1;
       result = { refreshed: true };
     }
     else if (path === "/projects/remove") {
-      if (!body.workspace) return route.fulfill({ status: 400, body: "请选择已添加的项目" });
+      if (!body.workspace) return route.fulfill({ status: 400, body: "Choose an added project" });
       if (state.failRemove || state.terminals.some(terminal => terminal.workspace === body.workspace && !terminal.closed) || state.tabs.some(tab => tab.kind === "editor" && tab.workspace === body.workspace)) return route.fulfill({ status: 409, contentType: "text/plain; charset=utf-8", body: "Close this project's terminals and editors first, then remove the project" });
       const members = state.status.project_groups?.find(group => group.workspace === body.workspace)?.folders || [body.workspace];
       state.status.projects = state.status.projects.filter(path => !members.includes(path));
@@ -220,13 +220,13 @@ export async function createWorkbench({
       result = { workspace: state.settings.workspace };
     }
     else if (path === "/projects/save") {
-      if (state.failJob) return route.fulfill({ status: 400, contentType: "text/plain; charset=utf-8", body: "项目文件夹连接失败，原项目保持不变" });
-      if (!body.name?.trim() || !body.folders?.length) return route.fulfill({status:400, body:"请填写项目名称并添加文件夹"});
+      if (state.failJob) return route.fulfill({ status: 400, contentType: "text/plain; charset=utf-8", body: "The project folder connection failed; the original project stays unchanged" });
+      if (!body.name?.trim() || !body.folders?.length) return route.fulfill({status:400, body:"Enter a project name and add folders"});
       const workspace = body.workspace || body.folders[0];
-      if (body.workspace && !body.folders.includes(body.workspace)) return route.fulfill({status:400, body:"请保留默认文件夹"});
+      if (body.workspace && !body.folders.includes(body.workspace)) return route.fulfill({status:400, body:"Keep the default folder"});
       const groups = state.status.project_groups || state.status.projects.map(path => ({workspace:path, name:path.split("/").at(-1), folders:[path]}));
       const previous = groups.find(group => group.workspace === workspace);
-      if (previous?.folders.some(path => !body.folders.includes(path)) && (state.terminals.some(t => previous.folders.includes(t.workspace) && !t.closed) || state.tabs.some(t => t.kind === "editor" && previous.folders.includes(t.workspace)))) return route.fulfill({status:409, body:"请先关闭此项目的终端和编辑器"});
+      if (previous?.folders.some(path => !body.folders.includes(path)) && (state.terminals.some(t => previous.folders.includes(t.workspace) && !t.closed) || state.tabs.some(t => t.kind === "editor" && previous.folders.includes(t.workspace)))) return route.fulfill({status:409, body:"Close this project's terminals and editor first"});
       const folders = [...new Set(body.folders)];
       state.status.project_groups = [...groups.filter(group => group.workspace !== workspace && !folders.includes(group.workspace)), {workspace, name:body.name.trim(), folders}];
       const removed = (previous?.folders || []).filter(path => !folders.includes(path));

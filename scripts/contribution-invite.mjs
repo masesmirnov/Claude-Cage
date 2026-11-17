@@ -24,13 +24,13 @@ export async function runContributionInvite({ repository, actor, eventName, even
     return { status: 'skipped' };
   }
   const number = String(eventName === 'workflow_dispatch' ? event.inputs?.issue_number : event.issue?.number);
-  if (!/^[1-9]\d*$/.test(number)) throw new Error('Issue 编号必须为正整数。');
-  if (!/^[\w.-]+\/[\w.-]+$/.test(repository)) throw new Error('仓库名称无效。');
-  if (!token) throw new Error('缺少 GITHUB_TOKEN，无法核验审核权限。');
+  if (!/^[1-9]\d*$/.test(number)) throw new Error('The issue number must be a positive integer.');
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repository)) throw new Error('The repository name is invalid.');
+  if (!token) throw new Error('GITHUB_TOKEN is missing, so the reviewer permission cannot be verified.');
   const prefix = `/repos/${repository}`;
   async function api(method, path, apiToken = token, body, allowed = [200]) {
     const response = await request(method, path, apiToken, body);
-    if (!allowed.includes(response.status)) throw new Error(`GitHub API ${method} ${path} 失败（HTTP ${response.status}）。`);
+    if (!allowed.includes(response.status)) throw new Error(`GitHub API ${method} ${path} failed (HTTP ${response.status}).`);
     return response;
   }
   async function list(path, apiToken = token) {
@@ -45,7 +45,7 @@ export async function runContributionInvite({ repository, actor, eventName, even
   // Repository write access alone must not allow newly invited contributors to invite others.
   const reviewer = await api('GET', `${prefix}/collaborators/${encodeURIComponent(actor)}/permission`);
   if (!['admin', 'maintain'].includes(reviewer.data.role_name || reviewer.data.permission) && !reviewer.data.user?.permissions?.maintain) {
-    throw new Error('审核者需要仓库 admin 或 maintain 权限，才能触发协作者邀请。');
+    throw new Error('The reviewer needs admin or maintain permission on the repository to trigger a collaborator invitation.');
   }
   const { data: issue } = await api('GET', `${prefix}/issues/${number}`);
   const labels = new Set(issue.labels.map(label => typeof label === 'string' ? label : label.name));
@@ -56,7 +56,7 @@ export async function runContributionInvite({ repository, actor, eventName, even
   const permission = await api('GET', `${prefix}/collaborators/${encodeURIComponent(author)}/permission`, token, undefined, [200, 404]);
   let status = 'already-collaborator';
   if (permission.status !== 200 || !['admin', 'maintain', 'write'].includes(permission.data.permission)) {
-    if (!inviteToken) throw new Error('请配置 CONTRIBUTION_INVITE_TOKEN：仅授权当前仓库，Administration: Read and write。配置后可手动重跑此 Issue。');
+    if (!inviteToken) throw new Error('Configure CONTRIBUTION_INVITE_TOKEN: authorize only the current repository, with Administration: Read and write. After configuring it, you can rerun this issue by hand.');
     const invitations = await list(`${prefix}/invitations`, inviteToken);
     if (invitations.some(invitation => invitation.invitee?.id === issue.user.id)) {
       status = 'invitation-pending';
@@ -68,9 +68,9 @@ export async function runContributionInvite({ repository, actor, eventName, even
 
   const server = process.env.GITHUB_SERVER_URL || 'https://github.com';
   const nextStep = status === 'already-collaborator'
-    ? '你已拥有仓库写权限，可以为本 Issue 创建 PR。'
-    : `协作者邀请已发出或仍待接受。请先通过 GitHub 通知或[邀请页面](${server}/${repository}/invitations)接受邀请，再创建 PR。`;
-  const body = `${marker}\n@${author}，本次方案已通过维护者审核。${nextStep}\n\n协作者具有整个仓库的写权限，请为本次方案创建独立分支，在 PR 中关联 #${number}，补充改动和验证结果，等待审查通过后合入。详细步骤见[贡献指南](${server}/${repository}/blob/HEAD/.github/CONTRIBUTING.md)。`;
+    ? 'You already have write access to the repository, so you can create a PR for this issue.'
+    : `The collaborator invitation was sent or is still waiting to be accepted. First accept it through GitHub notifications or the [invitations page](${server}/${repository}/invitations), then create a PR.`;
+  const body = `${marker}\n@${author}, this proposal passed maintainer review. ${nextStep}\n\nCollaborators have write access to the whole repository. Create a separate branch for this proposal, link #${number} in the PR, add the changes and verification results, and wait for the review to pass before merging. For detailed steps, see the [contribution guide](${server}/${repository}/blob/HEAD/.github/CONTRIBUTING.md).`;
   const comments = await list(`${prefix}/issues/${number}/comments`);
   const previous = comments.find(comment => comment.user?.login === 'github-actions[bot]' && comment.body?.includes(marker));
   if (previous) {

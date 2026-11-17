@@ -77,10 +77,10 @@ try {
   await publish({ phase: "manual", currentVersion: "0.1.3-alpha.2" });
   await page.locator(".app-update-button").waitFor({ state: "hidden" });
   assert.equal(await page.locator(".app-update-button").count(), 0, "system package updates must not offer an automatic installation");
-  await publish({ phase: "manual", currentVersion: "0.1.3-alpha.2", latestVersion: "0.1.3-alpha.3", message: "Linux 版本使用系统安装包更新。" });
-  const view = page.getByRole("button", { name: "查看新版本", exact: true });
+  await publish({ phase: "manual", currentVersion: "0.1.3-alpha.2", latestVersion: "0.1.3-alpha.3", message: "The Linux version is updated with the system package." });
+  const view = page.getByRole("button", { name: "View new version", exact: true });
   await view.waitFor();
-  assert.match(await view.getAttribute("title"), /0.1.3-alpha.3.*系统安装包.*发布页面/);
+  assert.match(await view.getAttribute("title"), /0.1.3-alpha.3.*system package.*releases page/);
   const installs = count("install");
   await view.click();
   for (let attempt = 0; attempt < 50 && !references.length; attempt++) await new Promise(resolve => setTimeout(resolve, 100));

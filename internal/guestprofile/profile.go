@@ -69,25 +69,25 @@ var description = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9 .()_-]{0,63}$`)
 
 func (o Options) Validate() error {
 	if o.Hostname != "" && !hostname.MatchString(o.Hostname) {
-		return errors.New("主机名须为 1–15 位 ASCII 字母、数字或连字符，以字母开头，以字母或数字结尾")
+		return errors.New("The host name must be 1–15 ASCII letters, digits or hyphens, starting with a letter and ending with a letter or digit")
 	}
 	for _, u := range []string{o.Username, o.BrowserUsername} {
 		if u == "" {
 			continue
 		}
 		if !username.MatchString(u) || reserved(u) {
-			return errors.New("Linux 账户须为 1–24 位小写字母、数字或下划线，以字母开头，且不能使用系统账户")
+			return errors.New("The Linux account must be 1–24 lowercase letters, digits or underscores, starting with a letter, and cannot be a system account")
 		}
 	}
 	if o.Username != "" && o.Username == o.BrowserUsername {
-		return errors.New("工作账户与浏览器账户必须不同")
+		return errors.New("The work account and the browser account must be different")
 	}
 	if o.AudioName != "" && !audioName.MatchString(o.AudioName) {
-		return errors.New("音频设备名须以小写字母开头，仅含 ASCII 字母、数字、点、连字符或下划线，最长 120 位")
+		return errors.New("The audio device name must start with a lowercase letter, contain only ASCII letters, digits, dots, hyphens or underscores, and be at most 120 characters")
 	}
 	for _, s := range []string{o.AudioDescription, o.ExtensionName} {
 		if s != "" && !description.MatchString(s) {
-			return errors.New("设备描述和扩展名称须为 1–64 位普通 ASCII 文字")
+			return errors.New("The device description and extension name must be 1–64 plain ASCII characters")
 		}
 	}
 	for _, size := range [][2]int{{o.DisplayWidth, o.DisplayHeight}, {o.BrowserWidth, o.BrowserHeight}} {
@@ -95,17 +95,17 @@ func (o Options) Validate() error {
 			continue
 		}
 		if size[0] < 800 || size[0] > 3840 || size[1] < 600 || size[1] > 2160 {
-			return errors.New("尺寸须同时填写宽高：宽 800–3840，高 600–2160")
+			return errors.New("Enter both width and height: width 800–3840, height 600–2160")
 		}
 	}
 	if o.DisplayWidth != 0 && o.BrowserWidth != 0 && (o.BrowserWidth > o.DisplayWidth || o.BrowserHeight > o.DisplayHeight) {
-		return errors.New("浏览器初始窗口不能大于虚拟显示")
+		return errors.New("The initial browser window cannot be larger than the virtual display")
 	}
 	if o.WebGL != "" && o.WebGL != "native" && o.WebGL != "disabled" {
-		return errors.New("WebGL 选项无效")
+		return errors.New("The WebGL option is invalid")
 	}
 	if o.Canvas != "" && o.Canvas != "native" && o.Canvas != "blocked" {
-		return errors.New("Canvas 读取选项无效")
+		return errors.New("The Canvas reading option is invalid")
 	}
 	if err := validateHardwareOptions(o); err != nil {
 		return err
@@ -234,13 +234,13 @@ func New(o Options) (*Profile, error) {
 
 func (p *Profile) Validate() error {
 	if p == nil || p.Version != 1 || !suffix.MatchString(p.ExtensionSuffix) {
-		return errors.New("客机创建配置版本或扩展标识无效")
+		return errors.New("The guest creation settings version or extension ID is invalid")
 	}
 	if p.Hostname == "" || p.Username == "" || p.BrowserUsername == "" || p.AudioName == "" || p.AudioDescription == "" || p.ExtensionName == "" || p.DisplayWidth == 0 || p.BrowserWidth == 0 || p.WebGL == "" || p.Canvas == "" {
-		return errors.New("客机创建配置不完整")
+		return errors.New("The guest creation settings are incomplete")
 	}
 	if p.WorkHomePath() == p.BrowserHomePath() {
-		return errors.New("两个账户不能共用主目录")
+		return errors.New("Two accounts cannot share a home folder")
 	}
 	return p.Options.Validate()
 }
@@ -256,7 +256,7 @@ func Load(directory string) (*Profile, error) {
 		return nil, e
 	}
 	if info.Size() > 8192 {
-		return nil, errors.New("客机创建配置超过大小限制")
+		return nil, errors.New("The guest creation settings exceed the size limit")
 	}
 	if e := host.CheckPrivateFile(path); e != nil {
 		return nil, e
@@ -270,11 +270,11 @@ func Load(directory string) (*Profile, error) {
 	d.DisallowUnknownFields()
 	var p Profile
 	if e = d.Decode(&p); e != nil {
-		return nil, errors.New("客机创建配置格式无效")
+		return nil, errors.New("The guest creation settings have an invalid format")
 	}
 	var extra any
 	if d.Decode(&extra) != io.EOF {
-		return nil, errors.New("客机创建配置须仅含一个 JSON 对象")
+		return nil, errors.New("The guest creation settings must contain exactly one JSON object")
 	}
 	return &p, p.Validate()
 }

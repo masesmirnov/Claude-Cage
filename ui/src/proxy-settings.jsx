@@ -357,7 +357,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                   then click Import and verify. You can export the config from an existing proxy client.
                 </li>
                 <li>
-                  <strong>手动节点：</strong>支持 HTTP CONNECT、SOCKS5 和 SSH。填写节点名称、服务器地址、端口及认证信息；SSH 可选择密码或私钥认证，再点击「导入并验证」。
+                  <strong>Manual node:</strong>Supports HTTP CONNECT, SOCKS5 and SSH. Enter the node name, server address, port and authentication; SSH can use password or private key authentication. Then click "Import and verify".
                 </li>
               </ul>
             </li>
@@ -1028,24 +1028,24 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                   </div>
                   {manualSSH && (
                     <label>
-                      认证方式
+                      Authentication
                       <InlineSelect
                         inline
-                        aria-label="认证方式"
+                        aria-label="Authentication"
                         value={manual.sshAuth}
                         onValueChange={(next) => setManual({
                           ...manual, sshAuth: next,
                           ...(next !== manual.sshAuth ? { password: "", privateKey: "", passphrase: "" } : {}),
                         })}
                       >
-                        <option value="password">密码</option>
-                        <option value="private-key">私钥</option>
+                        <option value="password">Password</option>
+                        <option value="private-key">Private key</option>
                       </InlineSelect>
                     </label>
                   )}
                   <div className="field-row">
                     <label>
-                      {manualSSH ? "用户名（必填）" : "用户名"}
+                      {manualSSH ? "Username (required)" : "Username"}
                       <input
                         value={manual.username}
                         autoComplete="off"
@@ -1055,7 +1055,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                       />
                     </label>
                     {(!manualSSH || manual.sshAuth === "password") && <label>
-                      {manualSSH ? "密码（必填）" : "密码"}
+                      {manualSSH ? "Password (required)" : "Password"}
                       <input
                         type="password"
                         value={manual.password}
@@ -1069,9 +1069,9 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                   {manualSSH && <>
                     {manual.sshAuth === "private-key" && <>
                       <label>
-                        私钥内容（必填）
+                        Private key content (required)
                         <textarea
-                          aria-label="私钥内容（必填）"
+                          aria-label="Private key content (required)"
                           value={manual.privateKey}
                           rows={7}
                           spellCheck={false}
@@ -1081,9 +1081,9 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                           placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
                         />
                       </label>
-                      <p className="field-help">粘贴完整 PEM / OpenSSH 私钥内容，不支持填写本机文件路径。</p>
+                      <p className="field-help">Paste the full PEM / OpenSSH private key content; local file paths are not supported.</p>
                       <label>
-                        私钥口令（可选）
+                        Private key passphrase (optional)
                         <input
                           type="password"
                           value={manual.passphrase}
@@ -1093,9 +1093,9 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                       </label>
                     </>}
                     <label>
-                      服务器公钥（可选，建议填写）
+                      Server public key (optional, recommended)
                       <textarea
-                        aria-label="服务器公钥（可选，建议填写）"
+                        aria-label="Server public key (optional, recommended)"
                         value={manual.hostKey}
                         rows={2}
                         spellCheck={false}
@@ -1104,7 +1104,7 @@ export function ProxySettings({ status, onApplied, onConfirm, onDirty, initializ
                         placeholder="ssh-ed25519 AAAA…"
                       />
                     </label>
-                    <p className="field-help">填写可信的服务器公钥以核对服务器身份，每行一条；留空时不校验服务器身份。SSH 仅转发 TCP。</p>
+                    <p className="field-help">Enter trusted server public keys to verify the server identity, one per line; if empty, the server identity is not verified. SSH only forwards TCP.</p>
                   </>}
                 </>
               )}

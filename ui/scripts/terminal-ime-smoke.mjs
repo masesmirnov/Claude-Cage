@@ -20,9 +20,9 @@ const { browser, page, errors } = await createWorkbench({
   },
 });
 try {
-  await page.getByRole("button", { name: "启动 Cage 环境", exact: true }).click();
-  await page.getByRole("button", { name: "新建终端", exact: true }).first().click();
-  await page.getByRole("menuitem", { name: "普通终端", exact: true }).click();
+  await page.getByRole("button", { name: "Start Cage environment", exact: true }).click();
+  await page.getByRole("button", { name: "New terminal", exact: true }).first().click();
+  await page.getByRole("menuitem", { name: "Regular terminal", exact: true }).click();
   await page.getByText("$", { exact: true }).first().waitFor();
   const textarea = page.locator(".xterm-helper-textarea");
   await textarea.focus();

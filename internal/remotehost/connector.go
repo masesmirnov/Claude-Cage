@@ -80,7 +80,7 @@ func ValidateManifest(m ServerManifest) error {
 		return failure("manifest_invalid", "Invalid cloud Cage connection ticket.")
 	}
 	if m.Runtime == "windows-remote" && !instancePattern.MatchString(m.RemoteView) || m.Runtime != "windows-remote" && m.RemoteView != "" {
-		return failure("manifest_invalid", "云端 Windows 视图凭据无效")
+		return failure("manifest_invalid", "The cloud Windows view credentials are invalid")
 	}
 	for key := range m.Capabilities {
 		if key == "" || len(key) > 64 || hasControl(key) {
@@ -240,7 +240,7 @@ func connect(lifetime context.Context, p HostProfile, secrets ConnectSecrets, ph
 		return nil, err
 	}
 	if manifest.Platform != p.Platform {
-		return nil, failure("platform_mismatch", "云端系统与保存的主机类型不一致，请检查远程主机设置")
+		return nil, failure("platform_mismatch", "The cloud system does not match the saved host type; check the remote host settings")
 	}
 	origin, _ := url.Parse(manifest.Origin)
 	targetHost := origin.Hostname()

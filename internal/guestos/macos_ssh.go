@@ -69,7 +69,7 @@ func MacOSSSHArgs(profile, user string) ([]string, error) {
 // MacOSSSHArgs: that set clears all forwards.
 func MacOSScreenSharingSSHArgs(profile, user string, hostPort int) ([]string, error) {
 	if hostPort < 1 || hostPort > 65535 {
-		return nil, errors.New("本机屏幕共享转发端口无效")
+		return nil, errors.New("The local Screen Sharing forwarding port is invalid")
 	}
 	base, err := macOSSSHBaseArgs(profile, user)
 	if err != nil {

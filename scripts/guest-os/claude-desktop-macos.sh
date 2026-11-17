@@ -86,7 +86,7 @@ if [[ $1 == migrate ]]; then
   if [[ -e $app || -L $app ]]; then
     verify_app "$app"
     if pgrep -f '^/Applications/Claude\.app/Contents/MacOS/Claude([[:space:]]|$)' >/dev/null; then
-      fail "请先保存工作并关闭 Claude Desktop，再更新环境组件。"
+      fail "Save your work and close Claude Desktop before updating environment components."
     fi
     parent=$(dirname "$destination")
     [[ ! -L $parent ]] || fail "Invalid application directory."
@@ -116,7 +116,7 @@ if [[ -e $destination || -L $destination ]]; then
 fi
 if [[ $replace == yes ]]; then
   if pgrep -f "^${destination//./\\.}/Contents/MacOS/Claude([[:space:]]|$)" >/dev/null; then
-    echo '请先保存工作并关闭 Claude Desktop，再安装其他版本。' >&2
+    echo 'Save your work and close Claude Desktop before installing another version.' >&2
     exit 1
   fi
   stage=$(mktemp -d "$parent/.claude-install.XXXXXXXX")

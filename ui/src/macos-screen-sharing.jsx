@@ -1,7 +1,7 @@
 import React from "react";
 import "./initialization.css";
 
-const labels = { passed: "已通过", failed: "未通过", unknown: "尚未完成" };
+const labels = { passed: "Passed", failed: "Failed", unknown: "Not finished yet" };
 
 export function ScreenSharingChecks({ checks = [], summary, status }) {
   const items = checks.length ? checks : status?.checks || [];
@@ -9,9 +9,9 @@ export function ScreenSharingChecks({ checks = [], summary, status }) {
   if (!text && items.length === 0) return null;
   return <>
     {text && <p role="status">{text}</p>}
-    {items.length > 0 && <ol className="initialization-checks" aria-label="屏幕共享检查结果">
+    {items.length > 0 && <ol className="initialization-checks" aria-label="Screen Sharing check results">
       {items.map(check => <li key={check.id}>
-        <strong>{check.title} · {labels[check.state] || "尚未完成"}</strong>
+        <strong>{check.title} · {labels[check.state] || "Not finished yet"}</strong>
         <p>{check.evidence}</p>
         {check.state !== "passed" && check.remedy && <p>{check.remedy}</p>}
       </li>)}

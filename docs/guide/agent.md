@@ -8,7 +8,7 @@ keywords: Agent CLI JSON automation configuration interface install diagnostics 
 
 You can give the paragraph below to your own agent, and it will prepare Cage for your goal. You only need to provide your own proxy source, choose the working environment, and complete authorization when the operating system requires it. You decide the Cage account password, the Claude sign-in, license confirmations and the project sharing scope.
 
-> 请阅读 https://claude-cage.com/agent.md ，协助我安装、配置并验证 Cage。先检查本机安装和接口能力，再按实际状态操作；完成后告诉我环境是否就绪、网络是否通过检查，以及还需要我完成什么。保留所有现有账户、项目和虚拟机数据。
+> Read https://claude-cage.com/agent.md and help me install, configure and verify Cage. First check the local installation and interface capabilities, then act based on the actual state; when done, tell me whether the environment is ready, whether the network passed the checks, and what I still need to do. Keep all existing accounts, projects and virtual machine data.
 
 This page describes the interfaces of the current source code and development build. The public release may not include `cage agent` yet. After installation, you must run a capability probe first. If you hit an unknown command, use that version's interface and release notes, or install a newer build the user has authorized. Do not infer that an interface exists from the version string alone.
 
@@ -84,7 +84,7 @@ cage agent call account.unlock --input -
 
 ### Import a proxy and confirm the exit
 
-先读 `proxy.status`。已有可用来源时复用，避免重复导入。首次导入可用用户提供的 HTTPS Clash/Mihomo 节点订阅，或私有文件中的 Clash/Mihomo YAML；内容必须包含 `proxies` 或 `payload` 节点。Base64 列表、单个 `vless://` 等分享链接、Xray/v2rayN 原生 JSON 和仅引用远程 provider 的配置不能直接导入，改文件后缀也不能完成转换。只有分享链接时，先从原客户端导出兼容 YAML；协议或握手不兼容时，可按[通过本机代理客户端转发](network.md#通过本机代理客户端转发)配置 SOCKS5 上游，再验证预期出口。
+Read `proxy.status` first. Reuse an existing working source to avoid importing twice. A first import can use an HTTPS Clash/Mihomo node subscription provided by the user, or a Clash/Mihomo YAML in a private file; the content must contain `proxies` or `payload` nodes. Base64 lists, single share links such as `vless://`, native Xray/v2rayN JSON and configurations that only reference remote providers cannot be imported directly, and changing the file extension does not convert them. If you only have share links, export a compatible YAML from the original client first; if the protocol or handshake is incompatible, configure a SOCKS5 upstream as in [Forward through a local proxy client](network.md#forward-through-a-local-proxy-client), then verify the expected exit.
 
 ```json
 {"name":"My proxy","url":"https://the-user-subscription-url","interval_hours":0,"host_download":true}
@@ -97,13 +97,13 @@ cage agent call proxy.status
 
 `host_download:true` explicitly allows the host to download this subscription over the network, only to fetch the subscription. The guest does not get a direct-connection fallback because of it. If a Cage proxy already exists, you can omit it so that the subscription goes through the existing proxy. Do not automatically extract subscriptions from the local browser, proxy software or another agent's credential files.
 
-从本地 YAML 文件导入时，CLI 仍接收 JSON，YAML 原文放入 `content` 字段。可用 Node.js 读取私有文件并直接通过管道传入，避免将节点内容拼到命令行参数中：
+When importing from a local YAML file, the CLI still takes JSON, with the YAML text in the `content` field. You can read the private file with Node.js and pipe it in directly, so the node content does not end up in command-line arguments:
 
 ```sh
 node --input-type=module -e '
 import { readFileSync } from "node:fs";
 process.stdout.write(JSON.stringify({
-  name: "我的代理",
+  name: "My proxy",
   content: readFileSync(process.argv[1], "utf8")
 }));
 ' /private/path/nodes.yaml |
@@ -111,7 +111,7 @@ process.stdout.write(JSON.stringify({
 cage agent call proxy.status
 ```
 
-节点内容使用网络指南中的[完整 SOCKS5 YAML 示例](network.md#通过本机代理客户端转发)或用户自己的兼容配置；不要将 YAML 文件直接作为 `--input` 的 JSON 输入。两种导入方式择一使用，避免重复创建来源。
+For the node content, use the [full SOCKS5 YAML example](network.md#forward-through-a-local-proxy-client) in the network guide or the user's own compatible configuration; do not pass the YAML file directly as the JSON input of `--input`. Use only one of the two import methods to avoid creating duplicate sources.
 
 Choose the exit the user asked for from the returned sources and node list. Do not treat the first node in the subscription as an exit the user has agreed to.
 
@@ -124,11 +124,11 @@ cage agent call proxy.select --input /private/path/selection.json --wait 2m
 cage agent call proxy.status
 ```
 
-链式代理使用 `proxy.route`，输入 `{"node_ids":["入口ID","最终出口ID"]}`，顺序为入口到出口。`proxy.select` 总是把路由替换为所选的单个节点：已有链会被清除，所选节点即使原本在链中也可以。节点无效、配置验证或核心启动失败时保留原路由；路由保存后的网络检查仍可能失败，应以 `proxy.status` 返回的当前路由为准。要保留或重建多跳链，请重新调用 `proxy.route`。更新订阅使用 `proxy.refresh` 和已有来源 `id`；`proxy.import` 每次创建来源，不能盲目重试。
+For proxy chains, use `proxy.route` with the input `{"node_ids":["entry ID","final exit ID"]}`, ordered from entry to exit. `proxy.select` always replaces the route with the single selected node: an existing chain is cleared, and the selected node may even be part of it. If the node is invalid, or configuration verification or core startup fails, the original route is kept; the network check after the route is saved can still fail, so rely on the current route returned by `proxy.status`. To keep or rebuild a multi-hop chain, call `proxy.route` again. To update a subscription, use `proxy.refresh` with the existing source `id`; `proxy.import` creates a source every time and must not be retried blindly.
 
-`proxy.import` 成功表示节点格式和核心配置通过校验。应用节点后，用 `settings.get` 读取完整设置，再将设置对象作为 `settings.probe` 的输入，通过所选代理发起真实 HTTPS 请求，核对返回的出口 IP 和位置。报告时分别说明导入校验、实际连通性与出口验证结果；主机上其他代理客户端可用或核心进程正在运行，都不能代替实际出口验证。客机启动后，仍需按下文核对 `network.check` 和当前网络授权，确认终端与浏览器等路径通过检查。
+A successful `proxy.import` means the node format and core configuration passed validation. After applying the node, read the full settings with `settings.get`, then pass the settings object as the input of `settings.probe`, which makes a real HTTPS request through the selected proxy; check the returned exit IP and location. Report the import validation, actual connectivity and exit verification results separately; other proxy clients working on the host or the core process running do not replace actual exit verification. After the guest starts, still check `network.check` and the current network authorization as described below, to confirm that paths such as the terminal and the browser pass.
 
-VLESS + TCP + REALITY 节点若在语法校验通过后报 `REALITY authentication failed`，先对照原客户端与服务端参数，再按[网络指南的 REALITY 排查步骤](network.md#vless-reality-握手失败)检查 `reality-opts.support-x25519mlkem768`。按节点要求只调整这一项，重新导入、应用并重复相同的 HTTPS 与出口验证；不要批量改写所有 REALITY 节点、关闭证书校验或绕过出口规则。节点地址、UUID、公钥、short-id 和原始日志仍应留在私有排查材料中。
+If a VLESS + TCP + REALITY node reports `REALITY authentication failed` after passing syntax validation, compare the original client and server parameters first, then check `reality-opts.support-x25519mlkem768` following the [REALITY troubleshooting steps in the network guide](network.md#vless-reality-handshake-fails). Change only this one option as the node requires, import and apply again, and repeat the same HTTPS and exit verification; do not rewrite all REALITY nodes in bulk, turn off certificate verification or bypass the exit rules. Node addresses, UUIDs, public keys, short-ids and raw logs should stay in private troubleshooting material.
 
 ### Prepare the environment and open a project
 
@@ -171,9 +171,9 @@ Judge availability together from `status.ready`, `vm_running`, and the network c
 
 Open a project with `project.open`: `{"workspace":"user-authorized absolute path","add":true,"activate":true}`. It lets the guest access this directory, and changes affect the host files. A returned `approval` means it is waiting for system authorization. The agent can call the same `/api/macos/project-approval` to view and act on that window. Claude's service sign-in is still completed in the official tools inside Cage. This interface does not import host Claude credentials.
 
-移除已添加项目使用 `project.remove`，传入 `{"workspace":"项目列表中的路径"}`。关闭该目录的终端、运行中会话和编辑器后可解除共享，原文件与会话历史保留。移除当前项目后切换到剩余项目；移除最后一个项目后没有当前项目。
+To remove an added project, use `project.remove` with `{"workspace":"path from the project list"}`. Sharing stops after the folder's terminals, running sessions and editor are closed; the original files and session history are kept. After removing the current project, switch to a remaining one; after removing the last project there is no current project.
 
-Linux 环境默认缓存项目文件的名称与属性，主机上的改动最多 20 秒后可见。刚在主机上改过文件、需要环境立即看到时调用 `project.refresh`，无需参数；macOS 和 Windows 环境始终直接读取，调用会返回 409。
+Linux environments cache project file names and attributes by default, so changes on the host become visible within 20 seconds. When you just changed files on the host and the environment needs to see them right away, call `project.refresh` with no arguments; macOS and Windows environments always read directly, and the call returns 409.
 
 ## JSON results and asynchronous jobs
 

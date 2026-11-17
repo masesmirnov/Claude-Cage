@@ -417,12 +417,12 @@ func (s *Server) resolveSharedDesktopDownload(item map[string]any, id, name stri
 	}
 	root := s.environmentDir()
 	if path != strings.TrimRight(guestPath(root), "/")+"/Downloads/"+name {
-		item["state"], item["retryable"], item["error"] = "failed", false, "无法确认这条下载记录的本机保存位置。"
+		item["state"], item["retryable"], item["error"] = "failed", false, "Cannot confirm the local save location of this download record."
 		return
 	}
 	hostPath := filepath.Join(root, "Downloads", name)
 	if err := rememberDownload(s.profile, SavedDownload{ID: id, Name: name, Path: hostPath}, true); err != nil {
-		item["state"], item["retryable"], item["error"] = "failed", false, "无法记录这次下载的本机保存位置。"
+		item["state"], item["retryable"], item["error"] = "failed", false, "Cannot record the local save location of this download."
 		return
 	}
 	item["path"] = hostPath

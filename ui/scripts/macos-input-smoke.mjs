@@ -50,10 +50,10 @@ async function until(predicate) {
   assert(predicate(), "expected native window input did not arrive");
 }
 try {
-  await page.getByRole("button", { name: chrome ? "打开浏览器" : app, exact: true }).click();
-  const surface = page.getByAltText(app + " 客机窗口");
+  await page.getByRole("button", { name: chrome ? "Open browser" : app, exact: true }).click();
+  const surface = page.getByAltText(app + " guest window");
   await surface.waitFor();
-  await page.getByLabel("向 " + app + " 输入").waitFor({ state: "attached" });
+  await page.getByLabel("Input to " + app).waitFor({ state: "attached" });
   const bounds = await surface.boundingBox();
   await page.mouse.move(bounds.x + 80, bounds.y + 100);
   await page.mouse.down();
@@ -76,7 +76,7 @@ try {
   assert(inputs.some(input => input.code === "KeyF" && input.command));
   assert(inputs.some(input => input.code === "KeyA" && input.command));
   await until(() => inputs.some(input => input.action === "ime" && input.mode === "status"));
-  await page.getByLabel("向 " + app + " 输入").evaluate(element => {
+  await page.getByLabel("Input to " + app).evaluate(element => {
     element.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true }));
     element.value = "nihao";
     element.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertCompositionText", isComposing: true, data: "nihao" }));

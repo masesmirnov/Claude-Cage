@@ -3,7 +3,7 @@ title: Network and proxy
 description: Import nodes and subscriptions, set up multi-hop relays, and understand the rules for network checks, time zone and exit changes.
 group: Getting started
 order: 2
-keywords: Clash Mihomo YAML VLESS REALITY ML-KEM SOCKS5 SSH 私钥 住宅 IP DNS DoH 暂停 断网 代理链 订阅
+keywords: Clash Mihomo YAML VLESS REALITY ML-KEM SOCKS5 SSH private key residential IP DNS DoH pause offline proxy chain subscription
 ---
 <figure class="guide-shot">
   <a href="../../www/public/docs/screenshots/proxy-subscription.jpg" target="_blank" rel="noopener" aria-label="View original: adding a subscription link and the first-time host download option"><img src="../../www/public/docs/screenshots/proxy-subscription.jpg" alt="Adding a subscription link and the first-time host download option" width="2560" height="1764" loading="lazy" decoding="async" /></a>
@@ -18,16 +18,16 @@ Open it from "Set up network and proxy" on the home page, or go to "Settings →
 | --- | --- |
 | Subscription link | Enter a name and an HTTPS node subscription URL. If there are no usable nodes the first time, you can explicitly tick "Download this subscription over the host network". |
 | Local YAML | Drag in or click to select an exported YAML, YML or JSON file (up to 8 MiB each), or paste Clash/Mihomo YAML content directly. After it is read, you can edit it. Click "Import and verify" to finish the import. |
-| 手动节点 | 选择 HTTP、SOCKS5 或 SSH，填写服务器、端口和认证信息。SSH 默认端口为 22，用户名必填；可选择密码或私钥认证。私钥认证须粘贴完整私钥内容，加密私钥还需填写私钥口令。 |
+| Manual node | Choose HTTP, SOCKS5 or SSH, and enter the server, port and authentication. The SSH default port is 22 and the user name is required; you can choose password or private key authentication. Private key authentication needs the full private key pasted in, and an encrypted private key also needs its passphrase. |
 
 Click "Import and verify", then go to "Nodes", choose the final exit, and click "Apply proxy". "Save settings" is for other settings and cannot replace applying the proxy. Selections that have not been applied are only drafts.
 
-“导入并验证”检查节点格式和核心配置，成功后仍需验证实际连接与出口：
+"Import and verify" checks the node format and core configuration; after it succeeds you still need to verify the actual connection and exit:
 
-1. 应用节点后，在“设置 → 网络与代理”点击“验证出口”。该检查通过所选代理发起真实 HTTPS 请求，确认能取得出口 IP 和位置，并与预期出口核对；主机上其他代理客户端能够访问外网，不能代替这一步。
-2. 启动工作环境，查看底部网络状态及检查结果。宿主、客机终端和浏览器的出口采样及其他关键检查通过后，才会显示“已联网”。失败项的处理见[为什么应用了节点仍然离线](#为什么应用了节点仍然离线)。
+1. After applying the node, click "Verify exit" in "Settings → Network and proxy". This check makes a real HTTPS request through the selected proxy, confirms it gets the exit IP and location, and compares them with the expected exit; other proxy clients on the host being able to reach the internet does not replace this step.
+2. Start the work environment and look at the network status and check results at the bottom. "Online" appears only after the exit samples of the host, guest terminal and browser and the other key checks pass. For failed items, see [Why the node is applied but still offline](#why-the-node-is-applied-but-still-offline).
 
-订阅或本地配置必须包含 `proxies` 或 `payload` 节点。Base64 列表、单个 `vless://` 等分享链接、Xray/v2rayN 原生 JSON、只引用远程 provider 的配置暂不支持。只有分享链接时，先从原客户端导出 Clash/Mihomo YAML；更改文件后缀不能完成转换。导入只采用支持的节点与代理链，不采用订阅中的主机系统代理、TUN、监听端口或直连规则。
+Subscriptions and local configurations must contain `proxies` or `payload` nodes. Base64 lists, single share links such as `vless://`, native Xray/v2rayN JSON and configurations that only reference remote providers are not supported yet. If you only have share links, export a Clash/Mihomo YAML from the original client first; changing the file extension does not convert it. Import only takes supported nodes and proxy chains, not the subscription's host system proxy, TUN, listening ports or direct rules.
 
 Ordinary node parameters are kept and passed to the Mihomo core bundled with Cage for validation. For example, a VLESS node copied from FlClash can keep `xudp: true` without changing it to another field by hand. The core may ignore unknown fields. After configuration validation passes, you still need to apply the node and check the actual exit. The guest's public UDP blocking rule is not affected by these protocol options.
 
@@ -35,9 +35,9 @@ VMess, VLESS and Trojan WebSocket nodes can import the legacy fields `ws-path` a
 
 Hysteria2 nodes can use `mport` to specify a port-hopping range and `pinSHA256` to specify a certificate fingerprint. On import, these are converted to fields the core supports, and the features are kept. If a node uses an unsupported protocol, references a local file or network interface, has duplicate management fields, has conflicting alias parameters, or a proxy chain is unavailable, the node is skipped, and the source shows the number imported, the number skipped and the reasons. Click "See reasons" to expand the specific nodes. Proxy chains that depend on failed nodes are also skipped. If all nodes are skipped, the import fails. When an update affects the current exit or a relay node, the original configuration is kept, so apply another node first and then update. The remaining nodes must also pass the core configuration validation as a whole. If validation fails, the original configuration stays unchanged, and you can export a diagnostics bundle from "Logs and diagnostics" in settings to see the validation record.
 
-手动添加 SSH 节点时，可在“服务器公钥”中填写可信公钥，每行一条；留空时不校验服务器身份。
+When adding an SSH node by hand, you can enter trusted public keys in "Server public key", one per line; if empty, the server identity is not verified.
 
-SSH 节点（`type: ssh`）可以把自己的 VPS 直接作为固定出口，服务器上只需开启 SSH，无需另外部署代理服务。可用 `password` 或 `private-key` 认证；`private-key` 须直接填写 PEM 私钥内容（含 `-----BEGIN ... PRIVATE KEY-----`），引用本机私钥文件路径的节点会被跳过，加密私钥可配合 `private-key-passphrase`。建议用 `host-key` 固定服务器公钥（`ssh-keyscan` 输出中的 `ssh-ed25519 AAAA...` 部分），未填写时核心不校验服务器身份。SSH 节点仅转发 TCP。示例：
+An SSH node (`type: ssh`) can use your own VPS directly as a fixed exit; the server only needs SSH enabled, with no separate proxy service. It can use `password` or `private-key` authentication; `private-key` must contain the PEM private key content itself (including `-----BEGIN ... PRIVATE KEY-----`), nodes that reference a local private key file path are skipped, and encrypted private keys can use `private-key-passphrase`. Pin the server public key with `host-key` (the `ssh-ed25519 AAAA...` part of the `ssh-keyscan` output); without it the core does not verify the server identity. SSH nodes only forward TCP. Example:
 
 ```yaml
 proxies:
@@ -61,12 +61,12 @@ The same subscription URL may return different formats depending on the client i
   <figcaption>Entering an HTTP / SOCKS5 node manually. Screenshot version: 0.1.7-rc.1 (development build) · UI test stand on Windows 11 x64 · 2026-11-11. <a href="../../www/public/docs/screenshots/proxy-manual.jpg" target="_blank" rel="noopener">View original (2560 × 1764) ↗</a></figcaption>
 </figure>
 
-## 通过本机代理客户端转发
+## Forward through a local proxy client
 
-节点依赖 Xray 等客户端支持的传输或握手参数、转换为 Mihomo YAML 后仍无法连接时，可将该客户端的本机 SOCKS5 监听作为 Cage 的上游。此时连接顺序为 `Cage → 本机 SOCKS5 监听 → 原客户端所选节点 → 目标网站`；原客户端须保持运行，并让这些请求经过预期节点，避免其直连规则或自动回退改变出口。
+If a node depends on transport or handshake parameters supported by clients such as Xray and still cannot connect after conversion to Mihomo YAML, you can use that client's local SOCKS5 listener as Cage's upstream. The connection order is then `Cage → local SOCKS5 listener → node selected in the original client → target site`; the original client must keep running and send these requests through the expected node, so its direct rules or automatic fallback do not change the exit.
 
-1. 在原客户端启用只监听本机的 SOCKS5 端口，记录实际地址、端口及认证信息。此处的本机指运行 Cage 控制服务的主机；连接远程 Cage 时，`127.0.0.1` 指远程主机，无法使用你电脑上的监听。
-2. 在 Cage 手动添加 SOCKS5 节点，或导入以下完整 YAML。示例端口 `10808` 须替换为客户端实际的 SOCKS5 端口；启用认证时，补上该监听要求的 `username` 和 `password`。
+1. In the original client, enable a SOCKS5 port that listens only locally, and note the actual address, port and authentication. Locally here means the host that runs the Cage control service; when connected to a remote Cage, `127.0.0.1` means the remote host, and a listener on your computer cannot be used.
+2. Add a SOCKS5 node in Cage by hand, or import the full YAML below. Replace the example port `10808` with the client's actual SOCKS5 port; if authentication is enabled, add the `username` and `password` the listener requires.
 
 ```yaml
 proxies:
@@ -77,9 +77,9 @@ proxies:
     udp: false
 ```
 
-3. 选择并应用该节点，在“设置 → 网络与代理”点击“验证出口”，与原客户端的预期出口核对；随后完成环境联网检查。客户端选中其他节点、规则变化或停止运行都会影响此路径，须重新验证。
+3. Select and apply this node, click "Verify exit" in "Settings → Network and proxy", and compare with the original client's expected exit; then finish the environment network check. The client selecting another node, rule changes or the client stopping all affect this path and require verifying again.
 
-Cage 仍通过受管核心转发客机出站，原客户端负责连接上游 VLESS 等服务；这条路径不会开放客机到主机的任意直连，也不放宽出口规则或公网 UDP 限制。各主机上的监听能否被核心实际访问，以“验证出口”和环境检查结果为准。
+Cage still forwards guest outbound traffic through the managed core, and the original client connects to the upstream VLESS or other service; this path does not open arbitrary direct connections from the guest to the host, and does not relax the exit rules or the public UDP restriction. Whether a listener on each host can actually be reached by the core is decided by "Verify exit" and the environment check results.
 
 ## Reach a residential exit through a relay
 
@@ -96,7 +96,7 @@ Check the preview before applying, for example: `Cage → Relay node → Residen
 
 Proxy core readiness and the working environment being allowed to connect to the internet are two separate steps. After the environment starts, internet access for the business stays off while the critical checks run: exit, DNS, system and browser configuration, shared directories, host management interfaces and network blocking. For Linux guests, the DNS item also requires the resolver to point only to an address inside the environment, and direct UDP/53, TCP/53 and DoT/853 connections to public DNS must not bypass the gateway. The host management interface item also probes link-local metadata addresses and the configured user proxy port. The IPv6 item requires the guest to have zero global IPv6 addresses, and checks routing or reject records. If a probe result is missing, the state shows unknown. If any critical item fails or evidence is missing, internet access stays off.
 
-macOS 主机只从 `networksetup` 报告的硬件端口中选择具有可用 IPv4 地址的物理出口；`utun`、`bridge`、`vmen`、`vmenet`、`vmnet`、`tap`、`lima`、`awdl`、`llw`、`p2p`、`gif`、`stf`、`anpi`、`ap` 等隧道、桥接和虚拟机接口即使带有地址或默认路由，也不会被绑定为代理出口。macOS 客机的 IPv6 链路入口检查只向宿主回报已验证的布尔结果，安全报告显示“客机以太网卡”。如果 IPv6 默认路由经过这张网卡，IPv6 检查显示“未知”，业务外网保持关闭。宿主诊断日志保留该路由的验证结果，省略网卡名。
+macOS hosts only choose physical exits with a usable IPv4 address among the hardware ports reported by `networksetup`; tunnel, bridge and virtual machine interfaces such as `utun`, `bridge`, `vmen`, `vmenet`, `vmnet`, `tap`, `lima`, `awdl`, `llw`, `p2p`, `gif`, `stf`, `anpi` and `ap` are never bound as the proxy exit, even if they have an address or the default route. The IPv6 link entry check of macOS guests only reports a verified boolean result to the host, and the safety report shows "Guest Ethernet adapter". If the IPv6 default route goes through this adapter, the IPv6 check shows "Unknown" and the work internet stays closed. The host diagnostic log keeps the verification result of this route and omits the adapter name.
 
 Exit detection reads the public IPv4 address through the selected proxy, using `https://ipv4.icanhazip.com/` first and the backup service `https://api.ipify.org/` next. Dual-stack nodes use their IPv4 exit to complete the check. The host, guest terminal and browser use the same detection method. If the startup check cannot get a valid address, internet access for the business stays off. You can retry later or check the node.
 
@@ -153,20 +153,20 @@ Business DNS is forwarded through the selected proxy. The startup resolution of 
 
 On the proxy page, "Diagnostics" can check the core status, restart the Cage core, or choose an independent listening port. If a port is in use, select an unused port, then restart the environment as prompted. For specific symptoms, see [Troubleshooting](troubleshooting.md#node-applied-but-no-internet-access).
 
-### VLESS REALITY 握手失败
+### VLESS REALITY handshake fails
 
-从 V2rayN 等客户端迁入 VLESS + TCP + REALITY 节点后，可能出现配置校验通过、真实 HTTPS 请求失败，核心日志报 `REALITY authentication failed` 的情况。先逐项对照原客户端与服务端参数，包括服务器、端口、UUID、传输方式、SNI、客户端指纹、flow、公钥和 short-id；配置语法正确仍可能存在握手兼容问题。
+After moving VLESS + TCP + REALITY nodes from clients such as V2rayN, the configuration may pass validation while real HTTPS requests fail and the core log reports `REALITY authentication failed`. First compare the original client and server parameters one by one, including the server, port, UUID, transport, SNI, client fingerprint, flow, public key and short-id; correct configuration syntax can still have handshake compatibility problems.
 
-参数核对一致后，可按 [Mihomo 官方 TLS 文档](https://wiki.metacubex.one/config/proxies/tls/#reality-optssupport-x25519mlkem768)检查 `reality-opts.support-x25519mlkem768`，该选项用于支持 X25519-MLKEM768 密钥交换。对于需要此兼容选项的节点，在该节点现有的 `reality-opts` 中保留原公钥和 short-id，并添加：
+Once the parameters match, check `reality-opts.support-x25519mlkem768` following the [official Mihomo TLS documentation](https://wiki.metacubex.one/config/proxies/tls/#reality-optssupport-x25519mlkem768); this option supports the X25519-MLKEM768 key exchange. For nodes that need this compatibility option, keep the original public key and short-id in the node's existing `reality-opts` and add:
 
 ```yaml
 reality-opts:
-  public-key: <原节点公钥>
-  short-id: <原节点 short-id>
+  public-key: <original node public key>
+  short-id: <original node short-id>
   support-x25519mlkem768: true
 ```
 
-这是节点内的配置片段，需放回完整的 Clash/Mihomo YAML 后重新导入、应用。保留原配置，每次只调整这一项，再重复相同的 HTTPS 与出口检查。部分节点在启用此项后可以恢复连接；请按原节点与服务端要求使用，不要对所有 REALITY 节点无条件添加或重写参数。若仍失败，保留日志继续排查，不能仅凭该错误判断服务端版本或设置，也不要通过关闭证书校验、放宽出口规则或启用直连回退处理。
+This is a configuration fragment inside the node; put it back into the full Clash/Mihomo YAML, then import and apply again. Keep the original configuration, change only this one option at a time, and repeat the same HTTPS and exit checks. Some nodes connect again after this option is turned on; use it as the original node and server require, and do not add or rewrite parameters on all REALITY nodes unconditionally. If it still fails, keep the logs and keep troubleshooting; this error alone does not tell the server version or settings, and do not handle it by turning off certificate verification, relaxing exit rules or enabling direct fallback.
 
 ## Use SSH over the Tailscale private network
 

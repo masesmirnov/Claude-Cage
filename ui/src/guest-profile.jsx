@@ -4,14 +4,14 @@ import { InlineSelect } from "./inline-select";
 import { SafetyMessage } from "./safety-message";
 
 const textFields = [
-  ["hostname", "主机名", "留空使用随机 PC 名称", 15],
-  ["username", "Linux 工作账户", "留空随机生成", 24],
-  ["work_home", "工作账户主目录", "留空使用 /home/<工作账户>", 69],
-  ["browser_username", "Linux 浏览器账户", "留空随机生成，须与工作账户不同", 24],
-  ["browser_home", "浏览器账户主目录", "留空使用 /home/<浏览器账户>", 69],
-  ["extension_name", "Linux 控制扩展名称", "留空随机选择", 64],
+  ["hostname", "Host name", "Leave empty for a random PC name", 15],
+  ["username", "Linux work account", "Leave empty to generate at random", 24],
+  ["work_home", "Work account home folder", "Leave empty to use /home/<work account>", 69],
+  ["browser_username", "Linux browser account", "Leave empty to generate at random; must differ from the work account", 24],
+  ["browser_home", "Browser account home folder", "Leave empty to use /home/<browser account>", 69],
+  ["extension_name", "Linux control extension name", "Leave empty to choose at random", 64],
 ];
-const dimensions = [["display", "Linux 虚拟显示"], ["browser", "浏览器初始窗口"]];
+const dimensions = [["display", "Linux virtual display"], ["browser", "Initial browser window"]];
 
 const nativeFields = new Set(["hostname", "browser_width", "browser_height", "webgl", "canvas", "graphics_backend"]);
 const backendSystems = { metal: "macos", d3d11: "windows-11", vulkan: "linux" };
@@ -61,21 +61,21 @@ export function GuestProfileOptions({ value, onChange, disabled, system }) {
     catch (error) { setError(error.message); }
     finally { setGenerating(false); }
   }
-  return <details className="guest-profile-options"><summary>客机名称与初始设备配置</summary>
-    <p>建议选择自然、易记、与你以往环境身份不同的名称。用户名、主目录、主机名和尺寸可自行填写；留空时生成一组初始值，后续重启保持一致。</p>
+  return <details className="guest-profile-options"><summary>Guest names and initial device configuration</summary>
+    <p>Choose names that are natural, easy to remember and different from your previous environment identities. You can enter the user names, home folders, host name and sizes yourself; empty fields get a set of initial values that stay the same across restarts.</p>
     {error && <p role="alert"><SafetyMessage message={error} /></p>}
-    {loaded && !editable && <p>{saved ? "此环境的创建配置已保存，继续安装将复用以下设置。" : "已有环境沿用原配置；这些选项用于创建独立的新环境。"}</p>}
+    {loaded && !editable && <p>{saved ? "The creation settings of this environment are saved, and continuing the installation reuses the settings below." : "Existing environments keep their original settings; these options are for creating a separate new environment."}</p>}
     {loaded && (editable || saved) && <fieldset disabled={locked}>
       {textFields.filter(([key]) => !native || key === "hostname").map(([key, label, placeholder, maxLength]) => <label key={key}>{label}<input value={options[key] || ""} maxLength={maxLength} placeholder={placeholder} onChange={event => set(key, event.target.value)} autoComplete="off" /></label>)}
-      {dimensions.filter(([key]) => !native || key === "browser").map(([key, label]) => <label key={key}>{label}<span className="guest-profile-size">{["width", "height"].map((axis, i) => <React.Fragment key={axis}>{i > 0 && " × "}<input type="number" min={i ? 600 : 800} max={i ? 2160 : 3840} placeholder={i ? "高（随机）" : "宽（随机）"} value={options[`${key}_${axis}`] || ""} onChange={event => set(`${key}_${axis}`, event.target.value === "" ? 0 : Number(event.target.value))} /></React.Fragment>)}</span></label>)}
-      {!native && <label>音频设备（自动选择真实型号）<output>{options.audio_description || `创建时从 ${capabilities?.audio_models?.length || 12} 个型号中随机选择`}</output><small>型号名称与设备标识保持对应；随机后缀仅用于本环境标识。</small></label>}
-      <label>浏览器身份<output>跟随实际安装的浏览器，保持 UA 与 Client Hints 一致</output></label>
-      <label>图形渲染后端<InlineSelect inline aria-label="图形渲染后端" value={options.graphics_backend || "auto"} onValueChange={value => set("graphics_backend", value)} disabled={locked || options.webgl === "disabled"}><option value="auto">自动使用客机可用设备</option>{system === "macos" && <option value="metal">ANGLE / Metal</option>}{system === "windows-11" && <option value="d3d11">ANGLE / D3D11</option>}{!native && <option value="vulkan" disabled={options.gpu_backend === "virgl"}>ANGLE / Vulkan（需要驱动支持，VirGL 不适用）</option>}<option value="opengl">ANGLE / OpenGL</option><option value="software">SwiftShader 软件兼容模式</option></InlineSelect></label>
-      {!native && capabilities?.host_os === "linux" && !capabilities.container && <label>虚拟 GPU<InlineSelect inline aria-label="虚拟 GPU" value={options.gpu_backend || "default"} onValueChange={value => set("gpu_backend", value)}><option value="default">使用现有虚拟设备</option><option value="virgl">QEMU VirGL + DRI3（实验性，需要宿主 GPU）</option></InlineSelect></label>}
-      <label>WebGL<InlineSelect inline aria-label="WebGL" value={options.webgl || "native"} onValueChange={value => set("webgl", value)}><option value="native">使用客机原生图形能力</option><option value="disabled">关闭网页 3D 图形能力</option></InlineSelect></label>
-      <label>Canvas 图像读取<InlineSelect inline aria-label="Canvas 图像读取" value={options.canvas || "native"} onValueChange={value => set("canvas", value)}><option value="native">允许网页读取 Canvas 图像</option><option value="blocked">阻止网页读取 Canvas 图像</option></InlineSelect></label>
-      <p>后端名称表示实际渲染路径，是否获得硬件加速需在环境检测中核实。关闭 WebGL 或阻止 Canvas 读取会影响部分网站；这些选项不替换真实驱动报告的显卡型号。</p>
-      <button type="button" onClick={randomize}>{generating ? "正在生成…" : "重新随机生成名称和尺寸"}</button>
+      {dimensions.filter(([key]) => !native || key === "browser").map(([key, label]) => <label key={key}>{label}<span className="guest-profile-size">{["width", "height"].map((axis, i) => <React.Fragment key={axis}>{i > 0 && " × "}<input type="number" min={i ? 600 : 800} max={i ? 2160 : 3840} placeholder={i ? "Height (random)" : "Width (random)"} value={options[`${key}_${axis}`] || ""} onChange={event => set(`${key}_${axis}`, event.target.value === "" ? 0 : Number(event.target.value))} /></React.Fragment>)}</span></label>)}
+      {!native && <label>Audio device (real model chosen automatically)<output>{options.audio_description || `Chosen at random from ${capabilities?.audio_models?.length || 12} models at creation`}</output><small>The model name and device ID stay matched; the random suffix only identifies this environment.</small></label>}
+      <label>Browser identity<output>Follows the browser actually installed, keeping the UA and Client Hints consistent</output></label>
+      <label>Graphics rendering backend<InlineSelect inline aria-label="Graphics rendering backend" value={options.graphics_backend || "auto"} onValueChange={value => set("graphics_backend", value)} disabled={locked || options.webgl === "disabled"}><option value="auto">Use the devices available in the guest automatically</option>{system === "macos" && <option value="metal">ANGLE / Metal</option>}{system === "windows-11" && <option value="d3d11">ANGLE / D3D11</option>}{!native && <option value="vulkan" disabled={options.gpu_backend === "virgl"}>ANGLE / Vulkan (needs driver support, not for VirGL)</option>}<option value="opengl">ANGLE / OpenGL</option><option value="software">SwiftShader software compatibility mode</option></InlineSelect></label>
+      {!native && capabilities?.host_os === "linux" && !capabilities.container && <label>Virtual GPU<InlineSelect inline aria-label="Virtual GPU" value={options.gpu_backend || "default"} onValueChange={value => set("gpu_backend", value)}><option value="default">Use the existing virtual device</option><option value="virgl">QEMU VirGL + DRI3 (experimental, needs a host GPU)</option></InlineSelect></label>}
+      <label>WebGL<InlineSelect inline aria-label="WebGL" value={options.webgl || "native"} onValueChange={value => set("webgl", value)}><option value="native">Use the guest's native graphics capabilities</option><option value="disabled">Turn off web 3D graphics</option></InlineSelect></label>
+      <label>Canvas image reading<InlineSelect inline aria-label="Canvas image reading" value={options.canvas || "native"} onValueChange={value => set("canvas", value)}><option value="native">Allow web pages to read Canvas images</option><option value="blocked">Block web pages from reading Canvas images</option></InlineSelect></label>
+      <p>The backend name shows the actual rendering path; whether hardware acceleration is used must be verified in the environment checks. Turning off WebGL or blocking Canvas reading affects some sites; these options do not replace the graphics card model reported by the real driver.</p>
+      <button type="button" onClick={randomize}>{generating ? "Generating…" : "Generate names and sizes at random again"}</button>
     </fieldset>}
   </details>;
 }

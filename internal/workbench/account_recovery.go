@@ -45,10 +45,10 @@ func (a *localAccount) generateRecovery(password string) (string, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if a.record == nil || len(a.key) != 32 {
-		return "", errors.New("请先解锁 Cage")
+		return "", errors.New("Unlock Cage first")
 	}
 	if time.Now().Before(a.nextAttempt) {
-		return "", errors.New("请稍后再试")
+		return "", errors.New("Please try again later")
 	}
 	key, err := openAccountKey(a.record, password)
 	if err != nil {
@@ -62,7 +62,7 @@ func (a *localAccount) generateRecovery(password string) (string, error) {
 		return "", err
 	}
 	if err = writePrivate(a.path, &record); err != nil {
-		return "", errors.New("恢复密钥未能保存，原有恢复方式保持有效")
+		return "", errors.New("The recovery key could not be saved; the existing recovery method stays valid")
 	}
 	a.record = &record
 	a.nextAttempt = time.Time{}
@@ -78,7 +78,7 @@ func (a *localAccount) resetPassword(code, password string) (string, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if time.Now().Before(a.nextAttempt) {
-		return "", errors.New("请稍后再试")
+		return "", errors.New("Please try again later")
 	}
 	var key []byte
 	// Accept formatting whitespace, hyphens and either case, without accepting
@@ -94,7 +94,7 @@ func (a *localAccount) resetPassword(code, password string) (string, error) {
 	}
 	if len(key) != 32 {
 		a.nextAttempt = time.Now().Add(time.Second)
-		return "", errors.New("恢复密钥不正确或已失效，请核对保存的最新密钥")
+		return "", errors.New("The recovery key is incorrect or no longer valid; check the latest key you saved")
 	}
 	defer clear(key)
 	record, err := a.passwordRecord(key, password, true)
@@ -112,7 +112,7 @@ func (a *localAccount) resetPassword(code, password string) (string, error) {
 	record.Devices = nil
 	record.RequireAuthentication = true
 	if err = writePrivate(a.path, record); err != nil {
-		return "", errors.New("新密码未能保存，原密码与恢复密钥仍然有效")
+		return "", errors.New("The new password could not be saved; the old password and recovery key are still valid")
 	}
 	a.record = record
 	a.nextAttempt = time.Time{}

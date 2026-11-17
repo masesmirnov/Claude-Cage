@@ -42,7 +42,7 @@ const writes = calls => calls.filter(call => call.method !== 'GET');
 test('only admin or maintain permission can approve an invitation', async () => {
   for (const permission of ['write', 'triage', 'read']) {
     const { options, calls } = setup({ [`GET ${prefix}/collaborators/reviewer/permission`]: { status: 200, data: { permission } } });
-    await assert.rejects(runContributionInvite(options), /审核.*权限/);
+    await assert.rejects(runContributionInvite(options), /reviewer.*permission/);
     assert.deepEqual(writes(calls), []);
   }
 });
@@ -65,7 +65,7 @@ test('invites the current issue author with push access, using only the dedicate
   const comment = writes(calls)[1];
   assert.equal(comment.token, 'issue-token');
   assert.match(comment.body.body, /@author/);
-  assert.match(comment.body.body, /写权限/);
+  assert.match(comment.body.body, /write access/);
   assert.match(comment.body.body, /invitations/);
   assert.match(comment.body.body, /PR/);
   assert.ok(!JSON.stringify(comment.body).includes('invite-token'));
@@ -126,7 +126,7 @@ test('other label events and invalid manual issue numbers cannot invite anyone',
   assert.equal((await runContributionInvite(options)).status, 'skipped');
   options.eventName = 'workflow_dispatch';
   options.event = { inputs: { issue_number: '42/../43' } };
-  await assert.rejects(runContributionInvite(options), /Issue 编号/);
+  await assert.rejects(runContributionInvite(options), /issue number/);
   assert.deepEqual(writes(calls), []);
 });
 

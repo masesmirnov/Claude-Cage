@@ -266,33 +266,33 @@ function Initialization({ initial, onComplete }) {
             {exitCandidate && <section className="initialization-notice" aria-label="Confirm fixed exit"><p>The guest terminal, browser and proxy measured the same exit. Confirm whether to bind it as the fixed exit.</p><button disabled={busy || Boolean(connectionError)} onClick={bindExit}>Bind the detected fixed exit {exitCandidate}</button></section>}
             {needsExitRestart && <section className="initialization-notice" aria-label="Fixed exit saved"><p>Fixed exit saved. Restart the guest and run the checks again before entering the workbench.</p><button className="primary" disabled={busy || Boolean(connectionError)} onClick={restart}>{status.vm_running ? "Restart the guest and check again" : "Start the guest and check again"}</button></section>}
             {progress ? <SetupProgress job={progress} onDetails={() => setDetails(true)} onStop={stop} onRetry={needsExitRestart ? restart : install} disconnected={Boolean(connectionError) || submitting} /> : (busy || status.guest_system !== "macos" || !networkPending) && <div className="initialization-operation" role="status">{busy && <LoaderCircle size={22} className="spin" />}<p>{job.message || (status.vm_running ? "Finish connecting the guest and the network checks." : "Ready to resume the original installation; existing files and the disk are kept.")}</p>{!busy && !job.error && !needsExitRestart && <button className="primary" disabled={Boolean(connectionError)} onClick={install}>{status.ready ? "Restart and check" : "Continue installation"}</button>}{busy && <button onClick={stop} disabled={submitting}>Stop installation</button>}</div>}
-            {pending?.system === "macos" && macRecovery?.available && <section className="initialization-notice" aria-label="恢复 macOS 组件安装">
-              <h2>继续安装 macFUSE</h2>
-              <p>macOS 27 需要你在客机中完成一次管理员授权，这是正常流程。客机磁盘和安装进度已保留。请按以下顺序操作：</p>
+            {pending?.system === "macos" && macRecovery?.available && <section className="initialization-notice" aria-label="Restore macOS component installation">
+              <h2>Continue installing macFUSE</h2>
+              <p>macOS 27 needs you to authorize as administrator once inside the guest; this is the normal flow. The guest disk and install progress are kept. Follow these steps in order:</p>
               <ol>
-                <li>启动恢复客机。</li>
-                <li>打开恢复画面，先登录安装时创建的客机普通账户。</li>
-                <li>点击「打开 Apple Installer」继续安装。</li>
-                <li>安装器要求管理员认证时，用户名填 cagesetup，密码与你登录 Cage 的账户密码相同。</li>
-                <li>系统弹出允许访问系统配置文件的提示时，选择允许。</li>
+                <li>Start the recovery guest.</li>
+                <li>Open the recovery screen and first sign in to the regular guest account created during installation.</li>
+                <li>Click "Open Apple Installer" to continue the installation.</li>
+                <li>When the installer asks for administrator authentication, enter cagesetup as the user name; the password is the same as your Cage account password.</li>
+                <li>When the system asks to allow access to system configuration files, choose Allow.</li>
               </ol>
-              <p>安装过程中关闭恢复画面会取消本次作业；取消不会丢失已有进度，重新启动客机后再试。反复失败时，可使用页面底部的「日志与诊断」查看记录。</p>
-              {!macRecovery.running && <button disabled={busy} onClick={() => run(() => api("/macos/install-recovery", { action: "start" }))}>启动恢复客机</button>}
-              {macRecovery.running && <MacOSLogin initialSetup installRecovery label="打开恢复画面" setupHint="先登录安装时创建的客机普通账户，再点击「打开 Apple Installer」。管理员认证用户名填 cagesetup，密码与 Cage 账户相同；系统提示时选择允许。" setupStatus="安装完成后返回 Cage 继续置备。" setupActions={<button disabled={busy} onClick={() => run(() => api("/macos/install-recovery", { action: "resume" }))}>打开 Apple Installer</button>} onSettings={() => setHelp(true)} />}
+              <p>Closing the recovery screen during installation cancels this job; canceling does not lose existing progress, so restart the guest and try again. If it keeps failing, see the records in "Logs and diagnostics" at the bottom of the page.</p>
+              {!macRecovery.running && <button disabled={busy} onClick={() => run(() => api("/macos/install-recovery", { action: "start" }))}>Start recovery guest</button>}
+              {macRecovery.running && <MacOSLogin initialSetup installRecovery label="Open recovery screen" setupHint="First sign in to the regular guest account created during installation, then click “Open Apple Installer”. For administrator authentication, enter cagesetup as the user name and the Cage account password; choose Allow when the system asks." setupStatus="After installation, go back to Cage to continue provisioning." setupActions={<button disabled={busy} onClick={() => run(() => api("/macos/install-recovery", { action: "resume" }))}>Open Apple Installer</button>} onSettings={() => setHelp(true)} />}
             </section>}
-            {pending?.system === "macos" && macRecovery && !macRecovery.available && macRecovery.can_prepare && <section className="initialization-notice" aria-label="macOS 安装恢复">
-              <p>检测到未完成的 macOS 安装；macOS 27 需要你在客机中完成一次管理员授权，这是正常流程。后续恢复将沿用原客机磁盘。准备完成后，这里会出现继续安装的指引。</p>
-              <button disabled={busy} onClick={() => run(async () => { await api("/macos/install-recovery", { action: "prepare" }); pollNow.current?.(); })}>准备恢复入口</button>
+            {pending?.system === "macos" && macRecovery && !macRecovery.available && macRecovery.can_prepare && <section className="initialization-notice" aria-label="macOS install recovery">
+              <p>An unfinished macOS installation was found; macOS 27 needs you to authorize as administrator once inside the guest, which is the normal flow. The recovery keeps using the original guest disk. When the preparation is done, instructions to continue the installation appear here.</p>
+              <button disabled={busy} onClick={() => run(async () => { await api("/macos/install-recovery", { action: "prepare" }); pollNow.current?.(); })}>Prepare recovery entry</button>
             </section>}
-            {pending?.system === "macos" && macRecovery && !macRecovery.available && !macRecovery.can_prepare && <section className="initialization-notice" aria-label="macOS 恢复入口不可用">
-              <p>检测到未完成的 macOS 安装；macOS 27 需要你在客机中完成一次管理员授权，这是正常流程。恢复入口尚未就绪，可能仍在准备中。可查看操作详情了解进度，或继续原安装；现有数据会保留。</p>
-              <button disabled={busy} onClick={() => setDetails(true)}>查看操作详情</button>
-              <button className="primary" disabled={busy || Boolean(connectionError)} onClick={install}>继续原安装</button>
+            {pending?.system === "macos" && macRecovery && !macRecovery.available && !macRecovery.can_prepare && <section className="initialization-notice" aria-label="macOS recovery entry unavailable">
+              <p>An unfinished macOS installation was found; macOS 27 needs you to authorize as administrator once inside the guest, which is the normal flow. The recovery entry is not ready yet and may still be preparing. View the operation details for progress, or continue the original installation; existing data is kept.</p>
+              <button disabled={busy} onClick={() => setDetails(true)}>View operation details</button>
+              <button className="primary" disabled={busy || Boolean(connectionError)} onClick={install}>Continue the original installation</button>
             </section>}
-            {pending?.system === "macos" && recoveryError && <section className="initialization-notice" role="alert" aria-label="恢复状态读取失败">
-              <p>暂时无法读取 macOS 安装恢复状态，安装进度不受影响。</p>
+            {pending?.system === "macos" && recoveryError && <section className="initialization-notice" role="alert" aria-label="Could not read the recovery state">
+              <p>The macOS install recovery state cannot be read right now; install progress is not affected.</p>
               <p><SafetyMessage message={recoveryError} /></p>
-              <button disabled={busy} onClick={() => pollNow.current?.()}>重新检查</button>
+              <button disabled={busy} onClick={() => pollNow.current?.()}>Check again</button>
             </section>}
             {job.error && !progress && !(status.guest_system === "macos" && networkPending) && <div className="initialization-notice" role="alert"><SafetyMessage message={job.error} />{!networkPending && !needsExitRestart && <button className="primary" disabled={busy || Boolean(connectionError)} onClick={install}>Continue installation</button>}</div>}
             {status.guest_system === "macos" && status.vm_running && !status.ready && !busy && <section className="initialization-notice"><h2>Connect the virtual Mac</h2><p>{status.environment_update_error || "The guest has started but the workbench connection is not established. First check whether the guest is stuck at the sign-in screen."}</p><MacOSLogin onSessionClosed={() => pollNow.current?.()} /><button disabled={Boolean(connectionError)} onClick={install}>Reconnect and check</button></section>}

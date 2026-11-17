@@ -86,7 +86,7 @@ func (s *Server) audio(w http.ResponseWriter, r *http.Request) {
 	}
 	command, renderErr := s.linuxTemplate(audioCaptureCommand)
 	if renderErr != nil {
-		http.Error(w, "音频创建配置无效", http.StatusConflict)
+		http.Error(w, "The audio creation settings are invalid", http.StatusConflict)
 		return
 	}
 	cmd := s.sshCommand(ctx, "-T", s.sshTarget(), "--", command)

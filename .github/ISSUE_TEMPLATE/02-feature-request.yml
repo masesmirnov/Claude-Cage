@@ -1,65 +1,65 @@
-name: 功能建议
-description: 提出新功能或改进现有功能的建议。
+name: Feature request
+description: Suggest a new feature or an improvement to an existing one.
 title: "[Feature] "
 labels: [enhancement]
 body:
   - type: markdown
     attributes:
       value: |
-        请先搜索已有建议，并说明具体使用场景和希望解决的问题。
-        若现有功能报错或无法使用，请选择“问题反馈”，提供复现信息。
+        Search existing requests first, and describe the concrete use case and the problem you want solved.
+        If an existing feature shows an error or does not work, choose "Bug report" and include reproduction details.
   - type: textarea
     id: problem
     attributes:
-      label: 使用场景与遇到的问题
-      description: 你想完成什么任务？目前在哪一步遇到了困难？请举一个具体例子。
+      label: Use case and problem
+      description: What task do you want to do? Where do you get stuck now? Give a concrete example.
     validations:
       required: true
   - type: textarea
     id: proposal
     attributes:
-      label: 希望增加或改进的功能
-      description: 描述你希望如何操作，以及最终应得到什么结果。
+      label: Feature to add or improve
+      description: Describe how you would like it to work and what the result should be.
     validations:
       required: true
   - type: textarea
     id: alternatives
     attributes:
-      label: 现有替代方式
-      description: 目前如何完成这件事？这些方式有什么不足？没有替代方式也可以说明。
+      label: Current alternatives
+      description: How do you do this now? What is missing in those ways? You can also say there is no alternative.
   - type: dropdown
     id: host-systems
     attributes:
-      label: 涉及的主机系统
-      description: 主机是运行 Cage 的电脑，可多选；适用于所有平台时全部选中。Issue 会按所选系统添加标签，交给对应平台的维护者。
+      label: Host systems involved
+      description: The host is the computer that runs Cage; you can choose several, or all of them if it applies to every platform. The issue gets labels for the selected systems and goes to those platforms' maintainers.
       multiple: true
       options:
         - macOS
         - Windows
         - Linux
-        - 不涉及或不确定
+        - Not involved or not sure
     validations:
       required: true
   - type: dropdown
     id: guest-systems
     attributes:
-      label: 涉及的客机系统
-      description: 客机是 Cage 内运行的系统，可多选；适用于所有客机时全部选中。
+      label: Guest systems involved
+      description: The guest is the system that runs inside Cage; you can choose several, or all of them if it applies to every guest.
       multiple: true
       options:
         - macOS
         - Windows
         - Linux
-        - 不涉及或不确定
+        - Not involved or not sure
     validations:
       required: true
   - type: input
     id: version
     attributes:
-      label: 当前 Cage 版本
-      description: 如建议与现有功能有关，请填写版本号；源码构建可同时填写提交号。
+      label: Current Cage version
+      description: If the request relates to an existing feature, enter the version; for source builds you can add the commit.
   - type: textarea
     id: context
     attributes:
-      label: 参考资料与补充信息
-      description: 可附示意图、类似功能链接或预期使用流程；上传前请移除敏感信息。
+      label: References and additional information
+      description: You can attach mockups, links to similar features or the expected workflow; remove sensitive information before uploading.

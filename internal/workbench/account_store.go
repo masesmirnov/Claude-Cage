@@ -93,7 +93,7 @@ func loadLocalAccount(profile string) (*localAccount, error) {
 	}
 	a.record = &record
 	if record.Recovery != nil && (len(record.Recovery.Nonce) != 12 || len(record.Recovery.SealedKey) != 48) {
-		return nil, errors.New("账户恢复记录损坏，请从备份恢复；已有数据未修改")
+		return nil, errors.New("The account recovery record is damaged; restore it from a backup. Existing data was not changed")
 	}
 	for kind, device := range record.Devices {
 		if !validDeviceKind(kind) || len(device.ID) != 32 || len(device.Nonce) != 12 || len(device.SealedKey) != 48 {
@@ -253,7 +253,7 @@ func (a *localAccount) createAccount(name, password, avatar string, mac bool) (s
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if a.record != nil {
-		return "", errors.New("此配置已创建本地账户，请登录")
+		return "", errors.New("A local account was already created for this configuration; please sign in")
 	}
 	key := make([]byte, 32)
 	if _, err = rand.Read(key); err != nil {
@@ -274,7 +274,7 @@ func (a *localAccount) createAccount(name, password, avatar string, mac bool) (s
 		return "", err
 	}
 	if err = writePrivate(a.path, record); err != nil {
-		return "", errors.New("账户未能保存，请检查磁盘空间与目录权限")
+		return "", errors.New("The account could not be saved; check disk space and folder permissions")
 	}
 	a.record = record
 	a.setKey(append([]byte(nil), key...))
@@ -387,7 +387,7 @@ func (a *localAccount) passwordRecord(key []byte, newPassword string, recovering
 		for id, guest := range login.Guests {
 			if guest.Password != login.Password || guest.PendingPassword != "" {
 				if !recovering {
-					return nil, errors.New("客机密码仍待同步，请先启动 macOS 客机并完成同步后再改密")
+					return nil, errors.New("The guest password is still waiting to sync; start the macOS guest and finish syncing before changing the password")
 				}
 				if guest.PendingPassword == "" {
 					guest.PendingPassword = login.Password

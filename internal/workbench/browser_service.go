@@ -127,7 +127,7 @@ func (s *Server) browserAction(ctx context.Context, action string, input *browse
 			// Only the Linux guest's controller scrolls a page by a distance.
 			// The native displays take it inside their own display stream.
 			if s.macosGuest != nil || s.windowsGuest != nil || !validWheel(input) {
-				return nil, browserInputError{errors.New("滚动位置或距离无效")}
+				return nil, browserInputError{errors.New("The scroll position or distance is invalid")}
 			}
 			body, _ := json.Marshal(map[string]int{"x": input.X, "y": input.Y, "deltaX": input.DeltaX, "deltaY": input.DeltaY})
 			return s.guestAPI(ctx, token, method, "/wheel", body)

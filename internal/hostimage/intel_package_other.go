@@ -8,5 +8,5 @@ import (
 )
 
 func verifyApplePackageSignature(context.Context, string) error {
-	return errors.New("Apple 安装包需在 macOS 上验证")
+	return errors.New("The Apple installer must be verified on macOS")
 }

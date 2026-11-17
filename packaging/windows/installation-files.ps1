@@ -365,18 +365,18 @@ if ($Operation -eq 'prepare') {
     # Source is the installation folder, Target the new backup folder.
     $diagnosticStep = 'detaching_previous_application'
     $transfer = Get-Content -LiteralPath $Receipt -Raw -Encoding UTF8 | ConvertFrom-Json
-    if ($transfer.kind -ne 'cage-installation' -or !$Source) { throw '安装事务回执无效，原安装目录已保留。' }
-    if (Test-Path -LiteralPath $Target) { throw '备份目录已存在，原安装目录已保留。' }
+    if ($transfer.kind -ne 'cage-installation' -or !$Source) { throw 'The install transaction receipt is invalid; the original install folder was kept.' }
+    if (Test-Path -LiteralPath $Target) { throw 'The backup folder already exists; the original install folder was kept.' }
     $Source = [IO.Path]::GetFullPath($Source).TrimEnd([IO.Path]::DirectorySeparatorChar)
     Move-TopLevel $Source $Target @($transfer.keepInPlace) -RemoveEmptyTarget
 } elseif ($Operation -eq 'attach') {
     # Source is a complete program folder: the staged update, or the previous
     # application during a rollback. Target is the installation folder.
     $diagnosticStep = 'attaching_application'
-    if (!$Source) { throw '缺少待发布的程序目录。' }
+    if (!$Source) { throw 'The program folder to publish is missing.' }
     $Source = [IO.Path]::GetFullPath($Source).TrimEnd([IO.Path]::DirectorySeparatorChar)
     Move-TopLevel $Source $Target @()
-    if (@(Get-ChildItem -LiteralPath $Source -Force).Count) { throw '程序目录仍有未发布的文件，已保留待核对。' }
+    if (@(Get-ChildItem -LiteralPath $Source -Force).Count) { throw 'The program folder still has unpublished files, which were kept for checking.' }
     [IO.Directory]::Delete($Source)
 } elseif ($Operation -eq 'complete') {
     $diagnosticStep = 'completing_transaction_receipt'

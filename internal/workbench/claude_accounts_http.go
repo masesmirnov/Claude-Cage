@@ -372,14 +372,14 @@ func (s *Server) runClaudeRefresh(parent context.Context, id, guestID string, ca
 							return
 						}
 						if ctx.Err() != nil {
-							err = errors.New("账号状态检查已取消")
+							err = errors.New("The account status check was canceled")
 							return
 						}
 						if recoveryErr == nil && recovered.subject() == reading.subject() {
 							err = list.observe(existing.ID, recovered, time.Now())
-							notice = "已恢复已有账号的登录，保留原目录、会话和参与设置"
+							notice = "Restored the sign-in of the existing account, keeping its original folder, sessions and participation settings"
 						} else {
-							notice = "此身份已在账号列表中，本次登录未更新原账号。请先等待该账号的手机任务结束，并关闭仍使用它的终端，再从原账号卡片重新登录。"
+							notice = "This identity is already in the account list, and this sign-in did not update the original account. Wait for the account's phone tasks to finish and close the terminals still using it, then click \"Sign in again\" on the original account card."
 						}
 					}
 				} else {
@@ -419,21 +419,21 @@ func (s *Server) recoverClaudeLogin(ctx context.Context, accountID, target, sour
 	}
 	defer s.op.Unlock()
 	if s.mobileCLI.activeAccounts()[accountID] > 0 {
-		return claudeGuestSnapshot{}, errors.New("请先结束该账号正在执行的移动 CLI 轮次，再重新登录")
+		return claudeGuestSnapshot{}, errors.New("Finish the mobile CLI turn this account is running before signing in again")
 	}
 	if login, err := s.terminals.existingClaudeLogin(accountID, true); err != nil {
 		return claudeGuestSnapshot{}, err
 	} else if login != nil {
-		return claudeGuestSnapshot{}, errors.New("请先完成原账号的登录")
+		return claudeGuestSnapshot{}, errors.New("Finish signing in to the original account first")
 	}
 	if recover := s.claudeAccounts.recoverLogin; recover != nil {
 		return recover(ctx, target, source, subject)
 	}
 	if s.windowsGuest != nil {
-		return claudeGuestSnapshot{}, errors.New("请从原账号入口重新登录")
+		return claudeGuestSnapshot{}, errors.New("Sign in again from the original account entry")
 	}
 	if !validClaudeID(target) || !validClaudeID(source) || len(subject) != 64 || strings.Trim(subject, "0123456789abcdef") != "" {
-		return claudeGuestSnapshot{}, errors.New("Claude 登录恢复参数无效")
+		return claudeGuestSnapshot{}, errors.New("The Claude sign-in restore parameters are invalid")
 	}
 	return s.readClaudeGuestReport(ctx, target, "exec /usr/local/bin/cage-claude-account recover-login "+target+" "+source+" "+subject)
 }

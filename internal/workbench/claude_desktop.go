@@ -96,7 +96,7 @@ func (s *Server) claudeDesktopAction(w http.ResponseWriter, r *http.Request) {
 		defer s.desktopStatus.invalidate()
 		if s.windowsGuest != nil {
 			if action == "update" {
-				return errors.New("请使用 Claude Desktop 应用内的更新入口")
+				return errors.New("Use the update entry inside the Claude Desktop app")
 			}
 			if action == "install" {
 				return errors.New("Automatic installation on the Windows guest is not connected yet. Keep the existing official app.")

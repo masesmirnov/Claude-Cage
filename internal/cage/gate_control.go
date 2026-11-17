@@ -208,7 +208,7 @@ func OpenGateClient(instanceDir string) (*GateClient, error) {
 	path := filepath.Join(instanceDir, gateRecordName)
 	if err := host.CheckPrivateFile(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, fmt.Errorf("网络门槛控制记录不存在：%w", os.ErrNotExist)
+			return nil, fmt.Errorf("network gate control record does not exist: %w", os.ErrNotExist)
 		}
 		return nil, errors.New("The network gate control record is unavailable. Stop and restart the environment.")
 	}

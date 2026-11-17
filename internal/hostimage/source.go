@@ -78,13 +78,13 @@ func (p Plan) Validate() error {
 	case "macos":
 		if p.Host.Arch == "amd64" {
 			if p.Format != "pkgdmg" || (p.Version == p.Host.Version && p.Build != p.Host.Build) || p.Build == "" || !intelMacVersionCompatible(p.Host.Version, p.Version) {
-				return errors.New("Intel macOS 安装材料与本机版本不匹配")
+				return errors.New("The Intel macOS install materials do not match this Mac's version")
 			}
 			if p.IntegrityURL == "" || len(p.IntegritySHA256) != 64 || trustedURL(p.IntegrityURL, "macos") != nil {
-				return errors.New("缺少 Apple 安装包完整性清单")
+				return errors.New("The Apple installer integrity list is missing")
 			}
 			if _, err := hex.DecodeString(p.IntegritySHA256); err != nil {
-				return errors.New("Apple 安装包完整性清单摘要无效")
+				return errors.New("The Apple installer integrity list digest is invalid")
 			}
 			break
 		}

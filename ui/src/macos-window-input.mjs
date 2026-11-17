@@ -121,7 +121,7 @@ export function createMacWindowInput({ element, frame, active, request, onError,
     wheel = entry;
     report(run(() => {
       if (wheel === entry) wheel = undefined;
-      if (!valid(entry.target)) throw new Error("输入窗口已变化，请重新操作");
+      if (!valid(entry.target)) throw new Error("The input window changed; please try again");
       const delta = clamp(entry.deltaY), deltaX = clamp(entry.deltaX);
       // A merged gesture beyond one request's limit continues in the next one.
       if (entry.deltaY !== delta || entry.deltaX !== deltaX) scroll(entry.target, entry.at, entry.deltaY - delta, entry.deltaX - deltaX);

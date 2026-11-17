@@ -115,12 +115,12 @@ export function AppUpdateButton({ updates }) {
     : state.phase === "verifying" || state.phase === "downloaded" ? "Verifying update"
     : state.phase === "installing" ? "Installing update; the app restarts automatically when done"
     : state.phase === "checking" ? "Preparing update"
-    : coolingDown ? "等待重试更新" : failed ? "重试更新" : manual ? "查看新版本" : "下载更新";
+    : coolingDown ? "Waiting to retry the update" : failed ? "Retry update" : manual ? "View new version" : "Download update";
   const hint = coolingDown ? `${state.message || "The update source is rate-limited"}. You can retry after ${new Date(state.retryAt).toLocaleString()}`
     : failed ? `${state.message || "The update was not completed"}. Click to retry`
     : busy ? label
-    : manual ? `新版本 ${state.latestVersion} 已发布。${state.message || ""}点击打开发布页面。`
-    : `更新至 ${state.latestVersion}。请先保存工作，点击后将自动停止环境、安装并重启。`;
+    : manual ? `New version ${state.latestVersion} is out. ${state.message || ""}Click to open the releases page.`
+    : `Update to ${state.latestVersion}. Save your work first; after clicking, the environment stops, the update installs and the app restarts automatically.`;
   const circumference = 2 * Math.PI * 15;
   return (
     <>

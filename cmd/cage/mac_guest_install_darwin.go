@@ -41,7 +41,7 @@ func installMacWorkbench(ctx context.Context, profile, state string, l *vm.Lima)
 		return err
 	}
 	if recovery != nil && recovery.User != ordinaryUser {
-		return errors.New("客机账户与原安装恢复记录不匹配")
+		return errors.New("The guest account does not match the original installation recovery record")
 	}
 	if !macGuestLoginAvailable() {
 		return errors.New("This Cage build is missing the virtual Mac sign-in component.")
@@ -84,7 +84,7 @@ func installMacWorkbench(ctx context.Context, profile, state string, l *vm.Lima)
 	}
 	newGuest := recovery == nil
 	if newGuest {
-		fmt.Fprintln(os.Stdout, "正在恢复虚拟 Mac…")
+		fmt.Fprintln(os.Stdout, "Restoring the virtual Mac…")
 		fmt.Fprintln(os.Stdout, "CAGE_GUEST_STAGE macos restore")
 		if err := runMacGuest(ctx, profile, state, []string{"create", media}); err != nil {
 			return err
@@ -188,7 +188,7 @@ func installMacWorkbench(ctx context.Context, profile, state string, l *vm.Lima)
 	cmd := guestCommand(ctx, `sudo -S -p '' /bin/sh -ec `+shellescape.Quote(`cd `+remote+`; /usr/bin/install -d -m 755 /usr/local/libexec; /usr/bin/install -m 755 cage-guest-check /usr/local/libexec/cage-guest-check; exec 4<login-input; rm login-input; /usr/bin/perl ./native-component-manifest.pl source ./native-components.json .; `+guiMode+`/bin/bash ./provision-macos-workbench.sh `+remote+` `+i.ID.String()+` `+provision+` `+ordinaryUser+` <&4; /usr/bin/perl ./native-component-manifest.pl publish ./native-components.json .`)+adminPassword)
 	cmd.Stdout = os.Stdout
 	if err := cmd.Run(); err != nil {
-		failure := fmt.Errorf("安装虚拟 Mac 应用未完成，请在恢复界面继续安装：%w", err)
+		failure := fmt.Errorf("Installing the virtual Mac apps did not finish. Continue the installation on the recovery screen: %w", err)
 		if saveErr := guestos.SetMacOSInstallRecoveryPhase(profile, i.ID, guestos.MacOSInstallAwaitingGUIAuthorization, failure); saveErr != nil {
 			return errors.Join(failure, saveErr)
 		}

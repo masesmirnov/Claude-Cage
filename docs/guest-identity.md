@@ -1,56 +1,56 @@
-# 新环境的机器身份
+# Machine identity of new environments
 
-创建新环境时，Cage 使用 `crypto/rand` 为以下标识生成随机值：
+When creating a new environment, Cage uses `crypto/rand` to generate random values for these identifiers:
 
-| 标识 | Linux 容器 | Lima / QEMU | Lima / Apple Virtualization |
+| Identifier | Linux container | Lima / QEMU | Lima / Apple Virtualization |
 | --- | --- | --- | --- |
-| 客机主机名 | 常见 PC 命名样式或真实型号简称 + 随机后缀，最长 15 字符 | 同左 | 同左，由客机初始化配置应用 |
-| UUID | 每个容器独立生成 | 通过 `-uuid` 传给 QEMU | 平台标识仍由 Apple 框架生成并持久化 |
-| `/etc/machine-id` | 空白镜像首次启动时，systemd 使用 `container_uuid` 初始化 | 不修改磁盘中已有的 machine-id | 不适用 macOS；不修改 Linux 磁盘中已有的 machine-id |
-| 默认客机网卡 MAC | 随机本地单播地址 | 同左，客机配置与 DHCP 租约同步 | 同左 |
-| 独立虚拟网络的网关 MAC | 独立随机本地单播地址 | 同左 | 同左 |
+| Guest host name | Common PC naming style or short real model name + random suffix, at most 15 characters | Same | Same, applied by the guest initialization config |
+| UUID | Generated separately for each container | Passed to QEMU with `-uuid` | The platform identifier is still generated and persisted by the Apple framework |
+| `/etc/machine-id` | On the first start of a blank image, systemd initializes it with `container_uuid` | The existing machine-id on the disk is not changed | Not applicable to macOS; the existing machine-id on Linux disks is not changed |
+| Default guest NIC MAC | Random locally administered unicast address | Same, the guest config and DHCP lease stay in sync | Same |
+| Gateway MAC of the separate virtual network | Separate random locally administered unicast address | Same | Same |
 
-首次设置中可以手动填写主机名，留空则随机生成。Linux 账户、主目录、初始尺寸、控制扩展及浏览器图形后端也可在创建时配置，音频输出名称从真实产品型号库中自动选择，见[客机创建配置](guest-profile.md)。浏览器保留实际 UA 与 Client Hints；配置随环境保存，重启不重新抽取。环境检测可核对配置和实际渲染能力，未观测到的硬件或应用内部数据不会标为通过。
+During first setup you can enter the host name by hand, or leave it empty to generate a random one. The Linux accounts, home folders, initial size, control extension and browser graphics backend can also be set at creation, and the audio output name is chosen automatically from a library of real product models; see [guest creation settings](guest-profile.md). The browser keeps its actual UA and Client Hints; the settings are saved with the environment and are not drawn again on restart. The environment checks can compare the settings with the actual rendering capabilities; hardware or app internals that were not observed are not marked as passed.
 
-Windows 新系统安装使用选定的计算机名；独立运行正式版或评估版的 PowerShell 创建脚本时可通过 `-ComputerName` 指定，不指定则使用 `*`，由 Windows Setup 生成。用户导入的已有 Windows 系统不改名。Windows 原生 Hyper-V 的硬件标识仍由 Hyper-V 管理。
+New Windows installations use the chosen computer name; when running the PowerShell creation script for the retail or evaluation edition on its own, you can set it with `-ComputerName`, and without it `*` is used and Windows Setup generates one. Existing Windows systems imported by the user are not renamed. The hardware identifiers of native Windows Hyper-V are still managed by Hyper-V.
 
-主机名没有 `claude-cage-`、`cage-` 或 `lima-` 固定前缀，也不包含项目目录、宿主机名或路径哈希。MAC 的第一个字节只保留本地单播位约束，不使用固定三字节前缀。
+Host names have no fixed `claude-cage-`, `cage-` or `lima-` prefix and contain no project folder, host machine name or path hash. The first byte of the MAC only keeps the locally administered unicast bit constraint and uses no fixed three-byte prefix.
 
-## 主机名命名规则
+## Host name rules
 
-每次创建时在五个等概率的样式槽位中选择：
+Each creation picks one of five equally likely style slots:
 
-| 槽位 | 规则 | 示例（说明格式，非真实设备名称） |
+| Slot | Rule | Example (shows the format, not a real device name) |
 | --- | --- | --- |
-| 1 | `DESKTOP-` + 7 位随机大写字母/数字 | `DESKTOP-7Q4N8K2` |
-| 2 | `LAPTOP-` + 7 位随机大写字母/数字 | `LAPTOP-H8D2M6R` |
-| 3、4 | 真实台式机/笔记本/工作站型号简称 + 6 或 7 位随机字母/数字 | `LAT5450-A7K2M9`、`t14g4-3n8q6x` |
-| 5 | 真实主板型号简称 + 6 或 7 位随机字母/数字 | `B860MSL-K7R2M9` |
+| 1 | `DESKTOP-` + 7 random uppercase letters/digits | `DESKTOP-7Q4N8K2` |
+| 2 | `LAPTOP-` + 7 random uppercase letters/digits | `LAPTOP-H8D2M6R` |
+| 3, 4 | Short name of a real desktop/laptop/workstation model + 6 or 7 random letters/digits | `LAT5450-A7K2M9`, `t14g4-3n8q6x` |
+| 5 | Short name of a real motherboard model + 6 or 7 random letters/digits | `B860MSL-K7R2M9` |
 
-硬件型号样式还会随机选择大写或小写。简称最多 7 字符；所有名称使用 ASCII 字母、数字与单个连字符，完整长度不超过 15 字符。样式、型号、大小写和后缀均使用 `crypto/rand`，选择过程采用拒绝采样，没有简单取模偏差。长度随型号简称和后缀变化，不再统一为 12 个小写字母。
+Hardware model styles also pick uppercase or lowercase at random. Short names are at most 7 characters; all names use ASCII letters, digits and single hyphens, with a full length of at most 15 characters. Style, model, case and suffix all use `crypto/rand`, and the selection uses rejection sampling, without simple modulo bias. The length varies with the short model name and the suffix, and is no longer always 12 lowercase letters.
 
-离线库包含 **1,593 条真实型号记录、1,181 个不同简称**：联想 506 条、戴尔 499 条、惠普 551 条、华擎主板 37 条。记录来自厂商公开型号/驱动部署目录，保留完整型号、厂商和来源校验信息。联想目录中的 `Type` 型号变体保留在原始型号列，生成简称时去掉这些尾部 SKU 字段，以保留更容易识别的型号和代数。
+The offline library has **1,593 real model records and 1,181 distinct short names**: 506 Lenovo, 499 Dell, 551 HP and 37 ASRock motherboard records. The records come from the vendors' public model and driver deployment catalogs and keep the full model, vendor and source checksum. `Type` model variants in the Lenovo catalog stay in the original model column; generating short names drops these trailing SKU fields to keep the more recognizable model and generation.
 
-简称是本项目从真实型号整理出的命名素材，不声称是厂家出厂主机名，也不代表实际 SMBIOS、主板、CPU 或客机系统。Windows 的 `DESKTOP-` 默认形态也可出现在笔记本上；这些权重用于混合样式，不代表市场份额。Linux 容器与 Lima 客机共享该生成器，Windows 原生安装仍使用 Setup 自身的命名规则。
+Short names are naming material this project derived from real models. They do not claim to be factory host names, and do not stand for actual SMBIOS, motherboards, CPUs or guest systems. The Windows default `DESKTOP-` form can also appear on laptops; these weights mix styles and do not represent market share. Linux containers and Lima guests share this generator; native Windows installations still use Setup's own naming rules.
 
-数据随程序嵌入，创建时不联网、不查询宿主硬件、不安装驱动。更新方式与来源见 `docs/hostname-catalog.md`、`hostname-sources.json` 和 `scripts/update-hostname-catalog.py`。后者只从本地 XML/JSON 编译数据，输出可重复构建。
+The data is embedded in the program; creation does not go online, query host hardware or install drivers. For how it is updated and where it comes from, see `docs/hostname-catalog.md`, `hostname-sources.json` and `scripts/update-hostname-catalog.py`. The script only compiles data from local XML/JSON, and its output is reproducible.
 
-## 生命周期
+## Lifecycle
 
-- **新建**：每次实际创建环境时生成新身份。容器保存到自身的 `cn.cage.guest-identity` 标签；Lima 保存到实例 `lima.yaml` 的 `guestIdentity` 字段。
-- **重连、重启、资源修改**：复用原有身份，避免无故变化影响 DHCP、系统服务与持久化数据。
-- **克隆**：目标实例生成新的 UUID 和 MAC，包括从没有 `guestIdentity` 字段的旧模板克隆。Cage 环境内派生工作实例时使用已选定的主机名；不使用 Cage 创建配置的普通克隆仍生成新主机名。源实例保持原样。
-- **旧环境**：没有身份字段或标签的实例沿用旧行为；不自动重建、改名或清除数据。需要新身份时创建新的环境。
-- **坏数据**：已有身份字段格式无效时返回错误，不回退到共享固定值。随机源失败时中止创建。
+- **New**: a new identity is generated each time an environment is actually created. Containers store it in their own `cn.cage.guest-identity` label; Lima stores it in the `guestIdentity` field of the instance's `lima.yaml`.
+- **Reconnect, restart, resource changes**: the existing identity is reused, so that DHCP, system services and persistent data are not affected by needless changes.
+- **Clone**: the target instance gets a new UUID and MAC, including clones of old templates without the `guestIdentity` field. Work instances derived inside a Cage environment use the chosen host name; regular clones without Cage creation settings still get a new host name. The source instance stays as it is.
+- **Old environments**: instances without an identity field or label keep the old behavior; they are not rebuilt, renamed or wiped automatically. Create a new environment when you need a new identity.
+- **Bad data**: an existing identity field with an invalid format returns an error and does not fall back to a shared fixed value. Creation stops if the random source fails.
 
-Linux 容器基础镜像必须保持 `/etc/machine-id` 为空，且不得保留独立的 D-Bus machine-id；仓库的镜像构建脚本已有身份清理检查。`container_uuid` 只负责新容器首次启动，不覆盖用户后来修改的机器身份。
+The Linux container base image must keep `/etc/machine-id` empty and must not keep a separate D-Bus machine-id; the repository's image build script already checks the identity cleanup. `container_uuid` only applies to a new container's first start and does not overwrite a machine identity the user changed later.
 
-## 范围与验证
+## Scope and verification
 
-这些变更减少可跨环境关联的固定身份字段，不保证环境无法被识别。操作系统与内核、虚拟设备型号、CPU 特征、软件版本、账户名、Cage 服务与文件路径、网络拓扑及浏览器指纹仍可能体现运行环境。资源配额、系统语言、时区和用户偏好保持其配置含义。Lima 克隆磁盘中已有的 machine-id、SSH 主机密钥和应用数据不会被本次变更重置；需要通用系统镜像时应先按相应系统的规范制作模板。
+These changes reduce fixed identity fields that could link environments, and do not guarantee that an environment cannot be recognized. The operating system and kernel, virtual device models, CPU features, software versions, account names, Cage services and file paths, network topology and browser fingerprint can still reveal the runtime environment. Resource quotas, system language, time zone and user preferences keep their configured meaning. This change does not reset the existing machine-id, SSH host keys and app data on a cloned Lima disk; for a generic system image, build a template following that system's practices first.
 
-本地单元测试覆盖硬件库规模与校验和、全部命名样式、名称长度与大小写变化、非法目录数据、身份随机性和格式、熵源失败、配置保存与回读、旧配置兼容，以及随机 MAC 下的 ARP 和关闭出网门槛。Lima 生命周期测试需要打包客机代理与模板；完整启动验证还需要各平台运行环境。
+Local unit tests cover the hardware library size and checksum, all naming styles, name length and case changes, invalid catalog data, identity randomness and format, entropy source failure, saving and reading back the configuration, compatibility with old configurations, and ARP and the network-off gate with a random MAC. The Lima lifecycle tests need the packaged guest agent and template; full startup verification also needs each platform's runtime environment.
 
-手工验收时，在两个全新环境内分别检查主机名、默认网卡 MAC、网关邻居项；Linux 容器还应检查 `/etc/machine-id`。同一环境完整停止再启动后重复检查，确认身份稳定。不要在 Issue 或测试报告中附带认证文件、私钥或原始日志。
+For manual acceptance, check the host name, default NIC MAC and gateway neighbor entry in two brand-new environments; for Linux containers also check `/etc/machine-id`. Repeat the checks after fully stopping and starting the same environment to confirm the identity is stable. Do not attach credential files, private keys or raw logs to issues or test reports.
 
-参考：[systemd 容器接口](https://systemd.io/CONTAINER_INTERFACE/)、[Windows ComputerName](https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-shell-setup-computername)。
+References: [systemd container interface](https://systemd.io/CONTAINER_INTERFACE/), [Windows ComputerName](https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-shell-setup-computername).

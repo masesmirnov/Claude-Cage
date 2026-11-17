@@ -81,7 +81,7 @@ export function EnvironmentStorage({ status, onConfirm }) {
     <p className="field-help">The system image, download cache and virtual disk can live on another local disk. Project files stay in their own project folders.</p>
     <div className="setting-summary-row"><span>Current environment directory</span><strong>{location?.directory || "Reading…"}</strong></div>
     {status.environment_identity_directory && status.environment_identity_directory !== status.environment_directory &&
-      <p className="field-help">原工作目录中的文件保留在 <code>{status.environment_identity_directory}</code>。需要使用时可从工作台添加该文件夹；位于 Cage 私有配置目录中的项目需先移到配置目录之外。</p>}
+      <p className="field-help">Files from the original working folder are kept in <code>{status.environment_identity_directory}</code>. When you need them, add that folder from the workbench; projects inside Cage's private configuration folder must first be moved outside it.</p>}
     {location?.backup && <p className="field-help">The pre-migration backup is saved in <code>{location.backup}</code>. Once you have confirmed that the new environment starts normally and your files and sign-in state are intact, you can clean up the backup yourself.</p>}
     <label>New storage location
       <input value={directory} onChange={(e) => { setDirectory(e.target.value); setError(""); }} spellCheck="false"

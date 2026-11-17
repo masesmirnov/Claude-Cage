@@ -552,12 +552,12 @@ func (s *Server) handler() http.Handler {
 			pending, err := guestos.LoadInstallation(s.profile)
 			if err != nil {
 				if !macOSInstallRecoveryRoute(r.Method, r.URL.Path) {
-					http.Error(w, "安装记录无法读取，请保留现有数据", http.StatusConflict)
+					http.Error(w, "The install record cannot be read; keep the existing data", http.StatusConflict)
 					return
 				}
 			}
 			if pending != nil && pending.System == guestos.MacOS && !macOSInstallRecoveryRoute(r.Method, r.URL.Path) {
-				http.Error(w, "macOS 客机尚未完成安装", http.StatusConflict)
+				http.Error(w, "The macOS guest has not finished installing", http.StatusConflict)
 				return
 			}
 		}
@@ -602,7 +602,7 @@ func (s *Server) handler() http.Handler {
 		trustedDesktop := s.hasTrustedView(r)
 		phoneRoom := s.pairedPhoneRoom(r)
 		if (s.windowsGuest != nil || s.macosGuest != nil) && strings.HasPrefix(r.URL.Path, "/api/") && !bootstrapRoute && !trustedDesktop && phoneRoom == nil && !s.hasRemoteWindowsView(r) {
-			http.Error(w, "请通过本机 Cage 窗口或当前配对手机打开客机", http.StatusForbidden)
+			http.Error(w, "Open the guest from the local Cage window or the currently paired phone", http.StatusForbidden)
 			return
 		}
 		if strings.HasPrefix(r.URL.Path, "/api/") && !accountRoute && !bootstrapRoute && !strings.HasPrefix(r.URL.Path, "/api/diagnostics") && !(r.Method == "GET" && r.URL.Path == "/api/appearance") {
@@ -835,7 +835,7 @@ func (s *Server) start(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if s.windowsGuest != nil || s.macosGuest != nil {
-			http.Error(w, "已有客机不能替换创建配置", http.StatusConflict)
+			http.Error(w, "An existing guest cannot replace its creation settings", http.StatusConflict)
 			return
 		}
 	}
@@ -877,7 +877,7 @@ func (s *Server) start(w http.ResponseWriter, r *http.Request) {
 	}
 	pending, err := guestos.LoadInstallation(s.profile)
 	if err != nil {
-		http.Error(w, "客户机安装记录无法读取，请保留现有数据", http.StatusConflict)
+		http.Error(w, "The guest install record cannot be read; keep the existing data", http.StatusConflict)
 		return
 	}
 	if pending != nil && pending.System == guestos.MacOS {

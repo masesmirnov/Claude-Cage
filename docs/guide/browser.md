@@ -9,15 +9,15 @@ keywords: Chromium browser settings incognito cookies extensions plugins ZIP boo
 
 Click "Browser" in the sidebar, enter a site in the address bar, and use the plus button at the top to open a new page. The `claude.ai` entry opens the Claude website directly. `localhost` refers to the current Cage guest, so start preview servers from the Cage terminal.
 
-**macOS 客机**会在工作台内显示 Google Chrome 的完整窗口。用 Chrome 自带的地址栏、标签页和菜单浏览、收藏或登录网站。更新环境组件后，Chrome 继续使用客机内原有的浏览器资料。以前保存在 Cage 的网页可从窗口上方的“收藏夹”打开。要使用 Cage 保险箱里已有的密码，在设置里打开密码保险箱，验证后复制到 Chrome。通过 Claude Code 发起账号授权时，会另外打开临时窗口，授权完成或取消后关闭。Claude Desktop 如果调用系统打开外部登录链接，使用的是虚拟 Mac 设置的默认浏览器。
+**macOS guests** show the full Google Chrome window in the workbench. Use Chrome's own address bar, tabs and menus to browse, bookmark or sign in to sites. After the environment components are updated, Chrome keeps using the existing browser data in the guest. Pages you saved in Cage before can be opened from "Bookmarks" above the window. To use passwords already in the Cage vault, open the password vault in Settings, verify, and copy them into Chrome. When Claude Code starts an account authorization, a separate temporary window opens and closes after the authorization finishes or is canceled. If Claude Desktop asks the system to open an external sign-in link, it uses the default browser set in the virtual Mac.
 
-macOS 客机进行完整联网检测时，Chrome 会临时打开检测页，实际读取页面的语言、时区和网络出口。日常使用可以关闭检测页。后台核对浏览器进程和资料设置。如果 Chrome 重启或设置变化，请按提示重新检测。
+During a full network check of a macOS guest, Chrome temporarily opens the check page and actually reads the page's language, time zone and network exit. You can close the check page during everyday use. The browser process and profile settings are checked in the background. If Chrome restarts or the settings change, check again when prompted.
 
-以下操作适用于使用 Cage 地址栏的客机。地址栏右侧的浏览器菜单提供设置、无痕和网站数据等操作。浏览器设置页可搜索“新标签页、外观、隐私与网站数据、扩展、关于浏览器”。新标签默认地址影响之后的新建标签；横排或竖排标签布局立即生效，保存在当前客户端。
+The steps below apply to guests that use the Cage address bar. The browser menu to the right of the address bar offers settings, private mode, site data and more. The browser settings page can search "New tab, Appearance, Privacy and site data, Extensions, About the browser". The default new tab address applies to tabs opened afterwards; the horizontal or vertical tab layout takes effect immediately and is saved in the current client.
 
 Closing the browser view only returns you to the previous workspace, and pages and sign-ins stay open. To end an incognito session, close all incognito tabs or stop the environment.
 
-网页复制同步保留网站原有的剪贴板接口，不向网页主执行环境添加产品标记，也不会为此授予网站额外的剪贴板读取权限。自动同步需要 Chromium 144 或更新版本；旧浏览器仍可正常浏览，需要自动同步时请更新环境工具中的浏览器。
+Web copy sync keeps the site's original clipboard interface, does not add product markers to the page's main execution environment, and does not grant the site extra clipboard read permission for it. Automatic sync needs Chromium 144 or newer; older browsers still browse normally, and if you need automatic sync, update the browser in the environment tools.
 
 On Linux environments, after the last browser view window leaves, the browser window is minimized so that background pages use Chromium's throttling. When you return to the browser, the original window and unsaved input are restored. When several workbenches view it at once, windows still being viewed keep displaying. Mobile browsers have their own sessions.
 
@@ -29,11 +29,11 @@ New setups turn on "Settings → General → Prefer smoothness" by default. On h
 
 Rendering at the screen's density is enabled by environment component updates and requires `xsettingsd` in the environment. Environments with Claude Desktop installed get it immediately. Environments that only use the browser get it after the next environment tools update. Until then, and on Windows guests, the picture keeps rendering at a fixed 1.5x or 2x.
 
-Linux 环境的浏览器按触控板滑动的实际距离滚动：网页跟随手指移动，停手即停，不再按固定步长追赶和滑过头。带刻度的鼠标滚轮保留逐格滚动和网页自带的平滑动画；macOS 已经把滚轮刻度换算成距离，因此同样按距离滚动。指针位于下拉列表或菜单上、使用分屏或打开了开发者工具时，以及按住 Ctrl、Shift 等修饰键滚动时，继续使用原有的逐格方式。此行为随环境组件更新启用，旧组件保持逐格滚动。
+The browser in Linux environments scrolls by the actual distance of a touchpad swipe: the page follows your fingers and stops when they stop, instead of chasing in fixed steps and overshooting. Mouse wheels with notches keep notch-by-notch scrolling and the page's own smooth animation; macOS already converts wheel notches into distance, so it also scrolls by distance. The old notch-by-notch behavior is kept when the pointer is over a dropdown list or menu, in split view or with developer tools open, and when scrolling while holding a modifier such as Ctrl or Shift. This behavior is enabled by environment component updates; old components keep notch-by-notch scrolling.
 
 In macOS and Windows guests, the browser scrolls by the actual distance of the wheel or trackpad. While you scroll, the picture updates at up to 60 Hz. About 1 second after you stop, it returns to 30 Hz, and when still, it slows frame updates further. This behavior takes effect after the guest components are updated. Older components keep scrolling in fixed steps.
 
-地址栏右侧的下载按钮在右上角展开文件列表，可查看下载进度、另存为、打开文件或在文件夹中显示；保存失败时可重试。长列表在面板内滚动，点击外部或按 Esc 收起。
+The download button to the right of the address bar opens the file list at the top right, where you can see download progress, use Save as, open the file or show it in its folder; failed saves can be retried. Long lists scroll inside the panel; click outside or press Esc to close it.
 
 Under "Privacy and site data" in the browser settings, you can also find "Site permissions" and "Clear browsing data", which open the matching Chromium pages. Decide on permissions such as camera and microphone based on the devices the environment actually has. "Search engine" and "Download settings" under "About browser" open more native browser options. Seeing these options does not mean Cage has connected every device capability.
 

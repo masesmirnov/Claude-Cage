@@ -122,7 +122,7 @@ func intelMacCatalog(ctx context.Context, client *http.Client, host Identity) (P
 		}
 	}
 	if selected.Version == "" {
-		return Plan{}, errors.New("Apple 目录中没有与本机 macOS 主版本兼容的 Intel 完整安装包")
+		return Plan{}, errors.New("The Apple catalog has no full Intel installer compatible with this Mac's macOS major version")
 	}
 	manifest, err := appleMetadata(ctx, client, selected.IntegrityURL, 8<<20)
 	if err != nil {
@@ -156,7 +156,7 @@ func verifyIntelPackage(ctx context.Context, path string, plan Plan, transport h
 	}
 	hash := sha256.Sum256(data)
 	if hex.EncodeToString(hash[:]) != plan.IntegritySHA256 {
-		return errors.New("Apple 安装完整性清单已变化")
+		return errors.New("The Apple install integrity list has changed")
 	}
 	if err := verifyIntelChunks(ctx, path, data); err != nil {
 		return err
@@ -210,12 +210,12 @@ func verifyIntelChunks(ctx context.Context, path string, data []byte) error {
 			return err
 		}
 		if !bytes.Equal(hash.Sum(nil), entry[4:]) {
-			return errors.New("Apple 安装包分块校验失败")
+			return errors.New("Apple installer chunk verification failed")
 		}
 	}
 	var trailing [1]byte
 	if n, err := file.Read(trailing[:]); n != 0 || err != io.EOF {
-		return errors.New("Apple 安装包大小与完整性清单不符")
+		return errors.New("The Apple installer size does not match the integrity list")
 	}
 	return nil
 }

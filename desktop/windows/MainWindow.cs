@@ -411,11 +411,11 @@ internal sealed class MainWindow : Form
                 case "saveRecoveryKey":
                 {
                     var key = request.Text("key");
-                    if (key.Length != 71 || !System.Text.RegularExpressions.Regex.IsMatch(key, "^[A-F0-9]{8}(-[A-F0-9]{8}){7}$")) throw new InvalidDataException("恢复密钥格式无效");
-                    using var picker = new SaveFileDialog { Filter = "文本文件 (*.txt)|*.txt", Title = "保存账户恢复密钥", FileName = "账户恢复密钥.txt", DefaultExt = "txt", AddExtension = true };
+                    if (key.Length != 71 || !System.Text.RegularExpressions.Regex.IsMatch(key, "^[A-F0-9]{8}(-[A-F0-9]{8}){7}$")) throw new InvalidDataException("Invalid recovery key format");
+                    using var picker = new SaveFileDialog { Filter = "Text files (*.txt)|*.txt", Title = "Save the account recovery key", FileName = "Account recovery key.txt", DefaultExt = "txt", AddExtension = true };
                     if (picker.ShowDialog(this) != DialogResult.OK) { result = false; break; }
                     try { File.WriteAllText(picker.FileName, key + "\n", new System.Text.UTF8Encoding(false)); result = true; }
-                    catch { throw new IOException("恢复密钥未能保存，请检查保存位置的权限"); }
+                    catch { throw new IOException("The recovery key could not be saved. Check the permissions of the save location"); }
                     break;
                 }
                 case "exportTheme":
@@ -504,7 +504,7 @@ internal sealed class MainWindow : Form
                     var appReference = request.Text("kind") switch {
                         "source" => "https://github.com/Lee-xeo/Claude-Cage/commits/main",
                         "releases" => "https://github.com/Lee-xeo/Claude-Cage/releases",
-                        _ => throw new InvalidDataException("未知的项目页面")
+                        _ => throw new InvalidDataException("Unknown project page")
                     };
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(appReference) { UseShellExecute = true });
                     result = true; break;

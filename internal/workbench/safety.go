@@ -792,7 +792,7 @@ func (s *Server) runSafetyCheck() (returned error) {
 		shares, networkLayout := s.inspectVMLayout()
 		private, err := os.CreateTemp(s.profile, ".cage-private-probe-*")
 		if err != nil {
-			return usererror.Wrap("创建私有目录检查文件", err, "请检查 Cage 配置目录的写入权限和磁盘剩余空间，然后重新检测。外网保持关闭。")
+			return usererror.Wrap("create the private folder check file", err, "Check the write permission of the Cage configuration folder and the free disk space, then check again. The internet stays off.")
 		}
 		defer os.Remove(private.Name())
 		defer private.Close()
@@ -824,10 +824,10 @@ func (s *Server) runSafetyCheck() (returned error) {
 			} else {
 				approved, e := s.projectWorkspace(shareRoot)
 				if e != nil || isClientMountPath(approved) {
-					return errors.New("请先连接已添加的主机项目，再验证文件边界")
+					return errors.New("Connect the added host projects before verifying the file boundary")
 				}
 				if e = s.ensureProjectShare(approved); e != nil {
-					set("filesystem_boundary", cage.CheckUnknown, e.Error(), "先完成客机登录、文件系统扩展或工作区访问授权，再重新运行检查")
+					set("filesystem_boundary", cage.CheckUnknown, e.Error(), "Finish the guest sign-in, file system extension or workspace access authorization first, then run the check again")
 					var failure *projectShareError
 					if errors.As(e, &failure) {
 						return &projectShareError{Path: approved, Recovery: failure.Recovery, Message: failure.Message}
@@ -839,7 +839,7 @@ func (s *Server) runSafetyCheck() (returned error) {
 		}
 		shared, err := os.CreateTemp(shareRoot, ".cage-share-probe-*")
 		if err != nil {
-			return usererror.Wrap("创建项目共享检查文件", err, "请确认环境目录仍存在且可写，再重新检测；不要删除个人配置目录。外网保持关闭。")
+			return usererror.Wrap("create the project share check file", err, "Make sure the environment folder still exists and is writable, then check again; do not delete the personal configuration folder. The internet stays off.")
 		}
 		defer os.Remove(shared.Name())
 		defer shared.Close()
@@ -852,7 +852,7 @@ func (s *Server) runSafetyCheck() (returned error) {
 		}
 		control, _ := url.Parse(s.origin)
 		port, _ := strconv.Atoi(control.Port())
-		s.setMessage("正在验证离线约束、共享文件与系统配置…")
+		s.setMessage("Verifying offline constraints, shared files and system configuration…")
 		boundaryInput := boundaryProbeInput(port, report.ID, private.Name(), shared.Name(), challenge)
 		boundaryInput["timezone"] = cfg.Timezone
 		if s.windowsGuest != nil {
@@ -880,44 +880,44 @@ func (s *Server) runSafetyCheck() (returned error) {
 		}
 		if boundaryErr == nil {
 			if s.guestSettingsOK(boundary, cfg) {
-				evidence := "客机进程与系统的时区和语言读回结果符合已应用配置"
+				evidence := "The time zone and language read back from guest processes and the system match the applied configuration"
 				if linuxProbe {
-					evidence += "；进程与系统时区文件的实际 UTC 偏移均符合已应用时区"
+					evidence += "; the actual UTC offsets of the process and system time zone files both match the applied time zone"
 				}
 				set("guest_settings", cage.CheckPassed, evidence, "")
 			} else {
-				evidence := "系统读回结果与已应用配置不一致"
+				evidence := "The values read back from the system do not match the applied configuration"
 				if linuxProbe {
 					if detail := linuxGuestSettingsMismatch(boundary, cfg); detail != "" {
-						evidence += "：" + detail
+						evidence += ": " + detail
 					}
 				}
-				set("guest_settings", cage.CheckFailed, evidence, "重新应用时区与语言后重启环境")
+				set("guest_settings", cage.CheckFailed, evidence, "Apply the time zone and language again, then restart the environment")
 			}
 			_, _ = shared.Seek(0, io.SeekStart)
 			sharedData, _ := io.ReadAll(io.LimitReader(shared, 256))
 			if noHostProjects && filesystemBoundaryVerified(shares, boundary, string(sharedData), challenge, true) {
-				set("filesystem_boundary", cage.CheckPassed, "未授权主机项目，未建立项目共享；宿主私有目录探针不可读；虚拟机无基础目录挂载", "")
+				set("filesystem_boundary", cage.CheckPassed, "No host projects are authorized and no project share is set up; the host private folder probe is not readable; the virtual machine has no base folder mount", "")
 			} else if !noHostProjects && filesystemBoundaryVerified(shares, boundary, string(sharedData), challenge, false) {
-				set("filesystem_boundary", cage.CheckPassed, "共享读写探针往返成功；宿主私有目录探针不可读；环境基础共享目录与明确打开的项目使用受目录约束的传输，项目内允许 Git 读写", "")
+				set("filesystem_boundary", cage.CheckPassed, "The shared read/write probe round trip succeeded; the host private folder probe is not readable; the environment's base shared folder and explicitly opened projects use folder-restricted transfer, and Git reads and writes are allowed inside projects", "")
 			} else {
-				set("filesystem_boundary", cage.CheckFailed, "共享读写、私有目录探针或挂载范围未符合预期", "检查共享目录；不要共享主目录或 Cage 配置目录")
+				set("filesystem_boundary", cage.CheckFailed, "The shared read/write, private folder probe or mount scope did not match expectations", "Check the shared folders; do not share the home folder or the Cage configuration folder")
 			}
 			if after.PolicyVerified && networkLayout && after.Configuration == cfg.Fingerprint() && !boundary.PublicConnected && after.Counters.TCPDenied > state.Counters.TCPDenied {
-				set("egress_policy", cage.CheckPassed, "运行中策略检查符合预期；未配置额外网卡；检查期间的公网 TCP 请求被 环境外网络层拒绝", "")
+				set("egress_policy", cage.CheckPassed, "The running policy check matched expectations; no extra network adapters are configured; public TCP requests during the check were rejected by the network layer outside the environment", "")
 			}
 			hostReach, hostReachConfirmed := hostReachIssue(boundary, linuxProbe, boundaryInput["proxy_port"] != nil)
 			if hostReach == "" && !boundary.ManagementConnected && after.Counters.PrivateDenied > state.Counters.PrivateDenied && s.managementRequiresSession(ctx) {
-				evidence := "guest 到宿主管理端口的连接被拒绝；本机接口无会话访问被拒绝"
+				evidence := "connections from the guest to the host management port were rejected; sessionless access to the local interface was rejected"
 				if linuxProbe {
-					evidence += "；链路本地元数据地址的直连探针未连通"
+					evidence += "; the direct probe to the link-local metadata address did not connect"
 					if boundaryInput["proxy_port"] != nil {
-						evidence += "；用户代理端口的直连探针未连通"
+						evidence += "; the direct probe to the user proxy port did not connect"
 					}
 				}
 				set("management_boundary", cage.CheckPassed, evidence, "")
 			} else {
-				result, evidence := cage.CheckUnknown, "管理接口拒绝访问的证据不完整"
+				result, evidence := cage.CheckUnknown, "The evidence that the management interface rejects access is incomplete"
 				if boundary.ManagementConnected {
 					result = cage.CheckFailed
 				}
@@ -927,29 +927,29 @@ func (s *Server) runSafetyCheck() (returned error) {
 						result = cage.CheckFailed
 					}
 				}
-				set("management_boundary", result, evidence, "停止环境并重新启动；不要开放宿主控制端口")
+				set("management_boundary", result, evidence, "Stop the environment and start it again; do not open the host control port")
 			}
 			if boundary.UDPAttempted && after.Counters.UDPDenied > state.Counters.UDPDenied && after.PolicyVerified {
-				set("udp_policy", cage.CheckPassed, "客机 UDP 探针已发起，环境外网络层记录了拒绝；无响应本身不作为通过依据", "")
+				set("udp_policy", cage.CheckPassed, "The guest UDP probe was sent and the network layer outside the environment recorded a rejection; no response alone is not taken as a pass", "")
 			}
 			ipv6Verified := s.ipv6PolicyVerified(boundary, state, after, networkLayout)
 			if ipv6Verified && s.macosGuest != nil && macOSIPv6LinkVerified(boundary, state, after) {
-				set("ipv6_policy", cage.CheckPassed, fmt.Sprintf("常规 IPv6 查路由明确不可达；%d 条接口限定的默认路由逐个绑定检查，均未连通或发现外部源地址。唯一客机以太网卡对本轮随机 IPv6 UDP 探针在以太帧入口实施丢弃。", boundary.IPv6DefaultRoutes), "")
+				set("ipv6_policy", cage.CheckPassed, fmt.Sprintf("Regular IPv6 route lookup is explicitly unreachable; %d interface-scoped default routes were each bound and checked, and none connected or showed an external source address. The only guest Ethernet adapter drops this round's random IPv6 UDP probe at the Ethernet frame ingress.", boundary.IPv6DefaultRoutes), "")
 			} else if ipv6Verified {
-				evidence := "客机公网 IPv6 策略为拒绝；连接采样未建立，路由或拒绝记录与策略一致。当前版本验证 IPv4 出口"
+				evidence := "The guest public IPv6 policy is deny; connection samples were not established, and the routes or rejection records match the policy. The current version verifies the IPv4 exit"
 				if linuxProbe {
-					evidence += fmt.Sprintf("；客机全局 IPv6 地址 %d 个、默认路由 %d 条", *boundary.IPv6GlobalAddresses, boundary.IPv6DefaultRoutes)
+					evidence += fmt.Sprintf("; guest global IPv6 addresses: %d, default routes: %d", *boundary.IPv6GlobalAddresses, boundary.IPv6DefaultRoutes)
 				}
 				set("ipv6_policy", cage.CheckPassed, evidence, "")
 			} else if s.macosGuest != nil {
-				set("ipv6_policy", cage.CheckUnknown, fmt.Sprintf("IPv6 默认路由记录为 %d。普通连接、逐接口观测与当前 VZ 网卡丢弃证据尚未全部匹配。", boundary.IPv6DefaultRoutes), "保持外网关闭。确认使用配套的客机诊断工具和虚拟机运行器，重启后重新检测")
+				set("ipv6_policy", cage.CheckUnknown, fmt.Sprintf("The IPv6 default route record is %d. Regular connections, per-interface observation and the current VZ adapter drop evidence do not all match yet.", boundary.IPv6DefaultRoutes), "Keep the internet off. Make sure the matching guest diagnostic tool and virtual machine runner are used, restart and check again")
 			} else if linuxProbe {
-				set("ipv6_policy", cage.CheckUnknown, "未能确认客机全局 IPv6 地址为零，或 IPv6 路由与拒绝证据不完整", "保持外网关闭。确认客机 IPv6 配置后重新检测")
+				set("ipv6_policy", cage.CheckUnknown, "Could not confirm that the guest has zero global IPv6 addresses, or the IPv6 route and rejection evidence is incomplete", "Keep the internet off. Check the guest IPv6 configuration and check again")
 			}
 		} else {
-			message := usererror.Display("读取环境内的隔离检查结果", boundaryErr, "请确认环境仍在运行，再重新检测；持续失败时导出诊断包。").Error()
+			message := usererror.Display("read the isolation check results inside the environment", boundaryErr, "Make sure the environment is still running, then check again; if it keeps failing, export a diagnostics bundle.").Error()
 			for _, id := range []string{"guest_settings", "filesystem_boundary", "egress_policy", "management_boundary", "udp_policy", "ipv6_policy"} {
-				set(id, cage.CheckUnknown, message, "重新检测；若同一检查持续无结果，请在设置中导出诊断包")
+				set(id, cage.CheckUnknown, message, "Check again; if the same check keeps returning no result, export a diagnostics bundle in Settings")
 			}
 		}
 	}
@@ -980,7 +980,7 @@ func (s *Server) runSafetyCheck() (returned error) {
 	if networkErr == nil && dnsConstrained && network.DNS.Status == 200 && normalState.Counters.ProbeDNS > after.Counters.ProbeDNS {
 		evidence := "Public resolution was rejected during the check; the fixed DNS query completed through the designated DoH and proxy"
 		if remoteWindows {
-			evidence = "实际 AppContainer 无网络 capability；WFP 拒绝公共 UDP/53、TCP/53 与 DoT/853，系统 DNS 未返回地址；固定 DNS 查询经受控代理与 DoH 完成"
+			evidence = "The actual AppContainer has no network capability; WFP rejects public UDP/53, TCP/53 and DoT/853, and the system DNS returned no addresses; pinned DNS lookups complete through the controlled proxy and DoH"
 		}
 		if linuxProbe {
 			evidence += "; the guest resolver only points to addresses inside the environment, and direct UDP/53, TCP/53, and DoT/853 connections to public DNS did not bypass the gateway"
@@ -1212,7 +1212,7 @@ func (s *Server) monitorSafetyWithProbe(probe func(context.Context, cage.Config)
 	if issue == "" && s.macosGuest != nil {
 		timing.stage("browser_settings_inputs")
 		if !s.recheckMacOSBrowserSettings(ctx, cfg) {
-			issue = "未能确认 Chrome 仍在使用检测过的进程和资料设置，请打开 Chrome 后重新检测"
+			issue = "Could not confirm that Chrome still uses the checked process and profile settings; open Chrome and check again"
 			recoverable = false
 		}
 	} else if issue == "" {

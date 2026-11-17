@@ -9,7 +9,7 @@ import (
 
 const macCLIInstall = "/usr/local/libexec/cage-cli"
 
-const macOSLegacyWorkspaceNotice = "此历史会话仍使用原来的客机目录，文件保留在虚拟 Mac 内。要使用共享项目，请添加项目文件夹后新建会话。"
+const macOSLegacyWorkspaceNotice = "This past session still uses the original guest folder, and its files stay inside the virtual Mac. To use shared projects, add a project folder and start a new session."
 
 // Only a persisted terminal already bound to the old default workspace keeps
 // that directory. New sessions and other host projects use approved mounts.

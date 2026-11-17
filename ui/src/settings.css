@@ -2,7 +2,7 @@
  * Settings page design system.
  *
  * One type scale and spacing rhythm for every settings section. Sizes are in
- * rem so the appearance "界面字号" preference keeps scaling the whole page.
+ * rem so the appearance "Interface font size" preference keeps scaling the whole page.
  * Rules are scoped to .settings-page so they win over the older shared rules
  * in style.css and the per-component stylesheets without !important.
  *
@@ -102,7 +102,7 @@
   line-height: 1.65;
   color: var(--muted);
 }
-/* A second section title further down a page (e.g. IP 变化规则) reads as a
+/* A second section title further down a page (e.g. IP change rules) reads as a
    major group, so it gets a separator instead of competing with the page title. */
 .settings-page .settings-content .network-exit-policy .section-title {
   margin-bottom: 24px;

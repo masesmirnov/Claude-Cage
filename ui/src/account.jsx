@@ -406,7 +406,7 @@ export function AccountGate({ children }) {
               >
                 {busy ? "Unlocking…" : creating ? isRemoteClient() ? "Create cloud account" : "Create local account" : "Unlock Cage"}
               </button>
-              {!creating && <button type="button" className="text-button" onClick={() => { setPassword(""); setError(""); setRecovering(true); }}>忘记密码？</button>}
+              {!creating && <button type="button" className="text-button" onClick={() => { setPassword(""); setError(""); setRecovering(true); }}>Forgot password?</button>}
             </fieldset>
           </form>
         )}
@@ -424,8 +424,8 @@ export function AccountGate({ children }) {
         </p>
         {!account?.trusted_local && <p className="account-recovery-note">
           {creating
-            ? "注册后会生成恢复密钥。请保存到密码管理器，忘记密码时可用它恢复。"
-            : account?.recovery_ready ? "忘记密码时，可使用已保存的恢复密钥重置。" : "此账户尚未设置恢复密钥。能登录时，请到「设置 → 账户」补设。"}
+            ? "A recovery key is generated after registering. Save it to a password manager; if you forget the password, you can use it to recover."
+            : account?.recovery_ready ? "If you forget the password, you can reset it with the saved recovery key." : "This account has no recovery key yet. When you can sign in, set one in \"Settings → Account\"."}
         </p>}
       </section>
       {nativeAvailable() && (
@@ -445,32 +445,32 @@ function RecoveryKeyScreen() {
   const [saved, setSaved] = useState(false);
   const [notice, setNotice] = useState("");
   return <main className="account-gate">
-    <section className="account-entry account-recovery" aria-label="保存恢复密钥">
-      <h1>{recovery.reset ? "密码已重置" : "保存你的恢复密钥"}</h1>
-      <p className="account-entry-intro">{recovery.reset && "请保存新的恢复密钥。"}账户：{recovery.username}。这份密钥可以重置密码并访问原有资料，请存入密码管理器或安全的离线位置，不要分享给他人。</p>
-      <label className="account-field">恢复密钥<textarea aria-label="恢复密钥" readOnly value={recovery.key} rows={4} spellCheck={false} autoComplete="off" onFocus={(event) => event.target.select()} /></label>
+    <section className="account-entry account-recovery" aria-label="Save the recovery key">
+      <h1>{recovery.reset ? "Password reset" : "Save your recovery key"}</h1>
+      <p className="account-entry-intro">{recovery.reset && "Save the new recovery key."}Account: {recovery.username}. This key can reset the password and access your existing data. Store it in a password manager or a safe offline place, and do not share it with anyone.</p>
+      <label className="account-field">Recovery key<textarea aria-label="Recovery key" readOnly value={recovery.key} rows={4} spellCheck={false} autoComplete="off" onFocus={(event) => event.target.select()} /></label>
       <div className="account-recovery-actions">
         <button className="quiet-button" onClick={async () => {
-          try { await writeClipboard(recovery.key); setNotice("恢复密钥已复制，请粘贴到密码管理器。"); }
-          catch { setNotice("未能复制，请选中上方完整密钥，手动复制并保存。"); }
-        }}>复制恢复密钥</button>
+          try { await writeClipboard(recovery.key); setNotice("Recovery key copied; paste it into your password manager."); }
+          catch { setNotice("Could not copy. Select the full key above, copy it by hand and save it."); }
+        }}>Copy recovery key</button>
         <button className="quiet-button" onClick={async () => {
           try {
             if (nativeAvailable()) {
-              if (await native("saveRecoveryKey", { key: recovery.key })) setNotice("恢复密钥文件已保存，请妥善保管。");
+              if (await native("saveRecoveryKey", { key: recovery.key })) setNotice("The recovery key file was saved; keep it safe.");
               return;
             }
             const url = URL.createObjectURL(new Blob([recovery.key + "\n"], { type: "text/plain;charset=utf-8" }));
-            const link = document.createElement("a"); link.href = url; link.download = "账户恢复密钥.txt"; link.click();
+            const link = document.createElement("a"); link.href = url; link.download = "Account recovery key.txt"; link.click();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
-            setNotice("请确认恢复密钥文件已保存到安全位置。");
-          } catch { setNotice("未能保存文件，请重试或复制完整密钥到密码管理器。"); }
-        }}>下载密钥文件</button>
+            setNotice("Confirm that the recovery key file was saved to a safe place.");
+          } catch { setNotice("Could not save the file. Try again or copy the full key into your password manager."); }
+        }}>Download key file</button>
       </div>
       {notice && <p className="field-help" role="status">{notice}</p>}
-      <p className="field-help">完整密钥仅在此处显示。关闭或刷新后，可验证账户密码重新生成；重新生成后旧密钥失效。{recovery.reset && "原来的资料和 Claude 登录状态已保留，Cage 的记住我和快捷解锁已关闭，请用新密码登录后重新设置。"}</p>
-      <label className="account-device-option check-line"><input type="checkbox" checked={saved} onChange={(event) => setSaved(event.target.checked)} /><span>我已安全保存完整恢复密钥</span></label>
-      <button className="primary account-submit" disabled={!saved} onClick={dismissRecovery}>{recovery.reset ? "返回登录" : "继续使用 Cage"}</button>
+      <p className="field-help">The full key is shown only here. After closing or refreshing, you can verify the account password to generate a new one; the old key stops working once a new one is generated.{recovery.reset && "Your existing data and Claude sign-in state were kept. Cage's Remember me and quick unlock were turned off; sign in with the new password and set them up again."}</p>
+      <label className="account-device-option check-line"><input type="checkbox" checked={saved} onChange={(event) => setSaved(event.target.checked)} /><span>I have safely saved the full recovery key</span></label>
+      <button className="primary account-submit" disabled={!saved} onClick={dismissRecovery}>{recovery.reset ? "Back to sign-in" : "Continue to Cage"}</button>
     </section>
   </main>;
 }
@@ -483,26 +483,26 @@ function AccountRecovery({ onBack, onReset }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   return <main className="account-gate">
-    <section className="account-entry account-recovery" aria-label="恢复账户">
-      <h1>使用恢复密钥重置密码</h1>
-      <p className="account-entry-intro">为 {account.username} 设置新密码，原来的资料和 Claude 登录状态会保留。</p>
+    <section className="account-entry account-recovery" aria-label="Recover account">
+      <h1>Reset the password with the recovery key</h1>
+      <p className="account-entry-intro">Set a new password for {account.username}; your existing data and Claude sign-in state are kept.</p>
       {account.recovery_ready ? <form onSubmit={async (event) => {
         event.preventDefault();
         if (busy) return;
-        if (password !== confirmation) { setError("两次密码不一致"); return; }
+        if (password !== confirmation) { setError("The passwords do not match"); return; }
         setBusy(true); setError("");
         try { await act("recovery-reset", { recovery_key: code, password, confirm_password: confirmation }); onReset(); }
         catch (e) { setError(e.message); }
         finally { setBusy(false); }
       }}><fieldset disabled={busy}>
-        <label className="account-field">已保存的恢复密钥<textarea aria-label="已保存的恢复密钥" autoFocus required value={code} onChange={(event) => setCode(event.target.value)} rows={4} maxLength={256} autoComplete="off" spellCheck={false} /></label>
-        <PasswordField label="新密码" value={password} onChange={setPassword} autoComplete="new-password" />
-        <PasswordField label="确认新密码" value={confirmation} onChange={setConfirmation} autoComplete="new-password" />
-        <p className="field-help">重置后会换发恢复密钥，旧密钥失效。Cage 的记住我和快捷解锁会关闭。</p>
+        <label className="account-field">Saved recovery key<textarea aria-label="Saved recovery key" autoFocus required value={code} onChange={(event) => setCode(event.target.value)} rows={4} maxLength={256} autoComplete="off" spellCheck={false} /></label>
+        <PasswordField label="New password" value={password} onChange={setPassword} autoComplete="new-password" />
+        <PasswordField label="Confirm new password" value={confirmation} onChange={setConfirmation} autoComplete="new-password" />
+        <p className="field-help">Resetting issues a new recovery key and the old key stops working. Cage's Remember me and quick unlock are turned off.</p>
         {error && <p className="account-error" role="alert">{error}</p>}
-        <button className="primary account-submit" disabled={!code.trim() || !password || !confirmation}>{busy ? "正在重置…" : "重置密码"}</button>
-      </fieldset></form> : <p className="field-help" role="status">此账户尚未设置恢复密钥。请使用原密码或已开启的快捷登录进入，再到「设置 → 账户」补设。若所有解锁方式均不可用，当前无法恢复加密资料；现有数据会保留。</p>}
-      <button className="text-button account-submit" disabled={busy} onClick={onBack}>返回密码登录</button>
+        <button className="primary account-submit" disabled={!code.trim() || !password || !confirmation}>{busy ? "Resetting…" : "Reset password"}</button>
+      </fieldset></form> : <p className="field-help" role="status">This account has no recovery key yet. Use the original password or a quick sign-in you turned on to enter, then set one in "Settings → Account". If all unlock methods are unavailable, the encrypted data cannot be recovered for now; existing data is kept.</p>}
+      <button className="text-button account-submit" disabled={busy} onClick={onBack}>Back to password sign-in</button>
     </section>
   </main>;
 }
@@ -514,7 +514,7 @@ function AccountRecoverySettings({ disabled, onDirty }) {
   const [error, setError] = useState("");
   useEffect(() => { onDirty(Boolean(password)); }, [password]);
   useEffect(() => () => onDirty(false), []);
-  return <section className="account-device-settings" aria-label="账户恢复">
+  return <section className="account-device-settings" aria-label="Account recovery">
     <form onSubmit={async (event) => {
       event.preventDefault();
       if (busy) return;
@@ -523,11 +523,11 @@ function AccountRecoverySettings({ disabled, onDirty }) {
       catch (e) { setError(e.message); }
       finally { setBusy(false); }
     }}><fieldset disabled={disabled || busy}>
-      <h4>恢复密钥</h4>
-      <p className="field-help">{account.recovery_ready ? "已设置。忘记密码时，可在登录页使用保存的恢复密钥。重新生成后旧密钥立即失效。" : "尚未设置。请补设并安全保存，忘记密码时可用它恢复原来的资料和登录状态。"}</p>
-      <PasswordField label="生成密钥前验证账户密码" value={password} onChange={setPassword} autoComplete="current-password" />
+      <h4>Recovery key</h4>
+      <p className="field-help">{account.recovery_ready ? "Set. If you forget the password, you can use the saved recovery key on the sign-in page. Generating a new one makes the old key stop working at once." : "Not set yet. Set one and save it safely; if you forget the password, you can use it to recover your existing data and sign-in state."}</p>
+      <PasswordField label="Verify the account password before generating a key" value={password} onChange={setPassword} autoComplete="current-password" />
       {error && <p className="account-error" role="alert">{error}</p>}
-      <button className="quiet-button" disabled={!password}>{busy ? "正在生成…" : account.recovery_ready ? "重新生成恢复密钥" : "生成恢复密钥"}</button>
+      <button className="quiet-button" disabled={!password}>{busy ? "Generating…" : account.recovery_ready ? "Generate a new recovery key" : "Generate recovery key"}</button>
     </fieldset></form>
   </section>;
 }
@@ -802,7 +802,7 @@ export function AccountSettings({ busy: environmentBusy, onDirty }) {
         <fieldset disabled={busy || environmentBusy}>
           <h4>Account password</h4>
           <p className="field-help">
-            修改密码不会清除 Claude 的登录状态。{account.macos_credentials_ready ? "Cage 与 macOS 客机共用密码；客机关闭时会在下次启动后同步。" : "忘记密码时，可在登录页使用已保存的恢复密钥重置。"}
+            Changing the password does not clear Claude's sign-in state.{account.macos_credentials_ready ? "Cage and the macOS guest share the password; when the guest is off, it syncs after the next start." : "If you forget the password, you can reset it on the sign-in page with the saved recovery key."}
           </p>
           {!account.trusted_local && <PasswordField
             label="Current password"

@@ -30,7 +30,7 @@ func (i IntelMacOSIdentity) Validate() error {
 	digest, hashErr := hex.DecodeString(i.BootSHA256)
 	if i.Version != 1 || i.Backend != MacOSQEMU || err != nil || id == uuid.Nil || id.String() != i.UUID ||
 		i.Installation == uuid.Nil || hashErr != nil || len(digest) != 32 {
-		return errors.New("Intel macOS 客机身份记录无效")
+		return errors.New("The Intel macOS guest identity record is invalid")
 	}
 	return nil
 }
@@ -45,7 +45,7 @@ func ReadIntelMacOSIdentity(dir string) (*IntelMacOSIdentity, error) {
 		return nil, err
 	}
 	if !info.Mode().IsRegular() || info.Size() > 4096 || info.Mode().Perm()&0077 != 0 {
-		return nil, errors.New("Intel macOS 客机身份记录权限无效")
+		return nil, errors.New("The Intel macOS guest identity record has invalid permissions")
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -53,7 +53,7 @@ func ReadIntelMacOSIdentity(dir string) (*IntelMacOSIdentity, error) {
 	}
 	var identity IntelMacOSIdentity
 	if json.Unmarshal(data, &identity) != nil {
-		return nil, errors.New("Intel macOS 客机身份记录无法解析")
+		return nil, errors.New("The Intel macOS guest identity record cannot be parsed")
 	}
 	if err := identity.Validate(); err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func WriteIntelMacOSIdentity(dir string, identity IntelMacOSIdentity) error {
 func intelMacMachineID(profile string, identity IntelMacOSIdentity) (string, error) {
 	dir := filepath.Join(profile, "state", "lima", "mac")
 	if _, err := os.Lstat(filepath.Join(dir, "vz-identifier")); !errors.Is(err, os.ErrNotExist) {
-		return "", errors.New("macOS 客机存在冲突的后端身份")
+		return "", errors.New("The macOS guest has conflicting backend identities")
 	}
 	var config struct {
 		OS     string `yaml:"os"`
@@ -94,7 +94,7 @@ func intelMacMachineID(profile string, identity IntelMacOSIdentity) (string, err
 		return "", err
 	}
 	if yaml.Unmarshal(data, &config) != nil || config.OS != "Darwin" || config.Arch != "x86_64" || config.VMType != "qemu" || config.VMOpts.QEMU.MacOS.UUID != identity.UUID {
-		return "", errors.New("Intel macOS 配置与绑定的硬件身份不一致")
+		return "", errors.New("The Intel macOS configuration does not match the bound hardware identity")
 	}
 	data, _ = json.Marshal(identity)
 	hash := sha256.Sum256(append([]byte("cage-intel-macos-1\x00"), data...))

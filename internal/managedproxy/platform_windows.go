@@ -242,7 +242,7 @@ func startWindowsCore(ctx context.Context, profile string, s Store) error {
 		case <-ctx.Done():
 			return stopWindowsCoreAfterFailure(profile, ctx.Err())
 		case <-timeout.C:
-			return stopWindowsCoreAfterFailure(profile, errors.Join(errors.New("代理核心启动超时，请查看私有代理日志"), lastReadiness))
+			return stopWindowsCoreAfterFailure(profile, errors.Join(errors.New("The proxy core timed out while starting; check the private proxy log"), lastReadiness))
 		case <-ticker.C:
 			lastReadiness = checkRunning(ctx, profile, s)
 			if lastReadiness == nil {

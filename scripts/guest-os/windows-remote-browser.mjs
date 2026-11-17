@@ -42,10 +42,10 @@ try {
       process.stderr.write("remote-browser: request received\n");
       if (request.operation === "release-viewer") { await service.releaseInput(); result = { ok: true }; }
       else if (request.operation || request.path === "/tailnet" || request.path?.startsWith("/editor"))
-        result = { error: "Windows 云端此功能尚未接通", code: "action_unavailable" };
+        result = { error: "This feature is not connected yet in Windows cloud", code: "action_unavailable" };
       else result = await service.request(request);
     } catch (error) {
-      result = { error: error.safe ? error.message : "Windows 云端浏览器操作未完成", code: error.safe ? error.code : "browser_operation_failed" };
+      result = { error: error.safe ? error.message : "The Windows cloud browser operation did not finish", code: error.safe ? error.code : "browser_operation_failed" };
     }
     await new Promise((resolve, reject) => process.stdout.write(JSON.stringify(result) + "\n", error => error ? reject(error) : resolve()));
   }

@@ -83,7 +83,7 @@ func queryLocation(ctx context.Context, client *http.Client, endpoint string, re
 	if len(country) != 2 || country[0] < 'A' || country[0] > 'Z' || country[1] < 'A' || country[1] > 'Z' {
 		return Location{}, errors.New("Missing a valid country or region")
 	}
-	// 同时兼容字符串时区（如 IP.SB/ipwhois.app/GeoJS/ipapi.co）与对象格式（ipwho.is 的 timezone.id）
+	// accept both string time zones (as in IP.SB/ipwhois.app/GeoJS/ipapi.co) and the object format (timezone.id of ipwho.is)
 	var timezone string
 	if json.Unmarshal(v.Timezone, &timezone) != nil {
 		var zone struct {
@@ -99,7 +99,7 @@ func queryLocation(ctx context.Context, client *http.Client, endpoint string, re
 	if _, err = time.LoadLocation(timezone); err != nil {
 		return Location{}, errors.New("Missing a valid time zone")
 	}
-	// ipapi.co 的 country 字段为两位代码，完整国家名位于 country_name
+	// the country field of ipapi.co is a two-letter code; the full country name is in country_name
 	countryName := v.CountryName
 	if countryName == "" {
 		countryName = v.Country

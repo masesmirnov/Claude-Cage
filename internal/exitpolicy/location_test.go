@@ -84,7 +84,7 @@ func TestLocationTimeouts(t *testing.T) {
 						t.Fatalf("timed-out providers returned location=%+v, error=%v", loc, err)
 					}
 					for _, host := range []string{"ipwho.is", "IP.SB", "ipwhois.app", "GeoJS", "ipapi.co"} {
-						if !strings.Contains(err.Error(), host+"：连接失败或超时") {
+						if !strings.Contains(err.Error(), host+": Connection failed or timed out") {
 							t.Fatalf("missing sanitized timeout for %s: %v", host, err)
 						}
 					}

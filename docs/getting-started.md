@@ -18,7 +18,7 @@ The first setup needs the official installation media and developer tools for th
 
 ## 1. Install the app
 
-在[项目主页](https://claude-cage.com/#download)点击“下载应用”，选择 macOS、Windows 或 Linux。也可直接查看 [GitHub Releases](https://github.com/Lee-xeo/Claude-Cage/releases)，无需获得仓库访问授权。各平台的可下载版本可能不同；没有公开安装包的平台会提供安装与构建说明。
+On the [project homepage](https://claude-cage.com/#download), click "Download the app" and choose macOS, Windows or Linux. You can also go straight to [GitHub Releases](https://github.com/Lee-xeo/Claude-Cage/releases) without repository access. Downloadable versions may differ by platform; platforms without a public installer have install and build instructions.
 
 | Platform | How to install |
 |---|---|
@@ -30,7 +30,7 @@ You don't need to install developer tools or Clash first. For signing, notarizat
 
 When you first open Cage, register a username and a password of at least 8 characters, then choose the guest system, storage location and network proxy. On a Mac, the username starts with a lowercase letter and is 1–31 lowercase letters, digits or underscores. The password is 8–256 characters you can type on an English keyboard. A new macOS guest uses the same username and password. The full desktop version on all three platforms has "Remember me" checked by default, and you can uncheck it. If you already have a password account, you can also check it when signing in, or turn it on in "Settings → Account → Remember me". Your choice is kept after you close the app.
 
-账户保存在当前主机。注册后请保存恢复密钥；已有账户可在“设置 → 账户”验证密码后补设，忘记密码时在登录页使用密钥重置，详见[账户恢复](guide/settings.md#保存恢复密钥)。左下角头像菜单的“设置 → 账户”可以更换头像和密码；用户名用于 macOS 客机后会固定，以保留用户目录和文件。修改共用密码时，客机关闭或暂时无法连接，会在下次启动时继续同步；完成前客机可能仍需原密码。Cage 账户不替代 Claude 账号，也不会加密项目文件或整个虚拟磁盘。
+The account is stored on this host. Save the recovery key after registering; an existing account can set one in "Settings → Account" after verifying its password, and if you forget the password, reset it with the key on the sign-in page. See [account recovery](guide/settings.md#save-the-recovery-key). "Settings → Account" in the avatar menu at the bottom left changes the avatar and password; once the user name is used for a macOS guest it is fixed, to keep the user folder and files. When you change the shared password while the guest is off or unreachable, it keeps syncing on the next start; until that finishes, the guest may still need the old password. The Cage account does not replace your Claude account and does not encrypt project files or the whole virtual disk.
 
 ### Choose a guest system
 
@@ -91,11 +91,11 @@ HTTP/SOCKS5 services can be added through "Subscription → Add source → Manua
 
 ## 3. Start and wait for checks to finish
 
-返回工作台，首次创建时确认客机系统与存储位置，再点击“启动 Cage 环境”。无需先选择项目。系统安装和必要授权完成后，后续启动继续使用原环境。
+Go back to the workbench, confirm the guest system and storage location the first time, then click "Start Cage environment". You don't need to choose a project first. After the system installation and the required authorizations finish, later starts keep using the same environment.
 
-安装、启动和项目共享不检查主机的裸仓库保护设置，也不会改写主机全局 Git 配置。已有的 Git 设置保持原样；需要调整时见[主机 Git 设置](troubleshooting.md#主机-git-设置与裸仓库)。
+Installation, startup and project sharing do not check the host's bare repository protection setting and do not rewrite the host's global Git configuration. Existing Git settings stay as they are; to change them, see [host Git settings](troubleshooting.md#host-git-settings-and-bare-repositories).
 
-第一次启动时，工作台会显示当前正在下载或安装的组件。下载 Debian 镜像时可以看到已接收的数据量，服务器提供文件总大小时也会显示百分比。下载 mise、Claude Code 和网页编辑器时，可以看到当前文件已接收的数据量。安装软件包时显示组件名称，点击“操作详情”可查看安装日志。下载中断后，可以点击“继续安装”，Cage 会尝试从已保存的位置续传。环境启动后会连接浏览器并执行网络检查。
+On the first start, the workbench shows the component currently being downloaded or installed. While the Debian image downloads you can see the amount of data received, and a percentage when the server provides the total file size. While mise, Claude Code and the web editor download, you can see the amount received for the current file. During package installation it shows the component name, and "Operation details" shows the install log. If a download is interrupted, click "Continue installation" and Cage tries to resume from the saved position. After the environment starts, it connects the browser and runs the network checks.
 
 After the environment starts, business internet access is turned off first. Then it runs 11 critical checks covering exit, DNS, system and browser settings, file sharing, the host management interface, proxy fail-closed behavior, UDP, IPv6 and exit rules. The first base image build has no project mounts and has to download tools through the proxy you chose.
 
@@ -105,7 +105,7 @@ On first use on macOS, Windows and Linux, "Follow the time zone of the exit IP" 
 
 ## 4. Open a project and start working
 
-点击左侧“项目”标题旁的加号，选择已有项目，或点击“添加本机项目…”选择主机上的项目文件夹。新终端和文件编辑器将从这个目录开始工作；没有项目时请先添加一个文件夹。终端使用所选客机的系统工具，Windows 客机提供 PowerShell 7，并保留 Windows PowerShell 5.1。
+Click the plus next to the "Projects" heading on the left to choose an existing project, or click "Add a local project…" to choose a project folder on the host. New terminals and the file editor start in that folder; if there is no project, add a folder first. Terminals use the selected guest's system tools; Windows guests offer PowerShell 7 and keep Windows PowerShell 5.1.
 
 Click the terminal icon on the right of a project and choose "New Claude terminal". Cage automatically runs `claude` in that project. You can also choose a regular terminal and type commands yourself. "Settings → General → Claude terminal startup command" lets you add options, such as `claude --continue`. Saving only affects new Claude terminals. After you quit Claude, you can still use the shell.
 
@@ -155,7 +155,7 @@ In "Settings → Password vault", you can search, add, edit and delete entries, 
 
 ### Projects, tabs and files
 
-左侧“项目”列出明确打开的文件夹，列表由 Cage 保存，重新打开应用后仍可看到。每个项目右侧有两个图标。点击打开图标（↗）可在 code-server 中编辑该目录的文件。点击终端图标（>_）可选择终端类型，在该目录新建终端。已有终端始终留在创建它的目录下。所有项目共用一个持久环境，所选客机系统、工具、账户和文件系统也相互共享。已打开的目录在环境启动时恢复连接。
+"Projects" on the left lists the folders you explicitly opened. Cage saves the list, so it is still there after reopening the app. Each project has two icons on the right. The open icon (↗) edits the folder's files in code-server. The terminal icon (>_) lets you choose a terminal type and open a new terminal in that folder. Existing terminals always stay in the folder where they were created. All projects share one persistent environment, and the selected guest system, tools, accounts and file system are shared too. Opened folders reconnect when the environment starts.
 
 The browser is separate from projects. Web pages and file editors use tabs at the top. Switching projects does not close or move web pages. Hover over a terminal row, or focus it with the keyboard, to pin, rename or delete the terminal from the right side. Browser tabs open their action menu with right-click or Shift+F10. Drag to change the order within the same list. The order is kept after a refresh. ⌘1–9 switches between pages in the current browser or terminals in the current folder.
 
@@ -187,9 +187,9 @@ Choose "Manage cookies" in the browser menu to see cookies for the current site,
 
 When you click upload on a web page, the workbench shows "Upload local file". Click "Choose local file" to pick images, videos or documents in the system file window. Transfer status appears in the panel. Only the files you choose are sent, and no folder is shared. If the web page allows multiple selection, you can choose up to 100 files, each up to 2 GB. The target site's own format and size limits still apply. You can cancel an upload. If you refresh or close the original web page, you need to choose the files again. Claude Desktop file uploads also use this local picker. If a guest file window still appears, save and close Claude Desktop, then open it again. When you pick a working folder on the Code page of Claude Desktop, Cage shows "Choose a working project". The list matches the project list on the left. Select an existing project and click "Use this project". For a new folder, "Add a local project…" opens the system window. After you confirm, it is added to the Cage project list and handed to Claude. Choosing a project in Claude does not switch Cage's current project or existing terminals. Changes in that folder sync to this computer.
 
-网页下载仍在 Cage 内完成。本机先收到下载暂存目录中的完整文件，同名文件自动换名。工作台连接期间观察到下载完成后，会弹出系统“另存为”窗口；取消时保留默认位置的文件。共享目录暂时不可写而客机文件已完整下载时，也可以从下载列表直接另存为。
+Web downloads still happen inside Cage. This computer first receives the complete file in the download staging folder, and files with the same name are renamed automatically. When the workbench sees a download finish while connected, it opens the system "Save as" window; if you cancel, the file stays in the default location. If the shared folder is temporarily not writable but the guest file downloaded completely, you can also use Save as directly from the download list.
 
-左侧“下载”入口和地址栏旁的下载按钮都可查看进度、文件名和保存位置，并提供“打开文件”“在文件夹中显示”“另存为”。已记录的本机文件在停止环境后仍能查看；再次打开 Cage 也保留保存位置。下载暂存目录通常为 `~/.claude-cage-downloads/Downloads/`，无需添加项目即可下载。使用普通浏览器打开工作台时，导出由该浏览器的下载功能处理。
+The "Downloads" entry on the left and the download button next to the address bar both show progress, file names and save locations, and offer "Open file", "Show in folder" and "Save as". Recorded local files can still be viewed after the environment stops, and the save locations are kept when Cage is opened again. The download staging folder is usually `~/.claude-cage-downloads/Downloads/`, and you can download without adding a project. When the workbench is opened in a regular browser, exports are handled by that browser's downloads.
 
 Desktop file operations on the host only accept files in authorized projects or in saved download records. A generated document must be saved first. Linux guests keep using the existing file entry point. Native saving and file opening on macOS and Windows are connected, but uploads, saves, opening and locating files in the full official app still need hands-on testing. For other folders, first grant access explicitly with "Add a local project…". After an update, close and reopen Desktop. For the current conditions and recovery steps, see [Claude Desktop](guide/desktop.md#choose-a-project-and-transfer-files).
 
@@ -243,7 +243,7 @@ In "My themes", enter a name and click "Save as theme". This saves the light and
 
 ### Compute resource limits
 
-“设置 → 环境与恢复 → 计算资源”默认自动设置上限：取主机份额与 8 GiB 中较小者（主机份额默认为主机内存的一半）；手动指定时仍可调至完整主机份额。关闭“自动分配资源上限”后，可分别指定内存 GiB 和 CPU 逻辑核心数，可填范围显示在输入框下方。点击“保存资源配置”后，下次启动环境时生效；运行中可点击“重启并应用已保存配置”，请先保存工作，重启会结束正在运行的命令。内存仍会在指定上限内按需增长和回收。macOS、Windows 和 Linux 操作一致；服务器容器资源由服务器部署配置管理。
+"Settings → Environment and recovery → Compute resources" sets the limit automatically by default: the smaller of the host share and 8 GiB (the host share defaults to half of the host memory); a manual value can still go up to the full host share. After turning off "Set resource limits automatically", you can set memory in GiB and the number of logical CPU cores separately, with the allowed ranges shown under the fields. After clicking "Save resource settings", they take effect the next time the environment starts; while it runs you can click "Restart and apply saved settings". Save your work first, because the restart ends running commands. Memory still grows and shrinks on demand within the limit. macOS, Windows and Linux work the same way; server container resources are managed by the server deployment configuration.
 
 ### Time zone, language and exit changes
 
@@ -269,7 +269,7 @@ Cage uses a lightweight Linux VM without a full desktop. Browser and editor page
 - Guest public IPv6, regular UDP, ICMP, and direct connections to the host and LAN are restricted. Public outbound currently supports IPv4 TCP only. SSH management, shared files and local display use explicit internal channels. After you turn on a [Tailscale private network](guide/tailscale.md), connections can run both ways, based on device and SSH permissions. The outer traffic is still subject to the proxy and pause controls.
 - Proxy credentials are stored in the host's private config and are not passed to the guest. Terminal SSH disables local escape sequences, local commands, proxy forwarding and interactive passwords, and does not inherit host environment variables.
 - The workbench only listens on local loopback. The app exchanges for a session automatically. The interface checks Host, Origin and the session, so external web pages cannot call management actions directly.
-- 明确打开的项目目录及下载暂存目录会共享到同一环境，彼此可以访问。修改、删除共享文件会影响主机，请保留备份。不要把 Cage 私有配置目录或正在运行的控制程序作为共享项目。
+- Explicitly opened project folders and the download staging folder are shared with the same environment and can reach each other. Changing or deleting shared files affects the host, so keep backups. Do not use Cage's private configuration folder or a running control program as a shared project.
 
 Network limits are enforced outside the VM, so sudo in the guest cannot turn them off directly. This boundary cannot stop VM or browser vulnerabilities, changes to the configuration by a host administrator, or running scripts from a shared project on the host. Cage does not predict account bans or promise to avoid restrictions. Image-based sharing and system clock spoofing are not available yet.
 
@@ -299,6 +299,6 @@ Before you replace the app manually, save your files and choose "Stop environmen
 
 "Settings → Environment and recovery" provides separate updates for environment components and tools, and shows the actual versions. Updating components restarts the browser and editor, and keeps the VM, the disk and the workbench's own terminals. Integrated terminals in the editor may end, so save content before you start. Dependency installs and tool updates use the proxy you selected, and don't need business internet access to be allowed first. Tool updates use the minimum version the current app specifies. A manual internet pause is not lifted by an update. Replacing the app does not mean all Linux tools have been upgraded.
 
-卸载应用前也应先停止环境并退出，再将 Cage.app 移到废纸篓。删除 App 不会自动删除共享项目、下载暂存、代理配置或虚拟磁盘。需要清理这些数据时，先备份：私有状态默认在 `~/.claude-cage/`，下载暂存通常在 `~/.claude-cage-downloads/Downloads/`；原 `~/.claude-cage-workspace/` 中的个人文件也保留，自行打开的项目仍在原目录。删除虚拟磁盘会丢失只存在于客机中的文件和登录状态。
+Before uninstalling the app, also stop the environment and quit, then move Cage.app to the Trash. Deleting the app does not delete shared projects, download staging, proxy settings or the virtual disk. To clean up this data, back it up first: private state is in `~/.claude-cage/` by default, download staging is usually in `~/.claude-cage-downloads/Downloads/`; personal files in the old `~/.claude-cage-workspace/` are kept too, and projects you opened yourself stay in their folders. Deleting the virtual disk loses files and sign-ins that exist only in the guest.
 
 Next: [Troubleshooting and recovery](troubleshooting.md)

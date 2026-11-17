@@ -75,7 +75,7 @@ func metadata(ctx context.Context, client *http.Client, raw string, value any) e
 		return err
 	}
 	if json.Unmarshal(b, value) != nil {
-		return errors.New("更新源返回了无效的信息")
+		return errors.New("The update source returned invalid information")
 	}
 	return nil
 }
@@ -92,7 +92,7 @@ func checkSource(ctx context.Context, client *http.Client, current string) Check
 		return checkFailure(err)
 	}
 	if !validCommit(latest.SHA) {
-		return checkFailure(errors.New("源码更新源未返回有效提交"))
+		return checkFailure(errors.New("The source update feed returned no valid commit"))
 	}
 	item := CheckItem{Status: "unknown", Commit: latest.SHA}
 	if !validCommit(current) {
@@ -123,7 +123,7 @@ func checkSource(ctx context.Context, client *http.Client, current string) Check
 	case "diverged":
 		item.Status = "diverged"
 	default:
-		return checkFailure(errors.New("源码更新源未返回有效的提交关系"))
+		return checkFailure(errors.New("The source update feed returned no valid commit relationship"))
 	}
 	item.AheadBy, item.BehindBy = comparison.Ahead, comparison.Behind
 	return item

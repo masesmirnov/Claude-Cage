@@ -8,9 +8,9 @@ keywords: Tailscale tailnet devices private network SSH web TCP proxy
 
 ## Sign in and join the private network
 
-工作台左侧「浏览器」下方的「Tailscale」，用于将当前 Cage 环境作为一台独立设备加入你的 Tailscale 网络。登录状态保存在客机磁盘中，切换工作台页面后仍保持连接。本机、手机或服务器也需要安装 Tailscale，并加入同一网络。
+"Tailscale" under "Browser" on the left of the workbench adds the current Cage environment to your Tailscale network as a separate device. The sign-in is stored on the guest disk and stays connected when you switch workbench pages. Your computer, phone or server also needs Tailscale installed and joined to the same network.
 
-启动 Cage 环境，点击左侧「Tailscale」，在工作台主区域选择「连接并登录」。Cage 会切换到内置浏览器，打开 Tailscale 官方授权页。授权完成后会自动回到设备清单。若浏览器询问是否打开应用，确认即可返回当前环境的 Tailscale 页面。你也可以随时点击左侧「Tailscale」查看进度。连接成功后，可看到当前账号、网络名称、Cage 的私网地址与设备清单。网络要求设备审批时，面板显示「等待管理员批准」，由网络管理员在 Tailscale 管理台批准 Cage 后即可继续。
+Start the Cage environment, click "Tailscale" on the left, and choose "Connect and sign in" in the main workbench area. Cage switches to the built-in browser and opens the official Tailscale authorization page. After authorizing, it returns to the device list automatically. If the browser asks whether to open the app, confirm to return to this environment's Tailscale page. You can also click "Tailscale" on the left at any time to see the progress. After connecting, you can see the current account, network name, Cage's private address and the device list. If the network requires device approval, the panel shows "Waiting for administrator approval", and the network administrator can approve Cage in the Tailscale admin console to continue.
 
 If Google sign-in shows "This browser or app may not be secure", first update Cage and the environment components, stop and restart the environment, then go back to the Tailscale panel and click "Sign in again". Browser startup settings only take effect after the environment restarts, so continue from the new authorization page. Web sign-in state and device identity are kept in your existing personal data.
 

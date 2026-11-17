@@ -47,7 +47,7 @@ const sections = [
   ["network", "Network and proxy", Globe2],
   ["region", "Time zone and language", Clock3],
   ["project", "Environment and recovery", RotateCcw],
-  ["about", "关于", Info],
+  ["about", "About", Info],
 ];
 export function SettingsPanel({
   current,
@@ -490,18 +490,18 @@ export function SettingsPanel({
                   <p>Manage the workbench's key conventions and everyday actions.</p>
                 </div>
                 <label>
-                  时间显示格式
+                  Time format
                   <InlineSelect inline
-                    aria-label="时间显示格式"
+                    aria-label="Time format"
                     value={draft.clock_12_hour ? "12" : "24"}
                     onValueChange={(next) => update("clock_12_hour", next === "12")}
                   >
-                    <option value="24">24 小时制</option>
-                    <option value="12">12 小时制（AM/PM）</option>
+                    <option value="24">24-hour</option>
+                    <option value="12">12-hour (AM/PM)</option>
                   </InlineSelect>
                 </label>
                 <p className="field-help">
-                  默认使用 24 小时制。保存后更新工作台底部时钟，无需重启环境；12 小时制使用 AM/PM 区分上午和下午。
+                  Uses the 24-hour format by default. Saving updates the clock at the bottom of the workbench with no environment restart; the 12-hour format uses AM/PM to tell morning and afternoon apart.
                 </p>
                 <label>
                   Claude terminal startup command
@@ -521,15 +521,15 @@ export function SettingsPanel({
                 {typeof current.balanced_display === "boolean" && <label className="toggle-row">
                   <span>
                     <strong>Prefer smoothness</strong>
-                    <small>降低浏览器和 Claude Desktop 的清晰度，Linux 环境同时减少 Claude Desktop 的动效。下次启动环境时生效。</small>
+                    <small>Lowers the sharpness of the browser and Claude Desktop; in Linux environments it also reduces Claude Desktop motion. Takes effect on the next environment start.</small>
                   </span>
                   <input type="checkbox" role="switch" checked={draft.balanced_display}
                     onChange={(event) => update("balanced_display", event.target.checked)} />
                 </label>}
                 {typeof current.project_file_cache === "boolean" && linuxGuest && <label className="toggle-row">
                   <span>
-                    <strong>项目文件缓存</strong>
-                    <small>减少读取项目文件时与本机的往返。在本机上所做的改动最多 20 秒后在环境中可见，也可以在项目栏点“刷新项目文件”立即同步。下次启动环境时生效。</small>
+                    <strong>Project file cache</strong>
+                    <small>Reduces round trips to this computer when reading project files. Changes made on this computer become visible in the environment after up to 20 seconds, or you can click "Refresh project files" in the project bar to sync right away. Takes effect on the next environment start.</small>
                   </span>
                   <input type="checkbox" role="switch" checked={draft.project_file_cache}
                     onChange={(event) => update("project_file_cache", event.target.checked)} />
@@ -603,7 +603,7 @@ export function SettingsPanel({
                 <div className="setting-summary-row">
                   <span>Current project</span>
                   <strong title={current.workspace}>
-                    {current.workspace || "尚未选择项目"}
+                    {current.workspace || "No project selected yet"}
                   </strong>
                 </div>
                 <p className="field-help">
@@ -616,7 +616,7 @@ export function SettingsPanel({
                     <p>
                       Project folders you explicitly open are shared into the same environment. The host's Claude
                       sign-in, SSH keys and personal configuration are not imported automatically. Browser downloads are all saved to the
-                      独立的下载暂存目录，可从下载面板查看或另存为。
+                      A separate download staging folder; you can view files or use Save as from the download panel.
                     </p>
                   </div>
                 </div>
@@ -743,9 +743,9 @@ function MacOSScreenSharingSettings({ disabled, onError }) {
     }
   }
   return (
-    <section aria-label="客机屏幕共享">
-      <h4>客机屏幕共享</h4>
-      <p className="field-help">日常「打开客机屏幕共享」只在本机建立 SSH 环回转发，不给客机增加外网出口，因此不要求先断网。首次安装会在置备阶段启用服务，并在系统授权引导中检查是否真正可用；macOS 26 还需在「系统设置 → 通用 → 共享」中手动打开一次。之后若要重新启用服务或再次打开该设置页，必须先在工作台暂停外网。</p>
+    <section aria-label="Guest Screen Sharing">
+      <h4>Guest Screen Sharing</h4>
+      <p className="field-help">Everyday "Open guest Screen Sharing" only sets up an SSH loopback forward on this computer and gives the guest no extra internet exit, so you do not need to go offline first. The first installation enables the service during provisioning and checks in the system authorization guide that it actually works; macOS 26 also needs it turned on once by hand in "System Settings → General → Sharing". After that, to re-enable the service or open that settings page again, you must pause the internet in the workbench first.</p>
       <ScreenSharingChecks status={sharingStatus} />
       <div className="project-recovery-actions">
         <button
@@ -755,7 +755,7 @@ function MacOSScreenSharingSettings({ disabled, onError }) {
           onClick={() => run("check")}
         >
           {sharingBusy === "check" ? <LoaderCircle size={14} /> : null}
-          检查屏幕共享状态
+          Check Screen Sharing status
         </button>
         <button
           type="button"
@@ -764,7 +764,7 @@ function MacOSScreenSharingSettings({ disabled, onError }) {
           onClick={() => run("open")}
         >
           {sharingBusy === "open" ? <LoaderCircle size={14} /> : null}
-          打开客机屏幕共享
+          Open guest Screen Sharing
         </button>
         <button
           type="button"
@@ -773,9 +773,9 @@ function MacOSScreenSharingSettings({ disabled, onError }) {
           onClick={() => run("enable")}
         >
           {sharingBusy === "enable" ? <LoaderCircle size={14} /> : null}
-          重新启用屏幕共享服务
+          Re-enable Screen Sharing service
         </button>
-        <MacOSLogin maintenance="sharing" label="打开屏幕共享设置" disabled={disabled || Boolean(sharingBusy)} />
+        <MacOSLogin maintenance="sharing" label="Open Screen Sharing settings" disabled={disabled || Boolean(sharingBusy)} />
       </div>
     </section>
   );

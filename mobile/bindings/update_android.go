@@ -14,7 +14,7 @@ type AndroidUpdate struct{ candidate *catalog.Candidate }
 func SelectAndroidUpdate(current string, metadata []byte) (*AndroidUpdate, error) {
 	var releases []catalog.Release
 	if err := json.Unmarshal(metadata, &releases); err != nil || releases == nil {
-		return nil, errors.New("更新源返回了无效的版本信息")
+		return nil, errors.New("The update source returned invalid version information")
 	}
 	c, err := catalog.Select(releases, current, "android", "arm64")
 	if err != nil || c == nil {

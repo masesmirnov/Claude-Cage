@@ -299,8 +299,8 @@ export function WorkspaceTabs({
           const opening = Boolean(openingSession) && openingSession === tab.cli_session_id;
           const runningElsewhere = tab.sessionRunningElsewhere;
           const runningNotice = tab.sessionClaudeDesktop
-            ? "Claude Desktop 占用中，请先在 Claude Desktop 中退出此会话再接续"
-            : "其他窗口占用中，退出原会话后可接续";
+            ? "In use by Claude Desktop; exit this session in Claude Desktop before continuing it"
+            : "In use by another window; you can continue after exiting the original session";
           const OwnerIcon = tab.sessionClaudeDesktop ? Monitor : TerminalSquare;
           const openError = tab.historySession && sessionOpenError?.id === tab.cli_session_id ? sessionOpenError.message : "";
           const errorID = `session-open-error-${tab.cli_session_id}`;
@@ -390,7 +390,7 @@ export function WorkspaceTabs({
                 {tab.claudeLabel && <small className="claude-tab-profile">{tab.claudeLabel}</small>}
                 {saved[tab.id]?.pinned && <Pin size={11} className="tab-pin" />}
                 {!horizontal && !vertical && (opening || tab.sessionActive && !runningElsewhere) &&
-                  <LoaderCircle size={13} className="spin session-activity" role="img" aria-label={opening ? "正在打开会话" : "会话正在运行"} />}
+                  <LoaderCircle size={13} className="spin session-activity" role="img" aria-label={opening ? "Opening the session" : "Session is running"} />}
               </button>
               {!horizontal && !vertical && runningElsewhere &&
                 <span className="session-owner" role="img" aria-label={runningNotice} tabIndex={0}>

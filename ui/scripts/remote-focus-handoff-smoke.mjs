@@ -48,7 +48,7 @@ const until = async predicate => {
   assert.fail("expected native input request did not arrive");
 };
 try {
-  await page.getByRole("button", { name: "打开浏览器", exact: true }).click();
+  await page.getByRole("button", { name: "Open browser", exact: true }).click();
   const canvas = page.locator(".remote-canvas canvas");
   await canvas.waitFor();
   await page.evaluate(() => {
@@ -71,10 +71,10 @@ try {
     available = false;
     await until(() => finishHandoff);
     // Simulate WebView2's automatic DOM focus when the native control hides.
-    await page.getByRole("button", { name: "收起侧栏", exact: true }).evaluate(node => node.focus());
+    await page.getByRole("button", { name: "Collapse sidebar", exact: true }).evaluate(node => node.focus());
     if (interruption === "shortcut") {
       await page.keyboard.press("l");
-      await page.getByRole("textbox", { name: "网页地址或搜索", exact: true }).evaluate(node => {
+      await page.getByRole("textbox", { name: "Web address or search", exact: true }).evaluate(node => {
         if (document.activeElement !== node) throw new Error("Ctrl+L did not focus the address bar");
       });
     }
@@ -86,13 +86,13 @@ try {
     assert.equal(await page.evaluate(() => document.activeElement?.classList.contains("remote-text-input")), interruption === "none",
       `${interruption}: a late reply must preserve the user's focus choice`);
     if (interruption === "shortcut")
-      assert.equal(await page.getByRole("textbox", { name: "网页地址或搜索", exact: true }).evaluate(node => document.activeElement === node), true);
+      assert.equal(await page.getByRole("textbox", { name: "Web address or search", exact: true }).evaluate(node => document.activeElement === node), true);
     if (interruption === "none") {
       available = true;
       await until(() => activations > previousActivations + 1);
       await page.keyboard.press("x");
       await until(() => display.stats.keys.some(key => key.symbol === 120 && key.down));
-      await page.getByRole("textbox", { name: "网页地址或搜索", exact: true }).focus();
+      await page.getByRole("textbox", { name: "Web address or search", exact: true }).focus();
     }
     if (interruption === "shortcut") await page.keyboard.up("Control");
   }

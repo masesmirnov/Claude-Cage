@@ -26,7 +26,7 @@ func updateHTTPClient(transport http.RoundTripper) *http.Client {
 	// archive transfer is bounded by its stall watchdog instead.
 	return &http.Client{Transport: transport, CheckRedirect: func(r *http.Request, via []*http.Request) error {
 		if len(via) >= 5 || !allowedURL(r.URL, true) {
-			return errors.New("更新下载重定向被拒绝")
+			return errors.New("The update download redirect was rejected")
 		}
 		return nil
 	}}
@@ -86,7 +86,7 @@ type routeBody struct {
 type networkUnavailableError struct{ cause error }
 
 func (e *networkUnavailableError) Error() string {
-	return "主机网络无法连接更新源，Cage 代理也不可用：" + e.cause.Error()
+	return "The host network cannot reach the update source, and the Cage proxy is unavailable too: " + e.cause.Error()
 }
 func (e *networkUnavailableError) Unwrap() error { return e.cause }
 

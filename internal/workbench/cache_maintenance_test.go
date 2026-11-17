@@ -11,8 +11,8 @@ import (
 
 func cacheTestInventory() cacheInventory {
 	return cacheInventory{Version: 1, Scope: "fixture-scope", Platform: "linux", Items: []cacheItem{
-		{ID: "cli-default", Title: "CLI 缓存", State: "ready", Fingerprint: "fixture-metadata", Bytes: 10},
-		{ID: "browser-0", Title: "浏览器缓存", State: "blocked"},
+		{ID: "cli-default", Title: "CLI cache", State: "ready", Fingerprint: "fixture-metadata", Bytes: 10},
+		{ID: "browser-0", Title: "Browser cache", State: "blocked"},
 	}, Protected: json.RawMessage(`[]`)}
 }
 

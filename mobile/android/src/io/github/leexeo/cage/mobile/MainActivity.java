@@ -472,8 +472,8 @@ public final class MainActivity extends Activity {
         row("Archived sessions", v -> openArchivedSessions());
         row("Relay settings", v -> showAdvanced(Page.RELAY));
         row("Host and fingerprint", v -> showAdvanced(Page.HOST));
-        label("应用更新", 14);
-        row("检查更新   ·   " + updates.currentVersion(), v -> updates.check(true));
+        label("App updates", 14);
+        row("Check for updates   ·   " + updates.currentVersion(), v -> updates.check(true));
         statusView();
         if (focusTheme) chooser.requestFocus();
     }

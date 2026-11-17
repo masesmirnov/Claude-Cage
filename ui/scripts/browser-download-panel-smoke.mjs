@@ -212,7 +212,7 @@ for (const platform of ["darwin", "win32", "linux"]) {
     await page.keyboard.press("Escape");
     await panel.waitFor({ state: "hidden" });
     await page.getByRole("button", { name: "Expand sidebar", exact: true }).click();
-    await page.getByRole("button", { name: "浏览器下载", exact: true }).click();
+    await page.getByRole("button", { name: "Browser downloads", exact: true }).click();
     await panel.waitFor();
     assert.ok(
       (await panel.boundingBox()).x > 800,

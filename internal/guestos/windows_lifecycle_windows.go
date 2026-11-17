@@ -25,7 +25,7 @@ func WindowsVMAction(ctx context.Context, root, action string) error {
 		return errors.New("This configuration is not bound to a Windows guest yet.")
 	}
 	if binding.Remote() {
-		return errors.New("云端 Windows 的电源由云平台管理，Cage 只连接或断开工作环境")
+		return errors.New("The power of a cloud Windows machine is managed by the cloud platform; Cage only connects to or disconnects from the work environment")
 	}
 	operation := action
 	if operation == "stop" {

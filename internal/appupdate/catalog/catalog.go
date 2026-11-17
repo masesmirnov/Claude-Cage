@@ -48,7 +48,7 @@ func archiveName(version, goos, goarch string) (string, error) {
 	case goos == "android" && goarch == "arm64":
 		return "Cage-" + version + "-android-arm64.apk", nil
 	default:
-		return "", errors.New("此平台尚无 Cage 应用内更新发行包")
+		return "", errors.New("There is no in-app Cage update release for this platform yet")
 	}
 }
 
@@ -58,7 +58,7 @@ func Select(releases []Release, current, goos, goarch string) (*Candidate, error
 	}
 	currentTag := "v" + current
 	if !semver.IsValid(currentTag) || semver.Canonical(currentTag) != currentTag {
-		return nil, errors.New("当前应用版本无效，无法安全比较更新")
+		return nil, errors.New("The current app version is invalid, so updates cannot be compared safely")
 	}
 	var best *Candidate
 	for _, r := range releases {
@@ -103,12 +103,12 @@ func Select(releases []Release, current, goos, goarch string) (*Candidate, error
 
 func DigestValue(raw string) (string, error) {
 	if !strings.HasPrefix(raw, "sha256:") {
-		return "", errors.New("发行包缺少有效的 SHA-256 摘要")
+		return "", errors.New("The release is missing a valid SHA-256 digest")
 	}
 	h := strings.TrimPrefix(raw, "sha256:")
 	b, err := hex.DecodeString(h)
 	if err != nil || len(b) != sha256.Size {
-		return "", errors.New("发行包 SHA-256 摘要无效")
+		return "", errors.New("The release SHA-256 digest is invalid")
 	}
 	return strings.ToLower(h), nil
 }
@@ -124,7 +124,7 @@ func (c Candidate) SHA256(b []byte) (string, error) {
 	}
 	if c.Checksums.URL == "" {
 		if hash == "" {
-			return "", errors.New("发行包缺少校验信息")
+			return "", errors.New("The release is missing verification information")
 		}
 		return hash, nil
 	}
@@ -136,12 +136,12 @@ func (c Candidate) SHA256(b []byte) (string, error) {
 		}
 		h, err := DigestValue("sha256:" + fields[0])
 		if err != nil || found != "" {
-			return "", errors.New("发行包校验清单无效或重复")
+			return "", errors.New("The release checksum list is invalid or has duplicates")
 		}
 		found = h
 	}
 	if found == "" || (hash != "" && hash != found) {
-		return "", errors.New("发行包与校验清单的 SHA-256 不一致")
+		return "", errors.New("The release SHA-256 does not match the checksum list")
 	}
 	return found, nil
 }

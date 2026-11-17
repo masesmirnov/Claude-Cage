@@ -49,7 +49,7 @@ try {
   checks.push("keyboard entry; enrollment precedes SSH; browser launch failure keeps login retry; official login opens in regular Cage browser");
   const connected = { ...tail, enabled: true, backend: "Running", tailnet: "Forest Net", account: "owner@example.invalid", name: "cage-workbench.test.ts.net", hostname: "cage-workbench", os: "macOS", auth_url: "", ips: ["100.88.2.3"], proxy_url: "http://cage:fixture-credential@127.0.0.1:32100", peers: [{ name: "offline-server.test.ts.net", hostname: "offline-server", os: "linux", ip: "100.88.2.5", online: false }, { name: "my-computer.test.ts.net", hostname: "my-computer", os: "macOS", ip: "100.88.2.4", online: true }] };
   tail = structuredClone(connected);
-  await panel.getByText("已连接", { exact: true }).waitFor();
+  await panel.getByText("Connected", { exact: true }).waitFor();
   await panel.getByText("Forest Net", { exact: true }).waitFor();
   await panel.getByText("Signed in as · owner@example.invalid", { exact: true }).waitFor();
   assert.equal(await panel.locator(".tailscale-peer").first().getByText("my-computer", { exact: true }).count(), 1);
@@ -90,7 +90,7 @@ try {
   await panel.locator(".tailscale-key").waitFor();
   await panel.getByRole("button", { name: "Remove SSH public key" }).click(); await panel.locator(".tailscale-key").waitFor({ state: "hidden" });
   checks.push("application proxy credential copied without rendering; SSH opt-in keyboard disclosure; failed key keeps input; saved key survives refresh and can be revoked");
-  await page.getByRole("button", { name: "工作台", exact: true }).click(); await panel.waitFor({ state: "hidden" });
+  await page.getByRole("button", { name: "Workbench", exact: true }).click(); await panel.waitFor({ state: "hidden" });
   await open.click(); await panel.getByRole("button", { name: "Disconnect", exact: true }).click();
   await page.getByRole("dialog", { name: "Disconnect Tailscale?", exact: true }).getByRole("button", { name: "Cancel", exact: true }).click(); assert.equal(tail.enabled, true);
   await panel.getByRole("button", { name: "Disconnect", exact: true }).click();
@@ -100,9 +100,9 @@ try {
   await panel.getByRole("button", { name: "Connect and sign in", exact: true }).click(); await panel.getByText("Waiting for sign-in", { exact: true }).waitFor();
   tail.auth_url = "https://login.tailscale.com/a/delayed-login"; await panel.waitFor({ state: "hidden" });
   assert.ok(state.requests.some(r => r.path === "/browser/new" && r.body.url === tail.auth_url));
-  tail.return_id = "fixture-return"; await panel.getByText("等待登录", { exact: true }).waitFor();
-  assert.equal(await panel.getByText("已连接", { exact: true }).count(), 0);
-  tail = { ...tail, auth_url: "", backend: "NeedsMachineAuth" }; await refresh(); await panel.getByText("等待管理员批准", { exact: true }).waitFor();
+  tail.return_id = "fixture-return"; await panel.getByText("Waiting for sign-in", { exact: true }).waitFor();
+  assert.equal(await panel.getByText("Connected", { exact: true }).count(), 0);
+  tail = { ...tail, auth_url: "", backend: "NeedsMachineAuth" }; await refresh(); await panel.getByText("Waiting for administrator approval", { exact: true }).waitFor();
   assert.equal(await panel.getByRole("button", { name: "Sign in again", exact: true }).count(), 0);
   checks.push("disconnect cancellation preserves network; confirmation clears device controls; delayed auth URL opens automatically; approval is distinct from login");
   tail = { ...connected, peers: [], forwards: [] }; await refresh(); await panel.getByText("The private network is connected, but no other devices were found", { exact: true }).waitFor();
@@ -113,7 +113,7 @@ try {
   assert.ok(await panel.evaluate(node => node.scrollWidth <= node.clientWidth + 1));
   await page.setViewportSize({ width: 520, height: 700 });
   await open.click();
-  await panel.getByRole("button", { name: "展开侧栏" }).waitFor();
+  await panel.getByRole("button", { name: "Expand sidebar" }).waitFor();
   await panel.locator(".tailscale-peer").first().getByRole("button", { name: "Use device", exact: true }).click();
   await page.screenshot({ animations: "disabled", path: fileURLToPath(new URL("narrow.png", output)) });
   assert.ok(await panel.evaluate(node => node.scrollWidth <= node.clientWidth + 1));

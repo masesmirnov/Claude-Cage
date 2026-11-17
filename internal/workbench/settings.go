@@ -78,7 +78,7 @@ func (s *Server) prepareEnvironment() error {
 	// Project files remain at their original path; only transfers use this root.
 	if path != cage.DefaultEnvironmentDir(s.profile) {
 		if info, e := os.Stat(path); e == nil && !info.IsDir() {
-			return errors.New("环境目录被文件占用，请保留原数据并恢复目录后重试")
+			return errors.New("The environment folder is taken by a file; keep the original data, restore the folder and try again")
 		} else if e != nil && !os.IsNotExist(e) {
 			return e
 		}

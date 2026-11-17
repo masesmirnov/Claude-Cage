@@ -430,10 +430,10 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
             switch body["kind"] as? String {
             case "source": path = "commits/main"
             case "releases": path = "releases"
-            default: replyHandler(nil,"未知的项目页面"); return
+            default: replyHandler(nil,"Unknown project page"); return
             }
             let opened = NSWorkspace.shared.open(URL(string: "https://github.com/Lee-xeo/Claude-Cage/" + path)!)
-            replyHandler(opened ? true : nil, opened ? nil : "无法打开项目页面，请检查默认浏览器")
+            replyHandler(opened ? true : nil, opened ? nil : "Could not open the project page. Check the default browser")
         case "appUpdate":
             guard let operation = body["operation"] as? String, ["status", "check", "install", "cancel"].contains(operation) else { replyHandler(nil,"Invalid update operation"); return }
             replyHandler(appUpdater.handle(operation),nil)
@@ -586,12 +586,12 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                 } catch { replyHandler(nil, "Could not read the theme file. Check the file permissions.") }
             }
         case "saveRecoveryKey":
-            guard !nativeFilePanelOpen else { replyHandler(nil, "请先完成当前文件窗口"); return }
+            guard !nativeFilePanelOpen else { replyHandler(nil, "Finish the current file window first"); return }
             guard let key = body["key"] as? String, key.utf8.count == 71,
                   key.range(of: "^[A-F0-9]{8}(-[A-F0-9]{8}){7}$", options: .regularExpression) != nil,
-                  let data = (key + "\n").data(using: .utf8) else { replyHandler(nil, "恢复密钥格式无效"); return }
+                  let data = (key + "\n").data(using: .utf8) else { replyHandler(nil, "Invalid recovery key format"); return }
             let panel = NSSavePanel(); panel.allowedContentTypes = [.plainText]; panel.canCreateDirectories = true
-            panel.nameFieldStringValue = "账户恢复密钥.txt"; panel.prompt = "保存"; panel.title = "保存账户恢复密钥"
+            panel.nameFieldStringValue = "Account recovery key.txt"; panel.prompt = "Save"; panel.title = "Save the account recovery key"
             nativeFilePanelOpen = true
             panel.beginSheetModal(for: window) { response in
                 self.nativeFilePanelOpen = false
@@ -600,7 +600,7 @@ final class CageApp: NSObject, NSApplicationDelegate, NSWindowDelegate, WKNaviga
                     try data.write(to: url, options: .atomic)
                     try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
                     replyHandler(true, nil)
-                } catch { replyHandler(nil, "恢复密钥未能保存，请检查保存位置的权限") }
+                } catch { replyHandler(nil, "The recovery key could not be saved. Check the permissions of the save location") }
             }
         case "exportTheme":
             guard let text = body["text"] as? String, let data = text.data(using: .utf8), data.count <= 256 * 1024,

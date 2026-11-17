@@ -47,7 +47,7 @@ for (const scenario of ["permission-read", "start-failure", "open-failure"]) {
       if (evidence) await page.screenshot({ path: `${evidence}/permission-read-failure.png`, fullPage: true });
       failRead = false;
       await page.getByRole("button", { name: "Check status again", exact: true }).click();
-      const confirmSharing = page.getByRole("button", { name: "已开启，重新检查", exact: true });
+      const confirmSharing = page.getByRole("button", { name: "Turned on, check again", exact: true });
       await confirmSharing.waitFor();
       assert.equal(finishes, 0, "permission recovery bypassed screen-sharing confirmation");
       await confirmSharing.click();

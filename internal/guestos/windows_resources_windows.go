@@ -23,7 +23,7 @@ func windowsVMResources(ctx context.Context, root string, memoryGiB, cpus int) (
 		return WindowsVMResourceState{}, errors.New("This configuration is not bound to a Windows guest yet.")
 	}
 	if binding.Remote() {
-		return WindowsVMResourceState{}, errors.New("云端 Windows 的 CPU 和内存由云平台管理")
+		return WindowsVMResourceState{}, errors.New("The CPU and memory of a cloud Windows machine are managed by the cloud platform")
 	}
 	var result WindowsVMResourceState
 	if err := windowsHostManagerCall(ctx, binding.VMID, "resources", memoryGiB, cpus, &result); err != nil {

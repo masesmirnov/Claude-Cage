@@ -167,7 +167,7 @@ func (s *Server) attach() error {
 			s.ready = false
 			s.mu.Unlock()
 			if !state.MountsReady {
-				failure := &projectShareError{Recovery: "environment-restart", Message: "容器文件共享需要重新连接，请保存工作后完整停止并重新启动环境；文件和登录状态会保留。"}
+				failure := &projectShareError{Recovery: "environment-restart", Message: "The container file share needs to reconnect; save your work, stop the environment completely and start it again. Files and sign-in state are kept."}
 				_ = s.closeProxyGate(failure.Message)
 				return failure
 			}
@@ -376,7 +376,7 @@ func (s *Server) startEnvironment(syncTimezone bool) error {
 			s.mu.Lock()
 			s.ready = false
 			s.mu.Unlock()
-			failure := &projectShareError{Recovery: "environment-restart", Message: "容器文件共享需要重新连接，请保存工作后完整停止并重新启动环境；文件和登录状态会保留。"}
+			failure := &projectShareError{Recovery: "environment-restart", Message: "The container file share needs to reconnect; save your work, stop the environment completely and start it again. Files and sign-in state are kept."}
 			_ = s.closeProxyGate(failure.Message)
 			return failure
 		}

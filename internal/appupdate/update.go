@@ -111,7 +111,7 @@ func Run(configPath string, args []string, output io.Writer) int {
 		return 0
 	}
 	if runtime.GOOS == "linux" {
-		return fail(errors.New("Linux 版本使用系统安装包更新，请从发布页面下载新版 .deb"))
+		return fail(errors.New("The Linux version is updated with the system package; download the new .deb from the releases page"))
 	}
 	digest, err := releaseDigest(metadata, client, *c)
 	if err != nil {
@@ -132,7 +132,7 @@ func Run(configPath string, args []string, output io.Writer) int {
 		return fail(errors.New("Could not create the update download task."))
 	}
 	if st, e := os.Lstat(job); e != nil || !st.IsDir() || st.Mode()&os.ModeSymlink != 0 {
-		return fail(errors.New("更新下载任务必须是私有普通目录"))
+		return fail(errors.New("The update download job must be a private regular folder"))
 	}
 	localName := "Cage.dmg"
 	if runtime.GOOS == "windows" {
@@ -142,10 +142,10 @@ func Run(configPath string, args []string, output io.Writer) int {
 	state.Phase, state.Message, state.TotalBytes = "downloading", "Downloading update", c.Archive.Size
 	emit()
 	err = download(ctx, client, c.Archive, digest, archive, func(n int64) {
-		state.ReceivedBytes, state.Message = n, "正在下载更新"
+		state.ReceivedBytes, state.Message = n, "Downloading the update"
 		emit()
 	}, func() {
-		state.Message = "连接中断，正在从已下载的位置继续"
+		state.Message = "Connection interrupted, resuming from the downloaded position"
 		emit()
 	})
 	if err != nil {
@@ -159,15 +159,15 @@ func Run(configPath string, args []string, output io.Writer) int {
 func managedClient(ctx context.Context, configPath string) (*http.Client, error) {
 	cfg, err := cage.Load(configPath)
 	if err != nil {
-		return nil, errors.New("Cage 所选代理尚未配置")
+		return nil, errors.New("Cage's selected proxy is not configured yet")
 	}
 	profile := filepath.Dir(configPath)
 	p, err := managedproxy.Applied(profile, cfg.ProxyURL, cfg.ProxyRevision)
 	if err != nil {
-		return nil, &proxyUnavailableError{"Cage 所选代理尚未应用"}
+		return nil, &proxyUnavailableError{"Cage's selected proxy is not applied yet"}
 	}
 	if !managedproxy.Running(ctx, profile, p) {
-		return nil, &proxyUnavailableError{"Cage 所选代理未运行"}
+		return nil, &proxyUnavailableError{"Cage's selected proxy is not running"}
 	}
 	egress, err := cage.NewEgress(cfg)
 	if err != nil {
@@ -238,20 +238,20 @@ func requestFrom(ctx context.Context, client *http.Client, raw string, offset in
 		if errors.As(err, &unavailable) {
 			return nil, &transientError{unavailable}
 		}
-		return nil, &transientError{usererror.Wrap("连接应用更新源", errors.Join(ctx.Err(), err), "请检查主机网络与系统代理；主机连接失败时还会尝试 Cage 所选代理。恢复网络后可重新检测更新。")}
+		return nil, &transientError{usererror.Wrap("Connect to the app update source", errors.Join(ctx.Err(), err), "Check the host network and system proxy; when the host connection fails, Cage's selected proxy is also tried. You can check for updates again once the network is back.")}
 	}
 	if resp.StatusCode != http.StatusOK && !(offset > 0 && resp.StatusCode == http.StatusPartialContent) {
 		resp.Body.Close()
 		switch resp.StatusCode {
 		case 404:
 			if strings.Contains(u.Path, "/compare/") {
-				return nil, errors.New("当前构建提交未被源码仓库收录，无法核对提交关系")
+				return nil, errors.New("The current build commit is not in the source repository, so the commit relationship cannot be checked")
 			}
 			return nil, errors.New("The update source could not find the requested version or installer (HTTP 404). Check for updates later; to install manually, find the file for your platform on the Cage releases page.")
 		case 403, 429:
 			return nil, updateSourceError(resp, time.Now())
 		default:
-			err := fmt.Errorf("更新源返回 HTTP %d，请稍后重试", resp.StatusCode)
+			err := fmt.Errorf("The update source returned HTTP %d, please try again later", resp.StatusCode)
 			if resp.StatusCode >= 500 {
 				return nil, &transientError{err}
 			}
@@ -313,7 +313,7 @@ func releaseDigest(ctx context.Context, client *http.Client, c candidate) (strin
 // and SHA-256 match is moved to path.
 func download(ctx context.Context, client *http.Client, a asset, digest, path string, progress func(int64), retrying func()) error {
 	if a.Size <= 0 || a.Size > maxArchive {
-		return errors.New("发行包大小无效或超过 2 GiB")
+		return errors.New("The release size is invalid or larger than 2 GiB")
 	}
 	if _, err := catalog.DigestValue("sha256:" + digest); err != nil {
 		return err
@@ -328,7 +328,7 @@ func download(ctx context.Context, client *http.Client, a asset, digest, path st
 		}
 	}
 	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
-		return errors.New("上一次下载的安装包仍在使用，请稍后重试")
+		return errors.New("The previously downloaded installer is still in use, please try again later")
 	}
 	hash := sha256.New()
 	var f *os.File
@@ -345,7 +345,7 @@ func download(ctx context.Context, client *http.Client, a asset, digest, path st
 		_ = os.Remove(partial)
 		var err error
 		if f, err = os.OpenFile(partial, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0600); err != nil {
-			return errors.New("无法创建私有更新文件")
+			return errors.New("Cannot create a private update file")
 		}
 		offset = 0
 		hash.Reset()
@@ -382,7 +382,7 @@ func download(ctx context.Context, client *http.Client, a asset, digest, path st
 			retrying()
 			select {
 			case <-ctx.Done():
-				return errors.New("更新下载已取消")
+				return errors.New("The update download was canceled")
 			case <-time.After(downloadBackoff):
 			}
 		}
@@ -396,13 +396,13 @@ func download(ctx context.Context, client *http.Client, a asset, digest, path st
 			if resp.StatusCode == http.StatusPartialContent {
 				expected = a.Size - offset
 				if !strings.HasPrefix(resp.Header.Get("Content-Range"), fmt.Sprintf("bytes %d-", offset)) {
-					err = errors.New("更新源返回了错误的续传位置")
+					err = errors.New("The update source returned a wrong resume position")
 				}
 			} else if offset > 0 {
 				err = restart()
 			}
 			if err == nil && resp.ContentLength > 0 && resp.ContentLength != expected {
-				err = errors.New("发行包大小与发布信息不一致")
+				err = errors.New("The release size does not match the release information")
 			}
 			if err != nil {
 				resp.Body.Close()
@@ -420,25 +420,25 @@ func download(ctx context.Context, client *http.Client, a asset, digest, path st
 			resp.Body.Close()
 			offset += n
 			if err != nil || offset < a.Size {
-				err = &transientError{errors.New("发行包下载中断或实际大小不匹配")}
+				err = &transientError{errors.New("The release download was interrupted or its actual size does not match")}
 			}
 		}
 		stalled := attemptCtx.Err() != nil
 		watchdog.Stop()
 		cancel()
 		if ctx.Err() != nil {
-			return errors.New("更新下载已取消")
+			return errors.New("The update download was canceled")
 		}
 		if offset > a.Size {
 			discard = true
-			return errors.New("发行包下载中断或实际大小不匹配")
+			return errors.New("The release download was interrupted or its actual size does not match")
 		}
 		var transient *transientError
 		if err != nil && !stalled && !errors.As(err, &transient) {
 			return err
 		}
 		if stalled && err != nil {
-			err = errors.New("更新下载长时间没有收到数据，已保留已下载的部分，可稍后继续")
+			err = errors.New("The update download received no data for a long time; the downloaded part was kept and you can continue later")
 		}
 		last = err
 	}

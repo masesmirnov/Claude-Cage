@@ -12,7 +12,7 @@ const steps = [
   { id: "screen", label: "Screen recording", hint: "Turn on the screen recording switch for Cage Guest Window. If prompted to quit and reopen, follow the prompt." },
   { id: "input", label: "Accessibility", hint: "Turn on the accessibility switch for Cage Guest Window so Cage can control guest windows." },
   { id: "projects", label: "File system extension", hint: "Turn on both the macFUSE and macFUSE (local) switches so the guest can access the projects you choose." },
-  { id: "sharing", label: "屏幕共享", hint: "在「系统设置 → 通用 → 共享」中打开「屏幕共享」，并允许当前普通客机用户访问。确认开关已打开后，点击「已开启，重新检查」。Cage 会尝试连接客机的屏幕共享服务。" },
+  { id: "sharing", label: "Screen Sharing", hint: "In \"System Settings → General → Sharing\", turn on \"Screen Sharing\" and allow the current regular guest user. After confirming the switch is on, click \"Turned on, check again\". Cage tries to connect to the guest's Screen Sharing service." },
 ];
 
 export function MacOSFirstSetup() {
@@ -142,29 +142,29 @@ export function MacOSFirstSetup() {
   const pending = steps.find(({ id }) => !permissions[id]);
   const selected = steps.find(({ id }) => id === permissionPage);
   const projectInstallation = permissionPage === "projects" && permissions.project_install_required;
-  const selectedHint = projectInstallation ? "先在客机中完成 macFUSE 官方安装器的安装与管理员授权。安装完成后，Cage 会打开文件系统扩展设置，再开启两个开关。" : selected.hint;
+  const selectedHint = projectInstallation ? "First finish installing the official macFUSE installer in the guest and authorize it as administrator. After installation, Cage opens the file system extension settings; then turn on both switches." : selected.hint;
   const running = Boolean(state?.job?.running);
   const canOperate = Boolean(state?.vm_running && !running && !busy);
   const canFinish = Boolean(state?.ready && !account.macos_password_pending && !pending && !readError);
   const progress = !state ? "Reading the installation progress…" : running ? state.job.message || "Starting and configuring the virtual Mac…" :
     account.macos_password_pending ? "The guest password has not synced yet. Retry the sync, then continue authorization." : !state.vm_running ? "The virtual Mac is not started; you can continue from the existing disk." :
     !state.ready ? "The virtual Mac has started and is waiting for the guest connection. If it is stuck at the sign-in screen, open the guest view and finish signing in." :
-    desktopWaiting ? "虚拟 Mac 正在完成首次登录并启动桌面，通常需要 1–3 分钟。桌面就绪后会自动打开第一项授权。" :
+    desktopWaiting ? "The virtual Mac is finishing its first sign-in and starting the desktop, which usually takes 1–3 minutes. When the desktop is ready, the first authorization opens automatically." :
     readError ? "The permission status cannot be confirmed right now; the results shown are for reference. Checking continues once the connection is back." :
     pending ? `Confirm "${pending.label}" now. Cage checks automatically and continues when you are done.` :
-    completionFailed ? "四项权限已验证，最后的设置收尾未完成。请重试完成设置。" : "四项权限已验证，正在保存设置；随后继续工作区授权和联网检查。";
+    completionFailed ? "The four permissions are verified, but the final setup wrap-up did not finish. Retry to finish setup." : "The four permissions are verified and the settings are being saved; workspace authorization and the network checks continue next.";
   const sharingControls = <>
-    <button type="button" disabled={!canOperate} onClick={() => act("sharing")}>{busy ? "正在处理…" : "打开屏幕共享设置"}</button>
-    <button type="button" className="primary" disabled={!canOperate} onClick={() => act("confirm-sharing")}>{busy ? "正在检查…" : "已开启，重新检查"}</button>
+    <button type="button" disabled={!canOperate} onClick={() => act("sharing")}>{busy ? "Processing…" : "Open Screen Sharing settings"}</button>
+    <button type="button" className="primary" disabled={!canOperate} onClick={() => act("confirm-sharing")}>{busy ? "Checking…" : "Turned on, check again"}</button>
   </>;
   const controls = pending?.id === "sharing" ? sharingControls : <button type="button" className="primary" disabled={!canOperate} onClick={() => act(pending?.id || permissionPage)}>
-    {busy ? "正在处理…" : projectInstallation ? "打开 macFUSE 安装器" : `打开${pending?.label || selected.label}`}
+    {busy ? "Processing…" : projectInstallation ? "Open macFUSE installer" : `Open ${pending?.label || selected.label}`}
   </button>;
   const failure = error || readError || (!running && state?.job?.error) || (!state?.ready && state?.environment_update_error);
 
   return <main className="initialization"><section className="initialization-content mac-setup-content">
     <div className="initialization-title"><p className="mac-setup-eyebrow">Install and check · macOS permissions</p><h1>Finish the virtual Mac's system authorizations</h1>
-      <p>安装文件和客机磁盘已保留。下面四项授权在虚拟 Mac 内完成，每项验证通过后会自动继续。屏幕共享会检查服务是否启用且真正可连接。</p></div>
+      <p>The install files and guest disk are kept. The four authorizations below are done inside the virtual Mac, and each continues automatically once verified. Screen Sharing checks that the service is enabled and actually reachable.</p></div>
     <ol className="mac-setup-checklist" aria-label="System authorization progress">
       {steps.map(({ id, label }, index) => <li key={id} data-complete={Boolean(permissions[id])} aria-current={pending?.id === id ? "step" : undefined}>
         <span className="mac-setup-marker">{permissions[id] ? <Check size={16} aria-hidden="true" /> : index + 1}</span>
@@ -186,14 +186,14 @@ export function MacOSFirstSetup() {
       </div>
       {running && <button disabled={busy} onClick={() => act("stop")}>Stop the current operation and keep progress</button>}
       {state?.vm_running && <MacOSLogin initialSetup autoOpen={Boolean(permissions.managed_credential)} managedCredential={permissions.managed_credential} disabled={!canOperate}
-        label="打开客机画面" setupActions={controls} setupHint={`${selectedHint} 系统要求管理员时，用户名填 cagesetup；选中密码框后可点击「填写授权密码」。`}
+        label="Open guest view" setupActions={controls} setupHint={`${selectedHint} When the system asks for an administrator, enter cagesetup as the user name; after selecting the password field you can click "Fill in authorization password".`}
         setupStatus={failure || progress} setupError={Boolean(failure)} />}
     </section>
     {failure && <section className="initialization-notice" role="alert"><h2>This step is not completed</h2><p>{failure}</p><p>The installation progress so far is kept. You can reopen the current setup page, or check the status again and continue.</p></section>}
     <details className="mac-setup-help"><summary>Help with the administrator password and finding the settings page</summary>
       <p>When the system asks for an administrator, enter <strong>cagesetup</strong> as the username, {account.macos_password_pending ? "and the original guest password may still be needed until the password sync finishes." : account.macos_credentials_ready ? "and the password is the same as your Cage account." : "select the password field in the guest view, then click \"Fill in authorization password\"."} Continue after you confirm the authorization; this temporary administrator is disabled at the end of setup.</p>
       <p>Manual entry for the file system extension: in the guest, System Settings → General → Login Items &amp; Extensions → By Category → File System Extensions, then turn on both macFUSE and macFUSE (local).</p>
-      <p>屏幕共享的手动入口：客机「系统设置 → 通用 → 共享」，打开「屏幕共享」并允许当前普通客机用户。</p>
+      <p>Manual entry for Screen Sharing: in the guest's "System Settings → General → Sharing", turn on "Screen Sharing" and allow the current regular guest user.</p>
       <div className="initialization-recovery">{steps.map(({ id, label }) => <button key={id} disabled={!canOperate} onClick={() => act(id)}>Reopen {label} settings</button>)}</div>
     </details>
     <p className="mac-setup-retention">After the system authorizations, Cage also confirms the shared workspace and network isolation. Once all checks pass you can enter the workbench.</p>

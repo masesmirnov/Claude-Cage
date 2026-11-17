@@ -20,7 +20,7 @@ export function failure(code, message) {
 export async function windowRequest(address, action, fields = {}, signal) {
   const info = await lstat(address);
   if (!info.isSocket() || info.uid !== process.getuid() || (info.mode & 0o077))
-    throw failure("browser_unavailable", "请检查客机窗口服务");
+    throw failure("browser_unavailable", "Check the guest window service");
   const socket = net.createConnection({ path: address, signal });
   try {
     socket.setTimeout(48000, () => socket.destroy(new Error("Window service timeout")));
@@ -35,15 +35,15 @@ export async function windowRequest(address, action, fields = {}, signal) {
       if (reply.error || (action === "status" && reply.surface !== "browser") || (action !== "status" && reply.ok !== true)) break;
       return reply;
     }
-    throw failure("browser_unavailable", "请更新客机窗口组件并检查 Chrome");
+    throw failure("browser_unavailable", "Update the guest window components and check Chrome");
   } finally { socket.destroy(); }
 }
 
 function webURL(value) {
-  if (typeof value !== "string" || value.length > 8192) throw failure("invalid_url", "浏览器地址无效");
+  if (typeof value !== "string" || value.length > 8192) throw failure("invalid_url", "The browser address is invalid");
   const url = new URL(value);
   if (!["http:", "https:"].includes(url.protocol) || url.username || url.password)
-    throw failure("invalid_url", "请输入 HTTP 或 HTTPS 地址");
+    throw failure("invalid_url", "Enter an HTTP or HTTPS address");
   return url;
 }
 
@@ -85,7 +85,7 @@ export async function browserCallback(hostname, receive) {
 
 export async function auditBrowser(input, launch) {
   if (typeof input.timezone !== "string" || input.timezone.length > 128)
-    throw failure("invalid_input", "诊断时区无效");
+    throw failure("invalid_input", "The diagnostic time zone is invalid");
   const zone = input.timezone;
   new Intl.DateTimeFormat("en", { timeZone: zone });
   const callback = await browserCallback("127.0.0.1", (url, res) => {
@@ -93,7 +93,7 @@ export async function auditBrowser(input, launch) {
     if (!observation || ["language", "timezone", "expected_timezone", "platform"].some(k => typeof observation[k] !== "string" || !observation[k] || observation[k].length > 128) ||
         (input.network && !Number.isInteger(observation.network?.status))) throw Error("Missing browser observation");
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.end('<!doctype html><meta charset="utf-8"><title>浏览器检测完成</title><p>检测完成，可以关闭此标签页。</p><script>window.close()</script>');
+    res.end('<!doctype html><meta charset="utf-8"><title>Browser check finished</title><p>The check is finished; you can close this tab.</p><script>window.close()</script>');
     return observation;
   });
   let localPage;
@@ -120,12 +120,12 @@ const run = promisify(execFile);
 // language and timezone. It does not claim to sample a new page.
 export async function browserSettingsInputs(info, profile) {
   if (!Number.isSafeInteger(info.profile_pid) || info.profile_pid <= 0 || !Number.isSafeInteger(info.profile_started) || info.profile_started <= 0)
-    throw failure("browser_recheck_needed", "请打开 Chrome 并重新检测");
+    throw failure("browser_recheck_needed", "Open Chrome and check again");
   const local = JSON.parse(await readFile(path.join(profile, "Local State"), "utf8"));
   const current = local.profile?.last_used || "Default";
   const active = local.profile?.last_active_profiles ?? [current];
   if (!Array.isArray(active) || active.length > 1 || (active.length && active[0] !== current) ||
-      !/^(?:Default|Profile [0-9]+)$/.test(current)) throw failure("browser_recheck_needed", "请在单个 Chrome 资料中完成检测");
+      !/^(?:Default|Profile [0-9]+)$/.test(current)) throw failure("browser_recheck_needed", "Finish the check in a single Chrome profile");
   const prefs = JSON.parse(await readFile(path.join(profile, current, "Preferences"), "utf8"));
   const [zone, languages, locale] = await Promise.all([
     realpath("/etc/localtime"),
@@ -142,11 +142,11 @@ export function nativeBrowserDispatch({ window, editor, tailnet, settingsInputs,
   const capabilities = { nativeWindow: true, login: true, editor: true };
   async function status(signal) {
     const info = await window("status", {}, signal);
-    if (info.surface !== "browser" || !info.installed) throw failure("browser_unavailable", "请安装客机 Chrome 并更新窗口组件");
+    if (info.surface !== "browser" || !info.installed) throw failure("browser_unavailable", "Install Chrome in the guest and update the window components");
     return info;
   }
   function snapshot(info) {
-    return { active: tabID, tabs: [{ id: tabID, kind: "web", native_window: true, title: info.login ? "账号授权" : "Google Chrome", login: Boolean(info.login), url: "" }], capabilities, uploads: [], downloads: [] };
+    return { active: tabID, tabs: [{ id: tabID, kind: "web", native_window: true, title: info.login ? "Account authorization" : "Google Chrome", login: Boolean(info.login), url: "" }], capabilities, uploads: [], downloads: [] };
   }
   return async ({ method, path, input = {}, operation }, { signal } = {}) => {
     signal?.throwIfAborted();
@@ -176,10 +176,10 @@ export function nativeBrowserDispatch({ window, editor, tailnet, settingsInputs,
       if (path === "/health") return { ready: true, native: true, capabilities };
       if (path === "/tabs") return snapshot(info);
     }
-    if (method !== "POST") throw failure("invalid_input", "请使用 Chrome 窗口操作");
+    if (method !== "POST") throw failure("invalid_input", "Use the Chrome window for this");
     const launch = url => window("launch", url ? { url } : {}, signal);
     if (path === "/audit") {
-      if (info.login) throw failure("login_active", "请完成当前账号授权后重新检测");
+      if (info.login) throw failure("login_active", "Finish the current account authorization, then check again");
       if (input.device === true) return auditBrowser(input, launch);
       observed = undefined;
       let before;
@@ -198,13 +198,13 @@ export function nativeBrowserDispatch({ window, editor, tailnet, settingsInputs,
           await delay(250, undefined, { signal });
         }
       }
-      if (before && before !== key) throw failure("browser_recheck_needed", "检测期间 Chrome 设置发生变化，请重新检测");
+      if (before && before !== key) throw failure("browser_recheck_needed", "Chrome settings changed during the check; check again");
       observed = { key, zone: input.timezone, language: value.language };
       return value;
     }
     if (path === "/audit-recheck") {
       if (!observed || observed.zone !== input.timezone || observed.language.toLowerCase() !== String(input.language).toLowerCase() ||
-          await settingsInputs(info) !== observed.key) throw failure("browser_recheck_needed", "Chrome 进程或浏览器设置发生变化，请重新检测");
+          await settingsInputs(info) !== observed.key) throw failure("browser_recheck_needed", "The Chrome process or browser settings changed; check again");
       return { unchanged: true };
     }
     if (path === "/editor" || path === "/editor-restart") {
@@ -212,7 +212,7 @@ export function nativeBrowserDispatch({ window, editor, tailnet, settingsInputs,
       return { id: tabID };
     }
     if (path === "/login-open" || path === "/login-finish") {
-      if (!/^[a-f0-9-]{16,64}$/.test(input.login || "")) throw failure("invalid_input", "登录任务无效");
+      if (!/^[a-f0-9-]{16,64}$/.test(input.login || "")) throw failure("invalid_input", "Invalid sign-in task");
       if (path === "/login-finish") {
         await window("finish-login", { login: input.login }, signal);
         sequence++;
@@ -220,20 +220,20 @@ export function nativeBrowserDispatch({ window, editor, tailnet, settingsInputs,
         return { ok: true };
       }
       const url = webURL(input.url);
-      if (url.protocol !== "https:" || !officialLoginHosts.has(url.host)) throw failure("invalid_input", "仅可打开官方登录地址");
+      if (url.protocol !== "https:" || !officialLoginHosts.has(url.host)) throw failure("invalid_input", "Only official sign-in addresses can be opened");
       await window("launch", { login: input.login, url: url.href }, signal);
       focusSequence = ++sequence;
       lastEventStatus = undefined;
       return { id: tabID };
     }
     if (path === "/close") return { ok: true, closed: true };
-    if (path === "/new" && (input.incognito || input.private)) throw failure("native_window_required", "请在 Chrome 菜单选择“打开新的无痕式窗口”");
+    if (path === "/new" && (input.incognito || input.private)) throw failure("native_window_required", "Choose \"New Incognito window\" in the Chrome menu");
     if (path === "/new" || path === "/navigate" || path === "/activate") {
       const url = input.url && input.url !== "about:blank" ? webURL(input.url).href : undefined;
       await launch(url ?? (path === "/new" && !input.url ? homepage : undefined));
       return { id: tabID };
     }
     if (path === "/visibility" || path === "/resize") return { ok: true };
-    throw failure("native_window_required", "请在 Chrome 窗口中执行此操作");
+    throw failure("native_window_required", "Do this in the Chrome window");
   };
 }

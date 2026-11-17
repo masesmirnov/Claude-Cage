@@ -129,7 +129,7 @@ func (s *Server) macSetupPermissions(ctx context.Context, refreshSharing bool) (
 	s.mu.Unlock()
 	if status.ProjectInstallRequired {
 		status.Projects = false
-		status.ProjectsError = "请先在 Cage 客机画面中完成 macFUSE 官方安装器，再启用两个文件系统扩展开关。"
+		status.ProjectsError = "First finish the official macFUSE installer in the Cage guest screen, then turn on both file system extension switches."
 	}
 	if status.Screen && status.Input && !status.ProjectInstallRequired && !status.Projects && probeDue && s.op.TryLock() {
 		s.mu.Lock()
@@ -260,7 +260,7 @@ func (s *Server) macOSLoginWindow(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			if input.Action == "finish" && (!perm.Screen || !perm.Input || !perm.Sharing) {
-				http.Error(w, "请先完成窗口录制、辅助功能、文件系统扩展和屏幕共享授权", 409)
+				http.Error(w, "First finish authorizing window recording, accessibility, file system extensions and Screen Sharing", 409)
 				return
 			}
 			if !s.op.TryLock() {

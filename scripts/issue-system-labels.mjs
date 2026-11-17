@@ -6,7 +6,7 @@ const systems = [
   ['Windows', /windows|\bwin\s?1[01]\b/i],
   ['Linux', /linux|ubuntu|debian|fedora|centos|deepin/i],
 ];
-const everySystem = /全部平台|所有平台|全平台/;
+const everySystem = /all platforms|every platform/i;
 
 function detect(text) {
   if (everySystem.test(text)) return systems.map(([name]) => name);
@@ -17,7 +17,7 @@ function detect(text) {
 // written through the CLI or API reuse the same headings, so the heading decides
 // whether an answer describes the host or the guest.
 export function systemLabelsFromBody(body) {
-  const text = { 主机: '', 客机: '' };
+  const text = { host: '', guest: '' };
   let heading = '';
   for (const line of String(body || '').split(/\r?\n/)) {
     const title = line.match(/^#{1,6}\s+(.*)$/);
@@ -25,14 +25,14 @@ export function systemLabelsFromBody(body) {
       heading = title[1];
       continue;
     }
-    const host = heading.includes('主机');
-    const guest = heading.includes('客机');
+    const host = /host/i.test(heading);
+    const guest = /guest/i.test(heading);
     if (host && guest) {
-      // A shared field lists each side on its own "主机：" / "客机：" line.
-      const side = line.match(/^\s*(?:[-*]\s*)?(主机|客机)/);
-      if (side) text[side[1]] += `${line}\n`;
+      // A shared field lists each side on its own "Host:" / "Guest:" line.
+      const side = line.match(/^\s*(?:[-*]\s*)?(host|guest)/i);
+      if (side) text[side[1].toLowerCase()] += `${line}\n`;
     } else if (host || guest) {
-      text[host ? '主机' : '客机'] += `${line}\n`;
+      text[host ? 'host' : 'guest'] += `${line}\n`;
     }
   }
   return Object.entries(text).flatMap(([role, answer]) => detect(answer).map(system => `${system} ${role}`));
@@ -56,19 +56,19 @@ async function githubRequest(method, path, token, body) {
 
 export async function runIssueSystemLabels({ repository, number, token, request = githubRequest }) {
   number = String(number);
-  if (!/^[1-9]\d*$/.test(number)) throw new Error('Issue 编号必须为正整数。');
-  if (!/^[\w.-]+\/[\w.-]+$/.test(repository)) throw new Error('仓库名称无效。');
-  if (!token) throw new Error('缺少 GITHUB_TOKEN，无法添加标签。');
+  if (!/^[1-9]\d*$/.test(number)) throw new Error('The issue number must be a positive integer.');
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repository)) throw new Error('The repository name is invalid.');
+  if (!token) throw new Error('GITHUB_TOKEN is missing, so labels cannot be added.');
   const path = `/repos/${repository}/issues/${number}`;
   const issue = await request('GET', path, token);
-  if (issue.status !== 200) throw new Error(`GitHub API GET ${path} 失败（HTTP ${issue.status}）。`);
+  if (issue.status !== 200) throw new Error(`GitHub API GET ${path} failed (HTTP ${issue.status}).`);
   if (issue.data.pull_request) return { status: 'skipped', labels: [] };
   const current = new Set(issue.data.labels.map(label => typeof label === 'string' ? label : label.name));
   // Only add: labels a maintainer set or corrected by hand stay as they are.
   const labels = systemLabelsFromBody(issue.data.body).filter(label => !current.has(label));
   if (!labels.length) return { status: 'unchanged', labels };
   const added = await request('POST', `${path}/labels`, token, { labels });
-  if (added.status !== 200) throw new Error(`GitHub API POST ${path}/labels 失败（HTTP ${added.status}）。`);
+  if (added.status !== 200) throw new Error(`GitHub API POST ${path}/labels failed (HTTP ${added.status}).`);
   return { status: 'labeled', labels };
 }
 

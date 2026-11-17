@@ -52,7 +52,7 @@ func (s *Server) remoteWindowsObservation(ctx context.Context, input map[string]
 	var output bytes.Buffer
 	cmd.Stdout = &boundedWindowsStatusWriter{buffer: &output, remaining: 64 << 10}
 	if err = cmd.Run(); err != nil {
-		return observation, errors.New("Windows 云端沙箱观测未完成，外网保持关闭")
+		return observation, errors.New("Windows cloud sandbox observation did not finish; the internet stays off")
 	}
 	observation, err = decodeWindowsObservation(output.Bytes())
 	if err != nil {
@@ -60,7 +60,7 @@ func (s *Server) remoteWindowsObservation(ctx context.Context, input map[string]
 	}
 	evidence := observation.Remote
 	if evidence == nil || !evidence.TokenVerified || !strings.HasPrefix(evidence.SandboxSID, "S-1-15-2-") || !strings.HasPrefix(evidence.Session, "headless-") {
-		return observation, errors.New("Windows 云端观测未确认实际 AppContainer 身份")
+		return observation, errors.New("Windows cloud observation did not confirm the actual AppContainer identity")
 	}
 	// This command reads all four account filters, all four package filters,
 	// the exact broker permit and loopback exception; it cannot install rules.
@@ -77,7 +77,7 @@ func (s *Server) remoteWindowsObservation(ctx context.Context, input map[string]
 		UDPFilters int    `json:"udp_bind_filters"`
 	}
 	if policy.Run() != nil || json.Unmarshal(output.Bytes(), &state) != nil || state.Version != 1 || state.Package != evidence.SandboxSID || state.Broker != "127.0.0.1:17897" || !state.Filter || !state.Loopback || state.UDPFilters != 2 {
-		return observation, errors.New("Windows 云端 WFP 策略与当前沙箱不匹配，外网保持关闭")
+		return observation, errors.New("The Windows cloud WFP policy does not match the current sandbox; the internet stays off")
 	}
 	evidence.PolicyVerified = true
 	return observation, nil
@@ -120,16 +120,16 @@ func (s *Server) remoteWindowsBoundary(ctx context.Context, cfg cage.Config, cli
 	port, _ := strconv.Atoi(control.Port())
 	_, proxyPort := guestProxyEndpoint(cfg, "127.0.0.1")
 	if proxyPort < 1 || proxyPort > 65535 {
-		return observation, state, errors.New("无法确定当前代理端口，外网保持关闭")
+		return observation, state, errors.New("Cannot determine the current proxy port; the internet stays off")
 	}
-	s.setMessage("正在读取云端 AppContainer、WFP 与实际目录权限…")
+	s.setMessage("Reading the cloud AppContainer, WFP and actual folder permissions…")
 	observation, err = s.remoteWindowsObservation(ctx, map[string]any{"stage": "boundary", "nonce": nonce, "private_file": private.Name(), "control_port": port, "proxy_port": proxyPort})
 	if err != nil {
 		return observation, state, err
 	}
 	e := observation.Remote
 	if e.Nonce != nonce {
-		return observation, state, errors.New("Windows 云端观测不属于本次检测")
+		return observation, state, errors.New("The Windows cloud observation does not belong to this check")
 	}
 	state, err = client.Status(ctx)
 	if err != nil {
@@ -145,10 +145,10 @@ func (s *Server) remoteWindowsBoundary(ctx context.Context, cfg cage.Config, cli
 	}
 	settings := windowsGuestSettingsMatch(observation, cfg)
 	result("guest_settings", settings,
-		fmt.Sprintf("实际沙箱进程：时区=%s、语言=%s；Windows 系统：时区=%s、语言=%s；已保存期望=%s/%s", observation.TZ, observation.ProcessLocale, observation.SystemTimezone, observation.SystemLocale, cfg.Timezone, cfg.Locale),
-		"云端系统/终端配置尚未与已保存设置一致；浏览器配置不能替代系统观测")
+		fmt.Sprintf("Actual sandbox process: time zone=%s, language=%s; Windows system: time zone=%s, language=%s; saved expectation=%s/%s", observation.TZ, observation.ProcessLocale, observation.SystemTimezone, observation.SystemLocale, cfg.Timezone, cfg.Locale),
+		"The cloud system/terminal configuration does not match the saved settings yet; browser configuration cannot replace system observation")
 	result("egress_policy", state.PolicyVerified && state.Configuration == cfg.Fingerprint() && remoteWindowsDenied(e, "public"),
-		fmt.Sprintf("实际无网络 capability 的 AppContainer；WFP 账户与 package 规则和唯一受控代理 permit 已读回；公网 TCP 返回 Winsock %d", e.TCP["public"]), "恢复当前安装的 WFP 策略后重检")
+		fmt.Sprintf("The actual AppContainer has no network capability; the WFP account and package rules and the only controlled proxy permit were read back; public TCP returned Winsock %d", e.TCP["public"]), "Restore the WFP policy of the current installation and check again")
 	// Older probes always tested 17896 and did not return the port.
 	testedPort := e.ProxyPort
 	if testedPort == 0 {
@@ -156,23 +156,23 @@ func (s *Server) remoteWindowsBoundary(ctx context.Context, cfg cage.Config, cli
 	}
 	requiresSession := s.managementRequiresSession(ctx)
 	result("management_boundary", testedPort == proxyPort && requiresSession && remoteWindowsDenied(e, "management", "upstream", "metadata", "loopback6", "metadata6"),
-		fmt.Sprintf("直连错误码：控制器=%d、上游代理=%d（检测端口 %d，当前端口 %d）、元数据=%d、IPv6 回环=%d、IPv6 元数据=%d；管理接口拒绝匿名访问=%t", e.TCP["management"], e.TCP["upstream"], testedPort, proxyPort, e.TCP["metadata"], e.TCP["loopback6"], e.TCP["metadata6"], requiresSession), "检查云端管理接口与 package 的 WFP 隔离")
+		fmt.Sprintf("Direct connection error codes: controller=%d, upstream proxy=%d (checked port %d, current port %d), metadata=%d, IPv6 loopback=%d, IPv6 metadata=%d; management interface rejects anonymous access=%t", e.TCP["management"], e.TCP["upstream"], testedPort, proxyPort, e.TCP["metadata"], e.TCP["loopback6"], e.TCP["metadata6"], requiresSession), "Check the WFP isolation of the cloud management interface and the package")
 	result("udp_policy", e.PolicyVerified && e.UDP4 != nil && *e.UDP4 == 10013 && e.UDP6 != nil && *e.UDP6 == 10013,
-		fmt.Sprintf("沙箱 UDP/IPv4 错误码=%v、UDP/IPv6 错误码=%v；只将 Winsock 10013 作为拒绝证据，不使用无响应推断", codeValue(e.UDP4), codeValue(e.UDP6)), "恢复 package IPv4/IPv6 的 WFP 拒绝规则")
+		fmt.Sprintf("Sandbox UDP/IPv4 error code=%v, UDP/IPv6 error code=%v; only Winsock 10013 is taken as rejection evidence, with no inference from missing responses", codeValue(e.UDP4), codeValue(e.UDP6)), "Restore the package IPv4/IPv6 WFP reject rules")
 	result("ipv6_policy", remoteWindowsDenied(e, "ipv6", "loopback6", "metadata6") && e.UDP6 != nil && *e.UDP6 == 10013,
-		fmt.Sprintf("沙箱 IPv6 公网/回环/元数据 TCP 错误码=%d/%d/%d，UDP=%v；已核对 WFP connect/receive v6 规则", e.TCP["ipv6"], e.TCP["loopback6"], e.TCP["metadata6"], codeValue(e.UDP6)), "恢复 package IPv6 的 WFP 拒绝规则")
+		fmt.Sprintf("Sandbox IPv6 public/loopback/metadata TCP error codes=%d/%d/%d, UDP=%v; the WFP connect/receive v6 rules were checked", e.TCP["ipv6"], e.TCP["loopback6"], e.TCP["metadata6"], codeValue(e.UDP6)), "Restore the package IPv6 WFP reject rules")
 	projects, projectErr := s.projectPaths()
 	s.mu.Lock()
 	noShares := len(s.projectShares) == 0
 	s.mu.Unlock()
 	result("filesystem_boundary", projectErr == nil && len(projects) == 0 && noShares && e.PrivateRead != nil && *e.PrivateRead == 5 && e.HomeRoundtrip,
-		fmt.Sprintf("沙箱 home 读写往返=%t；实际存在的控制器私有文件读取错误码=%v；外部项目数=%d，未建立共享=%t", e.HomeRoundtrip, codeValue(e.PrivateRead), len(projects), noShares), "当前只支持沙箱 home；外部项目必须完成独立授权接线")
+		fmt.Sprintf("Sandbox home read/write round trip=%t; read error code of the controller private files that actually exist=%v; external projects=%d, no share set up=%t", e.HomeRoundtrip, codeValue(e.PrivateRead), len(projects), noShares), "Only the sandbox home is supported for now; external projects need separate authorization wiring")
 	return observation, state, nil
 }
 
 func codeValue(code *int) any {
 	if code == nil {
-		return "未返回"
+		return "not returned"
 	}
 	return *code
 }

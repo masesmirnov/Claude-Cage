@@ -83,17 +83,17 @@ func (s *Server) windowsStatus(ctx context.Context) (windowsGuestState, error) {
 		report, err := guestos.InspectHyperV(ctx, binding.VMID)
 		state.Running = err == nil && report.VM != nil && report.VM.State == "Running"
 		if err != nil || report.Lookup != "found" || report.VM == nil {
-			return state, errors.New("无法核验已绑定的 Windows 客机")
+			return state, errors.New("Cannot verify the bound Windows guest")
 		}
 		vm := report.VM
 		if vm.Generation != 2 || !vm.SecureBoot || vm.SecureBootTemplate != "MicrosoftWindows" || !vm.VirtualTPM {
-			return state, errors.New("Windows 客机安全启动与虚拟 TPM 尚未就绪")
+			return state, errors.New("Secure Boot and the virtual TPM of the Windows guest are not ready yet")
 		}
 		if vm.NetworkAdapterCount != 0 {
-			return state, errors.New("Windows 客机受控网络出口尚未就绪，请使用已隔离的离线客机")
+			return state, errors.New("The controlled network exit of the Windows guest is not ready yet; use the isolated offline guest")
 		}
 		if !state.Running {
-			return state, errors.New("Windows 客机尚未启动")
+			return state, errors.New("The Windows guest has not started yet")
 		}
 	}
 	operation := "status"
@@ -109,7 +109,7 @@ func (s *Server) windowsStatus(ctx context.Context) (windowsGuestState, error) {
 	cmd.Stderr = io.Discard
 	if err = cmd.Run(); err != nil {
 		if binding.Remote() {
-			return state, errors.New("Windows 云端后台终端未连接，请检查普通账户后台服务")
+			return state, errors.New("The Windows cloud background terminal is not connected; check the regular account background service")
 		}
 		return state, errWindowsAgentPending
 	}
@@ -127,7 +127,7 @@ func (s *Server) windowsStatus(ctx context.Context) (windowsGuestState, error) {
 		if state.Execution != "appcontainer-headless" || state.ProcessSession != 0 ||
 			!strings.HasPrefix(state.SandboxSID, "S-1-15-2-") || !filepath.IsAbs(state.Home) ||
 			!strings.HasPrefix(state.Session, "headless-") {
-			return state, errors.New("Windows 云端沙箱身份不匹配")
+			return state, errors.New("The Windows cloud sandbox identity does not match")
 		}
 		state.Running = true
 	}
@@ -320,7 +320,7 @@ func (s *Server) stopWindowsGuest() error {
 	s.closeProjectShares()
 	if s.windowsGuest.Remote() {
 		// The remote broker outlives this controller. Revoke its grant on detach.
-		err := s.revokeNetworkNow("正在停止 Windows 云端环境", false)
+		err := s.revokeNetworkNow("Stopping the Windows cloud environment", false)
 		s.mu.Lock()
 		s.windowsState = windowsGuestState{}
 		s.mu.Unlock()

@@ -221,7 +221,7 @@ func TestClaudeDuplicateLoginRecoversOriginalManagedProfile(t *testing.T) {
 			ctx := context.Background()
 			id, guest := strings.Repeat("a", 24), strings.Repeat("b", 24)
 			reading := claudeGuestSnapshot{LoggedIn: true, Email: "same@example.org", Organization: "work", Plan: "pro"}
-			list := claudeAccountList{Accounts: []claudeAccount{{ID: id, ProfileID: guest, Source: "managed", Label: "工作账号", HandoffGroup: "papers", Email: reading.Email, Organization: reading.Organization, Status: status}}}
+			list := claudeAccountList{Accounts: []claudeAccount{{ID: id, ProfileID: guest, Source: "managed", Label: "Work account", HandoffGroup: "papers", Email: reading.Email, Organization: reading.Organization, Status: status}}}
 			if err := s.saveClaudeAccounts(list); err != nil {
 				t.Fatal(err)
 			}
@@ -251,7 +251,7 @@ func TestClaudeDuplicateLoginRecoversOriginalManagedProfile(t *testing.T) {
 				t.Fatalf("successful login was discarded: %+v %v", got, err)
 			}
 			a := got.Accounts[0]
-			if a.ID != id || a.guestID() != guest || a.Status != "ready" || a.Enabled || a.Label != "工作账号" || a.HandoffGroup != "papers" {
+			if a.ID != id || a.guestID() != guest || a.Status != "ready" || a.Enabled || a.Label != "Work account" || a.HandoffGroup != "papers" {
 				t.Fatalf("recovery changed account settings or conversation directory: %+v", a)
 			}
 			// A controller restart and a future allocation must still use the
@@ -321,7 +321,7 @@ func TestClaudeDuplicateLoginRecoveryFailureKeepsOriginalBinding(t *testing.T) {
 				if got.PendingLogin != login.ID {
 					t.Fatal("locked login was enrolled")
 				}
-			} else if !strings.Contains(s.claudeAccounts.loginNotice, "重新登录") {
+			} else if !strings.Contains(s.claudeAccounts.loginNotice, "Sign in again") {
 				t.Fatal("failed recovery gave no actionable login instruction")
 			}
 		})

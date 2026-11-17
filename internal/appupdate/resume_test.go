@@ -172,7 +172,7 @@ func TestStalledDownloadIsRetriedAndCancellationKeepsProgress(t *testing.T) {
 	downloadStall = time.Minute
 	hanging := &rangeSource{content: content, limit: func(int) int { return 100 }, hang: func(int) bool { return true }}
 	go func() { time.Sleep(50 * time.Millisecond); cancel() }()
-	if err := download(ctx, &http.Client{Transport: hanging}, a, digest, path, func(int64) {}, func() {}); err == nil || !strings.Contains(err.Error(), "已取消") {
+	if err := download(ctx, &http.Client{Transport: hanging}, a, digest, path, func(int64) {}, func() {}); err == nil || !strings.Contains(err.Error(), "canceled") {
 		t.Fatal(err)
 	}
 	if st, err := os.Stat(path + "." + digest[:16] + ".part"); err != nil || st.Size() != 100 {

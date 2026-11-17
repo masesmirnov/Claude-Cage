@@ -12,7 +12,7 @@ Heavy tasks can stop the guest or browser from responding to network checks in t
 
 ## Download or installation problems
 
-**GitHub 显示 404，或看不到安装包。** 仓库与公开发布的附件无需仓库授权。从[项目主页](https://claude-cage.com/#download)点击“下载应用”并选择平台，检查网络与链接是否完整。macOS 使用 `.dmg`，Windows 使用 `.exe` 安装器，Debian/Ubuntu Linux 使用 `.deb`。Release 中的源码压缩包用于开发，不能当作安装包使用；尚无公开安装包的平台会提供安装与构建说明。
+**GitHub shows 404, or you cannot see the installers.** The repository and public release attachments need no repository access. On the [project homepage](https://claude-cage.com/#download), click "Download the app" and choose your platform, and check that the network and link are complete. macOS uses `.dmg`, Windows uses the `.exe` installer, and Debian/Ubuntu Linux uses `.deb`. The source archives in a Release are for development and cannot be used as installers; platforms without a public installer have install and build instructions instead.
 
 **The Mac says the app is damaged, can't be verified, or isn't supported.** Confirm you have Apple Silicon and macOS 14+. Download the complete installer for the matching Release again, and check that Release's signing and notarization notes and checksum files. When you report the problem, keep the system message exactly as shown. Don't hide a release problem by turning off Gatekeeper or removing the quarantine attribute.
 
@@ -20,11 +20,11 @@ Heavy tasks can stop the guest or browser from responding to network checks in t
 
 **The proxy core is missing.** The full app includes Mihomo. Reinstall the full installer for your platform, and don't copy only the command-line files from it. Use the full installer for your platform.
 
-## 忘记 Cage 账户密码
+## Forgot the Cage account password
 
-在登录页点击“忘记密码？”，使用此前保存的恢复密钥设置新密码，再保存新密钥并返回登录。原来的个人数据和 Claude 登录状态会保留，Cage 的记住我和快捷解锁需要重新开启。已有账户可在仍能登录且知道密码时补设密钥，详见[账户恢复](guide/settings.md#保存恢复密钥)。
+On the sign-in page, click "Forgot password?", set a new password with the recovery key you saved earlier, then save the new key and go back to sign in. Your existing personal data and Claude sign-in state are kept; Cage's Remember me and quick unlock need to be turned on again. An existing account can set a key later while it can still sign in and knows the password; see [account recovery](guide/settings.md#save-the-recovery-key).
 
-此前没有设置恢复密钥且所有解锁方式均不可用时，当前无法恢复加密资料。保留配置目录和持久磁盘，不要通过删除账户文件或重建环境处理忘记密码。
+If no recovery key was set before and all unlock methods are unavailable, the encrypted data cannot be recovered for now. Keep the configuration folder and persistent disks, and do not handle a forgotten password by deleting account files or rebuilding the environment.
 
 ## Existing account shows the create-account page again
 
@@ -38,23 +38,23 @@ Quick sign-in credentials are bound to the account's folder. After the folder is
 
 If you see "The system keychain cannot be checked right now", unlock with your password first. When the system keychain is available again, click "Check quick sign-in again". Failed checks like this keep the authorization record and don't require you to rebuild the account.
 
-## 主机 Git 设置与裸仓库
+## Host Git settings and bare repositories
 
-安装、启动与项目共享不要求启用主机 Git 裸仓库保护，Cage 也不提供修改这项全局配置的开关。共享目录中的改动会同步到主机；在主机运行项目脚本或 Git 操作时，仍需按项目来源判断是否可信。
+Installation, startup and project sharing do not require enabling host Git bare repository protection, and Cage offers no switch to change this global setting. Changes in shared folders are synced to the host; when running project scripts or Git operations on the host, still judge whether they are trustworthy by where the project comes from.
 
-如果曾经启用 `safe.bareRepository=explicit`，该设置会继续生效，更新 Cage 不会自动撤销。可以通过以下命令查看设置及其来源：
+If you enabled `safe.bareRepository=explicit` before, the setting stays in effect, and updating Cage does not undo it automatically. You can see the setting and where it comes from with this command:
 
 ```sh
 git config --show-origin --get-all safe.bareRepository
 ```
 
-需要撤销当前用户的全局配置时，由你在主机终端执行：
+To undo the current user's global setting, run this in a host terminal yourself:
 
 ```sh
 git config --global --unset-all safe.bareRepository
 ```
 
-该命令删除当前用户全局配置文件中的这一项，其他 Git 设置保持原样；没有对应项时会返回非零状态。系统配置或其他配置文件仍可能提供此设置，最终行为取决于剩余配置及 Git 版本。
+The command removes this entry from the current user's global configuration file and leaves other Git settings unchanged; it returns a non-zero status when there is no such entry. The system configuration or other configuration files may still provide this setting, and the final behavior depends on the remaining configuration and the Git version.
 
 ## First start shows a proxy connection failure
 
@@ -82,9 +82,9 @@ Linux images with pinned digests, plus the code-server, mise and Claude Code nat
 
 APT 3.0.3 on Debian 13 can pile up many `Tried to start delayed item` warnings during download retries and run out of memory. Before installing dependencies, Cage upgrades older APT to at least 3.0.4. If the official security source is temporarily unreachable, later installs stop, so check the proxy and try again. Repeated log lines are shown as the first line plus a repeat count. A task is complete when the install process exits. If mirrors keep failing, unreachable sources are skipped. To pin the official source, set the guest mirror preference as described under [What is downloaded on first start](getting-started.md#what-is-downloaded-on-first-start).
 
-镜像和开发工具下载连续 60 秒没有新数据时会重试。Linux 环境的 code-server、mise、GitHub CLI 和 Claude Code 原生包下载还会检测持续低速：单条连接持续 60 秒低于 1 KiB/s 时重试，分段下载逐连接检测。支持备用源的工具包在官方源首次下载失败后会尝试备用源，两边分别保存下载进度；备用源失败后回到官方源续传。APT 使用自己的超时与重试规则。
+Image and development tool downloads retry after 60 seconds without new data. Downloads of code-server, mise, GitHub CLI and the Claude Code native package in Linux environments also detect sustained low speed: a single connection below 1 KiB/s for 60 seconds is retried, and segmented downloads are checked per connection. Tool packages with a mirror try the mirror after the first download from the official source fails, each side keeping its own download progress; after the mirror fails, the download resumes from the official source. APT uses its own timeout and retry rules.
 
-文件传输不设下载总时限，连接建立仍有独立超时。自动重试用尽后，安装页面保留失败信息，点击“继续安装”可重新尝试，并复用已保存的下载；重复失败后仍可手动继续。
+File transfers have no total download time limit; establishing a connection still has its own timeout. After automatic retries run out, the install page keeps the failure information, and clicking "Continue installation" tries again and reuses the saved download; after repeated failures you can still continue by hand.
 
 | Error in operation details | What to do |
 | --- | --- |
@@ -106,12 +106,12 @@ You can stop the environment while it is starting or checking. If a network sett
 | Matches a mainland China network range, or is located in mainland China | Switch to a non-mainland exit. Static IP and any-region settings can't bypass this. If you think the location is wrong, keep the check report and exit details for review. |
 | Proxy unavailable, or core not ready | Apply the node again on the proxy page, or go to "Diagnostics" to check the core status and restart the Cage core. |
 | Port already in use | In the proxy's "Diagnostics", choose an unused, separate port for Cage. You don't need to stop other proxies on this computer. Changing the port requires restarting the environment. |
-| 已测得出口 IP，但位置查询失败 | Cage 会在某家定位服务失败时尝试下一家；请重试或更换节点。所有模式都须确认非大陆出口；手动时区、语言、静态 IP 和不限地区均不能跳过国家或地区检查。 |
+| The exit IP was measured, but the location lookup failed | Cage tries the next location service when one fails; retry or change the node. Every mode must confirm a non-mainland exit; a manual time zone, language, static IP or unrestricted region cannot skip the country or region check. |
 | Proxy infrastructure DNS unavailable | Make sure the host can reach Cloudflare or Alibaba DoH. Cage tries both in parallel. Business DNS settings don't change how node domains are resolved at startup. |
 | Paused, or the check report has expired | Confirm the config, then recheck. Internet access is restored only after critical checks pass. |
 | Temporarily offline after the host network changed | Wait for Cage to rebind to the current physical network adapter and finish its checks. If you paused it manually before, you still need to recheck it yourself. |
 
-位置查询通过所选代理，依次向 ipwho.is、IP.SB、ipwhois.app、GeoJS 和 ipapi.co 发送已经测得的出口 IP，取得有效位置后立即停止。每家最多等待 8 秒，五家串行查询最多约 40 秒，也受当前检查的剩余时间限制；所有服务都失败时不会改用直连。
+The location lookup goes through the selected proxy and sends the measured exit IP to ipwho.is, IP.SB, ipwhois.app, GeoJS and ipapi.co in turn, stopping as soon as it gets a valid location. Each service is given at most 8 seconds, so the five sequential lookups take at most about 40 seconds, also limited by the time left in the current check; when all services fail it does not fall back to a direct connection.
 
 While offline, you can still use the terminal, shared files and local services in the Linux environment. The green shield means the current state and checks have passed. It does not show account eligibility or platform risk.
 

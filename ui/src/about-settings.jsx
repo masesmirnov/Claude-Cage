@@ -5,18 +5,18 @@ import "./about-settings.css";
 
 const repository = "https://github.com/Lee-xeo/Claude-Cage";
 const sourceMessages = {
-  current: "已与主分支同步",
-  available: "主分支有新提交",
-  ahead: "当前构建的提交领先于主分支",
-  diverged: "当前构建与主分支存在分叉，请核对差异",
-  unknown: "此构建缺少提交信息，无法核对是否最新",
+  current: "In sync with the main branch",
+  available: "The main branch has new commits",
+  ahead: "The current build commit is ahead of the main branch",
+  diverged: "The current build has diverged from the main branch; check the differences",
+  unknown: "This build has no commit information, so it cannot check whether it is up to date",
 };
 const releaseMessages = {
-  current: "已是最新发行版（含预发行）",
-  available: "发现新发行版",
-  ahead: "当前版本高于最新发行版",
-  unknown: "当前版本无法比较，请核对发行说明",
-  missing: "暂无可比较的公开发行版",
+  current: "Already the latest release (including prereleases)",
+  available: "New release found",
+  ahead: "The current version is newer than the latest release",
+  unknown: "The current version cannot be compared; check the release notes",
+  missing: "No public release to compare yet",
 };
 
 function RepositoryLink({ kind, onError, children }) {
@@ -32,15 +32,15 @@ function RepositoryLink({ kind, onError, children }) {
 function CheckResult({ label, item, source, onError }) {
   return <section className="about-result" aria-label={label}>
     <h4>{label}</h4>
-    {!item ? <p className="footnote">尚未检查</p> : <>
+    {!item ? <p className="footnote">Not checked yet</p> : <>
       <p className={item.error ? "error-message" : "about-result-status"}>
         {item.error || (source ? sourceMessages : releaseMessages)[item.status]}
       </p>
-      {item.retryAt && <p className="footnote">可于 {new Date(item.retryAt).toLocaleString()} 后重试</p>}
-      {source && item.commit && <p className="about-result-detail">主分支提交 <code title={item.commit}>{item.commit.slice(0, 12)}</code></p>}
-      {source && item.status === "available" && item.aheadBy > 0 && <p className="footnote">主分支新增 {item.aheadBy} 个提交</p>}
-      {!source && item.version && <p className="about-result-detail">{item.version} · {item.prerelease ? "预发行版" : "正式版"}</p>}
-      <RepositoryLink kind={source ? "source" : "releases"} onError={onError}>{source ? "查看源码提交" : "查看发行说明与下载"}</RepositoryLink>
+      {item.retryAt && <p className="footnote">Retry after {new Date(item.retryAt).toLocaleString()}</p>}
+      {source && item.commit && <p className="about-result-detail">Main branch commit <code title={item.commit}>{item.commit.slice(0, 12)}</code></p>}
+      {source && item.status === "available" && item.aheadBy > 0 && <p className="footnote">The main branch has {item.aheadBy} new commits</p>}
+      {!source && item.version && <p className="about-result-detail">{item.version} · {item.prerelease ? "Prerelease" : "Release"}</p>}
+      <RepositoryLink kind={source ? "source" : "releases"} onError={onError}>{source ? "View source commits" : "View release notes and downloads"}</RepositoryLink>
     </>}
   </section>;
 }
@@ -81,26 +81,26 @@ export function AboutSettings() {
       if (!controller.signal.aborted) setBusy(false);
     }
   };
-  return <section className="about-settings" aria-label="关于 Cage">
-    <div className="section-title"><h3>关于</h3><p>Cage 的版本与更新信息</p></div>
+  return <section className="about-settings" aria-label="About Cage">
+    <div className="section-title"><h3>About</h3><p>Cage version and update information</p></div>
     <dl className="about-build">
-      <div><dt>软件版本</dt><dd>{loading ? "正在读取…" : build?.version || "未知"}</dd></div>
-      <div><dt>构建提交</dt><dd>{build?.commit ? <code title={build.commit}>{build.commit.slice(0, 12)}</code> : loading ? "正在读取…" : "未记录"}</dd></div>
+      <div><dt>Software version</dt><dd>{loading ? "Reading…" : build?.version || "Unknown"}</dd></div>
+      <div><dt>Build commit</dt><dd>{build?.commit ? <code title={build.commit}>{build.commit.slice(0, 12)}</code> : loading ? "Reading…" : "Not recorded"}</dd></div>
     </dl>
-    {build?.modified && <p className="footnote">此构建包含未提交的修改，提交核对仅反映已记录的提交。</p>}
+    {build?.modified && <p className="footnote">This build contains uncommitted changes; the commit check only reflects recorded commits.</p>}
     <div className="about-check-actions">
       <button className="secondary-button" onClick={check} disabled={busy || coolingDown}>
         {busy ? <LoaderCircle size={15} className="spin" /> : <RefreshCw size={15} />}
-        {busy ? "正在检查…" : coolingDown ? "等待重试" : "检测更新"}
+        {busy ? "Checking…" : coolingDown ? "Waiting to retry" : "Check for updates"}
       </button>
-      {result?.checkedAt && <span className="footnote">检查时间：{new Date(result.checkedAt).toLocaleString()}</span>}
+      {result?.checkedAt && <span className="footnote">Checked at:{new Date(result.checkedAt).toLocaleString()}</span>}
     </div>
-    <p className="footnote">优先通过主机网络与系统代理检查主分支提交和最新发行版，包含预发行版；主机连接失败时尝试 Cage 所选代理。检查后可前往发布页下载。</p>
-    {busy && <p role="status">正在核对源码提交与发行版…</p>}
+    <p className="footnote">Checks main branch commits and the latest release, including prereleases, through the host network and system proxy first; when the host connection fails, Cage's selected proxy is tried. After checking, you can download from the releases page.</p>
+    {busy && <p role="status">Checking source commits and releases…</p>}
     {error && <p className="error-message" role="alert">{error}</p>}
     <div className="about-results" aria-live="polite" aria-busy={busy}>
-      <CheckResult label="源码更新" item={result?.source} source onError={setError} />
-      <CheckResult label="发行版更新（含预发行）" item={result?.release} onError={setError} />
+      <CheckResult label="Source updates" item={result?.source} source onError={setError} />
+      <CheckResult label="Release updates (including prereleases)" item={result?.release} onError={setError} />
     </div>
   </section>;
 }

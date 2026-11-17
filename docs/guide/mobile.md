@@ -9,7 +9,7 @@ keywords: mobile phone Android iOS iPhone scan QR code pairing code approval rel
 
 Install the Cage phone client on an Android or iPhone, then pair it with your computer. Android needs an arm64 device running Android 8.0 or later, with a current System WebView. iPhone needs iOS 17+ and a Secure Enclave. Your phone and computer should use matching versions.
 
-Android 用户在[官网下载入口](https://claude-cage.com/#download)选择 Android，下载 APK 后按系统提示允许该下载来源安装应用。后续使用同一签名的新版 APK 覆盖安装，保留手机上的配对记录。
+Android users choose Android in the [download section of the website](https://claude-cage.com/#download), download the APK and allow installing apps from that source when the system asks. Later, install newer APKs with the same signature over it to keep the pairing records on the phone.
 
 iOS users build the app on their own Mac and sign it for their device. The steps are below.
 
@@ -46,9 +46,9 @@ The build output is in `mobile/.build/ios/`, and device certificates and signing
 
 After connecting, the computer's pairing card shows the phone model and platform. Removing a pairing also shows the model, so you can confirm which device you are acting on. If it shows "Model not available yet", update Cage on your phone and reconnect. Existing pairings are kept, so you do not need to scan again.
 
-配对码授予设备访问，请只交给你要授权的手机。锁定 Cage、刷新配对码或等待配对码超时，都会使尚未使用的配对码失效。
+A pairing code grants device access, so only give it to the phone you want to authorize. Locking Cage, refreshing the pairing code or waiting for it to time out all invalidate unused pairing codes.
 
-电脑重启后，先打开 Cage。如果使用“记住我”自动登录，已配对的手机可以直接重连并使用 Claude Desktop 等工具。手动选择“锁定 Cage”会立即中止手机访问。在电脑上解锁后，手机可继续使用原配对。
+After the computer restarts, open Cage first. If you use automatic sign-in with "Remember me", paired phones can reconnect directly and use tools such as Claude Desktop. Choosing "Lock Cage" by hand stops phone access immediately. After you unlock on the computer, the phone can keep using the existing pairing.
 
 When a phone is paired and the Cage host is providing remote service in the background, the host is asked to stay awake. The screen can still turn off as usual, and the host stays on standby when the phone is temporarily disconnected or the host is reconnecting to the relay. Closing the window or choosing "Keep running and quit" still keeps the remote service and the keep-awake request active. Removing the pairing or ending the host background service releases the request, and the original system sleep settings apply again. "Settings → Remote connection" shows whether the keep-awake request was granted. If the system does not allow it, the specific reason is shown.
 

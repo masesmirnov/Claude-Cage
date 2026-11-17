@@ -33,7 +33,7 @@ if ! launchctl print "$label" >/dev/null 2>&1; then
     fi
 fi
 if ! launchctl print "$label" >/dev/null 2>&1; then
-    echo '无法加载 com.apple.screensharing 服务。' >&2
+    echo 'Cannot load the com.apple.screensharing service.' >&2
     exit 1
 fi
 
@@ -48,7 +48,7 @@ for _ in $(seq 20); do
     sleep 0.25
 done
 if (( ok == 0 )); then
-    echo '屏幕共享服务已加载，但尚未在 5900 端口监听。' >&2
+    echo 'The Screen Sharing service is loaded but is not listening on port 5900 yet.' >&2
     exit 1
 fi
-echo "已启用客机屏幕共享，并允许 $user 连接。"
+echo "Enabled guest Screen Sharing and allowed $user to connect."

@@ -49,7 +49,7 @@ internal sealed class RemoteBrowserRpc(RemoteSandbox sandbox, Dictionary<string,
                 catch
                 {
                     Close();
-                    result = new() { ["error"] = "Windows 云端浏览器未能启动或响应", ["code"] = "browser_unavailable" };
+                    result = new() { ["error"] = "The Windows cloud browser did not start or respond", ["code"] = "browser_unavailable" };
                 }
                 finally { gate.Release(); }
                 await Protocol.Write(stream, result, token);

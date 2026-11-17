@@ -105,7 +105,7 @@ export function DesktopToolbar({ desktop, platform, title = "Claude Desktop", zo
         )}
         <button
           className="icon-button"
-          aria-label={"刷新 " + title + " 状态"}
+          aria-label={"Refresh " + title + " Status"}
           disabled={busy}
           onClick={refresh}
         >
@@ -228,8 +228,8 @@ export function ClaudeDesktop({
       <DesktopToolbar desktop={desktop} platform={automatic ? "Windows" : "Linux"} zoom={zoom} setZoom={setZoom} automatic={automatic}
         onConfirm={onConfirm} onStop={() => run("stop")} busy={busy || !available} refresh={() => refresh()} sidebarCollapsed={sidebarCollapsed} onExpand={onExpand}>
         {desktop?.installed && !status.guest_system?.startsWith("windows") && <button className="quiet-button" disabled={busy} onClick={async () => {
-          if (!desktop.running || await onConfirm({ title: "更新 Claude Desktop？", body: "请先保存应用内的工作。更新会关闭 Claude Desktop，从官方软件源安装可用版本，再重新打开；登录资料继续保留。", confirm: "更新应用" })) run("update");
-        }}>更新应用</button>}
+          if (!desktop.running || await onConfirm({ title: "Update Claude Desktop?", body: "Save your work in the app first. Updating closes Claude Desktop, installs the available version from the official package source and opens it again; sign-in data is kept.", confirm: "Update app" })) run("update");
+        }}>Update app</button>}
       </DesktopToolbar>
       {(error || statusError || desktop?.failed) && (
         <div className="connection-banner" role="alert">
@@ -253,8 +253,8 @@ export function ClaudeDesktop({
         {!available ? (
           <div className="desktop-empty">
             <Monitor size={36} />
-            <h2>Windows 云端暂不支持 Claude Desktop</h2>
-            <p>当前可使用隔离 PowerShell{guestCapability(status, "browser") && " 和浏览器"}，无需登录 Claude 账户。</p>
+            <h2>Windows cloud does not support Claude Desktop yet</h2>
+            <p>You can currently use isolated PowerShell{guestCapability(status, "browser") && " and the browser"}, with no need to sign in to a Claude account.</p>
           </div>
         ) : desktop?.running && status.vm_running ? (
           <RemoteView
@@ -319,8 +319,8 @@ export function ClaudeDesktop({
               )}
             </div>
             {desktop?.installed && <p>{status.guest_system?.startsWith("windows")
-              ? "在 Claude Desktop 应用内检查并安装更新。"
-              : "Linux 版通过系统软件源更新。可点击上方“更新应用”，或在 Cage 终端运行 sudo apt update && sudo apt install --only-upgrade claude-desktop。"}</p>}
+              ? "Check for and install updates inside the Claude Desktop app."
+              : "The Linux version is updated from the system package source. Click \"Update app\" above, or run sudo apt update && sudo apt install --only-upgrade claude-desktop in a Cage terminal."}</p>}
             <p className="desktop-note">
               Closing the app frees the graphical session resources, and the sign-in state stays in the Cage
               environment. Cowork, which needs an extra virtual machine, is not supported yet.

@@ -49,9 +49,9 @@ export function useDownloadNotifications(
         previous.current.get(item.id)?.state !== item.state
       ) {
         if (item.state === "downloading")
-          onStatus(`正在下载“${item.name}”，可在浏览器右上角的下载列表查看`);
+          onStatus(`Downloading "${item.name}"; you can see it in the download list at the top right of the browser`);
         if (item.state === "saved")
-          onStatus(`“${item.name}”已保存到下载暂存目录`);
+          onStatus(`"${item.name}" was saved to the download staging folder`);
       }
       if (item.openError && previous.current.get(item.id)?.openError !== item.openError)
         onStatus(`“${item.name}”${item.openError}`);
@@ -128,7 +128,7 @@ export function useDesktopFiles(ready, onStatus, desktopVisible, windowVisible =
             } else {
               await native("uploadHostFiles", { ...body, selection: selection.fileSelection });
               await api("/input/files/finish", body);
-              status.current?.("所选文件已交给 Claude Desktop");
+              status.current?.("The selected files were handed to Claude Desktop");
             }
           } catch (error) {
             assertConnection(connection);
@@ -311,7 +311,7 @@ export function BrowserDownloads({
             : "icon-button browser-download-button"
         }
         role={menu ? "menuitem" : undefined}
-        aria-label="浏览器下载"
+        aria-label="Browser downloads"
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
@@ -320,7 +320,7 @@ export function BrowserDownloads({
       >
         <ArrowDownToLine size={16} />
         {failed && !menu && <span className="browser-download-warning" aria-hidden="true" />}
-        {menu && <span>下载</span>}
+        {menu && <span>Downloads</span>}
       </button>
       {open &&
         createPortal(

@@ -32,7 +32,7 @@ async function setBrowserHome(home) {
     // from briefly taking the same operation lock. This specific 409 is
     // returned before any homepage write; other errors still fail immediately.
     const busy = result.status === 1 && reply.error?.code === 'state_conflict' &&
-      reply.error.http_status === 409 && reply.error.message.endsWith('环境正在执行其他操作，请稍后保存');
+      reply.error.http_status === 409 && reply.error.message.endsWith('The environment is running another operation; save later');
     if (!busy || Date.now() >= deadline) {
       assert.equal(result.status, 0, `Browser preferences failed: ${result.stdout} ${result.stderr}`);
       assert.equal(reply.status, 'completed');

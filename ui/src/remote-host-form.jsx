@@ -91,15 +91,15 @@ export function HostForm({ initial, platform, onSaved, onClose }) {
             </label>
           </div>
           <label>
-            远程系统
+            Remote system
             <InlineSelect
               inline
-              aria-label="远程系统"
+              aria-label="Remote system"
               value={form.platform || "linux"}
               onValueChange={(value) => update("platform", value)}
             >
               <option value="linux">Linux</option>
-              <option value="windows">Windows（已部署服务）</option>
+              <option value="windows">Windows (deployed service)</option>
             </InlineSelect>
           </label>
           <label>
@@ -174,7 +174,7 @@ export function HostForm({ initial, platform, onSaved, onClose }) {
                   onChange={(event) =>
                     update("config_path", event.target.value)
                   }
-                  placeholder={form.platform === "windows" ? "例如 C:\\ProgramData\\Cage Remote\\config.json" : "默认使用云端账户的 ~/.claude-cage/config.json"}
+                  placeholder={form.platform === "windows" ? "For example C:\\ProgramData\\Cage Remote\\config.json" : "Uses ~/.claude-cage/config.json of the cloud account by default"}
                   spellCheck="false"
                 />
                 <small>For a custom path, enter the absolute cloud path.</small>

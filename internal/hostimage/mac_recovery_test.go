@@ -133,7 +133,7 @@ func TestRecoveryRangesBoundNoProgress(t *testing.T) {
 	})}
 	err := downloadRecoveryRanges(t.Context(), client, "http://oscdn.apple.com/recovery.dmg", "fixture", file, 2<<20, 5)
 	got, _ := os.ReadFile(file.Name())
-	if err == nil || !strings.Contains(err.Error(), "已保存 5/") || requests != 5 || string(got) != "saved" {
+	if err == nil || !strings.Contains(err.Error(), "saved 5/") || requests != 5 || string(got) != "saved" {
 		t.Fatalf("unbounded or destructive retry: requests=%d, error=%v", requests, err)
 	}
 }

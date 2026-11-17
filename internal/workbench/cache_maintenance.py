@@ -20,15 +20,15 @@ LIMIT = 50000
 ID = re.compile(r"[a-z0-9-]{1,80}\Z")
 BATCH = re.compile(r"[0-9a-f]{32}\Z")
 REASONS = {
-    "active": "相关客户端正在运行，缓存已保留；正常退出后可重新盘点。",
-    "unknown_processes": "无法完整核对运行进程，缓存已保留。",
-    "unsafe_path": "目录包含链接、挂载点或特殊文件，已保留。",
-    "unavailable": "目录权限或归属无法确认，已保留。",
-    "too_large": "文件数量超过本次盘点上限，已保留。",
-    "changed": "缓存已变化，请重新盘点。",
-    "destination_exists": "原位置已生成新数据，恢复不会覆盖它；原恢复副本已保留。",
-    "move_failed": "移动未完成，原文件和恢复批次均已保留，请重新盘点。",
-    "protected_data": "目录内发现登录、会话、项目或持久磁盘标记，已保留。",
+    "active": "A related client is running, so the cache was kept; take the inventory again after it quits normally.",
+    "unknown_processes": "The running processes could not be fully checked, so the cache was kept.",
+    "unsafe_path": "The folder contains links, mount points or special files, so it was kept.",
+    "unavailable": "The folder permissions or owner could not be confirmed, so it was kept.",
+    "too_large": "The file count exceeds the limit for this inventory, so it was kept.",
+    "changed": "The cache changed; take the inventory again.",
+    "destination_exists": "New data was created in the original location; restoring will not overwrite it. The original recovery copy was kept.",
+    "move_failed": "The move did not finish; the original files and the recovery batch were both kept. Take the inventory again.",
+    "protected_data": "Sign-in, session, project or persistent disk markers were found in the folder, so it was kept.",
 }
 PROTECTED_NAMES = frozenset({".git", ".claude.json", ".credentials.json", "settings.json", "settings.local.json",
                              "history.jsonl", "cookies", "login data", "sessions", "session storage", "local storage",
@@ -230,37 +230,37 @@ class Maintenance:
         self.process_check = process_check
         self.targets = {}
         self.protected = []
-        self.add_config("default", home / ".claude", "默认账户")
+        self.add_config("default", home / ".claude", "Default account")
         safe(accounts)
         if accounts.is_dir():
             for number, entry in enumerate(sorted(accounts.iterdir()), 1):
                 if re.fullmatch(r"[0-9a-f]{24}", entry.name):
-                    self.add_config(entry.name, entry / "config", "独立账户 " + str(number))
+                    self.add_config(entry.name, entry / "config", "Separate account " + str(number))
                 if number > 100:
                     raise Refused("too_large")
-        self.protected += [("全局账户配置", home / ".claude.json")]
+        self.protected += [("Global account configuration", home / ".claude.json")]
         for name, root in (("browser", browser), ("desktop", desktop)):
             for index, leaf in enumerate(("Cache", "Code Cache", "GPUCache")):
-                self.targets[name + "-" + str(index)] = (root / leaf, name, ("浏览器" if name == "browser" else "Claude Desktop") + " · " + leaf)
+                self.targets[name + "-" + str(index)] = (root / leaf, name, ("Browser" if name == "browser" else "Claude Desktop") + " · " + leaf)
             for leaf in ("Cookies", "Network", "Local Storage", "IndexedDB", "Sessions", "Session Storage"):
-                self.protected.append(("网站登录与会话存储", root / leaf))
+                self.protected.append(("Site sign-ins and session storage", root / leaf))
         safe(home)
         self.scope = digest([system, str(home), str(accounts), home.stat().st_dev, home.stat().st_ino])
 
     def add_config(self, account, root, label):
-        self.targets["cli-" + account] = (root / "cache", "cli", "Claude Code · " + label + "缓存")
+        self.targets["cli-" + account] = (root / "cache", "cli", "Claude Code · " + label + " cache")
         for leaf in (".credentials.json", "settings.json", "projects", "history.jsonl", "skills", "plugins"):
-            self.protected.append(("账户、会话与自定义设置", root / leaf))
+            self.protected.append(("Accounts, sessions and custom settings", root / leaf))
 
     def inspect(self):
         roles = self.process_check()
         items = []
         for key, (path, role, title) in self.targets.items():
-            row = {"id": key, "title": title, "location": self.display(path), "bytes": 0, "files": 0, "state": "absent", "reason": "未发现此缓存。"}
+            row = {"id": key, "title": title, "location": self.display(path), "bytes": 0, "files": 0, "state": "absent", "reason": "This cache was not found."}
             try:
                 value = snapshot(path)
                 if value is not None:
-                    row.update(value, state="ready", reason="可再生成缓存；清理会保留恢复副本。")
+                    row.update(value, state="ready", reason="Regenerable cache; cleanup keeps a recovery copy.")
                     if roles is None or role in roles:
                         reason = "unknown_processes" if roles is None else "active"
                         row.update(state="blocked", reason=REASONS[reason])
@@ -277,13 +277,13 @@ class Maintenance:
                 counts[category]["unknown"] += 1
         return {"version": 1, "scope": self.scope, "platform": self.system, "items": items,
                 "protected": list(counts.values()), "batches": self.batches(),
-                "notice": "仅查看缓存元数据与受保护位置的存在状态，不读取凭据、Cookie 值或会话正文。系统凭据库、项目内容和持久磁盘不参与扫描。"}
+                "notice": "Only looks at cache metadata and whether protected locations exist; does not read credentials, cookie values or session contents. System credential stores, project contents and persistent disks are not scanned."}
 
     def display(self, path):
         try:
             return "~/" + path.relative_to(self.home).as_posix()
         except ValueError:
-            return "浏览器专用资料/" + path.name
+            return "Browser profile/" + path.name
 
     def load_batch(self, batch):
         if not isinstance(batch, str) or not BATCH.fullmatch(batch):
@@ -363,7 +363,7 @@ class Maintenance:
                 write_manifest(directory / "receipt.json", receipt)
                 if snapshot(directory / key)["fingerprint"] != item["fingerprint"]:
                     raise Refused("changed")
-                outcomes.append({"id": key, "state": "moved", "reason": "已移入恢复批次，登录和工作资料保留。"})
+                outcomes.append({"id": key, "state": "moved", "reason": "Moved into a recovery batch; sign-ins and work data are kept."})
             except (OSError, Refused, TypeError) as error:
                 # The initial pending receipt also locates a move interrupted before
                 # its completion record. Never remove either side on failure.
@@ -394,7 +394,7 @@ class Maintenance:
                 move_cache(source, target)
                 item["state"] = "restored"
                 write_manifest(directory / "receipt.json", receipt)
-                outcomes.append({"id": key, "state": "restored", "reason": "已恢复缓存。"})
+                outcomes.append({"id": key, "state": "restored", "reason": "The cache was restored."})
             except (OSError, Refused, TypeError) as error:
                 outcomes.append({"id": key, "state": "failed", "reason": REASONS.get(str(error), REASONS["move_failed"])})
         return {"version": 1, "status": "partial" if any(row["state"] == "failed" for row in outcomes) else "complete", "outcomes": outcomes}
@@ -455,7 +455,7 @@ def main():
         else:
             raise Refused("invalid_request")
     except (OSError, ValueError, Refused, TypeError, KeyError, AttributeError, subprocess.SubprocessError):
-        result = {"version": 1, "error": "operation_refused", "message": "未能完成缓存操作。请重新盘点；已有数据与恢复副本均保留。"}
+        result = {"version": 1, "error": "operation_refused", "message": "The cache operation could not be completed. Take the inventory again; existing data and recovery copies are both kept."}
     print(json.dumps(result, ensure_ascii=True))
 
 

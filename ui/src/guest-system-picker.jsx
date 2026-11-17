@@ -29,11 +29,11 @@ export function HostCloneSummary({ pending, onChange }) {
   const source = host.system === "macos" ? "Apple" : host.system === "windows-11" ? "Microsoft" : "the distribution's official source";
   const cached = Boolean(plan.path || result.download_bytes === 0 && plan.bytes > 0);
   return <div className="guest-install-fields host-clone-summary" aria-live="polite">
-    <strong>将安装：{names[host.system]} {host.system === "windows-11" ? `${host.version} · ${editions[host.edition] || host.edition} · ${languages[host.language] || host.language}` : host.system === "macos" ? plan.version : ""}</strong>
+    <strong>Will install:{names[host.system]} {host.system === "windows-11" ? `${host.version} · ${editions[host.edition] || host.edition} · ${languages[host.language] || host.language}` : host.system === "macos" ? plan.version : ""}</strong>
     <small>{pending ? "Keeping the system image chosen first and continuing to install the separate guest." : "Matches an official image to this computer's system version and installs it in a separate guest."}</small>
     {host.build && <small>{pending ? "Local build detected first" : "Local build"} {host.build} · Image build {plan.build}</small>}
     {host.system === "windows-11" && host.build !== plan.build && <small>The Windows release, edition and language match this computer; the patch level differs.</small>}
-    {host.system === "macos" && host.version !== plan.version && <small>本机为 macOS {host.version}。当前 Apple 目录没有完全相同的安装包，将安装同一 macOS 主版本的官方更新。</small>}
+    {host.system === "macos" && host.version !== plan.version && <small>This Mac runs macOS {host.version}. The current Apple catalog has no identical installer, so the official update of the same macOS major version will be installed.</small>}
     <small>Apps, personal files and sign-in state on this computer are not copied; tools, accounts and files in the guest are kept.</small>
     <small>{cached ? "A matching local image was found. It is verified and used directly, with no need to download the system image again." : `Downloads the official system image from ${source}; ${download ? `about ${download} still to download` : "the download size shows once connected"}.`}</small>
     <small>{result.installation_started ? "Keeps using the original virtual disk and the installation progress so far." : `Needs at least ${result.minimum_free_gib} GiB of free space; the virtual disk grows with actual use.`} Workbench components such as the browser and editor download on demand.</small>
@@ -97,7 +97,7 @@ export function GuestSystemPicker({ system, onChange, preserveOnUnmount = false,
         {Boolean(view.system) && <option value="host" disabled={!view.available}>Match this computer's system version automatically{view.available ? "" : " (unavailable)"}</option>}
         <option value="debian-13">Debian 13</option>
         <option value="ubuntu-22.04" disabled={!view.linux_systems?.includes("ubuntu-22.04")}>Ubuntu 22.04{view.linux_systems?.includes("ubuntu-22.04") ? "" : " (unavailable in this build)"}</option>
-        {!view.host_match_only && <option value="macos" disabled={view.system !== "macos" || !view.available}>macOS{view.system === "macos" ? view.available ? "" : "（暂不可用）" : "（需要兼容的 Mac）"}</option>}
+        {!view.host_match_only && <option value="macos" disabled={view.system !== "macos" || !view.available}>macOS{view.system === "macos" ? view.available ? "" : " (not available yet)" : " (needs a compatible Mac)"}</option>}
         <option value="windows-11" disabled={view.system !== "windows-11" || !view.available}>Windows 11{view.system === "windows-11" ? view.available ? "" : " (unavailable)" : " (requires Windows 11 and Hyper-V)"}</option>
       </InlineSelect>
       {system.clone && !system.activate && (deferMatch ? <small className="guest-install-fields">Cage will detect this computer's system version and show the matching official image, download size and space requirements in the next step.</small> : <HostCloneSummary pending={system.pending} onChange={onChange} />)}

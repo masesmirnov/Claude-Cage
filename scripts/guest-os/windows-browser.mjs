@@ -318,7 +318,7 @@ export function createNativeBrowserService(options = {}) {
     tab.copyContext = input.context;
     tab.explicitCopyContext = input.context;
     await clipboard.setContext(tab.id, input.context);
-    if (clipboard.available === false) throw failure("copy_unavailable", "浏览器无法读取本次复制，请更新环境中的浏览器后重试");
+    if (clipboard.available === false) throw failure("copy_unavailable", "The browser cannot read this copy; update the browser in the environment and try again");
     const proof = { id: tab.id, context: input.context, document, version: copyVersion };
     let timeout;
     const completed = new Promise((resolve, reject) => {
@@ -1285,8 +1285,8 @@ export function createNativeBrowserService(options = {}) {
     if (operation === "configure") return configure(input);
     if (method === "POST" && route === "/profile") {
       const value = checkedBrowserProfile(input);
-      if (creationProfile && JSON.stringify(creationProfile) !== JSON.stringify(value)) throw failure("invalid_configuration", "创建配置已保存，请继续原环境");
-      if (context && !creationProfile) throw failure("browser_restart_required", "请关闭客机浏览器后重新连接，以应用创建配置");
+      if (creationProfile && JSON.stringify(creationProfile) !== JSON.stringify(value)) throw failure("invalid_configuration", "The creation settings were saved; please continue the original environment");
+      if (context && !creationProfile) throw failure("browser_restart_required", "Close the guest browser and reconnect to apply the creation settings");
       await mkdir(directory, { recursive: true, mode: 0o700 });
       const file = path.join(directory, "guest-profile.json"), encoded = JSON.stringify(value);
       try { await writeFile(file, encoded, { flag: "wx", mode: 0o600 }); }
@@ -1440,7 +1440,7 @@ export function createNativeBrowserService(options = {}) {
       // configured one.
       let followed;
       if (input.scale !== undefined) {
-        if (typeof input.scale !== "number" || !(input.scale >= 0.75 && input.scale <= 4)) throw failure("invalid_input", "像素密度无效");
+        if (typeof input.scale !== "number" || !(input.scale >= 0.75 && input.scale <= 4)) throw failure("invalid_input", "Invalid pixel density");
         if (!mac && contextOptions(context)) followed = Math.round(input.scale * 64) / 64;
       }
       const scale = followed ?? configuredScale;

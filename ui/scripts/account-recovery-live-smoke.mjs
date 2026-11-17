@@ -43,79 +43,79 @@ const restart = async () => {
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(`${entry.origin}/#${entry.ticket}`);
 };
-const menu = () => page.getByRole("button", { name: /^账户菜单，/ });
+const menu = () => page.getByRole("button", { name: /^Account menu, / });
 const call = (endpoint, body) => page.evaluate(async ({ endpoint, body }) => {
   const response = await fetch("/api" + endpoint, { method: body ? "POST" : "GET", headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined });
   return { status: response.status, value: await response.json() };
 }, { endpoint, body });
 const saveKey = async (reset = false) => {
-  const region = page.getByRole("region", { name: "保存恢复密钥", exact: true });
+  const region = page.getByRole("region", { name: "Save the recovery key", exact: true });
   await region.waitFor();
   if (output) await page.screenshot({ path: path.join(output, reset ? "reset-key.png" : "save-key.png"), mask: [page.locator("input,textarea")] });
-  const code = await region.getByLabel("恢复密钥", { exact: true }).inputValue();
+  const code = await region.getByLabel("Recovery key", { exact: true }).inputValue();
   assert.match(code, /^(?:[A-F0-9]{8}-){7}[A-F0-9]{8}$/);
-  const proceed = region.getByRole("button", { name: reset ? "返回登录" : "继续使用 Cage", exact: true });
+  const proceed = region.getByRole("button", { name: reset ? "Back to sign-in" : "Continue to Cage", exact: true });
   assert.equal(await proceed.isDisabled(), true);
   // Exercise the UI/native contract separately from the browser download.
   // The real native implementations are built/checked by platform checks.
   await page.evaluate(() => {
     window.recoverySaveMode = "cancel";
     window.cageNativeBridge = { async postMessage(request) {
-      const key = document.querySelector('textarea[aria-label="恢复密钥"]').value;
+      const key = document.querySelector('textarea[aria-label="Recovery key"]').value;
       if (request.action === "saveRecoveryKey") {
-        if (request.key !== key) throw new Error("保存内容不完整");
-        if (window.recoverySaveMode === "fail") throw new Error("模拟保存位置不可写");
+        if (request.key !== key) throw new Error("The saved content is incomplete");
+        if (window.recoverySaveMode === "fail") throw new Error("Simulated save location is not writable");
         return window.recoverySaveMode === "save";
       }
       if (request.action === "clipboardWrite") {
-        if (request.text !== key) throw new Error("复制内容不完整");
+        if (request.text !== key) throw new Error("The copied content is incomplete");
         return true;
       }
       return false;
     } };
   });
-  const saveNative = region.getByRole("button", { name: "下载密钥文件", exact: true });
+  const saveNative = region.getByRole("button", { name: "Download key file", exact: true });
   await saveNative.click();
-  assert.equal(await region.getByText("恢复密钥文件已保存，请妥善保管。", { exact: true }).count(), 0);
+  assert.equal(await region.getByText("The recovery key file was saved; keep it safe.", { exact: true }).count(), 0);
   await page.evaluate(() => { window.recoverySaveMode = "fail"; });
   await saveNative.click();
-  await region.getByRole("status").filter({ hasText: "未能保存文件" }).waitFor();
+  await region.getByRole("status").filter({ hasText: "Could not save the file" }).waitFor();
   await page.evaluate(() => { window.recoverySaveMode = "save"; });
   await saveNative.click();
-  await region.getByRole("status").filter({ hasText: "恢复密钥文件已保存" }).waitFor();
-  await region.getByRole("button", { name: "复制恢复密钥", exact: true }).click();
-  await region.getByRole("status").filter({ hasText: "恢复密钥已复制" }).waitFor();
+  await region.getByRole("status").filter({ hasText: "The recovery key file was saved" }).waitFor();
+  await region.getByRole("button", { name: "Copy recovery key", exact: true }).click();
+  await region.getByRole("status").filter({ hasText: "Recovery key copied" }).waitFor();
   await page.evaluate(() => { delete window.cageNativeBridge; delete window.recoverySaveMode; });
   const downloadEvent = page.waitForEvent("download");
-  await region.getByRole("button", { name: "下载密钥文件", exact: true }).click();
+  await region.getByRole("button", { name: "Download key file", exact: true }).click();
   const download = await downloadEvent;
   const file = path.join(root, "recovery-download.txt");
   await download.saveAs(file);
   assert.ok((await fs.readFile(file, "utf8")).includes(code), "download omitted the full secret");
   await fs.rm(file);
   // The screen remains available through polling, then supports keyboard confirmation.
-  await region.getByRole("checkbox", { name: "我已安全保存完整恢复密钥" }).focus();
+  await region.getByRole("checkbox", { name: "I have safely saved the full recovery key" }).focus();
   await page.keyboard.press("Space");
   await proceed.click();
   assert.equal(await region.count(), 0);
   return code;
 };
 const unlock = async (password) => {
-  await page.getByLabel("账户密码", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "解锁 Cage", exact: true }).click();
+  await page.getByLabel("Account password", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Unlock Cage", exact: true }).click();
   await menu().waitFor();
 };
 const lock = async () => {
   await menu().click();
-  await page.getByRole("menuitem", { name: /锁定 Cage/ }).click();
-  await page.getByRole("region", { name: "解锁 Cage", exact: true }).waitFor();
+  await page.getByRole("menuitem", { name: /Lock Cage/ }).click();
+  await page.getByRole("region", { name: "Unlock Cage", exact: true }).waitFor();
 };
 try {
   await restart();
-  await page.getByLabel("用户名", { exact: true }).fill("recovery_live_qa");
-  await page.getByLabel("设置密码", { exact: true }).fill("original-test-password");
-  await page.getByLabel("确认密码", { exact: true }).fill("original-test-password");
-  await page.getByRole("button", { name: "创建本地账户", exact: true }).click();
+  await page.getByLabel("Username", { exact: true }).fill("recovery_live_qa");
+  await page.getByLabel("Set password", { exact: true }).fill("original-test-password");
+  await page.getByLabel("Confirm password", { exact: true }).fill("original-test-password");
+  await page.getByRole("button", { name: "Create local account", exact: true }).click();
   const registrationKey = await saveKey();
   await menu().waitFor();
   assert.equal((await call("/account")).value.recovery_ready, true);
@@ -135,31 +135,31 @@ try {
   delete legacy.recovery;
   await fs.writeFile(accountPath, JSON.stringify(legacy), { mode: 0o600 });
   await restart();
-  await page.getByRole("button", { name: "忘记密码？", exact: true }).click();
-  await page.getByText(/此账户尚未设置恢复密钥。请使用原密码/).waitFor();
-  assert.equal(await page.getByRole("button", { name: "重置密码", exact: true }).count(), 0);
-  await page.getByRole("button", { name: "返回密码登录", exact: true }).click();
+  await page.getByRole("button", { name: "Forgot password?", exact: true }).click();
+  await page.getByText(/This account has no recovery key yet. Use the original password/).waitFor();
+  assert.equal(await page.getByRole("button", { name: "Reset password", exact: true }).count(), 0);
+  await page.getByRole("button", { name: "Back to password sign-in", exact: true }).click();
   await unlock("original-test-password");
   await menu().click();
-  await page.getByRole("menuitem", { name: "设置", exact: true }).click();
-  const section = page.getByRole("region", { name: "账户恢复", exact: true });
-  await section.getByLabel("生成密钥前验证账户密码", { exact: true }).fill("original-test-password");
-  await section.getByRole("button", { name: "生成恢复密钥", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Settings", exact: true }).click();
+  const section = page.getByRole("region", { name: "Account recovery", exact: true });
+  await section.getByLabel("Verify the account password before generating a key", { exact: true }).fill("original-test-password");
+  await section.getByRole("button", { name: "Generate recovery key", exact: true }).click();
   const enrolledKey = await saveKey();
   assert.notEqual(enrolledKey, registrationKey);
   await menu().waitFor();
   await page.reload();
   await menu().waitFor();
   await lock();
-  await page.getByRole("button", { name: "忘记密码？", exact: true }).click();
-  const recovery = page.getByRole("region", { name: "恢复账户", exact: true });
-  await recovery.getByLabel("已保存的恢复密钥", { exact: true }).fill(enrolledKey.toLowerCase());
-  await recovery.getByLabel("新密码", { exact: true }).fill("recovered-test-password");
-  await recovery.getByLabel("确认新密码", { exact: true }).fill("mismatched-test-password");
-  await recovery.getByRole("button", { name: "重置密码", exact: true }).click();
-  await recovery.getByRole("alert").filter({ hasText: "两次密码不一致" }).waitFor();
-  await recovery.getByLabel("确认新密码", { exact: true }).fill("recovered-test-password");
-  await recovery.getByRole("button", { name: "重置密码", exact: true }).click();
+  await page.getByRole("button", { name: "Forgot password?", exact: true }).click();
+  const recovery = page.getByRole("region", { name: "Recover account", exact: true });
+  await recovery.getByLabel("Saved recovery key", { exact: true }).fill(enrolledKey.toLowerCase());
+  await recovery.getByLabel("New password", { exact: true }).fill("recovered-test-password");
+  await recovery.getByLabel("Confirm new password", { exact: true }).fill("mismatched-test-password");
+  await recovery.getByRole("button", { name: "Reset password", exact: true }).click();
+  await recovery.getByRole("alert").filter({ hasText: "The passwords do not match" }).waitFor();
+  await recovery.getByLabel("Confirm new password", { exact: true }).fill("recovered-test-password");
+  await recovery.getByRole("button", { name: "Reset password", exact: true }).click();
   const replacementKey = await saveKey(true);
   assert.notEqual(replacementKey, enrolledKey);
   assert.equal((await call("/account")).value.unlocked, false);
@@ -178,11 +178,11 @@ try {
   assert.equal((await call("/account")).value.recovery_ready, true);
   await lock();
   await page.setViewportSize({ width: 390, height: 700 });
-  await page.getByRole("button", { name: "忘记密码？", exact: true }).click();
-  await page.getByLabel("已保存的恢复密钥", { exact: true }).fill(replacementKey);
-  await page.getByLabel("新密码", { exact: true }).fill("final-test-password");
-  await page.getByLabel("确认新密码", { exact: true }).fill("final-test-password");
-  await page.getByRole("button", { name: "重置密码", exact: true }).click();
+  await page.getByRole("button", { name: "Forgot password?", exact: true }).click();
+  await page.getByLabel("Saved recovery key", { exact: true }).fill(replacementKey);
+  await page.getByLabel("New password", { exact: true }).fill("final-test-password");
+  await page.getByLabel("Confirm new password", { exact: true }).fill("final-test-password");
+  await page.getByRole("button", { name: "Reset password", exact: true }).click();
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await saveKey(true);
   await unlock("final-test-password");

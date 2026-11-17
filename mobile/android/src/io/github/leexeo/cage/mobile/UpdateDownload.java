@@ -47,27 +47,27 @@ final class UpdateDownload {
                 int status = connection.getResponseCode();
                 if (status == 301 || status == 302 || status == 303 || status == 307 || status == 308) {
                     String location = connection.getHeaderField("Location");
-                    if (location == null) throw new IOException("下载地址无效。");
+                    if (location == null) throw new IOException("The download address is invalid.");
                     url = new URL(url, location);
                     if (!"https".equals(url.getProtocol()) || url.getUserInfo() != null ||
                             (url.getPort() != -1 && url.getPort() != 443) ||
                             !("release-assets.githubusercontent.com".equals(url.getHost()) ||
                               "objects.githubusercontent.com".equals(url.getHost()))) {
-                        throw new IOException("更新源返回了不受信任的下载地址。");
+                        throw new IOException("The update source returned an untrusted download address.");
                     }
                     continue;
                 }
-                if (status != 200) throw new IOException("更新源返回 HTTP " + status + "，请稍后重试。");
-                if (connection.getContentLengthLong() > limit) throw new IOException("更新文件超过预期大小。");
+                if (status != 200) throw new IOException("The update source returned HTTP " + status + ", please try again later.");
+                if (connection.getContentLengthLong() > limit) throw new IOException("The update file is larger than expected.");
                 try (InputStream input = connection.getInputStream()) {
                     byte[] buffer = new byte[32768];
                     long count = 0;
                     int lastPercent = -1, n;
                     while ((n = input.read(buffer)) != -1) {
                         count += n;
-                        if (count > limit) throw new IOException("更新文件超过预期大小。");
+                        if (count > limit) throw new IOException("The update file is larger than expected.");
                         if (Thread.currentThread().isInterrupted() || SystemClock.elapsedRealtime() >= deadline)
-                            throw new IOException("下载已取消或超时，请重试。");
+                            throw new IOException("The download was canceled or timed out; please try again.");
                         output.write(buffer, 0, n);
                         int percent = (int)(count * 100 / limit);
                         if (progress != null && percent != lastPercent) progress.accept(percent);
@@ -79,27 +79,27 @@ final class UpdateDownload {
                 connection.disconnect();
             }
         }
-        throw new IOException("下载重定向次数过多。");
+        throw new IOException("Too many download redirects.");
     }
 
     static File fetch(Context context, AndroidUpdate update, IntConsumer progress) throws Exception {
         String manifest = update.checksumsURL();
         String expected = update.expectedDigest(manifest.isEmpty() ? null : read(manifest, 65536));
         File dir = new File(context.getCacheDir(), "updates");
-        if (!dir.isDirectory() && !dir.mkdirs()) throw new IOException("无法创建更新目录。");
+        if (!dir.isDirectory() && !dir.mkdirs()) throw new IOException("Cannot create the update folder.");
         File part = File.createTempFile("download-", ".apk", dir);
         try {
             MessageDigest hash = MessageDigest.getInstance("SHA-256");
             try (DigestOutputStream output = new DigestOutputStream(new FileOutputStream(part), hash)) {
                 if (transfer(update.downloadURL(), output, update.size(), progress) != update.size())
-                    throw new IOException("下载不完整，请重试。");
+                    throw new IOException("The download is incomplete; please try again.");
             }
             StringBuilder actual = new StringBuilder();
             for (byte b : hash.digest()) actual.append(String.format(java.util.Locale.ROOT, "%02x", b));
-            if (!expected.contentEquals(actual)) throw new IOException("安装包 SHA-256 校验失败。");
+            if (!expected.contentEquals(actual)) throw new IOException("Package SHA-256 verification failed.");
             verifyPackage(context, part, update.version());
             File apk = new File(dir, expected + ".apk");
-            if (!part.renameTo(apk)) throw new IOException("无法保存已校验的安装包。");
+            if (!part.renameTo(apk)) throw new IOException("Cannot save the verified package.");
             return apk;
         } finally {
             part.delete();
@@ -112,10 +112,10 @@ final class UpdateDownload {
         PackageInfo installed = pm.getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES);
         PackageInfo next = pm.getPackageArchiveInfo(apk.getAbsolutePath(), PackageManager.GET_SIGNATURES);
         if (next == null || !installed.packageName.equals(next.packageName) || !version.equals(next.versionName) ||
-                code(next) <= code(installed)) throw new IOException("安装包的应用或版本不匹配。");
+                code(next) <= code(installed)) throw new IOException("The package app or version does not match.");
         if (installed.signatures == null || installed.signatures.length == 0 || next.signatures == null ||
                 !new HashSet<>(Arrays.asList(installed.signatures)).equals(new HashSet<>(Arrays.asList(next.signatures))))
-            throw new IOException("安装包签名与当前应用不一致。");
+            throw new IOException("The package signature does not match the current app.");
     }
 
     @SuppressWarnings("deprecation")

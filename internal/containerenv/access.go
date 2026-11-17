@@ -99,7 +99,7 @@ sshd -t
 systemctl reload ssh
 `
 		if _, err = r.output(ctx, "exec", "--user", "0", inspection.State.ContainerID, "/bin/sh", "-c", script, "sh", profile.Username, profile.BrowserUsername, profile.WorkHomePath(), profile.BrowserHomePath()); err != nil {
-			return errors.New("无法初始化新容器账户；原容器文件已保留")
+			return errors.New("Cannot initialize the new container account; the original container files were kept")
 		}
 	}
 	public, err := r.ensureSSHKey()

@@ -158,7 +158,7 @@ func (s *Server) macOSMountCleanup(ctx context.Context, guestDir string) (func()
 		data, infoErr := s.guest(ctx, info)
 		id, err := macOSLegacyMountID(data)
 		if infoErr != nil || err != nil {
-			return nil, errors.New("无法核对本次挂载的 macOS 卷标识")
+			return nil, errors.New("Cannot check the macOS volume ID of this mount")
 		}
 		detach = "if test \"$(" + query + ")\" = " + shellescape.Quote(line) +
 			" && test \"$(" + info + ")\" = " + shellescape.Quote(id) +

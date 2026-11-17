@@ -111,7 +111,7 @@ func (e *Egress) DialContext(ctx context.Context, network, addr string) (net.Con
 		}
 		if _, err := handshake.DialWithConn(ctx, c, "tcp", addr); err != nil {
 			_ = c.Close()
-			return nil, proxyConnectionError(ctx, "连接指定 SOCKS5 代理", err)
+			return nil, proxyConnectionError(ctx, "connect to the specified SOCKS5 proxy", err)
 		}
 		return c, nil
 	}

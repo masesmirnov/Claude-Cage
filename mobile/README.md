@@ -2,13 +2,13 @@
 
 Cage on your phone is a remote client. Tap "Connect computer" in the middle of the home screen, then connect to your host with a QR code or pairing code. You can view projects, continue Claude Code sessions and handle tool approvals. After pairing, you can also operate the browser and Claude Desktop on your host from the phone. Proxy, time zone and language are set in Cage on the remote host. The settings at the top right offer themes and computer connection options.
 
-Android arm64 APK 可从[官网下载入口](https://claude-cage.com/#download)获取，支持 Android 8.0+。iOS 17+ 设备版由用户通过 Xcode 在本地构建并签名安装。
+The Android arm64 APK is available from the [download section of the website](https://claude-cage.com/#download) and supports Android 8.0+. The device build for iOS 17+ is built, signed and installed locally by the user with Xcode.
 
-## Android 应用更新
+## Android app updates
 
-打开 Cage 或切回前台时，手机每隔至少 12 小时自动检查一次更新，也可以随时在「设置 → 应用更新 → 检查更新」手动检查。正式版只提示更新到更高的正式版，预发行版也会提示更新到更高的预发行版。
+When Cage opens or comes back to the foreground, the phone checks for updates automatically at most once every 12 hours, and you can check by hand at any time in "Settings → App updates → Check for updates". Release builds only offer updates to newer releases, and prerelease builds also offer newer prereleases.
 
-发现新版后点「下载更新」。手机校验安装包后会打开系统安装界面。首次更新时，按提示允许 Cage 安装来自此来源的应用，返回后点「更新」。覆盖安装会保留主题、设备身份和电脑配对记录。旧版设置里没有「检查更新」时，先从官网下载新版 APK 并覆盖安装一次。
+When a new version is found, tap "Download update". The phone verifies the package and opens the system installer. On the first update, allow Cage to install apps from this source as prompted, then go back and tap "Update". Installing over the old version keeps the theme, device identity and computer pairing records. If the old version's settings have no "Check for updates", download the new APK from the website and install it over the old one once first.
 
 ## Build for iOS locally
 

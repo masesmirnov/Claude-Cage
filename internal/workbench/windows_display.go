@@ -177,7 +177,7 @@ func (s *Server) windowsWindowConnection(ctx context.Context) (*nativeWindowConn
 	return startWindowConnection(cmd, cancel)
 }
 
-const remoteWindowsDesktopMessage = "Windows 云端当前支持隔离 PowerShell、浏览器和 Claude CLI，尚未接通图形会话。Claude Desktop 和完整 Windows 桌面暂不可用；无需重新连接或安装应用。"
+const remoteWindowsDesktopMessage = "Windows cloud currently supports isolated PowerShell, the browser and Claude CLI, but the graphical session is not connected yet. Claude Desktop and the full Windows desktop are not available for now; there is no need to reconnect or install apps."
 
 func (s *Server) remoteWindowsDesktopUnavailable(w http.ResponseWriter) bool {
 	if s.windowsGuest == nil || !s.windowsGuest.Remote() {

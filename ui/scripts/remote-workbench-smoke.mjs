@@ -40,9 +40,9 @@ try {
   const chooser = page.getByRole("region", { name: "Cloud folders" });
   await chooser.getByRole("button", { name: "research", exact: true }).click();
   await chooser.getByRole("button", { name: "Choose this cloud folder", exact: true }).click();
-  const createProject = page.getByRole("dialog", { name: "创建项目", exact: true });
+  const createProject = page.getByRole("dialog", { name: "Create project", exact: true });
   await createProject.getByText("/srv/projects/research", { exact: true }).waitFor();
-  await createProject.getByRole("button", { name: "创建项目", exact: true }).click();
+  await createProject.getByRole("button", { name: "Create project", exact: true }).click();
   await page.getByRole("dialog").waitFor({ state: "hidden" });
   assert.equal(state.settings.workspace, "/srv/projects/research");
   assert.equal(directoryRequests, 2);
@@ -51,7 +51,7 @@ try {
   const macKeyboard = page.getByRole("radio", { name: /Mac shortcuts/ });
   assert.equal(await macKeyboard.isChecked(), true, "Mac client defaults must not follow Linux server keyboard mode");
   const savesBefore = state.requests.filter((item) => item.path === "/settings" && item.method === "POST").length;
-  await page.getByRole("radio", { name: /客机原生快捷键/ }).check();
+  await page.getByRole("radio", { name: /Guest-native shortcuts/ }).check();
   assert.equal(await page.evaluate((instance) => localStorage.getItem(`cage-keyboard:remote:${instance}`), instance), "native");
   assert.equal(state.requests.filter((item) => item.path === "/settings" && item.method === "POST").length, savesBefore, "client keyboard changes must not write cloud settings");
   await macKeyboard.check();

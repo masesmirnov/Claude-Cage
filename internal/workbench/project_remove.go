@@ -31,7 +31,7 @@ func (s *Server) removeProject(w http.ResponseWriter, r *http.Request) {
 	}
 	path := input.Workspace
 	if path == "" || isClientMountPath(path) {
-		http.Error(w, "请选择已添加的项目；客户端共享请使用停止共享。", http.StatusBadRequest)
+		http.Error(w, "Choose an added project; for client shares, use Stop sharing.", http.StatusBadRequest)
 		return
 	}
 	projects, err := s.projectPaths()
@@ -118,7 +118,7 @@ func (s *Server) checkProjectFoldersIdle(ctx context.Context, folders []string, 
 	}
 	for _, terminal := range s.terminals.snapshot() {
 		if slices.Contains(folders, terminal["workspace"].(string)) && terminal["closed"] != true {
-			return errors.New("请先关闭此项目的终端，再移除项目。会话历史会保留。")
+			return errors.New("Close this project's terminals before removing the project. Session history is kept.")
 		}
 	}
 	if ready && sharedCLILauncher(claudeTerminalCommand(preferences)) {
@@ -131,7 +131,7 @@ func (s *Server) checkProjectFoldersIdle(ctx context.Context, folders []string, 
 			err = s.discoverTerminalConversations(ctx, projects)
 		}
 		if err != nil {
-			return errors.New("暂时无法核对运行中的会话。请恢复会话连接，或保存工作并停止环境后再移除项目。")
+			return errors.New("Running sessions cannot be checked right now. Restore the session connection, or save your work and stop the environment before removing the project.")
 		}
 	}
 	s.mobileCLI.mu.Lock()
@@ -144,7 +144,7 @@ func (s *Server) checkProjectFoldersIdle(ctx context.Context, folders []string, 
 	}
 	s.mobileCLI.mu.Unlock()
 	if active {
-		return errors.New("请先结束此项目正在运行的会话，再移除项目。会话历史会保留。")
+		return errors.New("End this project's running sessions before removing the project. Session history is kept.")
 	}
 	if ready {
 		body, err := s.browserAction(ctx, "tabs", nil)
@@ -155,11 +155,11 @@ func (s *Server) checkProjectFoldersIdle(ctx context.Context, folders []string, 
 			} `json:"tabs"`
 		}
 		if err != nil || json.Unmarshal(body, &browser) != nil || browser.Tabs == nil {
-			return errors.New("暂时无法核对文件编辑器。请恢复浏览器连接，或保存工作并停止环境后再移除项目。")
+			return errors.New("The file editor cannot be checked right now. Restore the browser connection, or save your work and stop the environment before removing the project.")
 		}
 		for _, tab := range browser.Tabs {
 			if tab.Kind == "editor" && slices.Contains(folders, tab.Workspace) {
-				return errors.New("请先保存文件并关闭此项目的编辑器，再移除项目。")
+				return errors.New("Save your files and close this project's editor before removing the project.")
 			}
 		}
 	}

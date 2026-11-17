@@ -11,7 +11,7 @@ internal static class UpdateInstaller
     public static void VerifyArchive(string path, string hash, string version, string publisher)
     {
         UpdatePolicy.DownloadPath(path, AppUpdater.Root); UpdatePolicy.PlainPath(path);
-        if (new FileInfo(path).Length is <= 0 or > (2L << 30)) throw new IOException("安装包大小无效");
+        if (new FileInfo(path).Length is <= 0 or > (2L << 30)) throw new IOException("Invalid installer size");
         using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
         var actual = Convert.ToHexString(SHA256.HashData(stream));
         if (hash.Length != 64 || !string.Equals(actual, hash, StringComparison.OrdinalIgnoreCase))
@@ -83,7 +83,7 @@ internal static class UpdateInstaller
                 installerStarted = true;
                 try { await installer.WaitForExitAsync().WaitAsync(TimeSpan.FromMinutes(10)); }
                 catch (TimeoutException) { if (!installer.HasExited) installer.Kill(true); await installer.WaitForExitAsync(); throw; }
-                if (installer.ExitCode != 0) throw new IOException($"Windows 安装程序未完成安装（退出码 {installer.ExitCode}）");
+                if (installer.ExitCode != 0) throw new IOException($"The Windows installer did not complete the installation (exit code {installer.ExitCode})");
             }
             EnsureInstallationComplete(plan.Target);
             Authenticode.SamePublisher(original, ownPublisher);
@@ -135,12 +135,12 @@ internal static class UpdateInstaller
                     if (UpdateRecovery.OriginalIntact(plan.Target, backup))
                     {
                         Authenticode.SamePublisher(Path.Combine(plan.Target, "Cage.exe"), plan.Publisher);
-                        Result(false, "更新未完成，原应用已保留：" + detail);
+                        Result(false, "The update did not finish; the original app was kept: " + detail);
                         Process.Start(new ProcessStartInfo(Path.Combine(plan.Target, "Cage.exe")) { UseShellExecute = false, WorkingDirectory = plan.Target });
                         UpdateRecovery.CleanupDirectory(backup); backup = null;
                         return 1;
                     }
-                    if (!installerStarted) throw new IOException("原应用在安装前发生变化，备份已保留，请核对安装目录后重试。");
+                    if (!installerStarted) throw new IOException("The original app changed before installation. The backup was kept; check the install folder and try again.");
                     // Stop the exact new controller through its lifecycle API before
                     // restoring files. Never kill other Cage instances by name.
                     Authenticode.SamePublisher(UpdateRecovery.BackendPath(backup), plan.Publisher);

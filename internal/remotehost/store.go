@@ -64,7 +64,7 @@ func normalizeProfile(p HostProfile) (HostProfile, error) {
 		p.Platform = "linux"
 	}
 	if p.Platform != "linux" && p.Platform != "windows" {
-		return p, failure("invalid_profile", "远程主机系统需要选择 Linux 或 Windows")
+		return p, failure("invalid_profile", "Choose Linux or Windows for the remote host system")
 	}
 	if p.Port == 0 {
 		p.Port = 22

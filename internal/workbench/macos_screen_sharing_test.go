@@ -70,7 +70,7 @@ func TestAssembleScreenSharingStatus(t *testing.T) {
 	if denied.Usable || denied.State != cage.CheckFailed || denied.Authorized != cage.CheckFailed {
 		t.Fatalf("denied handshake: %+v", denied)
 	}
-	if !strings.Contains(denied.Summary, "系统尚未允许") {
+	if !strings.Contains(denied.Summary, "system does not allow") {
 		t.Fatalf("denied summary: %s", denied.Summary)
 	}
 
@@ -82,7 +82,7 @@ func TestAssembleScreenSharingStatus(t *testing.T) {
 	if !ok.Usable || ok.State != cage.CheckPassed || ok.Authorized != cage.CheckUnknown {
 		t.Fatalf("successful handshake: %+v", ok)
 	}
-	if !strings.Contains(ok.Summary, "RFB 握手成功") || !strings.Contains(ok.Summary, "不被允许") {
+	if !strings.Contains(ok.Summary, "RFB handshake succeeded") || !strings.Contains(ok.Summary, "not allowed") {
 		t.Fatalf("successful summary should still guide the toggle: %s", ok.Summary)
 	}
 
@@ -137,7 +137,7 @@ func TestReadScreenSharingRFB(t *testing.T) {
 		}
 	})
 	t.Run("not allowed reason", func(t *testing.T) {
-		reason := "屏幕共享在 localhost 上不被允许"
+		reason := "Screen Sharing is not allowed on localhost"
 		client, server := net.Pipe()
 		defer client.Close()
 		go func() {
@@ -168,7 +168,7 @@ func TestReadScreenSharingRFB(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 		result, err := readScreenSharingRFB(ctx, client)
-		if err != nil || !result.Handshake || !result.Denied || !strings.Contains(result.Reason, "系统设置") {
+		if err != nil || !result.Handshake || !result.Denied || !strings.Contains(result.Reason, "System Settings") {
 			t.Fatalf("hang up: %+v err=%v", result, err)
 		}
 	})
@@ -245,7 +245,7 @@ func TestOpenMacOSScreenSharingActions(t *testing.T) {
 	if w.Code != http.StatusOK || enabled != 1 {
 		t.Fatalf("isolated enable: %d %s enabled=%d", w.Code, w.Body.String(), enabled)
 	}
-	if err := json.Unmarshal(w.Body.Bytes(), &status); err != nil || !strings.Contains(status.Summary, "已重新启用") || !status.Usable {
+	if err := json.Unmarshal(w.Body.Bytes(), &status); err != nil || !strings.Contains(status.Summary, "Re-enabled") || !status.Usable {
 		t.Fatalf("enable payload: %s", w.Body.String())
 	}
 

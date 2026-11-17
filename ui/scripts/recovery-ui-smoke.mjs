@@ -63,7 +63,7 @@ try {
   assert.equal(retries, 1);
   await page.screenshot({ path: join(output, "download-recovery.png") });
   await page.getByRole("dialog", { name: "Downloaded files" }).getByRole("button", { name: "Close panel" }).click();
-  await page.getByRole("button", { name: "打开 .claude-cage-workspace 的编辑器", exact: true }).click();
+  await page.getByRole("button", { name: "Open the editor for .claude-cage-workspace", exact: true }).click();
   await page.getByRole("button", { name: "Browser menu", exact: true }).click();
   await page.getByRole("menuitem", { name: "Restore editor", exact: true }).click();
   await page.getByRole("dialog", { name: "Restart the editor?" }).getByRole("button", { name: "Restart editor", exact: true }).click();

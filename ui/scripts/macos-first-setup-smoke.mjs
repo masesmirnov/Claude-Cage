@@ -73,7 +73,7 @@ for (const failure of ["http", "native"]) {
     assert.ok(!calls.includes("finish"),"finished before filesystem permission");
     permissions.projects=true;
     await waitCall("sharing");
-    const sharingConfirm = tools.getByRole("button", {name:"已开启，重新检查", exact:true});
+    const sharingConfirm = tools.getByRole("button", {name:"Turned on, check again", exact:true});
     await sharingConfirm.waitFor();
     assert.ok(!calls.includes("finish"), "opening the settings pane cannot confirm screen sharing");
     await sharingConfirm.click();

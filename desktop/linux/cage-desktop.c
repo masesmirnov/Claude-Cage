@@ -312,8 +312,8 @@ static gboolean update_checking;
 typedef struct { GSubprocess *process; GCancellable *cancel; guint deadline; PendingReply *pending; } UpdateCheck;
 static void reply_update_state(WebKitScriptMessageReply *reply, JSCContext *context) {
     const char *text = CAGE_CLIENT_ONLY
-        ? "轻量客户端使用独立安装包更新。退出客户端后更换程序；连接配置会保留，云端任务继续运行。"
-        : "Linux 版本使用系统安装包更新。请保存工作、停止环境并退出 Cage，再安装新版 .deb；用户数据会保留。";
+        ? "The lightweight client updates through a separate installer. Replace the program after quitting the client; the connection settings are kept and cloud tasks keep running."
+        : "The Linux version updates through the system package. Save your work, stop the environment and quit Cage, then install the new .deb; user data is kept.";
     char *version = quote(CAGE_VERSION), *message = quote(text), *latest = update_latest ? quote(update_latest) : NULL;
     char *state = latest
         ? g_strdup_printf("{\"phase\":\"manual\",\"currentVersion\":%s,\"latestVersion\":%s,\"message\":%s}", version, latest, message)
@@ -827,11 +827,11 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
         const char *kind = text_member(request, "kind");
         const char *uri = !strcmp(kind, "source") ? "https://github.com/Lee-xeo/Claude-Cage/commits/main"
             : !strcmp(kind, "releases") ? "https://github.com/Lee-xeo/Claude-Cage/releases" : NULL;
-        if (!uri) reply_error(reply, "未知的项目页面");
+        if (!uri) reply_error(reply, "Unknown project page");
         else {
             GError *error = NULL;
             if (g_app_info_launch_default_for_uri(uri, NULL, &error)) reply_json(reply, context, "true");
-            else { reply_error(reply, "无法打开项目页面，请检查默认浏览器"); g_clear_error(&error); }
+            else { reply_error(reply, "Could not open the project page. Check the default browser"); g_clear_error(&error); }
         }
     } else if (!strcmp(name, "appUpdate")) {
         const char *operation = text_member(request, "operation");
@@ -1014,14 +1014,14 @@ static gboolean bridge_received(WebKitUserContentManager *manager, JSCValue *val
         }
     } else if (!strcmp(name, "saveRecoveryKey")) {
         const char *key = text_member(request, "key");
-        if (strlen(key) != 71 || !g_regex_match_simple("^[A-F0-9]{8}(-[A-F0-9]{8}){7}$", key, 0, 0)) reply_error(reply, "恢复密钥格式无效。");
-        else if (app.picker_open) reply_error(reply, "请先完成当前文件选择。");
+        if (strlen(key) != 71 || !g_regex_match_simple("^[A-F0-9]{8}(-[A-F0-9]{8}){7}$", key, 0, 0)) reply_error(reply, "Invalid recovery key format.");
+        else if (app.picker_open) reply_error(reply, "Finish the current file selection first.");
         else {
-            char *path = choose_file(GTK_FILE_CHOOSER_ACTION_SAVE, "保存账户恢复密钥", "账户恢复密钥.txt");
+            char *path = choose_file(GTK_FILE_CHOOSER_ACTION_SAVE, "Save the account recovery key", "Account recovery key.txt");
             char *contents = g_strconcat(key, "\n", NULL);
             if (!path) reply_json(reply, context, "false");
             else if (g_file_set_contents_full(path, contents, -1, G_FILE_SET_CONTENTS_CONSISTENT | G_FILE_SET_CONTENTS_DURABLE, 0600, NULL)) reply_json(reply, context, "true");
-            else reply_error(reply, "恢复密钥未能保存，请检查保存位置的权限。");
+            else reply_error(reply, "The recovery key could not be saved. Check the permissions of the save location.");
             g_free(contents); g_free(path);
         }
     } else if (!strcmp(name, "exportTheme")) {

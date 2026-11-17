@@ -100,7 +100,7 @@ func (s *Server) accountAction(w http.ResponseWriter, r *http.Request) {
 		recoveryKey, err = s.account.generateRecovery(input.Password)
 	case "recovery-reset":
 		if input.Password != input.ConfirmPassword {
-			http.Error(w, "两次密码不一致", http.StatusBadRequest)
+			http.Error(w, "The passwords do not match", http.StatusBadRequest)
 			return
 		}
 		recoveryKey, err = s.account.resetPassword(input.RecoveryKey, input.Password)

@@ -38,7 +38,7 @@ func prepareMacSystemMedia(ctx context.Context, profile string, install *guestos
 		return ready.Path, nil
 	}
 	if !filepath.IsAbs(media) || !strings.EqualFold(filepath.Ext(media), ".pkg") || len(install.SHA256) != 64 {
-		return "", errors.New("请选择已验证的 Apple 完整 Intel macOS 安装包")
+		return "", errors.New("Choose a verified full Apple installer for Intel macOS")
 	}
 	file, err := os.Open(media)
 	if err != nil {
@@ -50,7 +50,7 @@ func prepareMacSystemMedia(ctx context.Context, profile string, install *guestos
 		return "", err
 	}
 	if hex.EncodeToString(hash.Sum(nil)) != install.SHA256 {
-		return "", errors.New("Intel macOS 安装包已变化")
+		return "", errors.New("The Intel macOS installer has changed")
 	}
 	return media, nil
 }
@@ -58,7 +58,7 @@ func prepareMacSystemMedia(ctx context.Context, profile string, install *guestos
 func createMacOSGuest(ctx context.Context, profile, state string, l *vm.Lima, name, image string) error {
 	install, err := guestos.LoadInstallation(profile)
 	if err != nil || install == nil || install.System != guestos.MacOS {
-		return errors.New("缺少 Intel macOS 安装记录")
+		return errors.New("The Intel macOS installation record is missing")
 	}
 	exe, err := os.Executable()
 	if err != nil {
@@ -72,7 +72,7 @@ func createMacOSGuest(ctx context.Context, profile, state string, l *vm.Lima, na
 	}
 	transport := hostproxy.NewTransport()
 	defer transport.CloseIdleConnections()
-	fmt.Fprintln(os.Stdout, "正在准备 Intel Mac 的离线安装介质…")
+	fmt.Fprintln(os.Stdout, "Preparing the offline installation media for the Intel Mac…")
 	recovery, archive, err := hostimage.PrepareIntelInstaller(ctx, image, cache, version, transport)
 	if err != nil {
 		return err
@@ -116,7 +116,7 @@ func matchMacOSGuestSource(ctx context.Context, profile string, l *vm.Lima, name
 	}
 	install, err := guestos.LoadInstallation(profile)
 	if err != nil || install == nil {
-		return errors.New("Intel macOS 安装记录缺失")
+		return errors.New("The Intel macOS installation record is missing")
 	}
 	dir, err := dirnames.InstanceDir(name)
 	if err != nil {
@@ -124,7 +124,7 @@ func matchMacOSGuestSource(ctx context.Context, profile string, l *vm.Lima, name
 	}
 	identity, err := guestos.ReadIntelMacOSIdentity(dir)
 	if err != nil || identity == nil || identity.Installation != install.ID {
-		return errors.New("Intel macOS 安装身份变化")
+		return errors.New("The Intel macOS installation identity has changed")
 	}
 	return matchIntelBootSource(ctx, dir, image)
 }

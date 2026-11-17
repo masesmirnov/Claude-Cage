@@ -169,14 +169,14 @@ export function ProjectDialog({
   }} />;
   return (
     <Modal
-      title={adding ? editing ? "编辑项目" : "创建项目" : activate ? "打开项目" : "选择工作项目"}
+      title={adding ? editing ? "Edit project" : "Create project" : activate ? "Open project" : "Choose a work project"}
       onClose={busy ? undefined : onClose}
       footer={
         <>
           <span className="save-note">
             {busy
               ? submitting ? removeTarget ? "Removing the project…" : "Connecting to the project…" : status.job?.message
-              : adding ? editing ? "会话历史保留" : "首个文件夹为默认目录" : "使用已授权的 Cage 项目"}
+              : adding ? editing ? "Session history is kept" : "The first folder is the default folder" : "Use an authorized Cage project"}
           </span>
           <button disabled={busy} onClick={onClose}>
             Cancel
@@ -192,7 +192,7 @@ export function ProjectDialog({
             ) : (
               <FolderOpen size={15} />
             )}
-            {adding ? editing ? "保存项目" : "创建项目" : activate ? "打开项目" : "使用此项目"}
+            {adding ? editing ? "Save project" : "Create project" : activate ? "Open project" : "Use this project"}
           </button>
         </>
       }
@@ -202,7 +202,7 @@ export function ProjectDialog({
         className="modal-body project-form"
         onSubmit={open}
       >
-        <p>{adding ? "为项目命名，并添加需要一起使用的文件夹。" : activate ? "选择要打开的项目，或添加新项目。" : "从 Cage 项目列表选择工作目录。新项目由 Cage 授权并共享。"}</p>
+        <p>{adding ? "Name the project and add the folders you need to use together." : activate ? "Choose a project to open, or add a new one." : "Choose a working folder from the Cage project list. New projects are authorized and shared by Cage."}</p>
         {canShare && <>
           <button type="button" className="quiet-button project-picker-add" onClick={() => { setSharing(!sharing); setWriteAccess(false); }} disabled={busy} aria-expanded={sharing}>
             <FolderOpen size={16} />Share a local project…
@@ -216,7 +216,7 @@ export function ProjectDialog({
         </>}
         {!sharing && !adding && <>
           <fieldset className="project-picker-list" disabled={busy || Boolean(removeTarget)}>
-            <legend>项目</legend>
+            <legend>Projects</legend>
             {projectList.map((project) => <div className={`project-picker-row ${path === project ? "selected" : ""}`} key={project}>
               <label className="project-picker-item">
                 <input type="radio" name="project" value={project} checked={path === project} onChange={() => { setPath(project); setError(""); }} />
@@ -224,37 +224,37 @@ export function ProjectDialog({
                 <span>
                   <strong>{displayName(project)}</strong>
                   <small>{shares.find((s) => s.guest_path === project)?.path || groups.find(g => g.workspace === project)?.folders.join(" · ") || project}</small>
-                  {status.project_errors?.some((item) => (groups.find(group => group.workspace === project)?.folders || [project]).includes(item.path)) && <small>需要重新连接，选择后重试</small>}
+                  {status.project_errors?.some((item) => (groups.find(group => group.workspace === project)?.folders || [project]).includes(item.path)) && <small>Needs to reconnect; choose it and try again</small>}
                 </span>
               </label>
               {path === project && !selectedShare && !removeTarget && <div className="project-picker-actions">
-                {selectedGroup && <button type="button" className="icon-button" aria-label="编辑名称与文件夹…" disabled={busy || !status.ready} onClick={edit}><PencilLine size={16} aria-hidden="true" /></button>}
-                {activate && <button type="button" className="icon-button project-picker-remove" aria-label="从 Cage 移除此项目" disabled={busy} onClick={() => { setRemoveTarget(path); setError(""); setRecovery(""); }}><FolderMinus size={16} aria-hidden="true" /></button>}
+                {selectedGroup && <button type="button" className="icon-button" aria-label="Edit name and folders…" disabled={busy || !status.ready} onClick={edit}><PencilLine size={16} aria-hidden="true" /></button>}
+                {activate && <button type="button" className="icon-button project-picker-remove" aria-label="Remove this project from Cage" disabled={busy} onClick={() => { setRemoveTarget(path); setError(""); setRecovery(""); }}><FolderMinus size={16} aria-hidden="true" /></button>}
               </div>}
             </div>)}
           </fieldset>
           {selectedShare && <button type="button" disabled={submitting} onClick={() => revoke(selectedShare)}>Stop sharing the local project ({selectedShare.readonly ? "read-only" : "read-write"})</button>}
           {removeTarget && <section className="project-picker-list" aria-label="Confirm project removal">
-            <p>移除“{displayName(removeTarget)}”将解除所有绑定文件夹的共享。原文件和会话历史保留，重新添加相同目录后可继续使用历史。</p>
-            <p className="field-help">请先保存文件，并关闭此项目的终端、运行中会话和编辑器。移除当前项目后选中剩余项目；移除最后一个项目后，可重新添加文件夹。</p>
+            <p>Removing "{displayName(removeTarget)}" stops sharing all bound folders. The original files and session history are kept, and you can keep using the history after adding the same folder again.</p>
+            <p className="field-help">Save your files and close this project's terminals, running sessions and editor first. After removing the current project, a remaining project is selected; after removing the last project, you can add folders again.</p>
             <button type="button" disabled={busy} onClick={() => { setRemoveTarget(""); setError(""); }}>Cancel removal</button>
             <button type="button" disabled={busy} onClick={remove}>Confirm project removal</button>
           </section>}
           <button type="button" className="quiet-button project-picker-add" onClick={add} disabled={busy || Boolean(removeTarget) || !status.ready}><Plus size={16} />{remote ? "Add a cloud project…" : "Add a local project…"}</button>
         </>}
         {!sharing && adding && <>
-          {projects.length > 0 && <button type="button" className="quiet-button project-picker-add" disabled={busy} onClick={() => { setAdding(false); setEditing(""); setFolders([]); setPending(null); setPath(groups.find(group => group.folders.includes(status.workspace))?.workspace || projects[0]); setError(""); }}>返回已有项目</button>}
-          <label htmlFor="project-name">项目名称</label>
-          <input id="project-name" autoFocus value={name} maxLength={100} onChange={event => setName(event.target.value)} placeholder="例如：课程系统" disabled={busy} />
-          <label>源文件夹</label>
-          {folders.length > 0 && <ul className="project-folder-list" aria-label="已绑定文件夹">
+          {projects.length > 0 && <button type="button" className="quiet-button project-picker-add" disabled={busy} onClick={() => { setAdding(false); setEditing(""); setFolders([]); setPending(null); setPath(groups.find(group => group.folders.includes(status.workspace))?.workspace || projects[0]); setError(""); }}>Back to existing projects</button>}
+          <label htmlFor="project-name">Project name</label>
+          <input id="project-name" autoFocus value={name} maxLength={100} onChange={event => setName(event.target.value)} placeholder="For example: Course system" disabled={busy} />
+          <label>Source folders</label>
+          {folders.length > 0 && <ul className="project-folder-list" aria-label="Bound folders">
             {folders.map((folder, index) => <li key={folder}>
               <FolderOpen size={16} aria-hidden="true" /><span><strong>{projectName(folder)}</strong><small>{folder}</small></span>
-              {index === 0 && <small className="project-folder-default">默认</small>}
-              <button type="button" disabled={busy || folder === editing} aria-label={`移除文件夹 ${projectName(folder)}`} title={folder === editing ? "默认文件夹用于关联会话历史，需保留" : "解除文件夹绑定"} onClick={() => setFolders(previous => previous.filter(value => value !== folder))}>移除</button>
+              {index === 0 && <small className="project-folder-default">Default</small>}
+              <button type="button" disabled={busy || folder === editing} aria-label={`Remove folder ${projectName(folder)}`} title={folder === editing ? "The default folder links session history and must be kept" : "Unbind folder"} onClick={() => setFolders(previous => previous.filter(value => value !== folder))}>Remove</button>
             </li>)}
           </ul>}
-          <label htmlFor="project-path">添加文件夹</label>
+          <label htmlFor="project-path">Add folder</label>
           <div className="folder-input">
           <input
             id="project-path"
@@ -268,7 +268,7 @@ export function ProjectDialog({
             spellCheck="false"
             autoComplete="off"
           />
-          {path.trim() && <button type="button" disabled={busy} onClick={() => appendFolder(path)}>添加</button>}
+          {path.trim() && <button type="button" disabled={busy} onClick={() => appendFolder(path)}>Add</button>}
           {(remote || nativeAvailable()) && (
             <button type="button" onClick={choose} disabled={busy || browsing}>
               {browsing ? "Reading…" : remote ? "Browse cloud folders…" : "Choose a folder…"}
@@ -282,13 +282,13 @@ export function ProjectDialog({
               {directories.directories?.map((directory) => <button type="button" key={directory.path} disabled={browsing} onClick={() => browse(directory.path)}><FolderOpen size={16} />{directory.name}</button>)}
               {directories.directories?.length === 0 && <p className="field-help">This directory has no folders to browse.</p>}
             </div>
-            <button type="button" disabled={browsing || !directories.selectable} onClick={() => { appendFolder(directories.path); setDirectories(null); }}>选择此云端文件夹</button>
+            <button type="button" disabled={browsing || !directories.selectable} onClick={() => { appendFolder(directories.path); setDirectories(null); }}>Choose this cloud folder</button>
           </section>}
         </>}
-        {adding && <p className="field-help">Claude 从默认文件夹启动，并可读写其余绑定文件夹。修改绑定后，新建或重新打开会话生效。{editing && "默认文件夹用于关联会话历史，需保留。解绑前请关闭项目的终端、运行中会话和编辑器。"}</p>}
+        {adding && <p className="field-help">Claude starts from the default folder and can read and write the other bound folders. After changing bindings, the change takes effect for new or reopened sessions.{editing && "The default folder links session history and must be kept. Before unbinding, close the project's terminals, running sessions and editor."}</p>}
         <p className="field-help project-picker-note">
-          <span>{remote ? "云端项目保存在服务器上。" : "绑定文件夹中的改动会直接写入本机。"}</span>
-          <span>所有项目共用 Cage 环境，已有终端和网页会保持运行。</span>
+          <span>{remote ? "Cloud projects are stored on the server." : "Changes in bound folders are written directly to this computer."}</span>
+          <span>All projects share the Cage environment, and existing terminals and web pages keep running.</span>
         </p>
         {!status.ready && <p className="field-help">Projects can be added or opened once the environment is ready. Existing projects can still be removed from the list.</p>}
         {error && (

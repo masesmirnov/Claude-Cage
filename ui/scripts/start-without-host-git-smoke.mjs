@@ -16,15 +16,15 @@ for (const platform of ["darwin", "windows", "linux"]) {
     try {
       const { page, state, errors } = f;
       if (install) {
-        await page.getByRole("button", { name: "下一步：配置代理" }).click();
-        await page.getByRole("button", { name: "开始安装", exact: true }).click();
+        await page.getByRole("button", { name: "Next: configure proxy" }).click();
+        await page.getByRole("button", { name: "Start installation", exact: true }).click();
       } else {
-        await page.getByRole("button", { name: "启动 Cage 环境", exact: true }).click();
+        await page.getByRole("button", { name: "Start Cage environment", exact: true }).click();
       }
-      await page.getByRole(install ? "button" : "heading", { name: install ? "进入工作台" : "Cage 环境已就绪", exact: true }).waitFor();
+      await page.getByRole(install ? "button" : "heading", { name: install ? "Enter the workbench" : "The Cage environment is ready", exact: true }).waitFor();
       assert.equal(state.requests.filter(request => request.path === "/start").length, 1);
       assert.equal(state.requests.some(request => request.path === "/host/git"), false);
-      assert.equal(await page.getByText(/启用.*Git.*保护|保护本机 Git/).count(), 0);
+      assert.equal(await page.getByText(/enable.*Git.*protection|protect local Git/i).count(), 0);
       await page.reload();
       assert.equal(state.requests.some(request => request.path === "/host/git"), false);
       assert.equal(gitRequests, 0);

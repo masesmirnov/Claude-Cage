@@ -86,7 +86,7 @@ export function ResourceSettings({ status, onConfirm, onDirtyChange }) {
   </section>;
   return <section className="environment-versions resource-settings" aria-label="Compute resources">
     <h4>Compute resources</h4>
-    <p className="field-help resource-intro">默认使用主机一半的资源，可在下方调整。{macOS ? "macOS 客机使用固定的启动内存容量：运行中不会把内存归还主机，主机活动监视器里的占用会逐渐接近所设上限，这不是内存泄漏；需要给主机留出更多内存时请调低上限并重启客机。" : "内存按需使用，持续空闲后逐步归还主机。"}CPU 按实际任务使用。</p>
+    <p className="field-help resource-intro">Uses half of the host's resources by default; you can adjust them below.{macOS ? "macOS guests use a fixed boot memory size: while running, memory is not returned to the host, and the usage in the host's Activity Monitor gradually approaches the limit you set. This is not a memory leak; to leave more memory for the host, lower the limit and restart the guest." : "Memory is used as needed and returned to the host gradually after staying idle."}CPU is used according to actual tasks.</p>
     {draft ? <form className="resource-allocation" onSubmit={save}>
       <fieldset disabled={busy} className="resource-fields">
         <legend className="sr-only">Resource settings</legend>

@@ -21,7 +21,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $toolVenv 'Scripts\python.exe'))) {
     # Reuse the bundled pip read-only, but install dependencies into a separate
     # writable environment instead of changing the managed Python installation.
     & (Join-Path $toolPython 'python.exe') -m venv --without-pip --system-site-packages $toolVenv | ForEach-Object { $_ }
-    if ($LASTEXITCODE -ne 0) { Write-Warning 'Python 工作环境初始化失败，仍可使用基础 Python 和浏览器。' }
+    if ($LASTEXITCODE -ne 0) { Write-Warning 'Python work environment initialization failed; basic Python and the browser are still available.' }
 }
 if (Test-Path -LiteralPath (Join-Path $toolVenv 'Scripts\python.exe')) { $env:VIRTUAL_ENV = $toolVenv }
 $env:PATH = ((Join-Path $toolVenv 'Scripts'), $toolNode, $env:npm_config_prefix, (Join-Path $env:PYTHONUSERBASE 'Python313\Scripts'), (Join-Path $toolPython 'Scripts'), $env:PATH) -join ';'

@@ -61,18 +61,18 @@ func (s *Server) recordInstallRecovery(detail string) {
 // lifecycle operations. It never creates or substitutes a MacOSProfile.
 func (s *Server) macOSInstallRecovery(w http.ResponseWriter, r *http.Request) {
 	if !s.hasTrustedView(r) || !s.localVMStorage() {
-		http.Error(w, "请在本机 Cage 窗口继续安装", http.StatusForbidden)
+		http.Error(w, "Continue the installation in the local Cage window", http.StatusForbidden)
 		return
 	}
 	recovery, err := guestos.LoadMacOSInstallRecovery(s.profile)
 	if err != nil {
-		s.recordInstallRecovery("恢复入口身份校验未通过：" + err.Error())
-		http.Error(w, "安装恢复入口身份校验未通过，原磁盘和安装记录已保留；请稍后重试，仍失败时可在“日志与诊断”导出诊断包排查", http.StatusConflict)
+		s.recordInstallRecovery("The recovery entry identity verification failed: " + err.Error())
+		http.Error(w, "The install recovery entry identity verification failed; the original disk and install record were kept. Please try again later; if it still fails, export a diagnostics bundle in \"Logs and diagnostics\"", http.StatusConflict)
 		return
 	}
 	if s.macosGuest != nil {
-		s.recordInstallRecovery("已有绑定的 macOS 客机，安装恢复入口停用")
-		http.Error(w, "已有绑定的 macOS 客机，无需恢复安装；原磁盘和安装记录已保留", http.StatusConflict)
+		s.recordInstallRecovery("A bound macOS guest already exists, so the install recovery entry is disabled")
+		http.Error(w, "A bound macOS guest already exists, so the installation does not need to be restored; the original disk and install record were kept", http.StatusConflict)
 		return
 	}
 	if recovery == nil {
@@ -83,8 +83,8 @@ func (s *Server) macOSInstallRecovery(w http.ResponseWriter, r *http.Request) {
 				canPrepare, loadErr = guestos.CanRecoverMacOSInstall(s.profile, install.ID)
 			}
 			if loadErr != nil {
-				s.recordInstallRecovery("确认原安装记录可恢复性失败：" + loadErr.Error())
-				http.Error(w, "暂时无法确认原安装记录是否可恢复，请稍后重试；现有数据已保留，可在“日志与诊断”导出诊断包排查", http.StatusConflict)
+				s.recordInstallRecovery("failed to confirm that the original install record can be restored: " + loadErr.Error())
+				http.Error(w, "Cannot confirm right now whether the original install record can be restored; please try again later. Existing data was kept, and you can export a diagnostics bundle in \"Logs and diagnostics\"", http.StatusConflict)
 				return
 			}
 			jsonReply(w, map[string]bool{"available": false, "can_prepare": canPrepare})
@@ -92,40 +92,40 @@ func (s *Server) macOSInstallRecovery(w http.ResponseWriter, r *http.Request) {
 		}
 		var input guestos.MacLoginRequest
 		if !readJSON(w, r, &input) || input.Action != "prepare" {
-			http.Error(w, "请先确认原安装记录", http.StatusConflict)
+			http.Error(w, "Confirm the original install record first", http.StatusConflict)
 			return
 		}
 		install, loadErr := guestos.LoadInstallation(s.profile)
 		if loadErr != nil {
-			s.recordInstallRecovery("读取原安装记录失败：" + loadErr.Error())
-			http.Error(w, "暂时无法读取原安装记录，请稍后重试；现有数据已保留，可在“日志与诊断”导出诊断包排查", http.StatusConflict)
+			s.recordInstallRecovery("failed to read the original install record: " + loadErr.Error())
+			http.Error(w, "The original install record cannot be read right now; please try again later. Existing data was kept, and you can export a diagnostics bundle in \"Logs and diagnostics\"", http.StatusConflict)
 			return
 		}
 		if install == nil || install.System != guestos.MacOS {
-			s.recordInstallRecovery("准备恢复入口被拒绝：没有对应的 macOS 安装记录")
-			http.Error(w, "没有可恢复的 macOS 安装记录，请回到初始化页重新确认", http.StatusConflict)
+			s.recordInstallRecovery("preparing the recovery entry was refused: there is no matching macOS install record")
+			http.Error(w, "There is no macOS install record to restore; go back to the initialization page and confirm again", http.StatusConflict)
 			return
 		}
 		credential, loadErr := s.account.macGuestCredentials(r.Context(), install.ID)
 		if loadErr != nil {
-			s.recordInstallRecovery("读取原客机凭据失败：" + loadErr.Error())
-			http.Error(w, "暂时无法读取原客机凭据，请确认 Cage 账密后重试；原账户和磁盘已保留", http.StatusConflict)
+			s.recordInstallRecovery("Failed to read the original guest credentials: " + loadErr.Error())
+			http.Error(w, "The original guest credentials cannot be read right now; confirm the Cage credentials and try again. The original account and disk were kept", http.StatusConflict)
 			return
 		}
 		if !guestos.ValidMacOSAccountName(credential.Username) || credential.Password == "" {
-			s.recordInstallRecovery("准备恢复入口被拒绝：原客机凭据不完整")
-			http.Error(w, "原客机凭据不完整，请在设置中确认 Cage 账密后重试；原账户和磁盘已保留", http.StatusConflict)
+			s.recordInstallRecovery("preparing the recovery entry was refused: the original guest credentials are incomplete")
+			http.Error(w, "The original guest credentials are incomplete; confirm the Cage credentials in Settings and try again. The original account and disk were kept", http.StatusConflict)
 			return
 		}
 		canRecover, loadErr := guestos.CanRecoverMacOSInstall(s.profile, install.ID)
 		if loadErr != nil {
-			s.recordInstallRecovery("核对原客机磁盘身份失败：" + loadErr.Error())
-			http.Error(w, "暂时无法核对原客机磁盘身份，请稍后重试；磁盘和安装记录已保留", http.StatusConflict)
+			s.recordInstallRecovery("Failed to check the original guest disk identity: " + loadErr.Error())
+			http.Error(w, "The original guest disk identity cannot be checked right now; please try again later. The disk and install record were kept", http.StatusConflict)
 			return
 		}
 		if !canRecover {
-			s.recordInstallRecovery("准备恢复入口被拒绝：原客机磁盘或机器标识尚未就绪")
-			http.Error(w, "原客机磁盘或机器标识尚未就绪，暂时无法准备恢复入口；磁盘和安装记录已保留", http.StatusConflict)
+			s.recordInstallRecovery("preparing the recovery entry was refused: the original guest disk or machine ID is not ready yet")
+			http.Error(w, "The original guest disk or machine ID is not ready yet, so the recovery entry cannot be prepared for now; the disk and install record were kept", http.StatusConflict)
 			return
 		}
 		s.launch(w, "macos-install-recovery", func() error {
@@ -142,7 +142,7 @@ func (s *Server) macOSInstallRecovery(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		identity, err := guestos.LoadMacOSProfileOrRecovery(s.profile)
 		if err != nil || identity == nil {
-			http.Error(w, "无法核对恢复客机身份", http.StatusConflict)
+			http.Error(w, "Cannot check the recovery guest identity", http.StatusConflict)
 			return
 		}
 		jsonReply(w, map[string]any{"available": true, "phase": recovery.Phase, "running": macOSInstanceRunning(filepath.Join(s.profile, "state", "lima", "mac"), identity.Backend)})
@@ -166,7 +166,7 @@ func (s *Server) macOSInstallRecovery(w http.ResponseWriter, r *http.Request) {
 		return
 	case "open", "close", "frame", "click", "key", "scroll":
 	default:
-		http.Error(w, "恢复画面操作无效", http.StatusBadRequest)
+		http.Error(w, "The recovery screen operation is invalid", http.StatusBadRequest)
 		return
 	}
 	input.Setup = true
@@ -177,21 +177,21 @@ func (s *Server) macOSInstallRecovery(w http.ResponseWriter, r *http.Request) {
 	var dial net.Dialer
 	conn, err := dial.DialContext(ctx, "unix", filepath.Join(s.profile, "state", "lima", "mac", "cage-login.sock"))
 	if err != nil {
-		s.recordInstallRecovery("连接恢复画面失败：" + err.Error())
-		http.Error(w, "请先启动恢复客机", http.StatusConflict)
+		s.recordInstallRecovery("Failed to connect to the recovery screen: " + err.Error())
+		http.Error(w, "Start the recovery guest first", http.StatusConflict)
 		return
 	}
 	defer conn.Close()
 	_ = conn.SetDeadline(time.Now().Add(8 * time.Second))
 	if err := json.NewEncoder(conn).Encode(input); err != nil {
-		s.recordInstallRecovery(fmt.Sprintf("发送恢复画面请求失败：%v", err))
-		http.Error(w, "恢复画面无法响应", http.StatusServiceUnavailable)
+		s.recordInstallRecovery(fmt.Sprintf("Failed to send the recovery screen request: %v", err))
+		http.Error(w, "The recovery screen is not responding", http.StatusServiceUnavailable)
 		return
 	}
 	var result guestos.MacLoginReply
 	if err := json.NewDecoder(io.LimitReader(conn, 6<<20)).Decode(&result); err != nil {
-		s.recordInstallRecovery(fmt.Sprintf("读取恢复画面响应失败：%v", err))
-		http.Error(w, "恢复画面无法响应", http.StatusServiceUnavailable)
+		s.recordInstallRecovery(fmt.Sprintf("Failed to read the recovery screen response: %v", err))
+		http.Error(w, "The recovery screen is not responding", http.StatusServiceUnavailable)
 		return
 	}
 	if input.Action == "close" || result.Closed {

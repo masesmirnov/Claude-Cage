@@ -26,7 +26,7 @@ Chat and Code run in the same official app. Cowork, which needs an extra virtual
 
 On Linux environments, the Desktop picture automatically lowers its refresh rate when nobody is interacting, and returns to 120 Hz as soon as you act. Sharpness stays the same. The picture renders at the pixel density of the screen it is on. Adjusting "Display size" only changes the size of text and controls, not the number of picture pixels. For details, see [Browser notes](browser.md#open-web-pages-and-browser-settings).
 
-滚动卡顿时到“设置 → 通用”开启“优先流畅”，保存并在下次启动环境后生效。它在高分屏上降低绘图像素密度，控件逻辑大小保留。Linux 环境同时让 Claude Desktop 减少动效：动画播放期间应用每一帧都会重绘整块消息区域，关掉后画面只在内容变化时更新。性能还受主机 CPU、内存以及远程网络影响。
+If scrolling stutters, turn on "Prefer smoothness" in "Settings → General"; it takes effect after saving and the next environment start. On high-density screens it lowers the drawing pixel density while keeping the logical size of controls. In Linux environments it also makes Claude Desktop reduce motion: while an animation plays, the app redraws the whole message area every frame, and with it off the picture only updates when content changes. Performance also depends on the host CPU, memory and the remote network.
 
 ## Copy and paste
 
@@ -42,34 +42,34 @@ When you upload attachments in the web app or Desktop, click "Choose local file"
 
 In local mode, opening and locating files only accepts files in authorized projects or in saved download records. Linux guests use the existing host file entry. macOS and Windows already have native save transfer, the system picker and file opening wired up, but the full official Claude upload, save, open and locate flow still needs hands-on verification on real machines. Not every file link in the native app is guaranteed to open the host's default app. If there is no record of a successful save to the host, first check the file and operation details in the guest. Cloud files need to be saved to this computer through the remote download flow.
 
-### Windows 客机：官方 Desktop 提示“Claude 无法打开该文件夹”
+### Windows guest: the official Desktop says "Claude can't open this folder"
 
-Windows 客机通过 WinFsp 与 SSHFS-Win，把已授权项目挂载到客机用户目录下的 `Cage\Projects\<项目编号>`。Cage 的终端和 Claude Code 使用这个挂载目录，可正常读写。
+Windows guests mount authorized projects with WinFsp and SSHFS-Win to `Cage\Projects\<project number>` in the guest user folder. Cage's terminals and Claude Code use this mounted folder and can read and write it normally.
 
-官方 Claude Desktop 的 Code 模式在“新建环境 → 本地”中选择该挂载目录时，可能弹出“Claude 无法打开该文件夹”，并提示可能涉及网络驱动器、虚拟驱动器或访问权限。该对话框出现在客机桌面中，Cage 窗口里的 Desktop 画面可能看起来没有反应，也没有错误提示。目前认为这是 Claude Desktop 对网络或虚拟驱动器目录的限制；Anthropic 的相似报告见 [anthropics/claude-code#91026](https://github.com/anthropics/claude-code/issues/91026)。具体判断规则不在 Cage 控制范围内，尚未确认所有 Desktop 版本均如此。
+When the Code mode of the official Claude Desktop chooses this mounted folder in "New environment → Local", it may show "Claude can't open this folder" and mention network drives, virtual drives or access permissions. The dialog appears on the guest desktop, so the Desktop view in the Cage window may look unresponsive with no error. This currently appears to be a Claude Desktop restriction on network or virtual drive folders; a similar Anthropic report is [anthropics/claude-code#91026](https://github.com/anthropics/claude-code/issues/91026). The exact rules are outside Cage's control, and it is not confirmed for every Desktop version.
 
-遇到时可以：
+When this happens, you can:
 
-- 在 Cage 的 Claude Code 终端或普通终端中处理共享项目。它们直接使用挂载目录，是 Windows 客机上访问共享项目的受支持入口。
-- 需要使用官方 Desktop 的 Code 模式时，在客机本地磁盘上选择文件夹，例如把项目复制到客机用户目录后再打开。这份副本与主机原文件相互独立，改动不会自动回到主机；需要带回时可用 Git 提交推送，或手动复制回主机项目。
-- 如果对话框已经弹出而画面不动，先在客机桌面中关闭该对话框，再重新选择文件夹。
+- Work on shared projects in Cage's Claude Code terminal or a regular terminal. They use the mounted folder directly and are the supported way to reach shared projects on Windows guests.
+- If you need the Code mode of the official Desktop, choose a folder on the guest's local disk, for example copy the project to the guest user folder and open it there. This copy is independent of the original files on the host, and changes do not flow back automatically; to bring them back, commit and push with Git, or copy them back to the host project by hand.
+- If the dialog already appeared and the view is frozen, first close the dialog on the guest desktop, then choose the folder again.
 
-Cage 暂时不会把这个客机对话框转成主机提示。反馈问题时请附上 Claude Desktop 版本、选择的路径和诊断包。
+Cage does not turn this guest dialog into a host message yet. When reporting the problem, include the Claude Desktop version, the chosen path and a diagnostics bundle.
 
 ## Close, update and recover
 
-切换到终端或浏览器时 Desktop 保持运行。应用上方的“关闭应用”释放其运行资源，登录资料继续保留。
+Desktop keeps running when you switch to the terminal or browser. "Close app" at the top of the app frees its runtime resources, and the sign-in data is kept.
 
-macOS 和 Windows 使用 Claude Desktop 应用内的更新入口，下载完成后可按应用提示重启。macOS 的应用目录由使用账户管理，无需管理员密码；已有环境请先在“设置 → 环境”更新组件，让安装权限与窗口连接组件生效。Windows 沿用官方 MSIX 的自动更新机制，更新后的窗口会重新连接。应用更新不清除登录资料、项目和历史。
+macOS and Windows use the update entry inside Claude Desktop, and after the download you can restart as the app prompts. On macOS the app folder is managed by the account that uses it, so no administrator password is needed; for existing environments, first update the components in "Settings → Environment" so the install permissions and window connection components take effect. Windows keeps the official MSIX automatic update mechanism, and the updated window reconnects. App updates do not clear sign-in data, projects or history.
 
-Linux 版由 Anthropic 官方 apt 软件源更新，应用内的更新入口可能打开官方说明页。在 Cage 的 Desktop 顶部点击“更新应用”，保存工作后确认，Cage 会关闭应用、安装软件源中的可用版本并重新打开。关闭应用后也可选择“更新 / 修复安装”。需要通过终端操作时，先关闭 Desktop，再在 Cage 终端运行：
+The Linux version is updated from Anthropic's official apt repository, and the update entry inside the app may open the official instructions page. Click "Update app" at the top of Desktop in Cage and confirm after saving your work; Cage closes the app, installs the version available in the repository and opens it again. After closing the app you can also choose "Update / repair install". To do it from a terminal, close Desktop first, then run in a Cage terminal:
 
 ```sh
 sudo apt update
 sudo apt install --only-upgrade claude-desktop
 ```
 
-安装完成后从侧栏重新打开 Desktop。使用相同软件源重复更新会保留当前已安装版本。Linux 更新方式见 [Anthropic 安装说明](https://support.claude.com/en/articles/10065433-install-claude-desktop)。
+After installation, reopen Desktop from the sidebar. Updating again from the same repository keeps the currently installed version. For the Linux update method, see [Anthropic's install instructions](https://support.claude.com/en/articles/10065433-install-claude-desktop).
 
 Cage creates and unlocks the credentials needed by its internal system keyring, so you do not need to set a separate keyring password. Changing the Cage password keeps Desktop sign-in data.
 

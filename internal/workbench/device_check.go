@@ -118,7 +118,7 @@ var virtualRenderer = regexp.MustCompile(`(?i)virgl|paravirtual|virtio`)
 
 func evaluateDevice(p *guestprofile.Profile, v *deviceObservation) ([]deviceCheckItem, string) {
 	if !v.valid() {
-		return []deviceCheckItem{{"browser-evidence", "浏览器观测", "unknown", "客机尚未提供完整、有效的本地观测数据；请更新组件后重测。"}}, "unobserved"
+		return []deviceCheckItem{{"browser-evidence", "Browser observation", "unknown", "The guest has not provided complete, valid local observation data yet; update components and check again."}}, "unobserved"
 	}
 	items := []deviceCheckItem{}
 	add := func(id, title, state, evidence string) {
@@ -149,14 +149,14 @@ func evaluateDevice(p *guestprofile.Profile, v *deviceObservation) ([]deviceChec
 			}
 		}
 		if inconsistent {
-			add("user-agent", "浏览器 UA 与 Client Hints", "failed", "实际浏览器主版本或系统平台不一致；请恢复浏览器的原生身份设置。")
+			add("user-agent", "Browser UA and Client Hints", "failed", "The actual browser major version or system platform does not match; restore the browser's native identity settings.")
 		} else if matched {
-			add("user-agent", "浏览器 UA 与 Client Hints", "passed", "已提供的浏览器主版本与系统平台信息一致。此项不验证浏览器安装来源。")
+			add("user-agent", "Browser UA and Client Hints", "passed", "The browser major version and system platform information provided match. This item does not verify where the browser was installed from.")
 		} else {
-			add("user-agent", "浏览器 UA 与 Client Hints", "unknown", "浏览器未提供可核对的 Chromium 品牌版本。")
+			add("user-agent", "Browser UA and Client Hints", "unknown", "The browser did not provide a Chromium brand version that can be checked.")
 		}
 	} else {
-		add("user-agent", "浏览器 UA 与 Client Hints", "unknown", "当前文档未暴露 Client Hints，不能据此判定版本一致。")
+		add("user-agent", "Browser UA and Client Hints", "unknown", "The current document does not expose Client Hints, so version consistency cannot be judged from it.")
 	}
 	class := "unobserved"
 	if v.WebGL.Renderer != "" && v.WebGL.Renderer != "WebKit WebGL" && v.WebGL.Renderer != "WebGL" {
@@ -169,16 +169,16 @@ func evaluateDevice(p *guestprofile.Profile, v *deviceObservation) ([]deviceChec
 	}
 	if p != nil && p.WebGL == "disabled" {
 		if v.WebGL.State == "unavailable" {
-			add("webgl-render", "WebGL 渲染正确性", "passed", "WebGL 未创建上下文，与已保存的关闭选项一致。")
+			add("webgl-render", "WebGL rendering correctness", "passed", "WebGL did not create a context, which matches the saved off setting.")
 		} else {
-			add("webgl-render", "WebGL 渲染正确性", "failed", "已保存关闭 WebGL，但实际文档仍可创建上下文；请重新启动浏览器并检查组件。")
+			add("webgl-render", "WebGL rendering correctness", "failed", "WebGL is saved as off, but the actual document can still create a context; restart the browser and check the components.")
 		}
 	} else if v.WebGL.State == "passed" {
-		add("webgl-render", "WebGL 渲染正确性", "passed", "着色器编译、链接及 4×4 像素回读符合参考颜色。此结果不证明物理 GPU 直通。")
+		add("webgl-render", "WebGL rendering correctness", "passed", "Shader compilation, linking and the 4×4 pixel readback match the reference colors. This result does not prove physical GPU passthrough.")
 	} else if v.WebGL.State == "failed" {
-		add("webgl-render", "WebGL 渲染正确性", "failed", "着色器或像素回读不符合预期，请检查所选后端和驱动。")
+		add("webgl-render", "WebGL rendering correctness", "failed", "Shaders or the pixel readback do not match expectations; check the selected backend and driver.")
 	} else {
-		add("webgl-render", "WebGL 渲染正确性", "unknown", "WebGL 不可用或像素读取受限，未完成渲染正确性验证。")
+		add("webgl-render", "WebGL rendering correctness", "unknown", "WebGL is unavailable or pixel reading is restricted, so rendering correctness was not verified.")
 	}
 	backend := "auto"
 	if p != nil && p.GraphicsBackend != "" {
@@ -189,45 +189,45 @@ func evaluateDevice(p *guestprofile.Profile, v *deviceObservation) ([]deviceChec
 		if backend != "auto" {
 			state = "failed"
 		}
-		add("graphics-backend", "实际图形后端", state, "检测到软件渲染："+v.WebGL.Renderer)
+		add("graphics-backend", "Actual graphics backend", state, "Software rendering detected: "+v.WebGL.Renderer)
 	} else if class == "unobserved" {
-		add("graphics-backend", "实际图形后端", "unknown", "未观测到渲染器，不能声称已启用硬件加速。")
+		add("graphics-backend", "Actual graphics backend", "unknown", "No renderer was observed, so hardware acceleration cannot be claimed.")
 	} else {
 		state := "passed"
 		evidence := v.WebGL.Renderer
 		if class == "virtual-gpu" {
-			evidence = "虚拟 GPU 驱动：" + evidence
+			evidence = "Virtual GPU driver: " + evidence
 		}
 		if backend == "software" && class != "software" {
 			state = "failed"
-			evidence = "所选软件后端与实际渲染器不一致：" + evidence
+			evidence = "The selected software backend does not match the actual renderer: " + evidence
 		}
 		markers := map[string]string{"metal": "metal", "d3d11": "direct3d11", "vulkan": "vulkan", "opengl": "opengl"}
 		if marker := markers[backend]; marker != "" && !strings.Contains(strings.ToLower(v.WebGL.Renderer), marker) {
 			state = "unknown"
-			evidence = "驱动报告未能确认所选 API：" + evidence
+			evidence = "The driver report could not confirm the selected API: " + evidence
 		}
 		if p != nil && p.GPUBackend == "virgl" && !strings.Contains(strings.ToLower(v.WebGL.Renderer), "virgl") {
 			state = "failed"
-			evidence = "未观测到请求的 VirGL 渲染器：" + evidence
+			evidence = "The requested VirGL renderer was not observed: " + evidence
 		}
-		add("graphics-backend", "实际图形后端", state, evidence)
+		add("graphics-backend", "Actual graphics backend", state, evidence)
 	}
 	if p != nil && p.Canvas == "blocked" && (v.Canvas.State == "passed" || v.Canvas.State == "failed") {
-		add("canvas-render", "Canvas 渲染与读取", "failed", "已保存阻止 Canvas 读取，但实际文档仍可回读像素；请重新启动浏览器并检查组件。")
+		add("canvas-render", "Canvas rendering and reading", "failed", "Canvas reading is saved as blocked, but the actual document can still read pixels back; restart the browser and check the components.")
 	} else if v.Canvas.State == "passed" {
-		add("canvas-render", "Canvas 渲染与读取", "passed", "已完成已知颜色回读，字体样本校验值为 "+v.Canvas.Checksum+"；不要求不同设备必须产生不同值。")
+		add("canvas-render", "Canvas rendering and reading", "passed", "Known color readback completed, font sample checksum "+v.Canvas.Checksum+"; different devices are not required to produce different values.")
 	} else if p != nil && p.Canvas == "blocked" && v.Canvas.State == "blocked" {
-		add("canvas-render", "Canvas 渲染与读取", "passed", "图像读取受限，与已保存选项一致。")
+		add("canvas-render", "Canvas rendering and reading", "passed", "Image reading is restricted, which matches the saved setting.")
 	} else if v.Canvas.State == "failed" {
-		add("canvas-render", "Canvas 渲染与读取", "failed", "已知颜色回读不符合预期。")
+		add("canvas-render", "Canvas rendering and reading", "failed", "Known color readback does not match expectations.")
 	} else {
-		add("canvas-render", "Canvas 渲染与读取", "unknown", "当前无法读取 Canvas 像素，未推断实际图像特征。")
+		add("canvas-render", "Canvas rendering and reading", "unknown", "Canvas pixels cannot be read right now, so actual image traits were not inferred.")
 	}
 	if len(v.Audio.Labels) == 0 {
-		add("browser-audio", "浏览器音频设备", "unknown", "文档未获设备标签权限；检测不会申请麦克风权限，也不会把空标签判为通过。")
+		add("browser-audio", "Browser audio devices", "unknown", "The document has no device label permission; the check does not ask for microphone permission and does not count empty labels as a pass.")
 	} else {
-		add("browser-audio", "浏览器音频设备", "observed", strings.Join(v.Audio.Labels, "；"))
+		add("browser-audio", "Browser audio devices", "observed", strings.Join(v.Audio.Labels, "; "))
 	}
 	return items, class
 }
@@ -251,7 +251,7 @@ CAGE_DEVICE_SYSTEM`
 
 func (s *Server) deviceCheck(w http.ResponseWriter, r *http.Request) {
 	if !s.hasTrustedView(r) {
-		http.Error(w, "请在已信任的工作台中检测客机", http.StatusForbidden)
+		http.Error(w, "Check the guest in a trusted workbench", http.StatusForbidden)
 		return
 	}
 	var in struct {
@@ -261,15 +261,15 @@ func (s *Server) deviceCheck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if in.Target != "browser" && in.Target != "desktop" {
-		http.Error(w, "检测对象无效", 400)
+		http.Error(w, "The check target is invalid", 400)
 		return
 	}
 	if !s.vmRunning() {
-		http.Error(w, "请先启动客机", 409)
+		http.Error(w, "Start the guest first", 409)
 		return
 	}
 	if !s.op.TryLock() {
-		http.Error(w, "环境操作进行中，请稍后检测", 409)
+		http.Error(w, "An environment operation is in progress; check later", 409)
 		return
 	}
 	defer s.op.Unlock()
@@ -290,14 +290,14 @@ func (s *Server) deviceCheck(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if report.System != nil && p != nil {
-		for _, item := range []struct{ id, title, observed, expected string }{{"hostname", "客机主机名", report.System.Hostname, p.Hostname}, {"username", "工作账户", report.System.Username, p.Username}, {"home", "工作主目录", report.System.Home, p.WorkHomePath()}, {"audio-model", "系统音频设备", report.System.AudioDescription, p.AudioDescription}} {
+		for _, item := range []struct{ id, title, observed, expected string }{{"hostname", "Guest host name", report.System.Hostname, p.Hostname}, {"username", "Work account", report.System.Username, p.Username}, {"home", "Work home folder", report.System.Home, p.WorkHomePath()}, {"audio-model", "System audio device", report.System.AudioDescription, p.AudioDescription}} {
 			state := "passed"
 			if item.observed == "" {
 				state = "unknown"
 			} else if item.observed != item.expected && !(item.id == "hostname" && strings.EqualFold(item.observed, item.expected)) {
 				state = "failed"
 			}
-			report.Checks = append(report.Checks, deviceCheckItem{item.id, item.title, state, "实际值：" + item.observed})
+			report.Checks = append(report.Checks, deviceCheckItem{item.id, item.title, state, "Actual value: " + item.observed})
 		}
 	}
 	if in.Target == "desktop" {
@@ -305,14 +305,14 @@ func (s *Server) deviceCheck(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			report.Application = state
 			status := "unknown"
-			evidence := "应用未运行，无法观测进程状态。"
+			evidence := "The app is not running, so its process state cannot be observed."
 			if state.Running {
 				status = "observed"
-				evidence = "已观测到 Claude Desktop 运行状态及版本 " + state.Version
+				evidence = "Observed the Claude Desktop running state and version " + state.Version
 			}
-			report.Checks = append(report.Checks, deviceCheckItem{"desktop-process", "Claude Desktop 应用", status, evidence})
+			report.Checks = append(report.Checks, deviceCheckItem{"desktop-process", "Claude Desktop app", status, evidence})
 		}
-		report.Checks = append(report.Checks, deviceCheckItem{"desktop-renderer", "Claude Desktop 内部渲染器", "unknown", "官方应用没有受支持的本地渲染自检接口；未读取登录资料、注入代码或开启调试端口，未用浏览器结果代替应用内观测。"})
+		report.Checks = append(report.Checks, deviceCheckItem{"desktop-renderer", "Claude Desktop internal renderer", "unknown", "The official app has no supported local rendering self-check interface; no sign-in data was read, no code was injected and no debugging port was opened, and browser results were not used in place of in-app observation."})
 	} else {
 		cfg, e := loadConfig(s.configPath)
 		if e != nil {
@@ -329,7 +329,7 @@ func (s *Server) deviceCheck(w http.ResponseWriter, r *http.Request) {
 			err = json.Unmarshal(data, &observation)
 		}
 		if err != nil {
-			report.Checks = append(report.Checks, deviceCheckItem{"browser-evidence", "浏览器观测", "unknown", "本地诊断文档未完成，请确认浏览器及客机组件可用后重测。"})
+			report.Checks = append(report.Checks, deviceCheckItem{"browser-evidence", "Browser observation", "unknown", "The local diagnostic document did not finish; confirm that the browser and guest components are available and check again."})
 		} else {
 			items, class := evaluateDevice(p, observation.Device)
 			report.Checks = append(report.Checks, items...)
@@ -370,7 +370,7 @@ func (s *Server) deviceDesktopState(ctx context.Context) (*claudeDesktopState, e
 		return nil, err
 	}
 	if json.Unmarshal(data, &state) != nil {
-		return nil, errors.New("应用状态无效")
+		return nil, errors.New("The app state is invalid")
 	}
 	return &state, nil
 }

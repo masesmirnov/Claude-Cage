@@ -203,7 +203,7 @@ class CacheMaintenanceTests(unittest.TestCase):
                 self.write(path, "unexpected-user-data")
                 row = next(row for row in self.service.inspect()["items"] if row["id"] == "cli-default")
                 self.assertEqual(row["state"], "blocked")
-                self.assertIn("持久磁盘标记", row["reason"])
+                self.assertIn("persistent disk marker", row["reason"])
                 self.assertEqual(path.read_text(), "unexpected-user-data")
                 path.unlink()
                 if path.parent.name in {".git", "Sessions"}:

@@ -18,10 +18,10 @@ const messages = {
   requires_gui_login: "Sign in to and unlock the virtual Mac's graphical account first.",
   screen_recording_permission: "In the virtual Mac's system authorization, allow Cage Guest Window to record the screen.",
   accessibility_permission: "To control the window, allow Cage Guest Window in the virtual Mac to use accessibility features.",
-  not_running: "请打开虚拟 Mac 中的应用。",
-  no_visible_window: "应用尚未显示窗口，请重新打开应用。",
-  identity_error: "虚拟 Mac 中的应用未通过签名检查。",
-  window_changed: "活动窗口已变化，请在新画面中重试。",
+  not_running: "Open the app in the virtual Mac.",
+  no_visible_window: "The app has not shown a window yet; open the app again.",
+  identity_error: "The app in the virtual Mac did not pass the signature check.",
+  window_changed: "The active window changed; try again in the new view.",
   unknown_action: "The guest window input component needs an update. Update the components in environment settings, then try again.",
   input_connection_required: "Window input needs to reconnect. Restore the view and try again.",
   input_owned_by_another_view: "Another connection is controlling this window. Wait for it to release its key or drag.",
@@ -127,7 +127,7 @@ export function MacOSAppWindow({ browser = false, onOpenPage, visible, keyboard 
       try {
         if (!current || Date.now() >= nextStatus) {
           current = await request("status");
-          if (browser && current.surface !== "browser") throw new Error("请更新 macOS 环境组件以显示 Chrome 窗口。");
+          if (browser && current.surface !== "browser") throw new Error("Update the macOS environment components to show the Chrome window.");
           checkFrame = true;
           nextStatus = Date.now() + 2200;
           if (live() && current.persistent && !connection.current) {
@@ -231,7 +231,7 @@ export function MacOSAppWindow({ browser = false, onOpenPage, visible, keyboard 
       systemClipboard: () => true,
       copyText: (sendCopy, valid) => copyGuestText({ request: value => api("/clipboard/copy", value), sendCopy, valid }),
       surface: () => surface.current,
-      inputLabel: "向 " + appName + " 输入",
+      inputLabel: "Input to " + appName,
       tabId: () => frame.current ? `${frame.current.pid}:${frame.current.window}:${frame.current.geometry}` : "",
       isActive: () => Boolean(current.current.screenVisible && current.current.input && frame.current),
       onStatus: text => current.current.onStatus(text),
@@ -265,7 +265,7 @@ export function MacOSAppWindow({ browser = false, onOpenPage, visible, keyboard 
     return transport.run(async () => {
       const { value, error } = await ready;
       if (error) throw error;
-      if (!valid()) throw new Error("窗口已切换，请回到原窗口重新粘贴");
+      if (!valid()) throw new Error("The window switched; go back to the original window and paste again");
       setFileError(""); setTransferring(true);
       if (value.files || value.fileSelection) {
         await sendFiles(value, "desktop", "", { valid, windowTarget: target, onProgress: (loaded, total) => onStatus(total ? `Transferring attachments · ${Math.floor(loaded * 100 / total)}%` : "Transferring attachments…") });
@@ -274,7 +274,7 @@ export function MacOSAppWindow({ browser = false, onOpenPage, visible, keyboard 
       } else if (value.text) {
         await request("text", { ...target, text: value.text });
       }
-      if (valid()) onStatus(value.text ? "已粘贴" : `附件已交给 ${appName}，请在应用中确认上传结果`);
+      if (valid()) onStatus(value.text ? "Pasted" : `The attachments were handed to ${appName}; confirm the upload result in the app`);
     }).finally(() => { prepared?.dispose(); setTransferring(false); });
   }
   const fileFailure = error => { setFileError(error.message); onStatus(error.message); };
@@ -287,25 +287,25 @@ export function MacOSAppWindow({ browser = false, onOpenPage, visible, keyboard 
     } catch (error) { fileFailure(error); }
   }
   if (!visible) return null;
-  return <section className="claude-desktop-view mac-claude" aria-label={"虚拟 Mac 中的 " + appName}>
+  return <section className="claude-desktop-view mac-claude" aria-label={appName + " in the virtual Mac"}>
     {(browser || !nativeAvailable()) && <BrowserUploads requests={uploads} onStatus={onStatus} />}
     <DesktopToolbar title={appName} desktop={state} platform="macOS" zoom={zoom} setZoom={setZoom} onConfirm={onConfirm}
       onStop={browser ? undefined : () => action("stop")} refresh={() => refresh(n => n+1)} sidebarCollapsed={sidebarCollapsed} onExpand={onExpand}>
       {browser && <BrowserFavorites ready={Boolean(state?.installed)} onOpen={onOpenPage} />}
       <MacOSLogin />
-      {!browser && <button disabled={!state?.input || !image || transferring} onClick={() => void chooseFiles()}>添加附件</button>}
-      {!browser && <input ref={picker} type="file" multiple hidden aria-label="选择 Claude 附件" onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ""; if (files.length) void receive({ files, kind: "paste" }, pickerTarget.current || undefined).catch(fileFailure); }} />}
+      {!browser && <button disabled={!state?.input || !image || transferring} onClick={() => void chooseFiles()}>Add attachment</button>}
+      {!browser && <input ref={picker} type="file" multiple hidden aria-label="Choose Claude attachments" onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ""; if (files.length) void receive({ files, kind: "paste" }, pickerTarget.current || undefined).catch(fileFailure); }} />}
       {(!state?.running || error) && <button onClick={() => action("launch")} disabled={!state?.installed}>{state?.running ? "Reconnect app" : "Open app"}</button>}
       {state?.installed && !state.screen && <button onClick={() => action("request-screen")}>Authorize window view</button>}
       {state?.installed && !state.input && <button onClick={() => action("request-input")}>Authorize keyboard and mouse</button>}
     </DesktopToolbar>
     {error && <p role="alert">{error}</p>}
     {fileError && <p role="alert">{fileError}</p>}
-    {state && !state.installed && <p>此虚拟 Mac 尚未安装 {appName}。</p>}
+    {state && !state.installed && <p>{appName} is not installed on this virtual Mac yet.</p>}
     {state?.running && !state.screen && <p>{messages.screen_recording_permission}</p>}
     {state?.running && state.screen && !state.input && <p>{messages.accessibility_permission}</p>}
     <div ref={pane} className="mac-claude-frame" style={{ "--desktop-zoom": zoom }}>
-      {image && <img ref={surface} key={image.geometry || `${image.pid}-${image.window}`} alt={appName + " 客机窗口"} src={image.src} draggable={false}
+      {image && <img ref={surface} key={image.geometry || `${image.pid}-${image.window}`} alt={appName + " guest window"} src={image.src} draggable={false}
         onLoad={e => {
           const img = e.currentTarget;
           const width = image.width || img.naturalWidth;

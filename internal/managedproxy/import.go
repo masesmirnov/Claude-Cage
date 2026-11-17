@@ -92,7 +92,7 @@ func parseNodes(data []byte, sourceID string) ([]Node, []NodeIssue, error) {
 			if err := normalizeWebSocket(p); err != nil {
 				issue.Reason = err.Error()
 			} else if typ == "ssh" && sshPrivateKeyPath(p) {
-				issue.Reason = "SSH 节点的 private-key 必须直接填写私钥内容，不能引用本机文件"
+				issue.Reason = "The private-key of an SSH node must contain the private key itself and cannot reference a local file"
 			} else if unsafeOption(withoutSSHPrivateKey(p)) {
 				issue.Reason = "the node cannot reference local files, network interfaces or extra routes"
 			} else if typ == "hysteria2" {

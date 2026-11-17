@@ -53,7 +53,7 @@ export function ProjectTree({catalog, projectPath, sessionID, expanded, toggle, 
           </div>
           {open && <ul className="tree-sessions" aria-label={"Sessions of " + name}>
             {sessions.length ? sessions.map(s => <SessionRow key={s.id} session={s} current={s.id === sessionID} disabled={creating}
-              onSelect={() => onSession(s.workspace, s.id)} onAction={onAction}/>) : <li className="tree-empty">暂无会话</li>}
+              onSelect={() => onSession(s.workspace, s.id)} onAction={onAction}/>) : <li className="tree-empty">No sessions yet</li>}
           </ul>}
         </div>;
       })}

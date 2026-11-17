@@ -284,7 +284,7 @@ final class CageAppUpdater {
     func handle(_ operation: String) -> [String: Any] {
         if Bundle(url: bundleURL)?.bundleIdentifier == cageUpdateBundleID + ".intel-macos-test" {
             if state["phase"] as? String != "manual" {
-                change(["phase": "manual", "message": "Intel 测试版通过独立测试包更新。"])
+                change(["phase": "manual", "message": "The Intel test build updates through a separate test package."])
             }
             return state
         }
@@ -304,7 +304,7 @@ final class CageAppUpdater {
         // The current public desktop update channel supplies ARM64 packages.
         if Bundle(url: bundleURL)?.bundleIdentifier == cageUpdateBundleID {
             if state["phase"] as? String != "manual" {
-                change(["phase": "manual", "message": "Intel 开发构建通过独立安装包更新。"])
+                change(["phase": "manual", "message": "Intel development builds update through a separate installer."])
             }
             return state
         }
@@ -372,7 +372,7 @@ final class CageAppUpdater {
     private var cage: URL { bundleURL.appendingPathComponent("Contents/Resources/cage") }
     private func startDownload(checkOnly: Bool) {
         generation += 1; let operation = generation
-        change(["phase": "checking", "message": "正在检查更新，优先使用主机网络", "receivedBytes": 0, "totalBytes": 0, "retryable": false, "retryAt": ""])
+        change(["phase": "checking", "message": "Checking for updates, preferring the host network", "receivedBytes": 0, "totalBytes": 0, "retryable": false, "retryAt": ""])
         let process = Process(); process.executableURL = cage; process.arguments = ["app-update", checkOnly ? "check" : "download"]
         let pipe = Pipe(); process.standardOutput = pipe; process.standardError = FileHandle.nullDevice
         worker = process

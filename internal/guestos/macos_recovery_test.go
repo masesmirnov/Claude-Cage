@@ -106,7 +106,7 @@ func TestMacOSInstallRecoveryRetainsPendingAfterCancellation(t *testing.T) {
 	if err := CreateMacOSInstallRecovery(profile, "cageuser", id); err != nil {
 		t.Fatal(err)
 	}
-	cancelled := errors.New("用户取消 Apple Installer 授权")
+	cancelled := errors.New("The user canceled the Apple Installer authorization")
 	if err := SetMacOSInstallRecoveryPhase(profile, id, MacOSInstallAwaitingGUIAuthorization, cancelled); err != nil {
 		t.Fatal(err)
 	}

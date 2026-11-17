@@ -100,7 +100,7 @@ jobs:
           "$check/maintenance-test"
       - name: Go tests and vet
         run: |
-          # Intel 上 Lima 使用 QEMU 驱动；与 internal/host/runtime_darwin_amd64.go 一致，使用随包构建的 QEMU
+          # Lima on Intel uses the QEMU driver; as in internal/host/runtime_darwin_amd64.go, it uses the QEMU built with the package
           runtime="$PWD/_output/Cage.app/Contents/Resources/intel-macos/runtime/bin"
           test -x "$runtime/qemu-system-x86_64"
           export PATH="$runtime:$PATH"

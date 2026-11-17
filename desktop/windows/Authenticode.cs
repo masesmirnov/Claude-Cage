@@ -53,7 +53,7 @@ internal static class Authenticode
         var own = Own.Value;
         if (string.Equals(own.Key, expected, StringComparison.Ordinal) && own.Organization.Length != 0 &&
             string.Equals(actual.Organization, own.Organization, StringComparison.Ordinal)) return;
-        throw new IOException("更新包的发布者签名与当前 Cage 不一致");
+        throw new IOException("The update package's publisher signature does not match this Cage");
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

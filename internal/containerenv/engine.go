@@ -268,7 +268,7 @@ func checkContainerConfiguration(container *engineContainer) error {
 	}
 	for _, entry := range config.ExtraHosts {
 		if entry != hostname+":127.0.1.1" {
-			return errors.New("容器只允许当前主机名的固定回环地址")
+			return errors.New("The container only allows the fixed loopback address of the current host name")
 		}
 	}
 	for _, mount := range container.Mounts {

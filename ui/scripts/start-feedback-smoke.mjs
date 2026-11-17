@@ -19,7 +19,7 @@ try {
     await route.fulfill({ json: { id: "delayed-start" } });
   });
   const startRequested = page.waitForRequest("**/api/start");
-  await page.getByRole("button", { name: "启动 Cage 环境", exact: true }).click();
+  await page.getByRole("button", { name: "Start Cage environment", exact: true }).click();
   await startRequested;
   await assertLoading();
   const startResponse = page.waitForResponse("**/api/start");

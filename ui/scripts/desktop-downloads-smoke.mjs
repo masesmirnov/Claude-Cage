@@ -29,7 +29,7 @@ try {
   state.status.vm_running = true;
   await page.reload();
   await page.getByRole("button", { name: "Open browser", exact: true }).click();
-  await page.getByRole("button", { name: "浏览器下载", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Browser downloads", exact: true }).waitFor();
   // A tiny export can finish between polls; it must still offer Save As.
   const item = { id, name: "Видео рабочего стола.mp4", state: "saved", target: "desktop",
     startedAt: new Date(Date.now() + 5).toISOString(), path: "/Users/test/Cage/Downloads/Видео рабочего стола.mp4" };
@@ -49,7 +49,7 @@ try {
   const openError = "Opening the file was not completed. Open it from the Cage downloads list.";
   downloads = [{ ...item, openError }];
   await dialog.getByText(openError, { exact: true }).waitFor();
-  assert.equal(await page.getByRole("button", { name: "浏览器下载", exact: true }).getAttribute("title"), "有下载需要处理，点击查看");
+  assert.equal(await page.getByRole("button", { name: "Browser downloads", exact: true }).getAttribute("title"), "Some downloads need attention. Click to view.");
   await dialog.getByText(item.path, { exact: true }).waitFor();
   downloads = [item];
   await dialog.getByText(openError, { exact: true }).waitFor({ state: "hidden" });

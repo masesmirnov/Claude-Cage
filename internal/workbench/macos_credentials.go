@@ -245,7 +245,7 @@ func (a *localAccount) syncMacPasswordStep(ctx context.Context, id uuid.UUID, us
 	}
 	if guest.Username != user {
 		a.mu.Unlock()
-		return false, errors.New("客机同步账户与安装记录不一致，原账户已保留")
+		return false, errors.New("The guest sync account does not match the install record; the original account was kept")
 	}
 	target := login.Password
 	if guest.PendingPassword != "" {
@@ -253,7 +253,7 @@ func (a *localAccount) syncMacPasswordStep(ctx context.Context, id uuid.UUID, us
 	}
 	a.mu.Unlock()
 	if err = apply(ctx, guest.Password, target); err != nil {
-		return false, errors.New("Cage 密码已保存；客机密码尚待同步，请启动客机后重试，期间客机仍可能需要原密码")
+		return false, errors.New("The Cage password was saved; the guest password is still waiting to sync. Start the guest and try again; until then the guest may still need the old password")
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -263,7 +263,7 @@ func (a *localAccount) syncMacPasswordStep(ctx context.Context, id uuid.UUID, us
 	}
 	current, ok := login.Guests[id.String()]
 	if !ok || current != guest || guest.PendingPassword == "" && login.Password != target {
-		return false, errors.New("客机密码同步记录已变化，请重试")
+		return false, errors.New("The guest password sync record changed; please try again")
 	}
 	current.Password = target
 	current.PendingPassword = ""
@@ -273,7 +273,7 @@ func (a *localAccount) syncMacPasswordStep(ctx context.Context, id uuid.UUID, us
 		return false, err
 	}
 	if err = writePrivate(a.path, &record); err != nil {
-		return false, errors.New("客机密码已更新，确认记录待保存；下次启动会重试确认")
+		return false, errors.New("The guest password was updated and the confirmation record is waiting to be saved; the next start will retry the confirmation")
 	}
 	a.record = &record
 	return true, nil

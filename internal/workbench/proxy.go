@@ -167,8 +167,8 @@ func (s *Server) changeProxy(action string, in proxyInput, resumeVersion *uint64
 			if _, ok := p.Find(in.NodeID); !ok {
 				return errors.New("The selected node no longer exists. Refresh the list.")
 			}
-			// select 表示单节点出口：替换（而非改写）现有链，避免把所选节点
-			// 追加到已含该节点的链里造成重复；需要多跳请使用 route。
+			// select means a single-node exit: it replaces (rather than rewrites) the existing chain, so the selected node is not
+			// appended to a chain that already contains it and duplicated; use route for multiple hops.
 			p.Selected = in.NodeID
 			p.Chain = nil
 		}

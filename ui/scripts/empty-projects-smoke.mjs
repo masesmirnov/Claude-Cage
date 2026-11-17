@@ -17,17 +17,17 @@ try {
       },
     });
     try {
-      assert.equal(await page.getByText("默认工作区", { exact: true }).count(), 0);
-      await page.getByRole("button", { name: "打开项目", exact: true }).click();
-      const dialog = page.getByRole("dialog", { name: "创建项目", exact: true });
+      assert.equal(await page.getByText("Default workspace", { exact: true }).count(), 0);
+      await page.getByRole("button", { name: "Open project", exact: true }).click();
+      const dialog = page.getByRole("dialog", { name: "Create project", exact: true });
       assert.equal(await dialog.getByRole("radio").count(), 0);
-      await dialog.getByRole("button", { name: /选择文件夹/ }).click();
-      await dialog.getByRole("button", { name: "创建项目", exact: true }).click();
+      await dialog.getByRole("button", { name: /Choose a folder/ }).click();
+      await dialog.getByRole("button", { name: "Create project", exact: true }).click();
       await dialog.waitFor({ state: "detached" });
       assert.deepEqual(state.status.projects, [state.chosenFolder]);
-      await page.getByRole("region", { name: "项目 design-lab", exact: true }).waitFor();
+      await page.getByRole("region", { name: "Project design-lab", exact: true }).waitFor();
       await page.reload();
-      await page.getByRole("region", { name: "项目 design-lab", exact: true }).waitFor();
+      await page.getByRole("region", { name: "Project design-lab", exact: true }).waitFor();
       assert.deepEqual(errors, []);
       console.log(`PASS ${platform} empty project list, folder chooser, explicit add, reload`);
     } finally { await browser.close(); }

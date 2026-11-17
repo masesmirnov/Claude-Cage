@@ -7,10 +7,10 @@ await mkdir(output, {recursive:true});
 for (const platform of ["darwin", "windows", "linux"]) {
   const sessions = [
     {id:"external",title:"Session in another window",running:true},
-    {id:"owned",title:"Cage 中已打开的会话",running:true,active:true},
+    {id:"owned",title:"Session opened in Cage",running:true,active:true},
     {id:"waiting",title:"Session waiting to open"},
     {id:"available",title:"Session that can be continued"},
-    {id:"desktop",title:"设置界面字体和设计，保留长标题的省略显示",running:true,claude_desktop:true,pinned:true},
+    {id:"desktop",title:"Set the interface font and design, keep the ellipsis for long titles",running:true,claude_desktop:true,pinned:true},
   ];
   const releases = [], opens = [];
   let behavior = "hold", state;
@@ -47,8 +47,8 @@ for (const platform of ["darwin", "windows", "linux"]) {
     const owned = page.getByRole("tab",{name:sessions[1].title,exact:true});
     const desktop = page.getByRole("button",{name:sessions[4].title,exact:true});
     const desktopRow = page.locator('[data-tab-id="session:desktop"]');
-    const desktopIcon = desktopRow.getByRole("img",{name:/Claude Desktop 占用中/});
-    const externalIcon = page.locator('[data-tab-id="session:external"]').getByRole("img",{name:/其他窗口占用中/});
+    const desktopIcon = desktopRow.getByRole("img",{name:/In use by Claude Desktop/});
+    const externalIcon = page.locator('[data-tab-id="session:external"]').getByRole("img",{name:/In use by another window/});
     await external.waitFor();
     await owned.waitFor();
     assert.equal(await external.isDisabled(),true,"external running history must be disabled before clicking");
@@ -59,17 +59,17 @@ for (const platform of ["darwin", "windows", "linux"]) {
     assert.equal(await external.locator(".spin").count(),0,"other-window occupancy looked like loading");
     assert.equal(await external.evaluate(element=>getComputedStyle(element).opacity),"1","occupied title was faded");
     assert.equal(await desktop.evaluate(element=>getComputedStyle(element).opacity),"1");
-    await owned.getByRole("img",{name:"会话正在运行",exact:true}).waitFor();
+    await owned.getByRole("img",{name:"Session is running",exact:true}).waitFor();
     await desktopIcon.hover();
-    await page.getByRole("tooltip",{name:/Claude Desktop 占用中/}).waitFor();
+    await page.getByRole("tooltip",{name:/In use by Claude Desktop/}).waitFor();
     await page.mouse.move(1200,10);
     await desktopIcon.focus();
-    await page.getByRole("tooltip",{name:/Claude Desktop 占用中/}).waitFor();
+    await page.getByRole("tooltip",{name:/In use by Claude Desktop/}).waitFor();
     await page.keyboard.press("Escape");
     assert.equal(await page.getByRole("tooltip").isVisible(),false);
     // Touch users can inspect the status with the shared long-press hint.
     await desktopIcon.dispatchEvent("pointerdown",{pointerType:"touch"});
-    await page.getByRole("tooltip",{name:/Claude Desktop 占用中/}).waitFor();
+    await page.getByRole("tooltip",{name:/In use by Claude Desktop/}).waitFor();
     await desktopIcon.dispatchEvent("pointerup",{pointerType:"touch"});
     await page.keyboard.press("Escape");
     assert.match(await external.getAttribute("title"),/Exit the original session/);

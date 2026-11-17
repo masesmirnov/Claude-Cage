@@ -28,12 +28,12 @@ const diagnostics = [
     source: "fuck-claude.vercel.app",
     url: "https://fuck-claude.vercel.app/",
     description: "View the community's assessment of browser signals such as time zone, language and fonts.",
-    attribution: "原项目 FuckClaude 由 LinXiaoTao 创建并持续维护。",
+    attribution: "The original project FuckClaude was created and is maintained by LinXiaoTao.",
     links: [
-      { label: "原项目官网", url: "https://fuck-claude.vercel.app/" },
-      { label: "开源仓库", url: "https://github.com/LinXiaoTao/FuckClaude" },
+      { label: "Original project website", url: "https://fuck-claude.vercel.app/" },
+      { label: "Open-source repository", url: "https://github.com/LinXiaoTao/FuckClaude" },
       {
-        label: "初始提交",
+        label: "Initial commit",
         url: "https://github.com/LinXiaoTao/FuckClaude/commit/420c79bb0531b12ea2788e726ffbf81075111737",
       },
     ],

@@ -21,5 +21,5 @@ func CheckVirGLHost() error {
 			return nil
 		}
 	}
-	return errors.New("VirGL 需要当前用户可访问的 DRM render 节点及支持 OpenGL 的 QEMU；未修改宿主驱动或设备权限")
+	return errors.New("VirGL needs a DRM render node the current user can access and QEMU with OpenGL support; host drivers and device permissions were not changed")
 }

@@ -306,21 +306,21 @@ func projectShareOptions(cache bool) string {
 // process holds open keeps its cached attributes until they expire.
 func (s *Server) refreshProjectFiles(w http.ResponseWriter, r *http.Request) {
 	if s.windowsGuest != nil || s.macosGuest != nil {
-		http.Error(w, "此环境的项目文件始终直接读取，无需刷新", 409)
+		http.Error(w, "Project files in this environment are always read directly, so no refresh is needed", 409)
 		return
 	}
 	s.mu.Lock()
 	ready, closing := s.ready, s.closing
 	s.mu.Unlock()
 	if closing || !ready {
-		http.Error(w, "环境尚未就绪，请稍后重试", 409)
+		http.Error(w, "The environment is not ready yet; please try again later", 409)
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 	// Unused directory entries and inodes of every filesystem; nothing is lost.
 	if _, err := s.guest(ctx, "echo 2 | sudo -n tee /proc/sys/vm/drop_caches >/dev/null"); err != nil {
-		http.Error(w, "项目文件未能刷新，请稍后重试", 502)
+		http.Error(w, "Project files could not be refreshed; please try again later", 502)
 		return
 	}
 	jsonReply(w, map[string]bool{"refreshed": true})

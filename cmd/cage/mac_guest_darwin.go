@@ -99,7 +99,7 @@ func runMacGuest(ctx context.Context, profile, state string, args []string) erro
 		if recovery != nil {
 			install, err := guestos.LoadInstallation(profile)
 			if err != nil || install == nil {
-				return errors.New("macOS 恢复缺少原安装记录")
+				return errors.New("The macOS recovery is missing the original installation record")
 			}
 			media := install.Media
 			if media == "" && m.Backend != guestos.MacOSQEMU {

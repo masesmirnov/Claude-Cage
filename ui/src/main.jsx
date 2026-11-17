@@ -126,11 +126,11 @@ function App() {
   // Keep feedback continuous until polling observes the accepted start job.
   const clientStatus = serverStatus && { ...serverStatus, keyboard: clientKeyboard(serverStatus.keyboard) };
   const status = clientStatus && startRequest
-    ? { ...clientStatus, job: { running: true, kind: "start", message: "正在启动 Cage 环境…" } }
+    ? { ...clientStatus, job: { running: true, kind: "start", message: "Starting the Cage environment…" } }
     : clientStatus;
   const system = status?.guest_system || account?.guest_system;
   const macGuest = system === "macos";
-  const nativeGuestLabel = {macos: "macOS", "windows-11": "Windows", "windows-remote": "Windows 云端"}[system];
+  const nativeGuestLabel = {macos: "macOS", "windows-11": "Windows", "windows-remote": "Windows cloud"}[system];
   const { active } = layout;
   const setActive = id => setLayout(previous => focusTab(previous, id));
   const workspaceBox = useRef(null);
@@ -302,7 +302,7 @@ function App() {
     setProjectRefreshing(true);
     try {
       await api("/projects/refresh", {});
-      setToast("项目文件已刷新");
+      setToast("Project files refreshed");
     } catch (error) {
       setToast(error.message);
     } finally {
@@ -411,7 +411,7 @@ function App() {
     incognito = Boolean(current?.incognito),
   ) => {
     if (!browserAvailable) {
-      notify("此 Windows 云端环境的浏览器尚未接通。当前可使用隔离 PowerShell 终端。");
+      notify("The browser of this Windows cloud environment is not connected yet. You can use the isolated PowerShell terminal for now.");
       return null;
     }
     setTailnetLogin(null);
@@ -561,7 +561,7 @@ function App() {
   );
   const openEditor = async (path = workspace) => {
     if (!browserAvailable || !editorAvailable) {
-      notify("此 Windows 云端环境的文件编辑器尚未接通。当前可在隔离 PowerShell 中操作文件。");
+      notify("The file editor of this Windows cloud environment is not connected yet. You can work with files in isolated PowerShell for now.");
       return;
     }
     if (!path) { setProjectDialog({}); return; }
@@ -732,7 +732,7 @@ function App() {
               if (live) setBrowserError("");
               return result;
             }).catch(error => {
-              if (live) setBrowserError(next.guest_system === "macos" ? "请在环境设置中同步 macOS 组件，并确认已登录客机图形账户。" : error.message);
+              if (live) setBrowserError(next.guest_system === "macos" ? "Sync the macOS components in the environment settings, and make sure the guest graphical account is signed in." : error.message);
               return null;
             }) : null,
             api("/terminals"),
@@ -1516,10 +1516,10 @@ function App() {
           {!managementPage && showHome && terminalHeader(null)}
           {!managementPage && status.ready && status.guest_system === "windows-remote" && !status.workload_ready && !connectionError && <div className="remote-capability-banner" role="status">
             <span>{browserAvailable
-              ? `Windows 云端：隔离 PowerShell 和浏览器已接通，外网${guestCapability(status, "network") ? "已开放" : "尚未开放"}；桌面和外部项目仍在适配。`
-              : "Windows 云端适配中：隔离 PowerShell 已接通，浏览器、桌面和外部项目尚未接通。"}</span>
-            {browserAvailable && <button disabled={!status.ready || busy} onClick={() => openBrowser()}>打开浏览器</button>}
-            <button disabled={!status.ready || busy} onClick={() => createTerminal(status.workspace || "", "shell").catch(e => notify(e.message))}>打开 PowerShell</button>
+              ? `Windows cloud: isolated PowerShell and the browser are connected, the internet is ${guestCapability(status, "network") ? "open" : "not open yet"}; the desktop and external projects are still being adapted.`
+              : "Windows cloud is being adapted: isolated PowerShell is connected; the browser, desktop and external projects are not connected yet."}</span>
+            {browserAvailable && <button disabled={!status.ready || busy} onClick={() => openBrowser()}>Open browser</button>}
+            <button disabled={!status.ready || busy} onClick={() => createTerminal(status.workspace || "", "shell").catch(e => notify(e.message))}>Open PowerShell</button>
           </div>}
           {browserAvailable && browserError && running && !connectionError && <div className="connection-banner" role="status">
             <span>The guest browser cannot connect right now. {browserError}</span>
@@ -1541,7 +1541,7 @@ function App() {
             <main className="management-page" aria-labelledby={managementPage + "-title"}>
               <header className="chrome management-header">
                 {sidebarButton()}
-                <h1 id={managementPage + "-title"} tabIndex={-1}>{managementPage === "tailscale" ? "Tailscale" : "Claude 账号管理"}</h1>
+                <h1 id={managementPage + "-title"} tabIndex={-1}>{managementPage === "tailscale" ? "Tailscale" : "Claude account management"}</h1>
               </header>
               <div className="management-content">
                 {managementPage === "tailscale" ? <TailscalePanel status={status}
@@ -1553,7 +1553,7 @@ function App() {
                   }}
                   onConfirm={confirm} onInstall={async () => {
                     const nativeGuest = ["macos", "windows-11"].includes(status.guest_system);
-                    if (nativeGuest && !await confirm({ title: "更新环境组件？", body: "更新会重新连接浏览器和显示组件，请先保存工作。设备身份、公钥和个人数据保留。", confirm: "更新组件" })) return;
+                    if (nativeGuest && !await confirm({ title: "Update environment components?", body: "Updating reconnects the browser and display components; save your work first. The device identity, public key and personal data are kept.", confirm: "Update components" })) return;
                     await action(nativeGuest ? "/environment/update" : "/tailscale/install", {});
                   }} /> : <ClaudeAccountsPanel store={claudeProfiles} tabs={tabs} onConfirm={confirm}
                   running={status.vm_running} environmentBusy={busy || storageRecovery}
@@ -1623,7 +1623,7 @@ function App() {
                       {!status.ready && <div className="view-overlay">
                         <RefreshCw /><h3>The browser connection is unavailable for now</h3>
                         <p>The environment and terminals can still run; restoring the browser does not stop existing terminals.</p>
-                        <button className="primary" disabled={busy} onClick={() => startEnvironment({})}>恢复浏览器</button>
+                        <button className="primary" disabled={busy} onClick={() => startEnvironment({})}>Restore browser</button>
                       </div>}
                       {status.ready && !splitReady && <div className="view-overlay">Adjusting the browser layout…</div>}
                     </div>
@@ -1692,8 +1692,8 @@ function App() {
                         ? !status.ready
                           ? status.environment_update_error || "The browser connection is not ready. Restore the connection or keep using the terminal."
                           : network.mode === "open"
-                            ? status.guest_system === "windows-remote" ? "环境已连接，网络检查通过。可以浏览网页或使用隔离 PowerShell。" : "环境已连接，网络检查通过。可以浏览网页或打开本地项目。"
-                            : `${network.label}。终端与${status.guest_system === "windows-remote" ? "隔离工作目录" : "本地文件"}仍可使用。`
+                            ? status.guest_system === "windows-remote" ? "The environment is connected and the network check passed. You can browse the web or use isolated PowerShell." : "The environment is connected and the network check passed. You can browse the web or open local projects."
+                            : `${network.label}. The terminal and ${status.guest_system === "windows-remote" ? "isolated working folder" : "local files"} are still available.`
                         : setupProxy
                           ? "Connect your proxy first, then start the browser, terminals and editor. No extra proxy software is needed."
                           : "Prepare a separate browser and terminal, then start working once the network checks finish."} />
@@ -1805,7 +1805,7 @@ function App() {
                       <button
                         onClick={() => openEditor(contentWorkspace)}
                         disabled={!status.ready || busy || !editorAvailable}
-                        title={editorAvailable ? undefined : "当前环境尚未接通文件编辑器，可使用 PowerShell 管理隔离工作目录中的文件"}
+                        title={editorAvailable ? undefined : "The current environment has no file editor connected yet; use PowerShell to manage files in the isolated working folder"}
                       >
                         <FileCode2 size={16} />
                         Browse files
@@ -1822,9 +1822,9 @@ function App() {
                   )}
                   {running && status.ready && (
                     <p className="welcome-hint">
-                      {status.guest_system === "windows-remote" ? "PowerShell 和浏览器无需 Claude 登录。只有使用 Claude 时才需要登录账户。" : <>打开项目后，在终端输入 <code>claude</code>，按提示登录你的账户。</>}
+                      {status.guest_system === "windows-remote" ? "PowerShell and the browser need no Claude sign-in. You only need to sign in to an account when using Claude." : <>After opening a project, enter <code>claude</code>in the terminal and sign in to your account as prompted.</>}
                       <br />
-                      {status.guest_system === "windows-remote" ? "文件保存在云端隔离工作目录中，不会挂载你的本地文件夹。" : isRemoteClient() ? "打开的项目位于云端，编辑和删除会直接影响云端文件。" : "打开的项目与本机共享，编辑和删除文件会同步。"}
+                      {status.guest_system === "windows-remote" ? "Files are saved in the isolated cloud working folder, and your local folders are not mounted." : isRemoteClient() ? "Opened projects are in the cloud, and edits and deletions act directly on the cloud files." : "Opened projects are shared with this computer, and edits and deletions of files are synced."}
                     </p>
                   )}
                   </>}

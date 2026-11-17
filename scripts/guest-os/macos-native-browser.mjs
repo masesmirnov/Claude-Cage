@@ -62,7 +62,7 @@ async function openEditor(id, restart, launch) {
     redirect: "manual", signal: AbortSignal.timeout(7000),
   });
   const cookies = login.headers.getSetCookie();
-  if (![302, 303].includes(login.status) || !cookies.length) throw new Error("客机编辑器登录失败");
+  if (![302, 303].includes(login.status) || !cookies.length) throw new Error("Guest editor sign-in failed");
   // Cookies are scoped by hostname, independently of port. Deliver the editor's
   // own cookie only to this project's localhost alias, then open its server.
   const hostname = id + ".localhost";

@@ -34,7 +34,7 @@ func prepareMacSystemMedia(ctx context.Context, profile string, i *guestos.Insta
 	media := i.Media
 	if media == "" {
 		media = filepath.Join(cache, "MacOS.ipsw")
-		fmt.Fprintln(os.Stdout, "正在从 Apple 下载并校验 macOS 26.5.2（19.77 GB）…")
+		fmt.Fprintln(os.Stdout, "Downloading and verifying macOS 26.5.2 (19.77 GB) from Apple…")
 		if err := prepareMacRestoreMedia(ctx, media, appleImageURL, appleImageDigest, appleImageBytes, os.Stdout); err != nil {
 			return "", err
 		}

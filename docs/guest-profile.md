@@ -1,76 +1,76 @@
-# 创建客机时配置名称与设备
+# Setting the name and devices when creating a guest
 
-首次设置的“系统与存储”步骤中，展开“客机名称与初始设备配置”。可以直接填写，也可以留空让 Cage 随机生成；“重新随机生成名称和尺寸”用于预览一组新值。预览不会创建磁盘或保存环境身份。
+In the "System and storage" step of first setup, expand "Guest name and initial device settings". You can fill them in or leave them empty for Cage to generate random values; "Generate new random name and size" previews a new set of values. The preview does not create a disk or save an environment identity.
 
-开始安装时，配置保存到当前独立配置目录的 `guest-profile.json`。继续中断的安装、重启、重连和更新组件都会复用它。安装已经开始后不能通过首次设置替换这些值，以免使账户、文件权限、SSH 和浏览器数据失去对应关系。需要另一组身份时创建独立的新环境。
+When installation starts, the settings are saved to `guest-profile.json` in the current separate config folder. Continuing an interrupted installation, restarting, reconnecting and updating components all reuse it. After installation has started, first setup cannot replace these values, so that accounts, file permissions, SSH and browser data keep matching. Create a separate new environment if you need another identity.
 
-## 可配置项
+## Settings
 
-| 设置 | 默认行为 | 手动填写与适用范围 |
+| Setting | Default | Manual value and scope |
 | --- | --- | --- |
-| 主机名 | 使用真实 PC 型号简称或常见 PC 命名样式随机生成 | 1–15 位 ASCII 字母、数字、连字符；字母开头，字母或数字结尾。适用于新建 Linux、macOS 和 Windows 客机 |
-| Linux 工作账户 | 常见名字加两位数字，如 `alex73` | 1–24 位小写字母、数字、下划线，以字母开头；不使用系统账户 |
-| Linux 浏览器账户 | 另一独立随机账户 | 同上，必须与工作账户不同，保留两个账户之间的权限边界 |
-| 两个 Linux 主目录 | 分别使用 `/home/<账户>` | 可各自填写 `/home/` 下独立的单层目录；目录名以字母开头，最长 63 位，仅含 ASCII 字母、数字、点、连字符、下划线。不能共用目录或使用基础镜像保留的 `cage`、`cage-browser` 目录 |
-| Linux 音频设备 | 从 12 个真实 USB 音频产品型号中自动选择 | 型号描述与设备名保持对应，设备名加独立随机后缀；首次设置不需要手填。已有自定义音频配置继续保留 |
-| Linux 虚拟显示 | 从 1920×1080、1920×1200、2560×1440、2560×1600、2880×1800、3840×2160 中随机选择 | 宽 800–3840、高 600–2160，宽高一起填写 |
-| 浏览器初始窗口 | 从适合显示尺寸的常见窗口大小中随机选择 | 同上；Linux 初始窗口不能大于虚拟显示。实际工作台视窗、全屏、像素密度和用户后续调整仍会影响最终可见尺寸 |
-| Linux 控制扩展名称 | 从普通标签/窗口管理名称中随机选择 | 1–64 位普通 ASCII 文字；扩展安装路径与由路径派生的扩展 ID 同时按环境随机化 |
-| WebGL | 保持原生行为 | 可选择关闭网页 3D 图形能力；Linux Chromium、Windows Chromium 和 macOS Chrome 均在启动进程时应用 |
-| Canvas 图像读取 | 保持原生行为 | 可选择阻止网页读取 Canvas 图像，覆盖同一浏览器进程的普通窗口和授权窗口 |
-| 浏览器图形后端 | 自动使用客机可用设备 | 按客机系统选择 ANGLE 的 Metal、D3D11、Vulkan、OpenGL，或 SwiftShader 软件兼容模式 |
-| Linux QEMU 虚拟 GPU | 保持现有设备 | Linux 主机可选择实验性的 VirGL + DRI3，需宿主 GPU、支持 OpenGL 的 QEMU 及支持 `-rendernode` 的 TigerVNC；容器不提供此选项 |
+| Host name | Randomly generated from a short real PC model name or a common PC naming style | 1–15 ASCII letters, digits and hyphens; starts with a letter and ends with a letter or digit. Applies to new Linux, macOS and Windows guests |
+| Linux work account | A common first name plus two digits, such as `alex73` | 1–24 lowercase letters, digits and underscores, starting with a letter; system accounts are not used |
+| Linux browser account | Another separate random account | Same as above; must differ from the work account to keep the permission boundary between the two |
+| Two Linux home folders | `/home/<account>` each | Each can be set to its own single-level folder under `/home/`; the name starts with a letter, is at most 63 characters and contains only ASCII letters, digits, dots, hyphens and underscores. They cannot share a folder or use the `cage` and `cage-browser` folders reserved by the base image |
+| Linux audio device | Chosen automatically from 12 real USB audio product models | The model description matches the device name, and the device name gets its own random suffix; first setup needs no manual input. Existing custom audio settings are kept |
+| Linux virtual display | Chosen at random from 1920×1080, 1920×1200, 2560×1440, 2560×1600, 2880×1800 and 3840×2160 | Width 800–3840 and height 600–2160, entered together |
+| Initial browser window | Chosen at random from common window sizes that fit the display size | Same as above; on Linux the initial window cannot be larger than the virtual display. The actual workbench viewport, full screen, pixel density and later user changes still affect the final visible size |
+| Linux control extension name | Chosen at random from ordinary tab/window management names | 1–64 plain ASCII characters; the extension install path and the extension ID derived from it are also randomized per environment |
+| WebGL | Native behavior | You can turn off web 3D graphics; Linux Chromium, Windows Chromium and macOS Chrome apply it when the process starts |
+| Canvas image reading | Native behavior | You can block web pages from reading Canvas images, covering regular and authorization windows of the same browser process |
+| Browser graphics backend | Uses the devices available in the guest automatically | Choose ANGLE's Metal, D3D11, Vulkan or OpenGL by guest system, or the SwiftShader software compatibility mode |
+| Linux QEMU virtual GPU | Keeps the existing device | Linux hosts can choose the experimental VirGL + DRI3, which needs a host GPU, a QEMU with OpenGL support and a TigerVNC that supports `-rendernode`; containers don't offer this option |
 
-名称、设备描述和扩展名称不接受控制字符、引号或脚本片段。尺寸有明确上限。不能通过这些设置注入任意浏览器参数、修改代理、关闭沙箱或开放调试端口。
+Names, device descriptions and extension names do not accept control characters, quotes or script fragments. Sizes have clear limits. These settings cannot inject arbitrary browser arguments, change the proxy, turn off the sandbox or open a debugging port.
 
-建议选择自然、易记、与你以往环境身份不同的名称。账户、设备名称和尺寸形成一套持久配置；同一环境重启或重连后不重新抽取。
+Choose names that are natural, easy to remember and different from your previous environment identities. Accounts, device names and sizes form one persistent configuration; they are not drawn again when the same environment restarts or reconnects.
 
-音频库随程序嵌入，包含 Focusrite Scarlett 第四代、Behringer U-PHORIA UMC202HD、Steinberg UR-C、Yamaha AG MK2 的 12 款产品，来源链接随记录保存在 `internal/guestprofile/audio-models.json`。这些名称是 Linux 虚拟输出的命名素材，不会把空输出设备变成实际 USB 声卡，也不伪造 USB VID/PID 或实体设备序列号。macOS、Windows 原生音频仍使用各自实际驱动报告的设备。
+The audio library is embedded in the program and contains 12 products from the Focusrite Scarlett 4th gen, Behringer U-PHORIA UMC202HD, Steinberg UR-C and Yamaha AG MK2 lines, with source links saved with the records in `internal/guestprofile/audio-models.json`. These names are naming material for the Linux virtual output; they do not turn the null output device into an actual USB sound card, and do not fake a USB VID/PID or physical device serial number. Native macOS and Windows audio still uses the devices reported by their actual drivers.
 
-## 平台行为
+## Platform behavior
 
-Linux 的账户配置同时应用于 Lima 初始化、容器首次启动、服务运行账户、sudo 规则、浏览器主目录、音频采集和附件路径校验。剪贴板协议中的工作/浏览器角色与内部服务名称继续保持稳定；它们不作为实际 Linux 登录名使用。容器从镜像的初始账户改名时只操作本环境的文件系统，并验证工作账户的 UID 和浏览器账户的独立性。
+On Linux, the account settings apply to Lima initialization, the first container start, service accounts, sudo rules, the browser home folder, audio capture and attachment path checks. The work/browser roles in the clipboard protocol and internal service names stay stable; they are not used as actual Linux login names. When a container renames the image's initial accounts, it only touches this environment's file system and verifies the work account's UID and the browser account's separation.
 
-Lima 从基础模板派生工作实例时使用本环境已经选定的主机名和账户，UUID 与 MAC 仍独立生成。没有 Cage 创建配置的普通 Lima 克隆保留原有的随机主机名行为。
+When Lima derives a work instance from the base template, it uses the host name and accounts already chosen for this environment, while the UUID and MAC are still generated separately. Regular Lima clones without Cage creation settings keep the old random host name behavior.
 
-Windows 正式安装会把选定的主机名写入新系统的应答文件。独立运行 `new-windows-test-vm.ps1` 或 `start-windows-evaluation-setup.ps1` 时，可以通过 `-ComputerName MY-PC` 手填；不指定则使用 `*`，由 Windows Setup 生成名称。不会重命名导入的已有 Windows 系统或更改宿主 Windows 的计算机名。
+A regular Windows installation writes the chosen host name into the new system's answer file. When running `new-windows-test-vm.ps1` or `start-windows-evaluation-setup.ps1` on its own, you can set it with `-ComputerName MY-PC`; without it `*` is used and Windows Setup generates the name. Imported existing Windows systems are not renamed, and the host Windows computer name is not changed.
 
-macOS Chrome 和 Windows 浏览器保存本客机用户的公开浏览器创建设置。它们应用于新启动的浏览器进程；已有窗口不会仅因重连而关闭。macOS 的手动主机名仍通过 Lima 的客机初始化配置应用。
+macOS Chrome and Windows browsers save this guest user's public browser creation settings. They apply to newly started browser processes; existing windows are not closed just because of a reconnect. A manual macOS host name is still applied through Lima's guest initialization config.
 
-没有 `guest-profile.json` 的旧环境沿用已有账户和设备设置。配置文件损坏、不完整或包含未知字段时会报错，不会自动替换已有账户或磁盘。
+Old environments without `guest-profile.json` keep their existing account and device settings. A damaged or incomplete config file, or one with unknown fields, reports an error and does not replace existing accounts or disks automatically.
 
-## 图形选项的含义
+## What the graphics options mean
 
-虚拟 GPU 的 `Apple Paravirtual device` 名称来自实际图形驱动。ANGLE 的 Metal 后端改变浏览器的图形 API 路径，不能移除 Apple Virtualization 的虚拟设备，也不代表物理 GPU 直通。Windows 的 D3D11 和 Linux 的 OpenGL/Vulkan 同样依赖客机实际可用的驱动。SwiftShader 明确作为软件模式提供，检测会区分软件回退和虚拟 GPU。
+The `Apple Paravirtual device` name of the virtual GPU comes from the actual graphics driver. ANGLE's Metal backend changes the browser's graphics API path; it cannot remove Apple Virtualization's virtual device and does not mean physical GPU passthrough. Windows D3D11 and Linux OpenGL/Vulkan likewise depend on the drivers actually available in the guest. SwiftShader is offered explicitly as a software mode, and the checks tell software fallback apart from a virtual GPU.
 
-选择 Metal、D3D11、Vulkan 或 OpenGL 时，浏览器请求使用所选后端，并通过 `--enable-zero-copy` 请求零拷贝上传。Chromium 根据驱动能力和兼容性屏蔽列表决定是否使用 GPU 栅格化，Canvas 2D 加速还取决于页面的绘制方式。自动模式和 SwiftShader 沿用各自的默认上传方式。
+When Metal, D3D11, Vulkan or OpenGL is chosen, the browser requests the selected backend and asks for zero-copy uploads with `--enable-zero-copy`. Chromium decides whether to use GPU rasterization based on driver capabilities and its compatibility block list, and Canvas 2D acceleration also depends on how the page draws. Automatic mode and SwiftShader keep their default upload methods.
 
-| 客机 | 可选浏览器后端 |
+| Guest | Browser backends |
 | --- | --- |
-| macOS | 自动、Metal、OpenGL、SwiftShader |
-| Windows | 自动、D3D11、OpenGL、SwiftShader |
-| Linux | 自动、Vulkan、OpenGL、SwiftShader |
+| macOS | Automatic, Metal, OpenGL, SwiftShader |
+| Windows | Automatic, D3D11, OpenGL, SwiftShader |
+| Linux | Automatic, Vulkan, OpenGL, SwiftShader |
 
-Linux 主机的新建 Linux 虚拟机可额外选择 VirGL：使用 QEMU `egl-headless` 和加速版 virtio GPU，客机通过 Mesa、TigerVNC 的 DRI3 render node 提供 OpenGL 渲染。创建前检查当前用户是否可打开宿主 DRM render 节点；置备时检查客机 `/dev/dri/renderD128`、VNC 参数支持和浏览器账户访问权限，缺少条件会明确失败。不会修改宿主驱动、设备权限或防火墙。该路径未接入 Venus/Gfxstream，不能与 Vulkan 选项组合。驱动仍会报告 VirGL；这不是从显卡型号库中任选一款物理 GPU 的实现。
+New Linux virtual machines on Linux hosts can also choose VirGL: it uses QEMU `egl-headless` and the accelerated virtio GPU, and the guest provides OpenGL rendering through Mesa and TigerVNC's DRI3 render node. Before creation it checks that the current user can open the host DRM render node; during provisioning it checks the guest's `/dev/dri/renderD128`, VNC argument support and the browser account's access, and fails clearly if something is missing. It does not change host drivers, device permissions or the firewall. This path is not connected to Venus/Gfxstream and cannot be combined with the Vulkan option. The driver still reports VirGL; this is not an implementation that picks a physical GPU from a graphics card library.
 
-浏览器保持实际安装版本的原生 UA 与 Client Hints，不拼接随机浏览器版本、操作系统或显卡型号。桌面浏览器的 UA 通常不包含实体主板型号，修改字符串不能提供与该硬件一致的渲染行为。
+The browser keeps the native UA and Client Hints of the actually installed version, and does not assemble a random browser version, operating system or graphics card model. Desktop browser UAs usually do not include the physical motherboard model, and changing the string cannot provide rendering behavior consistent with that hardware.
 
-关闭 WebGL 使用 Chromium 自身的 `--disable-3d-apis` 和 `--disable-webgl`；阻止 Canvas 读取使用 `--disable-reading-from-canvas`。这些选项控制浏览器能力，不往图像中添加随机噪声。
+Turning off WebGL uses Chromium's own `--disable-3d-apis` and `--disable-webgl`; blocking Canvas reading uses `--disable-reading-from-canvas`. These options control browser capabilities and do not add random noise to images.
 
-依赖 3D 渲染、图片编辑、Canvas 导出或验证码的网站可能受到影响，因此这两项默认保留原生行为。关闭功能本身也可被网页观察到。其他浏览器、应用、内核、字体、GPU、软件版本和 Cage 内部服务仍可能存在共同特征；这些设置不保证环境无法被识别。
+Sites that rely on 3D rendering, image editing, Canvas export or CAPTCHAs may be affected, so both options keep native behavior by default. Turning a feature off can itself be observed by web pages. Other browsers, apps, kernels, fonts, GPUs, software versions and Cage's internal services may still share common traits; these settings do not guarantee that the environment cannot be recognized.
 
-浏览器运行所必需的受控网络、沙箱和管理参数仍由 Cage 管理。相关参数的差异来自用户选择的图形能力、窗口尺寸和独立扩展，而非无意义地打乱启动参数顺序。
+The controlled network, sandbox and management arguments the browser needs are still managed by Cage. Differences in these arguments come from the graphics capabilities, window size and separate extension the user chose, not from pointlessly shuffling the order of launch arguments.
 
-## 检测实际生效情况
+## Check what actually took effect
 
-环境启动后，在安全检查面板点击“检测浏览器”或“检测 Claude Desktop”；Desktop 工具栏也提供“检测环境”。
+After the environment starts, click "Check browser" or "Check Claude Desktop" in the safety check panel; the Desktop toolbar also offers "Check environment".
 
-- 浏览器在本地诊断文档核对 UA 与 Client Hints 的主版本和平台、显示信息、Canvas 已知颜色与字体样本校验值、WebGL 着色器编译及参考像素，并区分软件渲染、虚拟 GPU 和驱动报告的渲染器。
-- Linux 同时核对实际主机名、工作账户、主目录和音频输出描述。浏览器音频标签受权限限制；检测不申请麦克风权限，缺少标签时显示“未观测”。诊断文档视口不等于用户当前窗口尺寸，也不用于验证初始窗口大小。
-- Claude Desktop 核对可获得的安装、版本和运行状态，以及 Linux 系统配置。官方应用没有受支持的应用内渲染自检接口，因此其内部渲染器明确显示“未观测”；不会把浏览器探针结果当作 Desktop 内部证据。
+- The browser checks, in a local diagnostic page, the major version and platform of the UA and Client Hints, display information, the checksum of known Canvas colors and font samples, WebGL shader compilation and reference pixels, and tells software rendering, a virtual GPU and the driver-reported renderer apart.
+- On Linux it also checks the actual host name, work account, home folder and audio output description. Browser audio labels are limited by permissions; the check does not ask for microphone permission and shows "Not observed" when labels are missing. The diagnostic page viewport is not the user's current window size and is not used to verify the initial window size.
+- Claude Desktop checks the available installation, version and running state, and the Linux system configuration. The official app has no supported in-app rendering self-check, so its internal renderer is shown explicitly as "Not observed"; browser probe results are not used as evidence about Desktop internals.
 
-检测不读取登录资料、设备 ID 或序列号，不为 Desktop 注入代码或开启调试端口，不进行外部指纹查询。结果用于发现配置不一致、渲染错误和软件回退，不提供“真实物理设备”或匿名性认证。相同 Canvas 校验值也不单独判为失败。
+The checks do not read sign-in data, device IDs or serial numbers, do not inject code into Desktop or open a debugging port, and do not run external fingerprint lookups. The results help find configuration mismatches, rendering errors and software fallback; they do not certify a "real physical device" or anonymity. An identical Canvas checksum alone is not counted as a failure.
 
-VirGL、macOS Metal 和 Windows D3D11 仍需在对应平台实际启动客机验收；本次 Linux 开发机未完成这些硬件路径的端到端验证。
+VirGL, macOS Metal and Windows D3D11 still need acceptance by actually starting a guest on the matching platform; the Linux development machine used this time did not complete end-to-end verification of these hardware paths.
 
-参考：[QEMU virtio-gpu 后端](https://www.qemu.org/docs/master/system/devices/virtio/virtio-gpu.html)、[TigerVNC rendernode](https://github.com/TigerVNC/tigervnc/blob/master/unix/xserver/hw/vnc/Xvnc.man)、[Chromium 官方开关定义](https://chromium.googlesource.com/chromium/src/+/HEAD/content/public/common/content_switches.cc)、[Windows ComputerName](https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-shell-setup-computername)、[机器身份](guest-identity.md)。
+References: [QEMU virtio-gpu backends](https://www.qemu.org/docs/master/system/devices/virtio/virtio-gpu.html), [TigerVNC rendernode](https://github.com/TigerVNC/tigervnc/blob/master/unix/xserver/hw/vnc/Xvnc.man), [official Chromium switch definitions](https://chromium.googlesource.com/chromium/src/+/HEAD/content/public/common/content_switches.cc), [Windows ComputerName](https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-shell-setup-computername), [machine identity](guest-identity.md).

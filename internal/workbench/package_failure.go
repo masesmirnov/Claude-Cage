@@ -84,19 +84,19 @@ func packageInstallFailure(action string, cause error, log string) error {
 		return nil
 	}
 	tail := strings.Join(ev.tail, "\n")
-	reason := "APT 命令以退出码 " + ev.exit + " 结束，输出中没有可识别的原因"
-	next := "请查看下方输出末尾；仍无法判断时，导出诊断包并附上这些信息。"
+	reason := "The APT command ended with exit code " + ev.exit + " and the output has no recognizable cause"
+	next := "See the end of the output below; if you still cannot tell, export a diagnostics bundle and attach this information."
 	lower := strings.ToLower(tail)
 	matched := false
 	for _, rule := range []struct {
 		patterns     []string
 		reason, next string
 	}{
-		{[]string{"temporary failure resolving", "could not resolve", "name or service not known"}, "APT 无法解析下载服务器域名", "请在网络与代理设置中检查所选节点和 DNS，再继续安装。"},
-		{[]string{"connection timed out", "timed out", "could not connect to", "unable to connect to", "connection failed", "connection refused"}, "APT 连接下载服务器失败或超时", "请检查所选代理是否可用，再继续安装。"},
-		{[]string{"proxy authentication required", "407 proxy"}, "代理服务器拒绝了当前登录凭据", "请在网络与代理设置中更新代理账号或订阅，再应用节点。"},
-		{[]string{aptNotFoundNeedle, "has no installation candidate"}, "软件源中找不到所需的软件包", "请确认软件源可访问且 apt update 已成功，再继续安装。"},
-		{[]string{"no space left on device"}, "磁盘空间不足，无法继续写入", "请释放环境所在磁盘的空间后继续。"},
+		{[]string{"temporary failure resolving", "could not resolve", "name or service not known"}, "APT cannot resolve the download server domain name", "Check the selected node and DNS in the network and proxy settings, then continue the installation."},
+		{[]string{"connection timed out", "timed out", "could not connect to", "unable to connect to", "connection failed", "connection refused"}, "APT failed or timed out connecting to the download server", "Check whether the selected proxy works, then continue the installation."},
+		{[]string{"proxy authentication required", "407 proxy"}, "The proxy server rejected the current sign-in credentials", "Update the proxy account or subscription in the network and proxy settings, then apply the node."},
+		{[]string{aptNotFoundNeedle, "has no installation candidate"}, "Cannot find the required packages in the package source", "Make sure the package source is reachable and apt update succeeded, then continue the installation."},
+		{[]string{"no space left on device"}, "Not enough disk space to keep writing", "Free up space on the disk the environment is on, then continue."},
 	} {
 		for _, p := range rule.patterns {
 			if strings.Contains(lower, p) {
@@ -114,13 +114,13 @@ func packageInstallFailure(action string, cause error, log string) error {
 			pkgs = pkg
 		}
 	}
-	detail := "失败命令：" + clip(ev.command, aptCommandBytes)
+	detail := "Failed command: " + clip(ev.command, aptCommandBytes)
 	if pkgs != "" && strings.Contains(ev.command, "install") {
-		detail += "；涉及软件包：" + clip(pkgs, aptCommandBytes)
+		detail += "; packages involved: " + clip(pkgs, aptCommandBytes)
 	}
 	if tail != "" {
-		detail += "；错误输出末尾：" + strings.ReplaceAll(tail, "\n", " | ")
+		detail += "; end of the error output: " + strings.ReplaceAll(tail, "\n", " | ")
 	}
 	diagnostics.Log("error", "package-install", "reason="+reason+" "+detail)
-	return usererror.New(action, reason, diagnostics.Redact(detail)+"。"+next, cause)
+	return usererror.New(action, reason, diagnostics.Redact(detail)+". "+next, cause)
 }

@@ -12,7 +12,7 @@
 
 <a href="https://trendshift.io/repositories/339051#achievements"><img src="https://trendshift.io/api/badge/trendshift/repositories/339051/daily?language=Go" alt="Trendshift — Go Repository of the Day" width="250" height="55" /></a> <a href="https://trendshift.io/repositories/339051#achievements"><img src="https://trendshift.io/api/badge/trendshift/repositories/339051/weekly?language=Go" alt="Trendshift — Go Repository of the Week" width="250" height="55" /></a>
 
-**[项目主页](https://claude-cage.com/) · [下载应用](https://claude-cage.com/#download) · [使用文档](https://claude-cage.com/docs/) · [常见问题](https://claude-cage.com/docs/troubleshooting/)**
+**[Project homepage](https://claude-cage.com/) · [Download the app](https://claude-cage.com/#download) · [Documentation](https://claude-cage.com/docs/) · [Troubleshooting](https://claude-cage.com/docs/troubleshooting/)**
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [Русский](README.ru.md) · [العربية](README.ar.md) · [فارسی](README.fa.md) · [한국어](README.ko.md) · [Español](README.es.md) · [မြန်မာဘာသာ](README.my.md) · [Беларуская](README.be.md) · [پښتو](README.ps.md) · [دری](README.prs.md) · [አማርኛ](README.am.md) · [Soomaali](README.so.md) · [ትግርኛ](README.ti.md) · [Français](README.fr.md)
 
@@ -53,14 +53,14 @@ Claude Cage lets you work with Claude in a system you already know: a macOS virt
 - **Put the environment on your own server.** Deploy to or connect a Linux VPS over SSH; tools, tasks and data stay on the server, no KVM needed. [Cloud deployment and SSH](docs/guide/cloud.md)
 - **Connect devices over a private network.** Sign in to Tailscale inside Cage, see the devices on your network, and use SSH, the web and other TCP services. [Tailscale private network](docs/guide/tailscale.md)
 
-浏览器收藏、无痕会话、Cookie、扩展、密码保险箱，以及外观、资源、存储和工具更新，见[完整使用文档](https://claude-cage.com/docs/)。
+For browser bookmarks, private sessions, cookies, extensions, the password vault, appearance, resources, storage and tool updates, see the [full documentation](https://claude-cage.com/docs/).
 
 ## Quick start
 
 Send this to your agent (Codex, DeepSeek, WorkBuddy, anything but Claude Code 😁):
 
 ```markdown
-帮我拉取 https://github.com/Lee-xeo/Claude-Cage 的最新源码，打包安装，并 Cage 的代理配置通过我本机 clash 的 xx 节点走我的 xx ip 出口，全过程你盯着，有问题直接修复，且有必要的话顺手给项目提交 issue 帮助他们优化兼容性。
+Pull the latest source of https://github.com/Lee-xeo/Claude-Cage for me, build and install it, and route Cage's proxy through the xx node of my local Clash to my xx IP exit. Watch the whole process, fix problems directly, and if needed file issues for the project to help improve compatibility.
 ```
 
 All you need is a reliable proxy node. This project does not promote any proxy service; you can search for one yourself.
@@ -69,9 +69,9 @@ All you need is a reliable proxy node. This project does not promote any proxy s
 
 Cage supports macOS, Windows and Linux: Apple Silicon Macs on macOS 14+, Windows 10 22H2 / 11 x64, and Debian 12 / Ubuntu 22.04 / 24.04 x86_64. A Windows 11 guest needs a Hyper-V capable Windows 11 Pro, Enterprise or Education host; other supported Windows hosts can use Debian or Ubuntu 22.04. Intel Macs, Windows ARM64 and Linux ARM64 are not supported yet. [macOS](docs/getting-started.md) · [Windows](docs/windows.md) · [Linux](docs/linux.md).
 
-开发构建另提供 Intel Mac 本机 Linux 客机，以及 macOS 15.4+ 主机上的本机 macOS 客机实验路线，使用独立测试包；公开发行版尚未包含此能力。条件、构建方式和验收范围见 [Intel macOS 开发说明](docs/intel-macos-development.md)。
+Development builds also offer a local Linux guest on Intel Macs and an experimental local macOS guest on macOS 15.4+ hosts, shipped as separate test packages; public releases do not include this yet. For requirements, build steps and acceptance scope, see the [Intel macOS development notes](docs/intel-macos-development.md).
 
-1. 打开[项目主页](https://claude-cage.com/#download)，点击“下载应用”并选择平台。
+1. Open the [project homepage](https://claude-cage.com/#download), click "Download the app" and choose your platform.
 2. macOS: open the installer, drag **Cage** into **Applications**, then launch it from Applications. Windows: [installation guide](docs/windows.md#install-and-get-started) · Linux: [installation guide](docs/linux.md#install-and-get-started).
 3. Follow the in-app guide to set up your own proxy, start the environment and open a project.
 
@@ -108,35 +108,35 @@ For the detailed mechanism, see [Network and data boundaries](docs/getting-start
 
 ## Documentation and contributing
 
-面向用户的[官网使用文档](https://claude-cage.com/docs/)支持按功能浏览、搜索与章节直达。各项操作见[使用文档导航](docs/README.md)。
+The user-facing [online documentation](https://claude-cage.com/docs/) can be browsed by feature, searched, and linked by section. For each task, see the [documentation index](docs/README.md).
 
 | What you want to do | Start here |
 |---|---|
-| 让自己的 Agent 下载、安装、配置和排查 Cage | [Agent 使用指南](https://claude-cage.com/docs/agent/) |
-| 第一次安装、配置代理、打开项目 | [安装与首次启动](https://claude-cage.com/docs/installation/) |
-| 选择 macOS、Windows、Debian 或 Ubuntu 22.04 客机，使用原生开发工具 | [选择客机系统](https://claude-cage.com/docs/guest-systems/) |
-| 添加多个订阅、查看额度和分配终端 | [多账号与额度](https://claude-cage.com/docs/accounts/) |
-| 手机扫码、工具审批、远程浏览器 | [手机连接与远程会话](https://claude-cage.com/docs/mobile/) |
-| 在自己的 VPS 部署和连接环境 | [云端部署与 SSH](https://claude-cage.com/docs/cloud/) |
-| 了解每一项设置及何时生效 | [设置参考](https://claude-cage.com/docs/settings/) |
-| 维护存储、资源、更新与备份 | [维护、资源与数据](https://claude-cage.com/docs/maintenance/) |
-| 处理下载、启动、联网和登录问题 | [故障排查](https://claude-cage.com/docs/troubleshooting/) |
-| 了解文件、按键和关闭与退出行为 | [项目、终端与文件](https://claude-cage.com/docs/workbench/) |
+| Let your own agent download, install, configure and troubleshoot Cage | [Agent guide](https://claude-cage.com/docs/agent/) |
+| First install, proxy setup, opening a project | [Installation and first start](https://claude-cage.com/docs/installation/) |
+| Choose a macOS, Windows, Debian or Ubuntu 22.04 guest and use native developer tools | [Choosing a guest system](https://claude-cage.com/docs/guest-systems/) |
+| Add several subscriptions, check quotas and assign terminals | [Multiple accounts and quotas](https://claude-cage.com/docs/accounts/) |
+| Phone pairing by QR code, tool approvals, remote browser | [Phone connection and remote sessions](https://claude-cage.com/docs/mobile/) |
+| Deploy and connect an environment on your own VPS | [Cloud deployment and SSH](https://claude-cage.com/docs/cloud/) |
+| Every setting and when it takes effect | [Settings reference](https://claude-cage.com/docs/settings/) |
+| Maintain storage, resources, updates and backups | [Maintenance, resources and data](https://claude-cage.com/docs/maintenance/) |
+| Fix download, startup, network and sign-in problems | [Troubleshooting](https://claude-cage.com/docs/troubleshooting/) |
+| Files, keys, and closing and quitting | [Projects, terminals and files](https://claude-cage.com/docs/workbench/) |
 | Report a reproducible problem | [GitHub Issues](https://github.com/Lee-xeo/Claude-Cage/issues) |
-| 提交修复、功能实现或文档改进 | [贡献指南](.github/CONTRIBUTING.md) |
+| Submit fixes, features or documentation improvements | [Contributing](.github/CONTRIBUTING.md) |
 
-代码与文档贡献采用“`contribution` Issue 审核 → 邀请成为协作者 → 提交 PR → 审查合入”的流程。请先提交[方案贡献 Issue](https://github.com/Lee-xeo/Claude-Cage/issues/new?template=05-contribution.yml)；维护者审核通过并添加 `accepted` 标签后，自动化会发送协作者邀请。接受邀请后再创建 PR，详细步骤与权限说明见[贡献指南](.github/CONTRIBUTING.md)。
+Code and documentation contributions follow the flow "`contribution` issue review → collaborator invitation → pull request → review and merge". First submit a [contribution issue](https://github.com/Lee-xeo/Claude-Cage/issues/new?template=05-contribution.yml); after maintainers approve it and add the `accepted` label, the automation sends a collaborator invitation. Open a pull request after accepting it; see the [contributing guide](.github/CONTRIBUTING.md) for the detailed steps and permissions.
 
 The project is still iterating quickly. Join the community group to share feedback, and community experts are welcome to help maintain it.
 
 <p align="center">
-  <a href="assets/community-qq.png"><img src="assets/community-qq.png" alt="QQ 群 · 710792821" width="240" /></a>
-  <br />QQ 群 · 710792821
+  <a href="assets/community-qq.png"><img src="assets/community-qq.png" alt="QQ group · 710792821" width="240" /></a>
+  <br />QQ group · 710792821
 </p>
 
 <p align="center">
-  <a href="assets/community-wechat.png"><img src="assets/community-wechat.png" alt="微信" width="240" /></a>
-  <br />微信
+  <a href="assets/community-wechat.png"><img src="assets/community-wechat.png" alt="WeChat" width="240" /></a>
+  <br />WeChat
 </p>
 
 ## Sources and license
@@ -160,7 +160,7 @@ Thanks to these projects for providing the foundation or design reference for Ca
 - [code-server](https://github.com/coder/code-server): the code editor in the browser.
 - [AIO Sandbox](https://github.com/agent-infra/sandbox): reference for the working environment and interaction design.
 - [claude-switcher](https://github.com/YOURSJEYO/claude-switcher) and [Claude-Guardian](https://github.com/DUNHKpcc/Claude-Guardian): reference for network checks and security diagnostics.
-- [claude-post-ban-cleanup](https://github.com/l2461090/claude-post-ban-cleanup): 精确盘点、保护用户资料与可恢复缓存清理的流程参考；Cage 独立实现。
+- [claude-post-ban-cleanup](https://github.com/l2461090/claude-post-ban-cleanup): reference for the flow of precise inventory, protecting user data and cleaning recoverable caches; Cage has its own implementation.
 
 <a href="https://www.star-history.com/?repos=Lee-xeo%2FClaude-Cage&amp;type=date">
   <picture>

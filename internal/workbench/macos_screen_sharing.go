@@ -23,14 +23,14 @@ import (
 )
 
 var (
-	errScreenSharingNotMacOS    = errors.New("仅 macOS 客机支持打开系统屏幕共享")
-	errScreenSharingNotReady    = errors.New("macOS 客机尚未就绪")
-	errScreenSharingNeedMacHost = errors.New("打开客机屏幕共享需要在这台 Mac 上的 Cage 应用中操作")
-	errScreenSharingNotIsolated = errors.New("客机外网当前已放行或正在检查，已拒绝重新配置屏幕共享。请先在工作台暂停外网，确认网络门槛为关闭后再试。")
-	errScreenSharingGateUnknown = errors.New("无法确认客机网络隔离状态，已拒绝重新配置屏幕共享。请确认环境已启动，再在外网关闭时重试。")
-	errScreenSharingUnreachable = errors.New("无法连接到客机屏幕共享。请在客机「系统设置 → 通用 → 共享」中打开「屏幕共享」，并允许当前普通客机用户访问。macOS 26 仅用命令行启用时，连接可能提示「屏幕共享在 localhost 上不被允许」，需要在系统设置里再手动打开一次。")
-	errScreenSharingBadAction   = errors.New("无效的屏幕共享操作")
-	errScreenSharingEnable      = errors.New("无法重新启用客机屏幕共享服务。请先在工作台暂停外网，再确认客机已安装启用脚本后重试。")
+	errScreenSharingNotMacOS    = errors.New("Only macOS guests can open system Screen Sharing")
+	errScreenSharingNotReady    = errors.New("The macOS guest is not ready yet")
+	errScreenSharingNeedMacHost = errors.New("Opening guest Screen Sharing must be done in the Cage app on this Mac")
+	errScreenSharingNotIsolated = errors.New("The guest internet is currently allowed or being checked, so reconfiguring Screen Sharing was refused. First pause the internet in the workbench, confirm that the network gate is closed, then try again.")
+	errScreenSharingGateUnknown = errors.New("Cannot confirm the guest network isolation state, so reconfiguring Screen Sharing was refused. Make sure the environment is started, then try again while the internet is off.")
+	errScreenSharingUnreachable = errors.New("Cannot connect to guest Screen Sharing. In the guest's \"System Settings → General → Sharing\", turn on \"Screen Sharing\" and allow the current regular guest user. When macOS 26 enables it only from the command line, connecting may say \"Screen Sharing is not allowed on localhost\", and you need to turn it on once by hand in System Settings.")
+	errScreenSharingBadAction   = errors.New("Invalid Screen Sharing operation")
+	errScreenSharingEnable      = errors.New("Cannot re-enable the guest Screen Sharing service. First pause the internet in the workbench, confirm that the guest has the enabling script installed, then try again.")
 )
 
 // macOSScreenSharing is the cage-serve-owned SSH local forward to guest 5900.
@@ -137,7 +137,7 @@ func (s *Server) openMacOSScreenSharing(w http.ResponseWriter, r *http.Request) 
 			requestError(w, err)
 			return
 		}
-		status.Summary = "已重新启用客机屏幕共享服务。" + status.Summary
+		status.Summary = "Re-enabled the guest Screen Sharing service." + status.Summary
 		jsonReply(w, status)
 	case "open":
 		// Daily connect only creates a host-local SSH forward to guest
@@ -170,7 +170,7 @@ func (s *Server) openMacOSScreenSharingURL(url string) error {
 	cmd := exec.Command("/usr/bin/open", url)
 	host.HideCommandWindow(cmd)
 	if err := cmd.Run(); err != nil {
-		return errors.New("无法打开本机「屏幕共享」，请确认系统已安装该应用后重试。")
+		return errors.New("Cannot open the local \"Screen Sharing\"; make sure the app is installed on the system and try again.")
 	}
 	return nil
 }
@@ -228,13 +228,13 @@ func (s *Server) evaluateMacOSSetupSharing(ctx context.Context, force bool) macO
 	if err != nil {
 		status = macOSScreenSharingStatus{
 			State:   cage.CheckUnknown,
-			Summary: "暂时无法检查客机屏幕共享：" + err.Error(),
+			Summary: "Cannot check guest Screen Sharing right now: " + err.Error(),
 			Checks: []screenSharingCheck{{
 				ID:       "availability",
-				Title:    "屏幕共享可达性",
+				Title:    "Screen Sharing reachability",
 				State:    cage.CheckUnknown,
 				Evidence: err.Error(),
-				Remedy:   "确认虚拟 Mac 已登录后重试。若仍失败，请先暂停外网，再重新启用屏幕共享服务。",
+				Remedy:   "Make sure the virtual Mac is signed in and try again. If it still fails, pause the internet first, then re-enable the Screen Sharing service.",
 			}},
 		}
 	}
@@ -269,71 +269,71 @@ type screenSharingRFBResult struct {
 }
 
 func assembleScreenSharingStatus(serviceLoaded, portOpen bool, serviceErr error, rfb screenSharingRFBResult, rfbErr error) macOSScreenSharingStatus {
-	service := screenSharingCheck{ID: "service", Title: "屏幕共享服务", State: cage.CheckUnknown, Evidence: "尚未取得服务状态"}
+	service := screenSharingCheck{ID: "service", Title: "Screen Sharing service", State: cage.CheckUnknown, Evidence: "The service state was not obtained yet"}
 	if serviceErr != nil {
-		service.Evidence = "无法确认 com.apple.screensharing 是否已加载：" + serviceErr.Error()
-		service.Remedy = "请先在工作台暂停外网，再重新启用屏幕共享服务。"
+		service.Evidence = "Cannot confirm whether com.apple.screensharing is loaded: " + serviceErr.Error()
+		service.Remedy = "First pause the internet in the workbench, then re-enable the Screen Sharing service."
 		if portOpen {
 			service.State = cage.CheckPassed
-			service.Evidence = "未能直接读取服务状态，但客机 5900 端口已在监听，视为服务已启动。"
+			service.Evidence = "The service state could not be read directly, but guest port 5900 is listening, so the service is considered started."
 			service.Remedy = ""
 		}
 	} else if serviceLoaded {
 		service.State = cage.CheckPassed
-		service.Evidence = "已加载 com.apple.screensharing 服务。"
+		service.Evidence = "The com.apple.screensharing service is loaded."
 	} else {
 		service.State = cage.CheckFailed
-		service.Evidence = "未加载 com.apple.screensharing 服务。"
-		service.Remedy = "请先在工作台暂停外网，再点击「重新启用屏幕共享服务」。首次安装会在置备阶段自动启用。"
+		service.Evidence = "The com.apple.screensharing service is not loaded."
+		service.Remedy = "First pause the internet in the workbench, then click \"Re-enable Screen Sharing service\". The first installation enables it automatically during provisioning."
 	}
 
-	port := screenSharingCheck{ID: "port", Title: "5900 端口监听", State: cage.CheckFailed, Evidence: "客机 127.0.0.1:5900 尚未监听。", Remedy: "请先在工作台暂停外网，再重新启用屏幕共享服务。"}
+	port := screenSharingCheck{ID: "port", Title: "Port 5900 listening", State: cage.CheckFailed, Evidence: "Guest 127.0.0.1:5900 is not listening yet.", Remedy: "First pause the internet in the workbench, then re-enable the Screen Sharing service."}
 	if portOpen {
 		port.State = cage.CheckPassed
-		port.Evidence = "客机 127.0.0.1:5900 正在监听。"
+		port.Evidence = "Guest 127.0.0.1:5900 is listening."
 		port.Remedy = ""
 	}
 
-	handshake := screenSharingCheck{ID: "rfb", Title: "RFB 握手", State: cage.CheckUnknown, Evidence: "尚未完成 RFB 握手。"}
-	authorization := screenSharingCheck{ID: "authorization", Title: "系统设置授权", State: cage.CheckUnknown, Evidence: "尚无法自动确认系统设置中的屏幕共享开关。macOS 26 仅用命令行启用时，连接可能提示「屏幕共享在 localhost 上不被允许」。", Remedy: "请在客机「系统设置 → 通用 → 共享」中打开「屏幕共享」，并允许当前普通客机用户访问。"}
+	handshake := screenSharingCheck{ID: "rfb", Title: "RFB handshake", State: cage.CheckUnknown, Evidence: "The RFB handshake has not completed yet."}
+	authorization := screenSharingCheck{ID: "authorization", Title: "System Settings authorization", State: cage.CheckUnknown, Evidence: "The Screen Sharing switch in System Settings cannot be confirmed automatically yet. When macOS 26 enables it only from the command line, connecting may say \"Screen Sharing is not allowed on localhost\".", Remedy: "In the guest's \"System Settings → General → Sharing\", turn on \"Screen Sharing\" and allow the current regular guest user."}
 	authorized := cage.CheckUnknown
 	usable := false
 
 	if rfbErr != nil && !rfb.Handshake {
 		handshake.State = cage.CheckFailed
-		handshake.Evidence = "无法完成 RFB 握手：" + rfbErr.Error()
-		handshake.Remedy = "请在客机「系统设置 → 通用 → 共享」中打开「屏幕共享」。若服务未启动，请先暂停外网再重新启用。"
+		handshake.Evidence = "Cannot complete the RFB handshake: " + rfbErr.Error()
+		handshake.Remedy = "In the guest's \"System Settings → General → Sharing\", turn on \"Screen Sharing\". If the service is not started, pause the internet first, then re-enable it."
 		if rfb.Unreachable || !portOpen {
-			handshake.Evidence = "尚未连接到客机屏幕共享端口。"
+			handshake.Evidence = "Not connected to the guest Screen Sharing port yet."
 		}
 	} else if rfb.Denied {
 		handshake.State = cage.CheckFailed
 		reason := rfb.Reason
 		if reason == "" {
-			reason = "连接在握手后被拒绝"
+			reason = "the connection was refused after the handshake"
 		}
-		handshake.Evidence = "RFB 握手被拒绝：" + reason
-		handshake.Remedy = "这通常表示尚未在系统设置中授权。请打开「系统设置 → 通用 → 共享」，打开「屏幕共享」，并允许当前普通客机用户访问。"
+		handshake.Evidence = "RFB handshake refused: " + reason
+		handshake.Remedy = "This usually means it is not authorized in System Settings yet. Open \"System Settings → General → Sharing\", turn on \"Screen Sharing\" and allow the current regular guest user."
 		authorization.State = cage.CheckFailed
-		authorization.Evidence = "检测到屏幕共享未被允许：" + reason
+		authorization.Evidence = "Screen Sharing detected as not allowed: " + reason
 		authorization.Remedy = handshake.Remedy
 		authorized = cage.CheckFailed
 	} else if rfb.Handshake {
 		handshake.State = cage.CheckPassed
-		evidence := "已收到 RFB 握手"
+		evidence := "RFB handshake received"
 		if rfb.Greeting != "" {
-			evidence += "（" + strings.TrimSpace(rfb.Greeting) + "）"
+			evidence += " (" + strings.TrimSpace(rfb.Greeting) + ")"
 		}
 		if rfb.Types > 0 {
-			evidence += fmt.Sprintf("，服务端提供 %d 种认证方式。", rfb.Types)
+			evidence += fmt.Sprintf(", the server offers %d authentication methods.", rfb.Types)
 		} else {
-			evidence += "。"
+			evidence += "."
 		}
 		handshake.Evidence = evidence
 		usable = true
 		if rfb.Reason == "" && rfb.Types > 0 {
 			authorization.State = cage.CheckUnknown
-			authorization.Evidence = "RFB 握手已成功，但系统完整性保护下无法直接读取「屏幕共享」开关。若本机客户端仍提示「屏幕共享在 localhost 上不被允许」，请在客机系统设置中再手动打开一次。"
+			authorization.Evidence = "The RFB handshake succeeded, but the Screen Sharing switch cannot be read directly under System Integrity Protection. If the local client still says \"Screen Sharing is not allowed on localhost\", turn it on once more by hand in the guest's System Settings."
 		}
 	}
 
@@ -346,19 +346,19 @@ func assembleScreenSharingStatus(serviceLoaded, portOpen bool, serviceErr error,
 
 	checks := []screenSharingCheck{service, port, handshake, authorization}
 	state := cage.CheckFailed
-	summary := "客机屏幕共享尚未可用。"
+	summary := "Guest Screen Sharing is not available yet."
 	if usable {
 		state = cage.CheckPassed
-		summary = "客机屏幕共享服务已启用，并且 RFB 握手成功。"
+		summary = "The guest Screen Sharing service is enabled and the RFB handshake succeeded."
 		if authorized == cage.CheckUnknown {
-			summary += "请仍在「系统设置 → 通用 → 共享」中确认已打开「屏幕共享」，以免本机客户端提示「不被允许」。"
+			summary += "Still confirm in \"System Settings → General → Sharing\" that \"Screen Sharing\" is on, so the local client does not say \"not allowed\"."
 		}
 	} else if authorized == cage.CheckFailed {
-		summary = "屏幕共享服务已响应，但系统尚未允许连接。请在「系统设置 → 通用 → 共享」中打开「屏幕共享」。"
+		summary = "The Screen Sharing service responded, but the system does not allow connections yet. In \"System Settings → General → Sharing\", turn on \"Screen Sharing\"."
 		state = cage.CheckFailed
 	} else if service.State == cage.CheckUnknown && port.State != cage.CheckPassed && handshake.State != cage.CheckPassed {
 		state = cage.CheckUnknown
-		summary = "暂时无法确认客机屏幕共享状态。"
+		summary = "Cannot confirm the guest Screen Sharing state right now."
 	}
 	return macOSScreenSharingStatus{Usable: usable, State: state, Summary: summary, Authorized: authorized, Checks: checks}
 }
@@ -473,7 +473,7 @@ func readScreenSharingRFB(ctx context.Context, conn io.ReadWriter) (screenSharin
 		if err != nil {
 			result.Handshake = true
 			result.Denied = true
-			result.Reason = "版本交换后连接已关闭，可能尚未在系统设置中授权"
+			result.Reason = "the connection closed after the version exchange; it may not be authorized in System Settings yet"
 			return result, nil
 		}
 	}
@@ -482,7 +482,7 @@ func readScreenSharingRFB(ctx context.Context, conn io.ReadWriter) (screenSharin
 		if err := binary.Read(reader, binary.BigEndian, &length); err != nil {
 			result.Handshake = true
 			result.Denied = true
-			result.Reason = "服务器拒绝连接且未返回原因"
+			result.Reason = "the server refused the connection without giving a reason"
 			return result, nil
 		}
 		if length > 2048 {
@@ -525,7 +525,7 @@ func (s *Server) ensureMacOSScreenSharingTunnel(ctx context.Context) (int, error
 	session.stopLocked()
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		return 0, errors.New("无法在本机环回地址上分配屏幕共享端口")
+		return 0, errors.New("cannot allocate a Screen Sharing port on the local loopback address")
 	}
 	port := ln.Addr().(*net.TCPAddr).Port
 	if err := ln.Close(); err != nil {
@@ -542,7 +542,7 @@ func (s *Server) ensureMacOSScreenSharingTunnel(ctx context.Context) (int, error
 	host.HideCommandWindow(cmd)
 	if cmd.Err != nil {
 		cancel()
-		return 0, errors.New("无法准备客机 SSH 转发")
+		return 0, errors.New("cannot prepare the guest SSH forwarding")
 	}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -551,7 +551,7 @@ func (s *Server) ensureMacOSScreenSharingTunnel(ctx context.Context) (int, error
 	}
 	if err := cmd.Start(); err != nil {
 		cancel()
-		return 0, errors.New("无法启动客机 SSH 转发")
+		return 0, errors.New("cannot start the guest SSH forwarding")
 	}
 	// OpenSSH emits the marker from its fixed LocalCommand only after it
 	// authenticates the guest and binds the requested port. A different

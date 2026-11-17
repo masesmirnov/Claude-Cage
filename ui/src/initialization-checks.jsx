@@ -17,8 +17,8 @@ export function InitializationChecks({ status, busy, onWorkspace, onCheck, onSta
   const code = recovery?.recovery;
   const workspaceChecked = !code && status.safety?.report?.checks?.some(check => check.id === "filesystem_boundary" && check.state === "passed");
   return <section className="initialization-notice" aria-label="Finish the setup checks">
-    <h2>{code === "project-approval" ? "允许虚拟 Mac 访问工作区" : code === "guest-login" ? "先登录虚拟 Mac" : code === "filesystem-permission" ? "先启用文件共享权限" : "完成联网与隔离检查"}</h2>
-    <p>{recovery?.message || status.job?.error || status.safety?.error || (recovery?.workspace ? "系统已经安装。接下来确认共享工作区可访问，再检查代理出口和环境隔离。" : "系统已经安装。接下来检查代理出口和环境隔离，项目文件夹可以稍后添加。")}</p>
+    <h2>{code === "project-approval" ? "Allow the virtual Mac to access the workspace" : code === "guest-login" ? "Sign in to the virtual Mac first" : code === "filesystem-permission" ? "Turn on file sharing permission first" : "Finish the network and isolation checks"}</h2>
+    <p>{recovery?.message || status.job?.error || status.safety?.error || (recovery?.workspace ? "The system is installed. Next, confirm that the shared workspace is accessible, then check the proxy exit and environment isolation." : "The system is installed. Next, check the proxy exit and environment isolation; project folders can be added later.")}</p>
     {recovery?.workspace && <p className="macos-approval-path">{recovery.workspace}</p>}
     {code === "project-approval" && <p>Click the button below to open the authorization window in Cage. In the window, click Use Project; once verification passes, the network checks continue.</p>}
     {code === "filesystem-permission" && <p>In the virtual Mac, turn on both the macFUSE and macFUSE (local) switches, then return here to continue.</p>}
@@ -28,7 +28,7 @@ export function InitializationChecks({ status, busy, onWorkspace, onCheck, onSta
       {["environment-update", "environment-restart"].includes(code) ? <>
         {code === "environment-update" && <button className="primary" disabled={busy} onClick={onUpdate}>Sync environment components</button>}
         <button disabled={busy} onClick={code === "environment-restart" ? onRestart : onStart}>{code === "environment-restart" ? "Save, restart and check" : "Reconnect and check"}</button>
-      </> : <button className="primary" disabled={busy || !status.ready} onClick={() => workspaceChecked || !recovery?.workspace ? onCheck() : onWorkspace(recovery.workspace)}>{code === "project-approval" ? "打开工作区授权" : workspaceChecked || !recovery?.workspace ? "重试网络与隔离检查" : "连接工作区并继续检查"}</button>}
+      </> : <button className="primary" disabled={busy || !status.ready} onClick={() => workspaceChecked || !recovery?.workspace ? onCheck() : onWorkspace(recovery.workspace)}>{code === "project-approval" ? "Open workspace authorization" : workspaceChecked || !recovery?.workspace ? "Retry the network and isolation checks" : "Connect the workspace and continue checking"}</button>}
       {code === "project-directory" && <button disabled={busy} onClick={onDiagnostics}>View diagnostic records</button>}
     </div>
     <p className="mac-setup-retention">Until the checks pass, the guest's internet access stays off. Authorization and checks can be retried, and the existing installation and personal files are kept.</p>

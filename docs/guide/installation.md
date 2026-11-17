@@ -7,7 +7,7 @@ keywords: download install guest macOS Windows Debian Apple Silicon Hyper-V WHPX
 ---
 ## Choose an installer
 
-从[官网下载区](https://claude-cage.com/#download)选择平台。公开附件、签名和校验文件以 [GitHub Releases](https://github.com/Lee-xeo/Claude-Cage/releases)为准。源码压缩包用于开发，不能直接安装。
+Choose your platform in the [download section of the website](https://claude-cage.com/#download). Public assets, signatures and checksum files on [GitHub Releases](https://github.com/Lee-xeo/Claude-Cage/releases) are authoritative. Source archives are for development and cannot be installed directly.
 
 | Platform | Requirements and install method |
 | --- | --- |
@@ -26,7 +26,7 @@ The platform selected here is the host that runs Cage. The guest system inside t
 
 ## Create a Cage account
 
-选择用户名和密码登录时，设置用户名和至少 8 个字符的密码。这个账户用于解锁当前 Cage，Claude 订阅需要另外在环境里登录。注册后请保存恢复密钥，忘记密码时可在登录页使用它重置；保存与补设步骤见[账户恢复](settings.md#保存恢复密钥)。
+When choosing to sign in with a user name and password, set a user name and a password of at least 8 characters. This account unlocks the current Cage; your Claude subscription is signed in separately inside the environment. Save the recovery key after registering; if you forget the password, you can reset it with the key on the sign-in page. For saving and setting it later, see [account recovery](settings.md#save-the-recovery-key).
 
 Newer desktop builds that include trusted local sign-in can also offer "Trust this computer and continue". You can also choose "Use username and password" to follow the flow shown below. Existing password accounts keep their current sign-in method. For the scope of local trust, see [Trusted local sign-in](https://github.com/Lee-xeo/Claude-Cage/blob/main/docs/getting-started.md#trusted-local-sign-in).
 
@@ -40,7 +40,7 @@ After your first sign-in, Cage shows a separate initialization screen. First cho
 
 The "Storage directory" field is already filled in with the default location. To change it, edit it directly or click "Choose folder" to select an empty dedicated folder on a local disk. The path is saved when you click "Next: Configure proxy". If the directory is invalid, you stay on this page with a prompt to fix it. In the Windows installer, the program directory and the environment data directory are separate. For example, the app can be on drive C while the environment goes in `D:\CageData`.
 
-Mac、Linux 使用默认配置时，环境数据放在用户主目录的 `.claude-cage/state`。Windows 正式安装版在首次初始化时，默认填入安装目录下的 `CageData`，例如应用装在 `D:\Cage`，环境数据就放在 `D:\Cage\CageData`；没有写入权限时，在当前字段选择其他有权限的本地文件夹。已有环境继续使用原存储位置，不会自动迁移。更新或覆盖安装时，安装目录下的 `CageData` 保持原位，不随程序文件移动，虚拟磁盘路径不变。账户与配置仍保存在用户目录的 `.claude-cage`。
+With the default configuration on Mac and Linux, environment data is stored in `.claude-cage/state` in the user home folder. On first initialization, the regular Windows installation fills in `CageData` under the install folder by default; for example, if the app is installed in `D:\Cage`, environment data goes to `D:\Cage\CageData`. Without write permission, choose another local folder you can write to in the same field. Existing environments keep their storage location and are not migrated automatically. When updating or installing over an existing installation, `CageData` under the install folder stays in place and does not move with the program files, and the virtual disk path does not change. The account and configuration are still stored in `.claude-cage` in the user folder.
 
 The initialization page shows the full local path. System images, the later image download cache and the persistent virtual disk all use the same storage location. Files that older versions left in the system cache directory are not moved or deleted automatically. Updating, reinstalling and uninstalling the app keep the environment data directory, so after reinstalling you can continue with the existing data. Do not delete this directory by hand.
 
@@ -50,11 +50,11 @@ Choose a disk that supports permission management and sparse files: NTFS on Wind
 
 1. Click "Next: Configure proxy", then add a Clash/Mihomo YAML subscription, a local configuration, or a manual HTTP/SOCKS5 node. For detailed steps, see [Network and proxy](network.md).
 2. Choose the final exit and click "Apply proxy". Cage uses its own core and does not automatically adopt the node currently selected in your local Clash.
-3. 核对匹配的系统镜像、下载量和空间要求，点击“开始安装”。
+3. Check the matching system image, download size and space requirements, then click "Start installation".
 4. Stay on the initialization screen to watch the download, verification, system install and tool configuration progress. After a macOS guest is installed, it signs in automatically and opens each permission page that needs your confirmation. Turn on the matching switch as the screen describes. The "File system extension" button opens the correct panel directly. After system permissions pass, confirm workspace access. If folder authorization is needed, the initialization page provides the authorization window directly. After verification, continue to the network check. On failure, retry following the hint for the current step. "Operation details" shows the specific error and check results, and the full record can be exported under "Logs and diagnostics". An environment that has already finished the system install does not need to be downloaded or installed again.
 5. Once the guest is usable and the network and isolation checks pass, click "Enter the workbench". From then on, opening Cage goes straight into the existing workbench, and when the environment is stopped you can start it directly. If you only need to connect to a remote server, the "Connect to an SSH host only" option on the initialization screen skips the local install.
 
-安装、启动与项目共享不要求修改主机全局 Git 配置，也不要求为裸仓库保护升级 Git。
+Installation, startup and project sharing do not require changing the host's global Git configuration, and do not require upgrading Git for bare repository protection.
 
 ## What to expect during first launch
 

@@ -127,7 +127,7 @@ func BindNewMacOSProfile(profile, user string, hostKey []byte, id uuid.UUID) err
 	}
 	if recovery == nil || recovery.InstallationID != id || recovery.User != user ||
 		recovery.Phase != MacOSInstallServicesPrepared {
-		return errors.New("macOS 客机尚未完成组件和服务置备")
+		return errors.New("The macOS guest has not finished provisioning components and services")
 	}
 	if err := bindMacOSProfile(profile, user, hostKey, id.String()); err != nil {
 		return err
@@ -159,7 +159,7 @@ func bindMacOSProfile(profile, user string, hostKey []byte, setupID string) erro
 	}
 	if identity != nil {
 		if setupID != "" && setupID != identity.Installation.String() {
-			return errors.New("Intel macOS 安装身份不一致")
+			return errors.New("The Intel macOS install identity does not match")
 		}
 		m.Version, m.Backend, m.UUID = 2, MacOSQEMU, identity.UUID
 	}

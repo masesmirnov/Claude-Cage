@@ -9,19 +9,19 @@ keywords: projects Claude Code editor code-server Git GitHub gh commit push file
 
 Terminals and tools run in the guest system you chose. macOS uses the Mac toolchain, Windows uses PowerShell and Windows tools, and Debian uses Linux tools. The browser, editor and Claude Desktop all open from the same workbench. For system combinations and install methods, see [Choose a guest system](guest-systems.md).
 
-点击左侧“项目”旁的加号，选择已有项目，或点“添加本机项目…”创建项目。填写项目名称，连续添加需要一起使用的文件夹，再点击“创建项目”。例如“课程系统”可同时绑定前端与后端目录。项目名称和绑定关系会保存，下次启动继续可用。没有项目时可以使用浏览器与 Claude Desktop；终端和文件编辑器需先添加项目。
+Click the plus next to "Projects" on the left and choose an existing project, or click "Add a local project…" to create one. Enter the project name, add the folders you need to use together one after another, then click "Create project". For example, a "Course system" can bind both its frontend and backend folders. The project name and bindings are saved and stay available on the next start. Without projects you can use the browser and Claude Desktop; terminals and the file editor need a project first.
 
-第一个文件夹是默认工作目录。新建终端与 Claude 会话从默认文件夹启动，Claude 同时获得其余绑定文件夹的读写权限。不同文件夹的 Git 仓库仍分别管理，修改和删除会直接影响本机原文件，请使用版本控制或备份。项目内的 `.git` 可读写，可直接在 Cage 中暂存、提交和切换分支。
+The first folder is the default working folder. New terminals and Claude sessions start from the default folder, and Claude also gets read and write access to the other bound folders. Git repositories in different folders are still managed separately, and changes and deletions act directly on the original local files, so use version control or backups. `.git` inside projects is readable and writable, so you can stage, commit and switch branches directly in Cage.
 
-在项目选择窗口选中项目，点击“编辑名称与文件夹…”可重命名、添加或解绑文件夹。默认文件夹用于关联已有会话历史，需保留。修改绑定后，新建或重新打开 Claude 会话生效；解绑前请保存文件，关闭整个项目的终端、运行中会话和编辑器。文件夹解绑只解除共享，原文件与历史保留。
+Select a project in the project picker and click "Edit name and folders…" to rename it, add folders or unbind them. The default folder links existing session history and must be kept. After changing bindings, the change takes effect for new or reopened Claude sessions; before unbinding, save your files and close the terminals, running sessions and editor of the whole project. Unbinding a folder only stops sharing; the original files and history are kept.
 
-Linux 环境默认缓存项目文件的名称与属性，减少每次读取都要与本机往返的开销。代价是你在本机上直接修改、删除或追加的文件，环境最多 20 秒后才看到；环境内所做的改动始终立即可见。刚在本机改过文件、需要环境马上看到时，点击“项目”旁加号左边的“刷新项目文件”。正被某个程序打开着的文件仍要等缓存到期。经常在本机和环境里同时编辑同一批文件时，可以在“设置 → 通用”关闭“项目文件缓存”，下次启动环境后每次读取都直接访问本机。macOS 与 Windows 环境始终直接读取，没有这个按钮和设置。
+Linux environments cache the names and attributes of project files by default, which saves a round trip to the host for every read. The cost is that files you change, delete or append to directly on the host become visible in the environment only after up to 20 seconds; changes made inside the environment are always visible at once. When you just changed files on the host and need the environment to see them right away, click "Refresh project files" to the left of the plus next to "Projects". Files that a program currently has open still wait for the cache to expire. If you often edit the same files on the host and in the environment at the same time, turn off "Project file cache" in "Settings → General"; after the next environment start every read goes directly to the host. macOS and Windows environments always read directly and have no such button or setting.
 
-项目旁的打开图标（↗）在 code-server 中编辑默认文件夹。多文件夹项目展开后，每个文件夹还有单独的编辑器入口。终端图标（>_）用于选择终端类型，项目内各文件夹已有的会话集中显示在项目下。手机上的项目名称、会话分组和新建会话使用相同绑定关系。
+The open icon (↗) next to a project edits the default folder in code-server. When a multi-folder project is expanded, each folder also has its own editor entry. The terminal icon (>_) chooses the terminal type, and the existing sessions of all folders in the project are shown together under the project. Project names, session groups and new sessions on the phone use the same bindings.
 
-在项目选择窗口选中项目，点击“从 Cage 移除此项目”并确认，可解除全部绑定文件夹的共享并从列表移除。请先保存文件并关闭该项目的终端、运行中会话和编辑器。原文件与会话历史保留，重新添加相同默认目录后可继续使用历史。移除当前项目后选中剩余项目；移除最后一个项目后，项目列表为空。环境停止时也可移除项目。
+Select a project in the project picker, click "Remove this project from Cage" and confirm to stop sharing all bound folders and remove it from the list. Save your files and close the project's terminals, running sessions and editor first. The original files and session history are kept, and you can keep using the history after adding the same default folder again. After removing the current project, a remaining project is selected; after removing the last project, the project list is empty. Projects can also be removed while the environment is stopped.
 
-已有的单文件夹项目可直接编辑并添加更多文件夹。临时共享给云端的本机项目仍通过“共享本机项目…”单独授权，断开连接后结束共享。
+Existing single-folder projects can be edited directly to add more folders. Local projects shared temporarily with the cloud are still authorized separately through "Share a local project…", and sharing ends when you disconnect.
 
 All projects share one environment, tools and accounts. Switching projects does not change the directory of existing terminals, close web pages or revoke earlier sharing. For cloud directories and permissions, see [Cloud deployment and SSH](cloud.md).
 
@@ -69,7 +69,7 @@ The signed-in account still needs write access to the target repository. Organiz
 
 ## Start a new Claude terminal
 
-1. 点击项目旁的终端图标，选“新建 Claude 终端”。Cage 会在默认文件夹启动 `claude`，并让它访问项目内其余绑定文件夹。
+1. Click the terminal icon next to the project and choose "New Claude terminal". Cage starts `claude` in the default folder and lets it access the other folders bound to the project.
 2. The first time you use it, sign in following the official prompts. The authorization page is completed in the Cage browser. Claude sign-ins already on the host are not imported automatically.
 3. If you have several subscriptions, register them first following [Multiple accounts and usage limits](accounts.md). The new Claude terminal tab shows the assigned account.
 
@@ -97,7 +97,7 @@ When you choose files to upload on a web page, "Upload local files" is shown. Cl
 
 You can drag images, videos or documents onto a target that accepts attachments, or copy them in the file manager and paste into Cage. The terminal saves attachments to a guest directory and inserts a quoted path for Claude Code to read. It does not run them automatically. Pasted screenshots are limited to 20 MB and 40 million pixels. File transfers do not use external storage as a relay.
 
-下载在 Cage 环境内完成。本机模式的完整文件先保留在下载暂存目录，同名自动换名；工作台观察到完成后弹出“另存为”。取消仍保留默认位置的文件。在左侧“下载”或浏览器下载按钮可查看进度、打开、显示文件位置或另存。
+Downloads happen inside the Cage environment. In local mode the complete file is first kept in the download staging folder, with automatic renaming for duplicate names; when the workbench sees the download finish, "Save as" opens. Canceling still keeps the file in the default location. You can see progress, open the file, show it in its folder or save it elsewhere from "Downloads" on the left or the browser's download button.
 
 Cloud files and copies already saved to this computer are recorded separately. To open a remote file in another app, first save it to this computer explicitly.
 

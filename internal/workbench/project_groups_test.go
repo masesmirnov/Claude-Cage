@@ -39,7 +39,7 @@ func TestProjectGroupSaveReloadLegacyAndLaunchDirectories(t *testing.T) {
 	if err := s.rememberSharedProject(other); err != nil {
 		t.Fatal(err)
 	}
-	saveGroupRequest(t, s, projectGroup{Name: "课程系统", Folders: []string{a, b, b}}, 200)
+	saveGroupRequest(t, s, projectGroup{Name: "Course system", Folders: []string{a, b, b}}, 200)
 	reloaded := testServer(t)
 	reloaded.profile, reloaded.preferences = s.profile, s.preferences
 	groups, err := reloaded.projectGroups()
@@ -47,7 +47,7 @@ func TestProjectGroupSaveReloadLegacyAndLaunchDirectories(t *testing.T) {
 		t.Fatalf("groups=%+v error=%v", groups, err)
 	}
 	group := groups[0]
-	if group.Workspace != a || group.Name != "课程系统" || !slices.Equal(group.Folders, []string{a, b}) {
+	if group.Workspace != a || group.Name != "Course system" || !slices.Equal(group.Folders, []string{a, b}) {
 		t.Fatalf("group=%+v", group)
 	}
 	paths, err := reloaded.projectPaths()

@@ -773,7 +773,7 @@ def launch(request):
             "--dangerously-load-development-channels", "server:" + connection]
     for directory in request.get("additional_directories", []):
         if not isinstance(directory, str) or not Path(directory).is_absolute() or not Path(directory).is_dir():
-            raise ValueError("项目文件夹未连接，请重新打开项目")
+            raise ValueError("The project folder is not connected; reopen the project")
         args += ["--add-dir", directory]
     if request.get("resume_transcript"):
         expected = ROOT.parent / "cli-account-switches" / identifier(request["switch_id"]) / "history.jsonl"

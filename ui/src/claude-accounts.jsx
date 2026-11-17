@@ -352,11 +352,11 @@ export function ClaudeAccountsPanel({ store, running, environmentBusy, tabs, log
     </div>
     <details className="claude-scheduling">
       <summary>Scheduling settings · {store.scheduling.mode === "sequential" ? "Sequential first" : "Balanced"}</summary>
-      <label>新会话分配<InlineSelect inline aria-label="新会话分配" value={store.scheduling.mode} disabled={busy}
+      <label>New session assignment<InlineSelect inline aria-label="New session assignment" value={store.scheduling.mode} disabled={busy}
         onValueChange={mode => perform(() => load({action:"scheduling",scheduling:{...store.scheduling,mode}}))}>
         <option value="balanced">Balanced</option><option value="sequential">In list order</option>
       </InlineSelect></label>
-      <label>新会话切换授权<InlineSelect inline aria-label="新会话切换授权" value={store.scheduling.switch_policy} disabled={busy}
+      <label>New session authorization switching<InlineSelect inline aria-label="New session authorization switching" value={store.scheduling.switch_policy} disabled={busy}
         onValueChange={switch_policy => perform(() => load({action:"scheduling",scheduling:{...store.scheduling,switch_policy}}))}>
         <option value="ask">Ask every time</option><option value="allow">Continue automatically when the usage limit runs out</option><option value="wait">Always wait for the original account</option>
       </InlineSelect></label>

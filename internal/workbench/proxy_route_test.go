@@ -126,7 +126,7 @@ func TestProxyRouteAPIIsAtomicAndSurvivesRefresh(t *testing.T) {
 
 }
 
-// 回归 #275：链 [A,B] 后 select A 曾把链改写成 [A,A] 而报“代理链不能重复使用同一个节点”。
+// Regression #275: after chain [A,B], select A used to rewrite the chain into [A,A] and report "a proxy chain cannot use the same node twice".
 func TestProxySelectReplacesExistingChain(t *testing.T) {
 	s := testServer(t)
 	p, _ := managedproxy.Load(s.profile)
@@ -159,7 +159,7 @@ func TestProxySelectReplacesExistingChain(t *testing.T) {
 		t.Fatal("chain not configured", chained.Chain)
 	}
 
-	// 失败时状态保持原链。
+	// On failure the state keeps the original chain.
 	failStart = true
 	if err := s.changeProxy("select", proxyInput{NodeID: a}, nil); err == nil {
 		t.Fatal("startup failure accepted")
@@ -175,7 +175,7 @@ func TestProxySelectReplacesExistingChain(t *testing.T) {
 	}
 	failStart = false
 
-	// 链成员（入口 A 与出口 B）都能被选为单节点出口。
+	// Chain members (entry A and exit B) can both be selected as a single-node exit.
 	for _, id := range []string{a, b} {
 		if err := s.changeProxy("route", proxyInput{NodeIDs: []string{a, b}}, nil); err != nil {
 			t.Fatal(err)
@@ -189,7 +189,7 @@ func TestProxySelectReplacesExistingChain(t *testing.T) {
 			t.Fatal("select did not leave a single-node route", got.Chain, route, err)
 		}
 	}
-	// 无链时的普通 select 与随后的 route 仍然可用。
+	// A plain select without a chain and a following route still work.
 	if err := s.changeProxy("select", proxyInput{NodeID: b}, nil); err != nil {
 		t.Fatal(err)
 	}

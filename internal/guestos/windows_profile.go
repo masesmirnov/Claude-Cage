@@ -40,15 +40,15 @@ func WindowsProfilePath(root string) string { return filepath.Join(root, "window
 
 func (p WindowsProfile) validate() error {
 	if p.Mode != "" && p.Mode != "hyperv" && p.Mode != "remote" {
-		return errors.New("Windows 工作环境运行模式无效")
+		return errors.New("The Windows work environment run mode is invalid")
 	}
 	if p.SandboxPackage != "" && (!p.Remote() || p.SandboxPackage != p.VMID.String()) {
-		return errors.New("Windows 云端沙箱标识与绑定的实例不符")
+		return errors.New("The Windows cloud sandbox ID does not match the bound instance")
 	}
 	if p.Remote() {
 		machine, err := uuid.Parse(p.MachineID)
 		if err != nil || machine == uuid.Nil || p.NetworkPairingFile != "" {
-			return errors.New("Windows 云端模式需要机器身份，不能使用 Hyper-V 网络配对")
+			return errors.New("Windows cloud mode needs a machine identity and cannot use Hyper-V network pairing")
 		}
 	}
 	if p.Version != 1 || p.VMID == uuid.Nil || !windowsGUISID.MatchString(p.GUIUserSID) ||
@@ -124,12 +124,12 @@ func WindowsRelayCommand(ctx context.Context, root, operation string, args ...st
 	switch operation {
 	case "headless-status", "headless-terminal", "headless-browser", "headless-safety", "headless-cli":
 		if !p.Remote() {
-			return nil, errors.New("后台终端仅用于 Windows 云端环境")
+			return nil, errors.New("The background terminal is only for Windows cloud environments")
 		}
 	case "status", "diagnostics", "versions":
 	case "stream", "import", "export", "terminal", "browser", "desktop", "attachments", "audio", "resources", "safety", "project-mount", "network-stream", "network-settings", "cli", "cache-maintenance":
 		if p.Remote() {
-			return nil, errors.New("Windows 云端仅支持已配对的后台沙箱操作")
+			return nil, errors.New("Windows cloud only supports paired background sandbox operations")
 		}
 	default:
 		return nil, errors.New("Invalid Windows guest clipboard operation.")

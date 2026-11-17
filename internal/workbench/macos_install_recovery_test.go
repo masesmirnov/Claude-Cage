@@ -46,13 +46,13 @@ func TestMacOSInstallRecoveryIdentityFailuresAreDistinctAndRecorded(t *testing.T
 	}
 	// Shared credentials are absent: the refusal names the next step.
 	credentials := trustedRecoveryRequest(s, http.MethodPost, `{"action":"prepare"}`)
-	if credentials.Code != http.StatusConflict || !strings.Contains(credentials.Body.String(), "暂时无法读取原客机凭据") {
+	if credentials.Code != http.StatusConflict || !strings.Contains(credentials.Body.String(), "The original guest credentials cannot be read right now") {
 		t.Fatalf("missing credentials refusal: %d %s", credentials.Code, credentials.Body.String())
 	}
 	s.account = newSharedMacAccount(t)
 	// Without a guest disk the entry is not preparable yet.
 	undisked := trustedRecoveryRequest(s, http.MethodPost, `{"action":"prepare"}`)
-	if undisked.Code != http.StatusConflict || !strings.Contains(undisked.Body.String(), "磁盘或机器标识尚未就绪") {
+	if undisked.Code != http.StatusConflict || !strings.Contains(undisked.Body.String(), "disk or machine ID is not ready yet") {
 		t.Fatalf("missing disk refusal: %d %s", undisked.Code, undisked.Body.String())
 	}
 	machine := filepath.Join(s.profile, "state", "lima", "mac")
@@ -64,7 +64,7 @@ func TestMacOSInstallRecoveryIdentityFailuresAreDistinctAndRecorded(t *testing.T
 	}
 	// A disk without its machine identifier fails the identity check itself.
 	unidentified := trustedRecoveryRequest(s, http.MethodPost, `{"action":"prepare"}`)
-	if unidentified.Code != http.StatusConflict || !strings.Contains(unidentified.Body.String(), "暂时无法核对原客机磁盘身份") {
+	if unidentified.Code != http.StatusConflict || !strings.Contains(unidentified.Body.String(), "The original guest disk identity cannot be checked right now") {
 		t.Fatalf("missing machine identity refusal: %d %s", unidentified.Code, unidentified.Body.String())
 	}
 	if err := os.WriteFile(filepath.Join(machine, "vz-identifier"), []byte("failed-install-machine"), 0600); err != nil {
@@ -74,15 +74,15 @@ func TestMacOSInstallRecoveryIdentityFailuresAreDistinctAndRecorded(t *testing.T
 		t.Fatal(err)
 	}
 	corrupt := trustedRecoveryRequest(s, http.MethodGet, "")
-	if corrupt.Code != http.StatusConflict || !strings.Contains(corrupt.Body.String(), "身份校验未通过") {
+	if corrupt.Code != http.StatusConflict || !strings.Contains(corrupt.Body.String(), "identity verification failed") {
 		t.Fatalf("corrupt recovery record refusal: %d %s", corrupt.Code, corrupt.Body.String())
 	}
 	events := diagnosticEvents(t, s.profile)
 	for _, want := range []string{
-		"读取原客机凭据失败",
-		"准备恢复入口被拒绝：原客机磁盘或机器标识尚未就绪",
-		"核对原客机磁盘身份失败",
-		"恢复入口身份校验未通过",
+		"Failed to read the original guest credentials",
+		"preparing the recovery entry was refused: the original guest disk or machine ID is not ready yet",
+		"Failed to check the original guest disk identity",
+		"recovery entry identity verification failed",
 	} {
 		if !strings.Contains(events, want) {
 			t.Fatalf("diagnostics missing %q in %s", want, events)
@@ -107,7 +107,7 @@ func TestResumePendingMacOSInstallDistinguishesRecoveryRecordFailures(t *testing
 	req := httptest.NewRequest(http.MethodPost, s.origin+"/api/start", nil)
 	unprepared := httptest.NewRecorder()
 	s.resumePendingMacOSInstall(unprepared, req, id)
-	if unprepared.Code != http.StatusConflict || !strings.Contains(unprepared.Body.String(), "请先准备与原客机身份匹配的恢复入口") {
+	if unprepared.Code != http.StatusConflict || !strings.Contains(unprepared.Body.String(), "Prepare a recovery entry that matches the original guest identity first") {
 		t.Fatalf("missing recovery entry refusal: %d %s", unprepared.Code, unprepared.Body.String())
 	}
 	if err := os.WriteFile(filepath.Join(s.profile, "macos-install-recovery.json"), []byte("{"), 0600); err != nil {
@@ -115,11 +115,11 @@ func TestResumePendingMacOSInstallDistinguishesRecoveryRecordFailures(t *testing
 	}
 	corrupt := httptest.NewRecorder()
 	s.resumePendingMacOSInstall(corrupt, req, id)
-	if corrupt.Code != http.StatusConflict || !strings.Contains(corrupt.Body.String(), "暂时无法确认安装恢复入口") {
+	if corrupt.Code != http.StatusConflict || !strings.Contains(corrupt.Body.String(), "The install recovery entry cannot be confirmed right now") {
 		t.Fatalf("corrupt recovery record refusal: %d %s", corrupt.Code, corrupt.Body.String())
 	}
 	events := diagnosticEvents(t, s.profile)
-	if !strings.Contains(events, "继续原安装被拒绝，恢复入口身份校验未通过") {
+	if !strings.Contains(events, "Continuing the original installation was refused; the recovery entry identity verification failed") {
 		t.Fatalf("diagnostics missing resume refusal cause: %s", events)
 	}
 }
@@ -142,9 +142,9 @@ func TestPendingMacOSWithoutDiskReturnsToInstallerAdmission(t *testing.T) {
 			r.AddCookie(&http.Cookie{Name: s.cookieName() + "-desktop", Value: trustedViewProof(s.token)})
 			w := httptest.NewRecorder()
 			s.start(w, r)
-			want := "请先注册或确认 Cage 账密"
+			want := "Register or confirm the Cage credentials"
 			if started {
-				want = "请先准备与原客机身份匹配的恢复入口"
+				want = "Prepare a recovery entry that matches the original guest identity first"
 			}
 			if w.Code != http.StatusConflict || !strings.Contains(w.Body.String(), want) || s.jobs.snapshot().Running {
 				t.Fatalf("wrong pending installation admission: %d %s", w.Code, w.Body.String())
@@ -166,24 +166,24 @@ func TestGuestInstallFailureMessagePointsToDetailsAndDiagnostics(t *testing.T) {
 	if !errors.Is(mac, cause) {
 		t.Fatal("install failure lost its cause")
 	}
-	for _, want := range []string{"操作详情", "日志与诊断", "继续安装"} {
+	for _, want := range []string{"Operation details", "Logs and diagnostics", "Continue installation"} {
 		if !strings.Contains(mac.Error(), want) {
 			t.Fatalf("macOS install failure missing %q: %s", want, mac.Error())
 		}
 	}
-	if !strings.Contains(mac.Error(), "才需要打开恢复画面完成授权") {
+	if !strings.Contains(mac.Error(), "need to open the recovery screen to finish authorization only when") {
 		t.Fatalf("macOS install failure must scope authorization to the recovery prompt: %s", mac.Error())
 	}
 	other := guestInstallFailureMessage(guestos.Windows11, cause).Error()
-	for _, want := range []string{"操作详情", "日志与诊断"} {
+	for _, want := range []string{"Operation details", "Logs and diagnostics"} {
 		if !strings.Contains(other, want) {
 			t.Fatalf("install failure missing %q: %s", want, other)
 		}
 	}
-	if strings.Contains(other, "授权") || strings.Contains(other, "恢复画面") {
+	if strings.Contains(other, "authorization") || strings.Contains(other, "recovery screen") {
 		t.Fatalf("non-macOS install failure claimed GUI authorization: %s", other)
 	}
-	if strings.Contains(other, "请在恢复界面继续安装") {
+	if strings.Contains(other, "Continue the installation on the recovery screen") {
 		t.Fatalf("install failure told every case to use the recovery screen: %s", other)
 	}
 }
@@ -234,7 +234,7 @@ func TestRecoveryReselectRefusesStartedInstallations(t *testing.T) {
 	}
 	body := `{"id":"` + started.String() + `"}`
 	refused := trustedRecoveryAPIRequest(s, http.MethodDelete, "/api/environment/guest-systems", body)
-	if refused.Code != http.StatusConflict || !strings.Contains(refused.Body.String(), "请继续原安装") {
+	if refused.Code != http.StatusConflict || !strings.Contains(refused.Body.String(), "please continue the original installation") {
 		t.Fatalf("started installation reselect refusal: %d %s", refused.Code, refused.Body.String())
 	}
 	pending, err := guestos.LoadInstallation(s.profile)

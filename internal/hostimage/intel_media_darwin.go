@@ -56,7 +56,7 @@ func PrepareIntelInstaller(ctx context.Context, pkg, cache, version string, tran
 	}
 	base, err := PrepareIntelRecovery(ctx, cache, version, transport)
 	if err != nil {
-		return "", "", fmt.Errorf("准备 Intel macOS 恢复环境失败: %w", err)
+		return "", "", fmt.Errorf("failed to prepare the Intel macOS recovery environment: %w", err)
 	}
 	raw := filepath.Join(work, "recovery.dmg")
 	cmd = exec.CommandContext(ctx, "/usr/bin/hdiutil", "convert", base, "-format", "UDRW", "-o", raw)

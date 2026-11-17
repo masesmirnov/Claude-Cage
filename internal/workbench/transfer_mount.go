@@ -11,7 +11,7 @@ func (s *Server) requireCurrentLinuxTransferMount() error {
 	if shares, _ := s.inspectVMLayout(); shares {
 		return nil
 	}
-	failure := &projectShareError{Recovery: "environment-restart", Message: "下载目录与运行中的文件共享不一致。请先保存工作，停止环境后重新启动；项目文件、会话和登录状态会保留。"}
+	failure := &projectShareError{Recovery: "environment-restart", Message: "The download folder does not match the running file share. Save your work, stop the environment and start it again; project files, sessions and sign-in state are kept."}
 	s.mu.Lock()
 	s.ready = false
 	s.mu.Unlock()

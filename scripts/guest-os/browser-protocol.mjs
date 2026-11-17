@@ -8,7 +8,7 @@ export function checkedBrowserProfile(input) {
       !["native", "disabled"].includes(input.webgl) || !["native", "blocked"].includes(input.canvas) ||
       ![undefined,"","auto","metal","d3d11","vulkan","opengl","software"].includes(input.graphics_backend) ||
       input.webgl==="disabled" && input.graphics_backend && input.graphics_backend!=="auto")
-    throw Object.assign(new Error("客机浏览器创建配置无效"), { code: "invalid_configuration", safe: true });
+    throw Object.assign(new Error("The guest browser creation settings are invalid"), { code: "invalid_configuration", safe: true });
   return { browser_width: input.browser_width, browser_height: input.browser_height, webgl: input.webgl, canvas: input.canvas,
     ...(input.graphics_backend && input.graphics_backend!=="auto" ? {graphics_backend:input.graphics_backend}: {}) };
 }
@@ -17,7 +17,7 @@ export function browserProfileFlags(input, platform = process.platform) {
   const value = checkedBrowserProfile(input);
   const backend=value.graphics_backend||"auto";
   if (backend==="metal"&&platform!=="darwin" || backend==="d3d11"&&platform!=="win32" || backend==="vulkan"&&platform!=="linux")
-    throw Object.assign(new Error("图形后端与客机平台不匹配"),{code:"invalid_configuration",safe:true});
+    throw Object.assign(new Error("The graphics backend does not match the guest platform"),{code:"invalid_configuration",safe:true});
   const hardware = ["metal","d3d11","vulkan","opengl"].includes(backend);
   return [`--window-size=${value.browser_width},${value.browser_height}`,
     ...(["metal","d3d11","vulkan"].includes(backend) ? ["--use-gl=angle",`--use-angle=${backend}`] : []),
@@ -34,11 +34,11 @@ export async function* lines(input, limit = 128 << 10) {
     buffer = Buffer.concat([buffer, chunk]);
     let end;
     while ((end = buffer.indexOf(10)) >= 0) {
-      if (end > limit) throw Object.assign(new Error("浏览器请求过大"), { code: "message_limit", safe: true });
+      if (end > limit) throw Object.assign(new Error("The browser request is too large"), { code: "message_limit", safe: true });
       yield buffer.subarray(0, end).toString("utf8");
       buffer = buffer.subarray(end + 1);
     }
-    if (buffer.length > limit) throw Object.assign(new Error("浏览器请求过大"), { code: "message_limit", safe: true });
+    if (buffer.length > limit) throw Object.assign(new Error("The browser request is too large"), { code: "message_limit", safe: true });
   }
-  if (buffer.length) throw Object.assign(new Error("浏览器请求没有完整收到"), { code: "message_invalid", safe: true });
+  if (buffer.length) throw Object.assign(new Error("The browser request was not received completely"), { code: "message_invalid", safe: true });
 }
